@@ -159,6 +159,27 @@ textarea.inp{height:64px;padding:7px 10px;resize:vertical;line-height:1.5}
 .kpi.bad .stripe{background:var(--bad)} .kpi.bad .val{color:var(--bad)}
 
 /* table */
+/* 冻结列：勾选框 + 第一个字段列（订单号）横向滚动时不动 */
+th.stick0,td.stick0{position:sticky;left:0;z-index:4;background:var(--surface)}
+th.stick1,td.stick1{position:sticky;left:38px;z-index:4;background:var(--surface)}
+thead th.stick0,thead th.stick1{z-index:6;background:var(--surface-3)}
+td.stick1::after,th.stick1::after{content:'';position:absolute;top:0;right:0;bottom:0;width:1px;background:var(--line)}
+td.stick1{box-shadow:6px 0 8px -8px rgba(0,0,0,.28)}
+tbody tr:hover td.stick0,tbody tr:hover td.stick1{background:var(--surface-2)}
+th.stickR,td.stickR{position:sticky;right:0;z-index:4;background:var(--surface);border-left:1px solid var(--line)}
+thead th.stickR{z-index:6;background:var(--surface-3)}
+td.stickR{box-shadow:-6px 0 8px -8px rgba(0,0,0,.28)}
+tbody tr:hover td.stickR{background:var(--surface-2)}
+/* 列设置面板 */
+.colcfg{display:flex;flex-direction:column;gap:6px;max-height:420px;overflow:auto;padding:2px}
+.colrow{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-size:12px}
+.colrow.locked{background:var(--surface-2);color:var(--muted)}
+.colrow .nm{flex:1;min-width:0}
+.colrow .mv{display:flex;gap:4px}
+.colrow .mv button{all:unset;cursor:pointer;width:22px;height:22px;display:grid;place-items:center;border:1px solid var(--line);border-radius:6px;color:var(--ink-2);font-size:11px}
+.colrow .mv button:hover{border-color:var(--brand);color:var(--brand-ink)}
+.colrow .mv button[disabled]{opacity:.3;cursor:not-allowed}
+.lockpill{font-size:10.5px;padding:1px 6px;border-radius:4px;background:var(--brand-soft);color:var(--brand-ink);white-space:nowrap}
 .tablewrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
 thead th{position:sticky;top:0;background:var(--surface-3);text-align:left;font-size:11.5px;font-weight:600;color:var(--ink-2);padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
@@ -772,7 +793,7 @@ function rmbUpper(n){
 /* ================= 路由 ================= */
 const PAGES = [
   {id:'orders',  name:'撮合订单管理',      sub:'列表 / 详情 / 核销 / 补录 / 开票申请', grp:'订单中心 · 撮合'},
-  {id:'group',   name:'总分订单与核销',    sub:'一次加注按运单额度拆分 · 按总单核销', grp:'订单中心 · 撮合'},
+  {id:'group',   name:'总分订单与核销',    sub:'一次加注按运单额度拆分 · 核销由油站操作', grp:'订单中心 · 撮合'},
   {id:'quota',   name:'额度扣减流水',      sub:'冻结 / 扣减 / 解冻 / 回补', grp:'订单中心 · 撮合'},
   {id:'flow',    name:'资金交易流水明细',  sub:'账户类型 + 账户名称 · 请求内容可查', grp:'订单中心 · 撮合'},
   {id:'refund',  name:'订单退款申请与审核', sub:'油站初审 → 运营中台终审', grp:'订单中心 · 撮合'},
@@ -1037,11 +1058,33 @@ const RULE_COMMON = nb('各类输入框的填写限制（全页面通用）',
   ]) +
   '<p style="margin-top:8px">带红色星号的是必填项，没填或填错时输入框标红并挡住提交。灰底的框是系统算出来或从档案带出来的，不允许手工改——比如油款金额、服务费、开票抬头信息。</p>');
 
-/* ================= 列表通用：排序 / 全选 ================= */
-const sortState = {};                       /* {pageId:{key,dir}} */
-function sortBy(id, list, cols){
+/* ================= 列表通用：列设置 / 冻结列 / 全选 / 排序 ================= */
+const COLDEFS = {};                 /* {listId: [colDef,...]} 注册全部可选列 */
+const colState = {};                /* {listId: {order:[k...], hidden:[k...]}} */
+const sortState = {};               /* {listId: {key,dir}} */
+
+function regCols(id, defs){ COLDEFS[id] = defs; return defs; }
+function lockedKey(id){ return (COLDEFS[id]||[{}])[0].k; }        /* 首列固定：不可隐藏、不可移动、横向滚动冻结在左 */
+function lockedLast(id){ const d=COLDEFS[id]||[]; const c=d.find(x=>x.k==='ops'); return c?c.k:null; }  /* 末列固定：操作列，冻结在右 */
+
+function colOrder(id){
+  const defs = COLDEFS[id]||[];
+  const st = colState[id];
+  const known = defs.map(c=>c.k);
+  let order = st ? [...st.order.filter(k=>known.includes(k)), ...known.filter(k=>!st.order.includes(k))] : known.slice();
+  const first = lockedKey(id), last = lockedLast(id);
+  order = order.filter(k=>k!==first && k!==last);          // 首列与操作列不参与排序
+  return last ? [first, ...order, last] : [first, ...order];
+}
+function visibleCols(id){
+  const defs = COLDEFS[id]||[];
+  const map = Object.fromEntries(defs.map(c=>[c.k,c]));
+  const hidden = (colState[id]||{}).hidden || [];
+  return colOrder(id).map(k=>map[k]).filter(c=>c && !hidden.includes(c.k));
+}
+function sortList(id, list){
   const st = sortState[id]; if(!st) return list;
-  const col = cols.find(c=>c.k===st.key); if(!col) return list;
+  const col = (COLDEFS[id]||[]).find(c=>c.k===st.key); if(!col) return list;
   const get = col.get || (o=>o[st.key]);
   return list.slice().sort((a,b)=>{
     let x=get(a), y=get(b);
@@ -1050,17 +1093,82 @@ function sortBy(id, list, cols){
     return st.dir==='asc'? x.localeCompare(y,'zh') : y.localeCompare(x,'zh');
   });
 }
-function thHTML(id, cols){
+/* 统一渲染一张可配置列的表 */
+function dataTable(id, list, minWidth, empty){
+  const cols = visibleCols(id);
   const st = sortState[id]||{};
-  return '<tr><th style="width:34px"><input type="checkbox" data-all="'+id+'" aria-label="全选本页"></th>' +
-    cols.map(c=>{
-      if(c.nosort) return `<th${c.w?' style="width:'+c.w+'"':''}>${c.t}</th>`;
+  const head = '<tr><th class="stick0" style="width:38px"><input type="checkbox" data-all="'+id+'" aria-label="全选本页"></th>' +
+    cols.map((c,i)=>{
+      const k = i===0 ? 'stick1' : (c.k==='ops' ? 'stickR' : '');
+      const cls = k ? ' class="'+k+'"' : '';
+      const w = c.w ? ' style="width:'+c.w+'"' : '';
+      if(c.nosort) return `<th${cls}${w}>${c.t}</th>`;
       const on = st.key===c.k;
       const ar = !on ? '<span class="sar">⇅</span>' : (st.dir==='asc'?'<span class="sar on">↑</span>':'<span class="sar on">↓</span>');
-      return `<th${c.w?' style="width:'+c.w+'"':''}><button class="sortbtn${on?' on':''}" data-sort="${id}:${c.k}">${c.t}${ar}</button></th>`;
+      return `<th${cls}${w}><button class="sortbtn${on?' on':''}" data-sort="${id}:${c.k}">${c.t}${ar}</button></th>`;
     }).join('') + '</tr>';
+  const body = list.length
+    ? sortList(id, list).map(o=>'<tr><td class="stick0"><input type="checkbox" aria-label="选择本行"></td>' +
+        cols.map((c,i)=>{
+          const cls = [i===0?'stick1':'', c.k==='ops'?'stickR':'', c.cls||''].filter(Boolean).join(' ');
+          return `<td${cls?' class="'+cls+'"':''}>${c.td(o)}</td>`;
+        }).join('') + '</tr>').join('')
+    : `<tr><td colspan="${cols.length+1}" class="empty">${empty||'暂无数据'}</td></tr>`;
+  return `<div class="tablewrap"><table style="min-width:${minWidth}"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
+}
+/* 列设置按钮 */
+function colCfgBtn(id){
+  const total = (COLDEFS[id]||[]).length, shown = visibleCols(id).length;
+  return `<button class="btn sm" data-colcfg="${id}">列设置 <b style="font-weight:600">${shown}/${total}</b></button>`;
+}
+/* 列设置面板内容 */
+let colCfgId = null;
+function colCfgBody(){
+  const id = colCfgId, defs = COLDEFS[id]||[], lock = lockedKey(id), lockEnd = lockedLast(id);
+  const map = Object.fromEntries(defs.map(c=>[c.k,c]));
+  const order = colOrder(id), hidden = (colState[id]||{}).hidden||[];
+  const movable = order.filter(k=>k!==lock && k!==lockEnd);
+  return `
+    <div class="banner"><div><b>选择列表要显示哪些字段、以及它们的顺序</b>
+      <span class="txt">勾选决定显示与否，上下箭头调整顺序。<b>${map[lock].t}</b> 固定在第一列、<b>操作</b> 固定在最后一列，两者都不能隐藏或移动；横向滚动时它们分别冻结在最左和最右，中间的列在其间滑动。设置对导出字段同样生效（操作列不导出）。</span></div></div>
+    <div class="colcfg" style="margin-top:12px">
+      ${order.map((k,idx)=>{
+        const c = map[k]; if(!c) return '';
+        if(k===lock || k===lockEnd) return `<div class="colrow locked">
+            <input type="checkbox" checked disabled>
+            <span class="nm">${c.t}</span><span class="lockpill">${k===lock?'固定首列':'固定末列'}</span>
+            <span class="mv"><button disabled>↑</button><button disabled>↓</button></span></div>`;
+        const i = movable.indexOf(k);
+        return `<div class="colrow">
+            <input type="checkbox" data-colshow="${k}" ${hidden.includes(k)?'':'checked'}>
+            <span class="nm">${c.t}</span>
+            <span class="mv">
+              <button data-colmove="${k}:up" ${i===0?'disabled':''}>↑</button>
+              <button data-colmove="${k}:down" ${i===movable.length-1?'disabled':''}>↓</button>
+            </span></div>`;
+      }).join('')}
+    </div>`;
+}
+function ensureColState(id){
+  if(!colState[id]) colState[id] = {order: (COLDEFS[id]||[]).map(c=>c.k), hidden: []};
+  return colState[id];
 }
 document.addEventListener('click', e=>{
+  const cfg = e.target.closest('[data-colcfg]');
+  if(cfg){ colCfgId = cfg.dataset.colcfg; ensureColState(colCfgId); openModal('colcfg'); return; }
+  const mv = e.target.closest('[data-colmove]');
+  if(mv){
+    const [k,dir] = mv.dataset.colmove.split(':');
+    const st = ensureColState(colCfgId);
+    st.order = colOrder(colCfgId);
+    const i = st.order.indexOf(k), j = dir==='up' ? i-1 : i+1;
+    if(j>0 && j<st.order.length){ const t=st.order[i]; st.order[i]=st.order[j]; st.order[j]=t; }
+    document.getElementById('modalBody').innerHTML = colCfgBody();
+    paint(); return;
+  }
+  const rst = e.target.closest('[data-colreset]');
+  if(rst){ delete colState[colCfgId]; ensureColState(colCfgId);
+    document.getElementById('modalBody').innerHTML = colCfgBody(); paint(); return; }
   const sb = e.target.closest('[data-sort]');
   if(sb){
     const [id,key] = sb.dataset.sort.split(':');
@@ -1070,6 +1178,12 @@ document.addEventListener('click', e=>{
   }
 });
 document.addEventListener('change', e=>{
+  const cs = e.target.closest('[data-colshow]');
+  if(cs){
+    const st = ensureColState(colCfgId), k = cs.dataset.colshow;
+    st.hidden = cs.checked ? st.hidden.filter(x=>x!==k) : [...st.hidden, k];
+    paint(); return;
+  }
   const all = e.target.closest('[data-all]');
   if(all){
     const tbl = all.closest('table');
@@ -1099,73 +1213,44 @@ const ORDER_CHIPS = [
   {k:'已完结', f:o=>o.st==='已核销'&&o.pay==='已支付'}
 ];
 
-/* 订单列表列定义：一列一字段，导出与列表共用同一份定义 */
-const ORDER_COLS = [
-  {k:'no',       t:'订单流水号', w:'190px'},
-  {k:'date',     t:'下单日期',   w:'96px'},
-  {k:'clock',    t:'下单时间',   w:'86px'},
-  {k:'custType', t:'客户类型',   w:'92px'},
-  {k:'cust',     t:'客户企业'},
-  {k:'custSub',  t:'归属分公司'},
-  {k:'driver',   t:'司机姓名',   w:'88px'},
-  {k:'phone',    t:'司机手机号', w:'112px'},
-  {k:'plate',    t:'车牌号',     w:'96px'},
-  {k:'waybill',  t:'运单号',     w:'170px'},
-  {k:'stationCo',t:'油站公司'},
-  {k:'station',  t:'油站名称'},
-  {k:'channel',  t:'油站渠道'},
-  {k:'goods',    t:'油品名称',   w:'104px'},
-  {k:'energy',   t:'能源类型',   w:'84px'},
-  {k:'unit',     t:'单价（元）', w:'92px'},
-  {k:'qty',      t:'数量',       w:'92px'},
-  {k:'amt',      t:'总订单金额', w:'116px', get:o=>o.real||o.est},
-  {k:'fee',      t:'服务费',     w:'96px'},
-  {k:'st',       t:'订单状态',   w:'96px'},
-  {k:'pay',      t:'支付状态',   w:'96px'},
-  {k:'recon',    t:'对账状态',   w:'92px'},
-  {k:'inv',      t:'开票状态',   w:'92px'},
-  {k:'ops',      t:'操作',       w:'150px', nosort:true}
-];
+/* 订单列表列定义：一列一字段；列表、列设置、导出共用同一份定义。
+   第一项固定为订单流水号——不可隐藏、不可移动、横向滚动时冻结在最左侧。 */
+const ORDER_COLS = regCols('orders', [
+  {k:'no',       t:'订单流水号', w:'210px', cls:'mono', td:o=>`${o.no}${o.isGroup?' <span class="tag b">总单</span>':''}${o.type==='补录订单'?' <span class="tag f">补录</span>':''}`},
+  {k:'date',     t:'下单日期',   w:'96px',  cls:'mono', td:o=>o.date},
+  {k:'clock',    t:'下单时间',   w:'86px',  cls:'mono', td:o=>o.clock},
+  {k:'custType', t:'客户类型',   w:'92px',  td:o=>o.custType},
+  {k:'cust',     t:'客户企业',   td:o=>o.cust},
+  {k:'custSub',  t:'归属分公司', td:o=>o.custSub||'—'},
+  {k:'driver',   t:'司机姓名',   w:'88px',  td:o=>o.driver},
+  {k:'phone',    t:'司机手机号', w:'112px', cls:'mono', td:o=>o.phone},
+  {k:'plate',    t:'车牌号',     w:'96px',  cls:'mono', td:o=>o.plate},
+  {k:'waybill',  t:'运单号',     w:'170px', cls:'mono', td:o=>o.waybill},
+  {k:'stationCo',t:'油站公司',   td:o=>o.stationCo},
+  {k:'station',  t:'油站名称',   td:o=>o.station},
+  {k:'channel',  t:'油站渠道',   td:o=>o.channel},
+  {k:'goods',    t:'油品名称',   w:'104px', td:o=>o.goods},
+  {k:'energy',   t:'能源类型',   w:'84px',  td:o=>o.energy},
+  {k:'unit',     t:'单价（元）', w:'92px',  cls:'num', td:o=>o.unit.toFixed(2)},
+  {k:'qty',      t:'数量',       w:'96px',  cls:'num', td:o=>o.qty?o.qty.toFixed(2)+' '+qtyUnit(o):'—'},
+  {k:'amt',      t:'总订单金额', w:'116px', cls:'num', get:o=>o.real||o.est,
+                 td:o=>`<span style="color:var(--oil);font-weight:600">${money(o.real||o.est)}</span>`},
+  {k:'fee',      t:'服务费',     w:'96px',  cls:'num', td:o=>o.fee?`<span style="color:var(--fee)">${money(o.fee)}</span>`:'—'},
+  {k:'st',       t:'订单状态',   w:'96px',  td:o=>pill(o.st)},
+  {k:'pay',      t:'支付状态',   w:'96px',  td:o=>pill(o.pay)},
+  {k:'recon',    t:'对账状态',   w:'92px',  td:o=>pill(o.recon)},
+  {k:'inv',      t:'开票状态',   w:'92px',  td:o=>pill(o.inv)},
+  {k:'ops',      t:'操作',       w:'150px', nosort:true, cls:'acts',
+                 td:o=>`<button data-detail="${o.no}">详情</button>
+                        <button class="${o.pay==='已支付'?'danger':'off'}">退款</button>`}
+]);
 const qtyUnit = o => o.energy==='天然气' ? 'kg' : 'L';
 
 VIEWS.orders = () => {
   const chip = ORDER_CHIPS.find(c=>c.k===orderFilter) || ORDER_CHIPS[0];
-  const list = sortBy('orders', ORDERS.filter(chip.f), ORDER_COLS);
+  const list = ORDERS.filter(chip.f);
   const amt = ORDERS.reduce((s,o)=>s+(o.real||o.est),0);
   const fee = ORDERS.reduce((s,o)=>s+o.fee,0);
-
-  const rows = list.map(o=>`
-    <tr>
-      <td><input type="checkbox" aria-label="选择订单"></td>
-      <td class="mono">${o.no}${o.isGroup?' <span class="tag b">总单</span>':''}${o.type==='补录订单'?' <span class="tag f">补录</span>':''}</td>
-      <td class="mono">${o.date}</td>
-      <td class="mono">${o.clock}</td>
-      <td>${o.custType}</td>
-      <td>${o.cust}</td>
-      <td>${o.custSub||'—'}</td>
-      <td>${o.driver}</td>
-      <td class="mono">${o.phone}</td>
-      <td class="mono">${o.plate}</td>
-      <td class="mono">${o.waybill}</td>
-      <td>${o.stationCo}</td>
-      <td>${o.station}</td>
-      <td>${o.channel}</td>
-      <td>${o.goods}</td>
-      <td>${o.energy}</td>
-      <td class="num">${o.unit.toFixed(2)}</td>
-      <td class="num">${o.qty ? o.qty.toFixed(2)+' '+qtyUnit(o) : '—'}</td>
-      <td class="num" style="color:var(--oil);font-weight:600">${money(o.real||o.est)}</td>
-      <td class="num" style="color:var(--fee)">${o.fee?money(o.fee):'—'}</td>
-      <td>${pill(o.st)}</td>
-      <td>${pill(o.pay)}</td>
-      <td>${pill(o.recon)}</td>
-      <td>${pill(o.inv)}</td>
-      <td class="acts">
-        <button data-detail="${o.no}">详情</button>
-        <button class="${o.st==='待核销'?'':'off'}">核销</button>
-        <button class="${o.pay==='已支付'?'danger':'off'}">退款</button>
-      </td>
-    </tr>`).join('');
 
   return `
   <div class="card">
@@ -1208,24 +1293,20 @@ VIEWS.orders = () => {
       <span class="spacer"></span>
       <button class="btn sm" data-modal="backfill">订单补录</button>
       <button class="btn sm" data-modal="invoice">勾选订单开票</button>
-      <button class="btn sm">批量核销</button>
+      ${colCfgBtn('orders')}
       <button class="btn sm" data-modal="export">导出</button>
     </div>
     <div class="chips">
       ${ORDER_CHIPS.map(c=>`<button data-chip="${c.k}" class="${c.alert?'alert ':''}${c.k===orderFilter?'on':''}">${c.k} <b>${ORDERS.filter(c.f).length}</b></button>`).join('')}
     </div>
-    <div class="tablewrap">
-      <table style="min-width:2760px">
-        <thead>${thHTML('orders', ORDER_COLS)}</thead>
-        <tbody>${rows.length?rows:`<tr><td colspan="${ORDER_COLS.length+1}" class="empty">该视图下暂无订单</td></tr>`}</tbody>
-      </table>
-    </div>
+    ${dataTable('orders', list, '2820px', '该视图下暂无订单')}
     ${pagerHTML(list.length)}
   </div>
 
   ${notes(
     nb('这个页面是做什么的',
-      '<p>撮合模式下所有交易订单的总入口，运营中台用。四件事在这里做：查订单、催油站核销、给客户发起开票申请、补录线下已发生的订单。</p>') +
+      '<p>撮合模式下所有交易订单的总入口，运营中台用。三件事在这里做：查订单、给客户发起开票申请、补录线下已发生的订单。</p>' +
+      '<p style="margin-top:6px"><b>运营中台不做核销。</b>核销是确认「这一单实际加了多少油、多少钱」，只有油站现场知道这个数，所以核销动作<b>只在油站端</b>，本页看到的核销结果是油站回传的。列表和详情里没有任何核销按钮，这是刻意的——平台替油站确认金额，等于替一笔自己没看见的交易背书。</p>') +
     nb('一笔订单会经过哪些环节',
       flow([{x:'司机下单'},{x:'校验运单额度并占用'},{x:'油站确认'},{x:'加油'},{x:'核销确认实际金额'},{t:'oil',x:'油款付给油站'},{t:'fee',x:'油站付服务费给平台'},{x:'完结'}]) +
       '<p style="margin-top:8px">系统与加油枪<b>没有对接</b>：金额由人输入、订单由人确认、数量按「金额 ÷ 单价」算出来。所以实际金额不会超过下单金额，只可能因为油箱先加满而少于它，多占的额度自动退回。</p>') +
@@ -1258,16 +1339,32 @@ VIEWS.orders = () => {
       ]) +
       '<p style="margin-top:8px"><b>客户类型</b>是新增字段，取值「网货客户」或「签约客户」，用于区分结算与风控口径，也是导出后做分类统计的主要维度。</p>' +
       '<p style="margin-top:6px"><b>总订单金额</b>就是客户实际支付的金额：核销前是下单金额，核销后是实际金额。列表不再展示「油站实收」——它等于总订单金额减服务费，是算出来的，单列容易被误当成第三笔钱。</p>') +
-    nb('表头功能：全选与排序',
-      '<ul><li><b>全选</b>：表头第一列的勾选框选中/取消<b>当前页</b>全部行。部分选中时显示半选状态。勾选结果用于批量核销、勾选开票、按勾选导出。</li>' +
-      '<li><b>排序</b>：除「操作」外每一列表头都可点击排序，第一次升序、再点降序，当前排序列高亮并显示箭头。金额、单价、数量、税率按<b>数值</b>排，其余按文本排（中文按拼音）。</li>' +
-      '<li>排序只作用于当前筛选结果，切换筛选或快捷视图后保持排序列不变。</li></ul>') +
+    nb('列设置：自己决定显示哪些字段、按什么顺序排',
+      '<p>字段拆细之后列会很多，但不同岗位关心的列不一样：财务盯金额和开票，客服盯司机和车牌，运营盯状态。所以列表提供<b>列设置</b>——点列表右上角的「列设置」按钮打开。</p>' +
+      flow([{x:'点「列设置」'},{x:'勾选要显示的字段'},{x:'用上下箭头调顺序'},{x:'列表实时生效'}]) +
+      tbl(['能做什么','说明'],[
+        ['显示 / 隐藏','取消勾选即从列表中移除该列，按钮上的 <b>已显示/总数</b> 实时更新'],
+        ['调整顺序','每行右侧上下箭头，一次移动一位，实时反映到列表'],
+        ['恢复默认','一键还原为系统默认的列与顺序'],
+        ['影响范围','设置<b>同时作用于导出</b>——导出弹窗默认就是列表当前显示的列与顺序，避免两处各配一遍；操作列不进导出']
+      ]) +
+      '<p style="margin-top:8px"><b>订单流水号固定首列、操作固定末列</b>：两者的勾选框都置灰不可取消，上下箭头禁用不可移动，面板上分别标「固定首列」「固定末列」。订单号是这张表的身份列，隐藏了就没法定位到某一单；操作列隐藏了就没法对行做任何动作。</p>') +
+    nb('横向滚动时：左边订单号不动，右边操作列不动',
+      '<p>列多了必然要横向滚动。滚动时<b>两端都冻结</b>，中间的列在它们之间滑动：</p>' +
+      tbl(['位置','冻结的列','为什么'],[
+        ['最左','勾选框 + 订单流水号','滚到右边看金额或状态时，仍能一眼对上是哪一笔订单'],
+        ['最右','操作','要对某一行执行详情 / 核销 / 退款时，不用先滚回最右端再找按钮']
+      ]) +
+      '<p style="margin-top:8px">两端各有一条分隔线和轻微投影作为边界提示，让人看得出中间区域是可滑动的。</p>' +
+      '<p style="margin-top:6px">实现要点：冻结列在表头和表体都要有<b>不透明背景色</b>，否则滚动时下层内容会透上来；表头本身已经是纵向吸顶的，冻结列在交叉处的层级要更高一层，避免纵横同时滚动时穿帮；鼠标悬停行高亮时，冻结列也要跟着变色，否则那几格会显得断开。</p>' +
+      '<p style="margin-top:6px">操作列固定在右侧后，它<b>不参与列设置</b>——既不能隐藏（隐藏了就没法操作），也不能调整位置（它的位置由冻结规则决定）。列设置面板里标注为「固定末列」。</p>') +
+    nb('其余表头功能',
+      '<ul><li><b>全选</b>：表头第一列的勾选框选中/取消<b>当前页</b>全部行，部分选中时显示半选状态。勾选结果用于勾选开票、按勾选导出。</li>' +
+      '<li><b>排序</b>：除「操作」外每列表头可点击排序，一次升序再点降序。金额、单价、数量、税率按<b>数值</b>排，其余按文本排（中文按拼音）。排序只作用于当前筛选结果。</li></ul>') +
     nb('每个操作：什么时候能点、点了会怎样',
       tbl(['操作','什么时候能点','点了会怎样'],[
         ['详情','任何时候','打开抽屉，三个页签：订单信息 / 资金流水 / 支付凭证'],
-        ['核销','订单状态为「待核销」','确认实际金额，订单转已核销并发起两笔调拨'],
         ['退款','支付状态为「已支付」','发起整单退款，进入油站初审'],
-        ['批量核销','勾选行中有待核销订单','逐单执行，失败的单独列出'],
         ['订单补录','任何时候','补录线下已发生的交易，不冻结额度，提交后直接已核销'],
         ['勾选订单开票','勾选了可开票订单','按油站公司与能源类型拆成多个开票申请单'],
         ['导出','任何时候','打开导出弹窗，选字段与范围后导出']
@@ -1317,7 +1414,7 @@ VIEWS.group = () => {
         <td class="num" style="color:var(--fee)">${o.fee?money(o.fee):'—'}</td>
         <td>${pill(o.biz)}</td>
         <td>${pill(o.pay)}</td>
-        <td class="acts"><button data-detail="${o.no}">详情</button><button class="${o.biz==='待核销'?'':'off'}">按总单核销</button><button>导出子单</button></td>
+        <td class="acts"><button data-detail="${o.no}">详情</button><button>导出子单</button></td>
       </tr>` + subs.map(s=>`
       <tr class="sub-row">
         <td></td><td><span class="mono">└ ${s.no}</span></td>
@@ -1346,7 +1443,7 @@ VIEWS.group = () => {
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
   </div>
   <div class="card">
-    <div class="card-h"><h2>总订单核销台</h2><span class="hint" style="margin-left:10px;color:var(--muted);font-size:12px">一个总单 = 一次真实加注；子单 = 该次加注按运单额度的拆分</span><span class="spacer"></span><button class="btn sm">批量按总单核销</button><button class="btn sm">导出</button></div>
+    <div class="card-h"><h2>总分订单列表</h2><span class="hint" style="margin-left:10px;color:var(--muted);font-size:12px">一个总单 = 一次真实加注；子单 = 该次加注按运单额度的拆分</span><span class="spacer"></span><button class="btn sm">导出</button></div>
     <div class="tablewrap">
       <table style="min-width:1360px">
         <thead><tr><th style="width:58px"></th><th>总订单号 / 子订单号</th><th>客户</th><th>司机</th><th>油站 / 运单额度</th><th>数量 / 金额</th><th>服务费</th><th>订单状态</th><th>支付状态</th><th style="width:200px">操作</th></tr></thead>
@@ -1426,16 +1523,18 @@ VIEWS.group = () => {
       '<ul><li>拦截发生在<b>生成订单之前</b>——不生成订单，不占额度，额度流水里<b>不留任何记录</b>。查不到痕迹是正常的。</li>' +
       '<li>可加上限 = 该司机名下<b>全部可用运单额度之和</b>，不是单张运单的额度。这个数要实时算，不能用缓存。</li>' +
       '<li>因为额度在下单时就校验过并占住了，<b>核销时不会出现额度不够的情况</b>——实际加注金额不会超过输入金额（按金额定额加注），只可能因为油箱加满而少于输入金额，那时多占的额度自动退回。</li></ul>') +
+    nb('核销由油站操作，运营中台只看结果',
+      '<p><b>本页没有核销按钮。</b>核销要确认这一次实际加了多少油、多少钱，只有油站现场知道，所以核销动作在<b>油站端</b>完成；总分订单同样是油站在总单这一层核销一次。</p>' +
+      '<p style="margin-top:6px">运营中台在这里能做的是<b>查看和导出</b>：核销结果、各运单最终占用、两笔调拨状态。核销迟迟不做的单，通过订单列表的「待核销」快捷视图找出来，线下催油站。</p>') +
     nb('核销和付款：只在总单这一层做一次',
-      '<p>子单是账务分片，<b>没有独立的资金动作</b>。油枪跳了一次，钱就只走一次：</p>' +
-      flow([{x:'全部加注完成'},{x:'总单待核销'},{x:'按总单核销一次'},{t:'oil',x:'一笔油款调拨'},{t:'fee',x:'一笔服务费调拨'},{x:'全部子单同时标记已核销'}]) +
+      '<p>子单是账务分片，<b>没有独立的资金动作</b>。油站在总单层核销一次，钱也只走一次：</p>' +
+      flow([{x:'全部加注完成'},{x:'总单待核销'},{x:'油站端按总单核销一次'},{t:'oil',x:'一笔油款调拨'},{t:'fee',x:'一笔服务费调拨'},{x:'全部子单同时标记已核销'}]) +
       '<p style="margin-top:8px">所以列表上子单那一行<b>没有支付状态</b>——不是漏做，是子单层面根本不存在付款这件事。同理，服务费也是按总额算一次，摊到子单上只为展示。</p>' +
       '<p style="margin-top:6px">实现提醒：不要为子单建资金状态字段。一旦建了，就会有人去更新它，然后出现总单已付、某个子单显示未付的假象。</p>') +
     nb('每个操作：什么时候能点、点了会怎样',
       tbl(['操作','什么时候能点','点了会怎样','之后系统做什么'],[
         ['详情','任何时候','打开总单详情，含运单拆分清单','—'],
-        ['按总单核销','总单订单状态是「待核销」','弹确认，展示实际金额与各运单最终占用','按实际金额重拆子单 → 全部标已核销 → 发起两笔调拨 → 多占额度退回各运单'],
-        ['批量按总单核销','勾选行中有待核销总单','逐单执行，失败的单独列出','成功的照常走，失败的留在原状态'],
+        ['导出子单','任何时候','导出运单级拆分明细','财务据此做成本归集'],
         ['导出子单','任何时候','导出总单号、子单号、运单号、该运单可用额度、实际占用、折算数量、状态','财务据此做运单成本归集；这份表是发票的配套明细，弥补票面看不到运单的问题']
       ])) +
     nb('退款：只能整单退，按各运单原样退回',
@@ -1468,20 +1567,18 @@ VIEWS.group = () => {
 };
 
 /* ---- 额度扣减流水 ---- */
-const QUOTA_COLS = [{k:'t',t:'发生时间',w:'150px'},{k:'order',t:'关联订单',w:'190px'},{k:'cust',t:'客户企业'},{k:'driver',t:'司机 / 车牌'},{k:'act',t:'变动类型',w:'96px'},{k:'amt',t:'变动额度',w:'110px'},{k:'left',t:'剩余可用额度',w:'120px'},{k:'st',t:'状态',w:'92px'}];
+const QUOTA_COLS = regCols('quota', [
+  {k:'t',     t:'发生时间',     w:'160px', cls:'mono', td:q=>q.t},
+  {k:'order', t:'关联订单',     w:'200px', cls:'mono', td:q=>q.order},
+  {k:'cust',  t:'客户企业',     td:q=>q.cust},
+  {k:'driver',t:'司机 / 车牌',  td:q=>q.driver},
+  {k:'act',   t:'变动类型',     w:'96px',  td:q=>`<span class="tag">${q.act}</span>`},
+  {k:'amt',   t:'变动额度',     w:'110px', cls:'num',
+              td:q=>`<span style="color:${q.amt<0?'var(--bad)':'var(--ok)'};font-weight:600">${q.amt>0?'+':''}${money(q.amt)}</span>`},
+  {k:'left',  t:'剩余可用额度', w:'126px', cls:'num', td:q=>money(q.left)},
+  {k:'st',    t:'状态',         w:'92px',  td:q=>pill(q.st)}
+]);
 VIEWS.quota = () => {
-  const rows = sortBy('quota',QUOTA,QUOTA_COLS).map(q=>`
-    <tr>
-      <td><input type="checkbox" aria-label="选择流水"></td>
-      <td class="mono">${q.t}</td>
-      <td class="mono">${q.order}</td>
-      <td>${q.cust}</td>
-      <td>${q.driver}</td>
-      <td><span class="tag">${q.act}</span></td>
-      <td class="num" style="color:${q.amt<0?'var(--bad)':'var(--ok)'};font-weight:600">${q.amt>0?'+':''}${money(q.amt)}</td>
-      <td class="num">${money(q.left)}</td>
-      <td>${pill(q.st)}</td>
-    </tr>`).join('');
   return `
   <div class="card">
     <div class="filters">
@@ -1499,13 +1596,8 @@ VIEWS.quota = () => {
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
   </div>
   <div class="card">
-    <div class="card-h"><h2>额度扣减流水</h2><span class="spacer"></span><button class="btn sm">导出</button></div>
-    <div class="tablewrap">
-      <table style="min-width:1080px">
-        <thead>${thHTML('quota', QUOTA_COLS)}</thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
+    <div class="card-h"><h2>额度扣减流水</h2><span class="spacer"></span>${colCfgBtn('quota')}<button class="btn sm">导出</button></div>
+    ${dataTable('quota', QUOTA, '1180px', '暂无额度变动')}
     ${pagerHTML(QUOTA.length)}
   </div>
   ${notes(
@@ -1636,23 +1728,24 @@ VIEWS.flow = () => {
 };
 
 /* ---- 退款 ---- */
-const REFUND_COLS = [{k:'id',t:'退款单号',w:'170px'},{k:'apply',t:'申请时间',w:'140px'},{k:'order',t:'关联订单',w:'190px'},{k:'by',t:'发起方',w:'90px'},{k:'reason',t:'退款原因'},{k:'amt',t:'退款油款',w:'110px'},{k:'fee',t:'退回服务费',w:'110px'},{k:'s1',t:'油站审核',w:'96px'},{k:'s2',t:'运营终审',w:'96px'},{k:'st',t:'退款状态',w:'104px'},{k:'ops',t:'操作',w:'180px',nosort:true}];
+const REFUND_COLS = regCols('refund', [
+  {k:'id',    t:'退款单号', w:'180px', cls:'mono', td:r=>r.id},
+  {k:'date',  t:'申请日期', w:'96px',  cls:'mono', get:r=>r.apply.split(' ')[0], td:r=>r.apply.split(' ')[0]},
+  {k:'clock', t:'申请时间', w:'80px',  cls:'mono', get:r=>r.apply.split(' ')[1]||'', td:r=>r.apply.split(' ')[1]||''},
+  {k:'order', t:'关联订单', w:'200px', cls:'mono', td:r=>r.order},
+  {k:'by',    t:'发起方',   w:'90px',  td:r=>r.by},
+  {k:'reason',t:'退款原因', td:r=>r.reason},
+  {k:'amt',   t:'退款油款', w:'110px', cls:'num', td:r=>`<span style="color:var(--oil)">${money(r.amt)}</span>`},
+  {k:'fee',   t:'退回服务费', w:'110px', cls:'num', td:r=>`<span style="color:var(--fee)">${money(r.fee)}</span>`},
+  {k:'s1',    t:'油站审核', w:'96px',  td:r=>pill(r.s1)},
+  {k:'s2',    t:'运营终审', w:'96px',  td:r=>pill(r.s2==='—'?'待审核':r.s2)},
+  {k:'st',    t:'退款状态', w:'104px', td:r=>pill(r.st)},
+  {k:'ops',   t:'操作',     w:'180px', nosort:true, cls:'acts',
+              td:r=>`<button data-drawer="refund" data-key="${r.id}">详情</button>
+                     <button class="${r.st==='审核中'?'':'off'}">终审通过</button>
+                     <button class="${r.st==='审核中'?'danger':'off'}">驳回</button>`}
+]);
 VIEWS.refund = () => {
-  const rows = sortBy('refund',REFUNDS,REFUND_COLS).map(r=>`
-    <tr>
-      <td><input type="checkbox" aria-label="选择退款单"></td>
-      <td class="mono">${r.id}</td>
-      <td class="mono">${r.apply}</td>
-      <td class="mono">${r.order}</td>
-      <td>${r.by}</td>
-      <td style="max-width:220px">${r.reason}</td>
-      <td class="num" style="color:var(--oil)">${money(r.amt)}</td>
-      <td class="num" style="color:var(--fee)">${money(r.fee)}</td>
-      <td>${pill(r.s1)}</td>
-      <td>${pill(r.s2==='—'?'待审核':r.s2)}</td>
-      <td>${pill(r.st)}</td>
-      <td class="acts"><button data-drawer="refund" data-key="${r.id}">详情</button><button class="${r.st==='审核中'?'':'off'}">终审通过</button><button class="${r.st==='审核中'?'danger':'off'}">驳回</button></td>
-    </tr>`).join('');
   return `
   <div class="card">
     <div class="filters">
@@ -1670,13 +1763,8 @@ VIEWS.refund = () => {
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
   </div>
   <div class="card">
-    <div class="card-h"><h2>退款申请列表</h2><span class="spacer"></span><button class="btn sm">导出</button></div>
-    <div class="tablewrap">
-      <table style="min-width:1240px">
-        <thead>${thHTML('refund', REFUND_COLS)}</thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
+    <div class="card-h"><h2>退款申请列表</h2><span class="spacer"></span>${colCfgBtn('refund')}<button class="btn sm">导出</button></div>
+    ${dataTable('refund', REFUNDS, '1720px', '暂无退款申请')}
     ${pagerHTML(REFUNDS.length)}
   </div>
   ${notes(
@@ -1819,53 +1907,32 @@ VIEWS.voucher = () => {
 };
 
 /* ---- 开票申请记录 ---- */
-const APPLY_COLS = [
-  {k:'no',      t:'申请单号',   w:'180px'},
-  {k:'batch',   t:'提交批次号', w:'150px'},
-  {k:'date',    t:'申请日期',   w:'96px',  get:a=>a.t.split(' ')[0]},
-  {k:'clock',   t:'申请时间',   w:'80px',  get:a=>a.t.split(' ')[1]||''},
-  {k:'cust',    t:'客户企业'},
-  {k:'station', t:'油站公司'},
-  {k:'energy',  t:'能源类型',   w:'84px'},
-  {k:'rate',    t:'税率',       w:'70px',  get:a=>a.energy==='天然气'?9:13},
-  {k:'orders',  t:'关联订单数', w:'100px'},
-  {k:'amt',     t:'申请金额',   w:'116px'},
-  {k:'invoiced',t:'已开票金额', w:'116px'},
-  {k:'left',    t:'未开票金额', w:'116px', get:a=>a.amt-a.invoiced},
-  {k:'vol',     t:'合计数量',   w:'110px'},
-  {k:'mode',    t:'拆票方式',   w:'100px'},
-  {k:'split',   t:'发票张数',   w:'88px'},
-  {k:'st',      t:'申请状态',   w:'104px'},
-  {k:'ops',     t:'操作',       w:'200px', nosort:true}
-];
+const APPLY_COLS = regCols('invApply', [
+  {k:'no',      t:'申请单号',   w:'190px', cls:'mono', td:a=>a.no},
+  {k:'batch',   t:'提交批次号', w:'150px', cls:'mono', td:a=>a.batch},
+  {k:'date',    t:'申请日期',   w:'96px',  cls:'mono', get:a=>a.t.split(' ')[0], td:a=>a.t.split(' ')[0]},
+  {k:'clock',   t:'申请时间',   w:'80px',  cls:'mono', get:a=>a.t.split(' ')[1]||'', td:a=>a.t.split(' ')[1]||''},
+  {k:'cust',    t:'客户企业',   td:a=>a.cust},
+  {k:'station', t:'油站公司',   td:a=>a.station},
+  {k:'energy',  t:'能源类型',   w:'84px',  td:a=>a.energy},
+  {k:'rate',    t:'税率',       w:'70px',  cls:'num', get:a=>a.energy==='天然气'?9:13, td:a=>a.energy==='天然气'?'9%':'13%'},
+  {k:'orders',  t:'关联订单数', w:'100px', cls:'num', td:a=>a.orders},
+  {k:'amt',     t:'申请金额',   w:'116px', cls:'num', td:a=>`<b>${money(a.amt)}</b>`},
+  {k:'invoiced',t:'已开票金额', w:'116px', cls:'num', td:a=>`<span style="color:var(--ok)">${money(a.invoiced)}</span>`},
+  {k:'left',    t:'未开票金额', w:'116px', cls:'num', get:a=>a.amt-a.invoiced,
+                td:a=>`<span style="color:${a.amt-a.invoiced>0?'var(--warn)':'var(--muted)'}">${money(a.amt-a.invoiced)}</span>`},
+  {k:'vol',     t:'合计数量',   w:'110px', cls:'num', td:a=>a.vol},
+  {k:'mode',    t:'拆票方式',   w:'100px', td:a=>a.mode},
+  {k:'split',   t:'发票张数',   w:'88px',  cls:'num', td:a=>a.split},
+  {k:'st',      t:'申请状态',   w:'104px', td:a=>pill(a.st)},
+  {k:'ops',     t:'操作',       w:'200px', nosort:true, cls:'acts',
+                td:a=>`<button data-drawer="apply" data-key="${a.no}">申请详情</button>
+                       <button class="${a.st==='已开票'?'off':''}">上传发票</button>
+                       <button class="${a.st==='待油站开票'?'danger':'off'}">撤销申请</button>`}
+]);
 VIEWS.invApply = () => {
   const totalAmt = APPLIES.reduce((s,a)=>s+a.amt,0);
   const totalInv = APPLIES.reduce((s,a)=>s+a.invoiced,0);
-  const rows = sortBy('invApply', APPLIES, APPLY_COLS).map(a=>`
-    <tr>
-      <td><input type="checkbox" aria-label="选择申请单"></td>
-      <td class="mono">${a.no}</td>
-      <td class="mono">${a.batch}</td>
-      <td class="mono">${a.t.split(' ')[0]}</td>
-      <td class="mono">${a.t.split(' ')[1]||''}</td>
-      <td>${a.cust}</td>
-      <td>${a.station}</td>
-      <td>${a.energy}</td>
-      <td class="num">${a.energy==='天然气'?'9%':'13%'}</td>
-      <td class="num">${a.orders}</td>
-      <td class="num" style="font-weight:600">${money(a.amt)}</td>
-      <td class="num" style="color:var(--ok)">${money(a.invoiced)}</td>
-      <td class="num" style="color:${a.amt-a.invoiced>0?'var(--warn)':'var(--muted)'}">${money(a.amt-a.invoiced)}</td>
-      <td class="num">${a.vol}</td>
-      <td>${a.mode}</td>
-      <td class="num">${a.split}</td>
-      <td>${pill(a.st)}</td>
-      <td class="acts">
-        <button data-drawer="apply" data-key="${a.no}">申请详情</button>
-        <button class="${a.st==='已开票'?'off':''}">上传发票</button>
-        <button class="${a.st==='待油站开票'?'danger':'off'}">撤销申请</button>
-      </td>
-    </tr>`).join('');
   return `
   <div class="card">
     <div class="filters">
@@ -1897,14 +1964,10 @@ VIEWS.invApply = () => {
   <div class="card">
     <div class="card-h"><h2>开票申请记录</h2>
       <span class="spacer"></span>
+      ${colCfgBtn('invApply')}
       <button class="btn sm" data-go="orders">去订单列表勾选开票</button>
       <button class="btn sm">导出</button></div>
-    <div class="tablewrap">
-      <table style="min-width:1560px">
-        <thead>${thHTML('invApply', APPLY_COLS)}</thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
+    ${dataTable('invApply', APPLIES, '2160px', '暂无开票申请单')}
     ${pagerHTML(APPLIES.length)}
   </div>
 
@@ -2182,57 +2245,36 @@ const CORDER_CHIPS = [
   {k:'可开票', f:o=>o.st==='已核销'&&o.pay==='已支付'&&o.inv==='未开票'},
   {k:'已完结', f:o=>o.st==='已核销'&&o.pay==='已支付'}
 ];
-const CORDER_COLS = [
-  {k:'no',      t:'订单流水号', w:'190px'},
-  {k:'date',    t:'下单日期',   w:'96px'},
-  {k:'clock',   t:'下单时间',   w:'86px'},
-  {k:'custSub', t:'归属分公司'},
-  {k:'driver',  t:'司机姓名',   w:'88px'},
-  {k:'phone',   t:'司机手机号', w:'112px'},
-  {k:'plate',   t:'车牌号',     w:'96px'},
-  {k:'waybill', t:'运单号',     w:'170px'},
-  {k:'stationCo',t:'油站公司'},
-  {k:'station', t:'油站名称'},
-  {k:'goods',   t:'油品名称',   w:'104px'},
-  {k:'energy',  t:'能源类型',   w:'84px'},
-  {k:'unit',    t:'单价（元）', w:'92px'},
-  {k:'qty',     t:'数量',       w:'92px'},
-  {k:'amt',     t:'订单金额',   w:'116px', get:o=>o.real||o.est},
-  {k:'st',      t:'订单状态',   w:'96px'},
-  {k:'pay',     t:'支付状态',   w:'96px'},
-  {k:'inv',     t:'开票状态',   w:'92px'},
-  {k:'ops',     t:'操作',       w:'170px', nosort:true}
-];
+const CORDER_COLS = regCols('cOrders', [
+  {k:'no',      t:'订单流水号', w:'210px', cls:'mono', td:o=>`${o.no}${o.isGroup?' <span class="tag b">总单</span>':''}`},
+  {k:'date',    t:'下单日期',   w:'96px',  cls:'mono', td:o=>o.date},
+  {k:'clock',   t:'下单时间',   w:'86px',  cls:'mono', td:o=>o.clock},
+  {k:'custSub', t:'归属分公司', td:o=>o.custSub},
+  {k:'driver',  t:'司机姓名',   w:'88px',  td:o=>o.driver},
+  {k:'phone',   t:'司机手机号', w:'112px', cls:'mono', td:o=>o.phone},
+  {k:'plate',   t:'车牌号',     w:'96px',  cls:'mono', td:o=>o.plate},
+  {k:'waybill', t:'运单号',     w:'170px', cls:'mono', td:o=>o.waybill},
+  {k:'stationCo',t:'油站公司',  td:o=>o.stationCo},
+  {k:'station', t:'油站名称',   td:o=>o.station},
+  {k:'goods',   t:'油品名称',   w:'104px', td:o=>o.goods},
+  {k:'energy',  t:'能源类型',   w:'84px',  td:o=>o.energy},
+  {k:'unit',    t:'单价（元）', w:'92px',  cls:'num', td:o=>o.unit.toFixed(2)},
+  {k:'qty',     t:'数量',       w:'96px',  cls:'num', td:o=>o.qty?o.qty.toFixed(2)+' '+qtyUnit(o):'—'},
+  {k:'amt',     t:'订单金额',   w:'116px', cls:'num', get:o=>o.real||o.est,
+                td:o=>`<span style="color:var(--oil);font-weight:600">${money(o.real||o.est)}</span>`},
+  {k:'st',      t:'订单状态',   w:'96px',  td:o=>pill(o.st)},
+  {k:'pay',     t:'支付状态',   w:'96px',  td:o=>pill(o.pay)},
+  {k:'inv',     t:'开票状态',   w:'92px',  td:o=>pill(o.inv)},
+  {k:'ops',     t:'操作',       w:'176px', nosort:true, cls:'acts',
+                td:o=>`<button data-cdetail="${o.no}">详情</button>
+                       <button class="${o.st==='已核销'&&o.pay==='已支付'&&o.inv==='未开票'?'':'off'}">申请开票</button>
+                       <button class="${o.pay==='已支付'?'':'off'}">申请退款</button>`}
+]);
 
 VIEWS.cOrders = () => {
   const chip = CORDER_CHIPS.find(c=>c.k===cOrderFilter) || CORDER_CHIPS[0];
-  const list = sortBy('cOrders', CORDERS.filter(chip.f), CORDER_COLS);
+  const list = CORDERS.filter(chip.f);
   const sumAmt = CORDERS.reduce((a,o)=>a+(o.real||o.est),0);
-  const rows = list.map(o=>`
-    <tr>
-      <td><input type="checkbox" aria-label="选择订单"></td>
-      <td class="mono">${o.no}${o.isGroup?' <span class="tag b">总单</span>':''}</td>
-      <td class="mono">${o.date}</td>
-      <td class="mono">${o.clock}</td>
-      <td>${o.custSub}</td>
-      <td>${o.driver}</td>
-      <td class="mono">${o.phone}</td>
-      <td class="mono">${o.plate}</td>
-      <td class="mono">${o.waybill}</td>
-      <td>${o.stationCo}</td>
-      <td>${o.station}</td>
-      <td>${o.goods}</td>
-      <td>${o.energy}</td>
-      <td class="num">${o.unit.toFixed(2)}</td>
-      <td class="num">${o.qty ? o.qty.toFixed(2)+' '+qtyUnit(o) : '—'}</td>
-      <td class="num" style="color:var(--oil);font-weight:600">${money(o.real||o.est)}</td>
-      <td>${pill(o.st)}</td>
-      <td>${pill(o.pay)}</td>
-      <td>${pill(o.inv)}</td>
-      <td class="acts"><button data-cdetail="${o.no}">详情</button>
-        <button class="${o.st==='已核销'&&o.pay==='已支付'&&o.inv==='未开票'?'':'off'}">申请开票</button>
-        <button class="${o.pay==='已支付'?'':'off'}">申请退款</button></td>
-    </tr>`).join('');
   return `
   <div class="card">
     <div class="filters">
@@ -2264,16 +2306,11 @@ VIEWS.cOrders = () => {
   </div>
   <div class="card">
     <div class="card-h"><h2>我的加油订单</h2><span class="spacer"></span>
-      <button class="btn sm primary">勾选订单申请开票</button><button class="btn sm" data-modal="export">导出</button></div>
+      <button class="btn sm primary">勾选订单申请开票</button>${colCfgBtn('cOrders')}<button class="btn sm" data-modal="export">导出</button></div>
     <div class="chips">
       ${CORDER_CHIPS.map(c=>`<button data-cchip="${c.k}" class="${c.k===cOrderFilter?'on':''}">${c.k} <b>${CORDERS.filter(c.f).length}</b></button>`).join('')}
     </div>
-    <div class="tablewrap">
-      <table style="min-width:2280px">
-        <thead>${thHTML('cOrders', CORDER_COLS)}</thead>
-        <tbody>${rows.length?rows:`<tr><td colspan="${CORDER_COLS.length+1}" class="empty">没有符合条件的订单</td></tr>`}</tbody>
-      </table>
-    </div>
+    ${dataTable('cOrders', list, '2360px', '没有符合条件的订单')}
     ${pagerHTML(list.length)}
   </div>
 
@@ -2310,7 +2347,9 @@ VIEWS.cOrders = () => {
       '<p style="margin-top:8px">所以同一笔订单加油前后看到的金额不一样是正常的，<b>最终以核销后的实际金额为准</b>，发票也按实际金额开。</p>') +
     nb('列表怎么读与表头功能',
       '<p>列表<b>每一列只放一个字段</b>：订单流水号、下单日期、下单时间、归属分公司、司机姓名、司机手机号、车牌号、运单号、油站公司、油站名称、油品名称、能源类型、单价、数量、订单金额、订单状态、支付状态、开票状态。</p>' +
-      '<ul style="margin-top:8px"><li>表头第一列可<b>全选当前页</b>，用于批量申请开票和按勾选导出。</li>' +
+      '<ul style="margin-top:8px"><li><b>列设置</b>：点列表右上角的「列设置」，可以自己勾选要显示哪些字段、用上下箭头调整顺序，设置同时作用于导出。<b>订单流水号固定在第一列</b>，不能隐藏也不能移动。</li>' +
+      '<li><b>横向滚动时两端冻结</b>：左边的订单流水号和右边的操作列都不动，中间的列在它们之间滑动，看到右边的金额时仍能对上是哪一单，也不用滚回去找按钮。</li>' +
+      '<li>表头第一列可<b>全选当前页</b>，用于批量申请开票和按勾选导出。</li>' +
       '<li>除操作列外每列可<b>点击排序</b>，一次升序再点降序；金额、单价、数量按数值排。</li>' +
       '<li>导出字段与列表列一一对应，<b>下单日期与下单时间是两个独立字段</b>，方便在 Excel 里按日期做透视。</li></ul>') +
     nb('每个操作：什么时候能点、点了会怎样',
@@ -2504,68 +2543,37 @@ VIEWS.cFund = () => {
   )}`;
 };
 
-const CAPPLY_COLS = [
-  {k:'no',      t:'申请单号',   w:'180px'},
-  {k:'batch',   t:'提交批次号', w:'150px'},
-  {k:'date',    t:'申请日期',   w:'96px', get:a=>a.t.split(' ')[0]},
-  {k:'clock',   t:'申请时间',   w:'80px', get:a=>a.t.split(' ')[1]||''},
-  {k:'station', t:'油站公司'},
-  {k:'energy',  t:'能源类型',   w:'84px'},
-  {k:'orders',  t:'订单数',     w:'88px'},
-  {k:'amt',     t:'申请金额',   w:'116px'},
-  {k:'invoiced',t:'已开票',     w:'110px'},
-  {k:'left',    t:'未开票',     w:'110px', get:a=>a.amt-a.invoiced},
-  {k:'vol',     t:'合计数量',   w:'110px'},
-  {k:'split',   t:'发票张数',   w:'88px'},
-  {k:'st',      t:'状态',       w:'104px'},
-  {k:'ops',     t:'操作',       w:'200px', nosort:true}
-];
-const CREFUND_COLS = [
-  {k:'id',    t:'退款单号',   w:'170px'},
-  {k:'date',  t:'申请日期',   w:'96px', get:r=>r.apply.split(' ')[0]},
-  {k:'clock', t:'申请时间',   w:'80px', get:r=>r.apply.split(' ')[1]||''},
-  {k:'order', t:'关联订单',   w:'190px'},
-  {k:'amt',   t:'退款金额',   w:'110px'},
-  {k:'reason',t:'退款原因'},
-  {k:'s1',    t:'油站审核',   w:'96px'},
-  {k:'s2',    t:'平台终审',   w:'96px'},
-  {k:'st',    t:'退款状态',   w:'104px'},
-  {k:'ops',   t:'操作',       w:'110px', nosort:true}
-];
+const CAPPLY_COLS = regCols('cApply', [
+  {k:'no',      t:'申请单号',   w:'190px', cls:'mono', td:a=>a.no},
+  {k:'batch',   t:'提交批次号', w:'150px', cls:'mono', td:a=>a.batch},
+  {k:'date',    t:'申请日期',   w:'96px',  cls:'mono', get:a=>a.t.split(' ')[0], td:a=>a.t.split(' ')[0]},
+  {k:'clock',   t:'申请时间',   w:'80px',  cls:'mono', get:a=>a.t.split(' ')[1]||'', td:a=>a.t.split(' ')[1]||''},
+  {k:'station', t:'油站公司',   td:a=>a.station},
+  {k:'energy',  t:'能源类型',   w:'84px',  td:a=>a.energy},
+  {k:'orders',  t:'订单数',     w:'88px',  cls:'num', td:a=>a.orders},
+  {k:'amt',     t:'申请金额',   w:'116px', cls:'num', td:a=>`<b>${money(a.amt)}</b>`},
+  {k:'invoiced',t:'已开票',     w:'110px', cls:'num', td:a=>`<span style="color:var(--ok)">${money(a.invoiced)}</span>`},
+  {k:'left',    t:'未开票',     w:'110px', cls:'num', get:a=>a.amt-a.invoiced,
+                td:a=>`<span style="color:${a.amt-a.invoiced>0?'var(--warn)':'var(--muted)'}">${money(a.amt-a.invoiced)}</span>`},
+  {k:'vol',     t:'合计数量',   w:'110px', cls:'num', td:a=>a.vol},
+  {k:'split',   t:'发票张数',   w:'88px',  cls:'num', td:a=>a.split},
+  {k:'st',      t:'状态',       w:'104px', td:a=>pill(a.st)},
+  {k:'ops',     t:'操作',       w:'200px', nosort:true, cls:'acts',
+                td:a=>`<button>查看明细</button><button class="${a.invoiced>0?'':'off'}">下载发票</button><button class="${a.invoiced===0?'':'off'}">撤销申请</button>`}
+]);
+const CREFUND_COLS = regCols('cRefund', [
+  {k:'id',    t:'退款单号', w:'180px', cls:'mono', td:r=>r.id},
+  {k:'date',  t:'申请日期', w:'96px',  cls:'mono', get:r=>r.apply.split(' ')[0], td:r=>r.apply.split(' ')[0]},
+  {k:'clock', t:'申请时间', w:'80px',  cls:'mono', get:r=>r.apply.split(' ')[1]||'', td:r=>r.apply.split(' ')[1]||''},
+  {k:'order', t:'关联订单', w:'200px', cls:'mono', td:r=>r.order},
+  {k:'amt',   t:'退款金额', w:'110px', cls:'num', td:r=>`<span style="color:var(--oil);font-weight:600">${money(r.amt)}</span>`},
+  {k:'reason',t:'退款原因', td:r=>r.reason},
+  {k:'s1',    t:'油站审核', w:'96px',  td:r=>pill(r.s1)},
+  {k:'s2',    t:'平台终审', w:'96px',  td:r=>pill(r.s2)},
+  {k:'st',    t:'退款状态', w:'104px', td:r=>pill(r.st)},
+  {k:'ops',   t:'操作',     w:'110px', nosort:true, cls:'acts', td:r=>`<button>查看进度</button>`}
+]);
 VIEWS.cInvoice = () => {
-  const aRows = sortBy('cApply', CAPPLIES, CAPPLY_COLS).map(a=>`
-    <tr>
-      <td><input type="checkbox" aria-label="选择申请单"></td>
-      <td class="mono">${a.no}</td>
-      <td class="mono">${a.batch}</td>
-      <td class="mono">${a.t.split(' ')[0]}</td>
-      <td class="mono">${a.t.split(' ')[1]||''}</td>
-      <td>${a.station}</td>
-      <td>${a.energy}</td>
-      <td class="num">${a.orders}</td>
-      <td class="num" style="font-weight:600">${money(a.amt)}</td>
-      <td class="num" style="color:var(--ok)">${money(a.invoiced)}</td>
-      <td class="num" style="color:${a.amt-a.invoiced>0?'var(--warn)':'var(--muted)'}">${money(a.amt-a.invoiced)}</td>
-      <td class="num">${a.vol}</td>
-      <td class="num">${a.split}</td>
-      <td>${pill(a.st)}</td>
-      <td class="acts"><button>查看明细</button><button class="${a.invoiced>0?'':'off'}">下载发票</button>
-        <button class="${a.invoiced===0?'':'off'}">撤销申请</button></td>
-    </tr>`).join('');
-  const rRows = sortBy('cRefund', CREFUNDS, CREFUND_COLS).map(r=>`
-    <tr>
-      <td><input type="checkbox" aria-label="选择退款单"></td>
-      <td class="mono">${r.id}</td>
-      <td class="mono">${r.apply.split(' ')[0]}</td>
-      <td class="mono">${r.apply.split(' ')[1]||''}</td>
-      <td class="mono">${r.order}</td>
-      <td class="num" style="color:var(--oil);font-weight:600">${money(r.amt)}</td>
-      <td style="max-width:240px">${r.reason}</td>
-      <td>${pill(r.s1)}</td>
-      <td>${pill(r.s2)}</td>
-      <td>${pill(r.st)}</td>
-      <td class="acts"><button>查看进度</button></td>
-    </tr>`).join('');
   return `
   <div class="card">
     <div class="filters">
@@ -2583,22 +2591,12 @@ VIEWS.cInvoice = () => {
   </div>
   <div class="card">
     <div class="card-h"><h2>我的开票申请</h2><span class="spacer"></span>
-      <button class="btn sm primary" data-go="cOrders">去订单列表勾选开票</button><button class="btn sm">批量下载发票</button></div>
-    <div class="tablewrap">
-      <table style="min-width:1400px">
-        <thead>${thHTML('cApply', CAPPLY_COLS)}</thead>
-        <tbody>${aRows}</tbody>
-      </table>
-    </div>
+      <button class="btn sm primary" data-go="cOrders">去订单列表勾选开票</button>${colCfgBtn('cApply')}<button class="btn sm">批量下载发票</button></div>
+    ${dataTable('cApply', CAPPLIES, '1900px', '暂无开票申请')}
   </div>
   <div class="card">
-    <div class="card-h"><h2>我的退款申请</h2><span class="spacer"></span><button class="btn sm">导出</button></div>
-    <div class="tablewrap">
-      <table style="min-width:1120px">
-        <thead>${thHTML('cRefund', CREFUND_COLS)}</thead>
-        <tbody>${rRows}</tbody>
-      </table>
-    </div>
+    <div class="card-h"><h2>我的退款申请</h2><span class="spacer"></span>${colCfgBtn('cRefund')}<button class="btn sm">导出</button></div>
+    ${dataTable('cRefund', CREFUNDS, '1420px', '暂无退款申请')}
   </div>
   ${notes(
     nb('这个页面是做什么的',
@@ -2858,11 +2856,16 @@ document.getElementById('modalClose').onclick = ()=>modal.classList.remove('on')
 modal.addEventListener('click', e=>{ if(e.target===modal) modal.classList.remove('on'); });
 
 const MODALS = {
+  colcfg: {
+    title:'列设置',
+    foot:'<button class="btn" data-colreset="1">恢复默认</button><span style="flex:1"></span><button class="btn primary">完成</button>',
+    body:()=>colCfgBody()
+  },
   export: {
     title:'导出订单数据',
     foot:'<button class="btn">取消</button><button class="btn primary">确认导出</button>',
     body:()=>{
-      const cols = ORDER_COLS.filter(c=>c.k!=='ops');
+      const cols = visibleCols('orders').filter(c=>c.k!=='ops');
       const sample = ORDERS.slice(0,3);
       const cell = (o,k)=> k==='amt' ? money(o.real||o.est)
         : k==='fee' ? (o.fee?money(o.fee):'')
@@ -2879,13 +2882,15 @@ const MODALS = {
         </div>
       </div>
 
-      <div><div class="group-title">导出字段（共 ${cols.length} 个，逐个可选）</div>
+      <div><div class="group-title">导出字段（当前 ${cols.length} 个，与列表列设置一致，可再调整）</div>
         <div style="margin-top:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px 14px">
           ${cols.map(c=>`<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
-            <input type="checkbox" checked><span>${c.t}</span></label>`).join('')}
+            <input type="checkbox" checked${c.k==='no'?' disabled':''}><span>${c.t}</span></label>`).join('')}
         </div>
-        <div style="margin-top:10px;display:flex;gap:8px">
-          <button class="btn sm">全选</button><button class="btn sm">全不选</button><button class="btn sm">仅必要字段</button>
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+          <button class="btn sm">全选</button><button class="btn sm">全不选</button>
+          <button class="btn sm" data-colcfg="orders">按列表的列设置</button>
+          <span style="font-size:11.5px;color:var(--muted)">默认与列表当前显示的列一致</span>
         </div>
       </div>
 
