@@ -231,11 +231,6 @@ td .t1.mono,td .t2.mono,td.mono{white-space:nowrap}
 .notes-b p{margin:0}
 .notes-b ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
 .notes-b ol{margin:0}
-.sortbtn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;font:inherit;color:inherit;white-space:nowrap}
-.sortbtn:hover{color:var(--brand-ink)}
-.sortbtn.on{color:var(--brand-ink);font-weight:700}
-.sar{font-size:10px;opacity:.35}
-.sar.on{opacity:1}
 .modetag{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;padding:1px 6px;border-radius:4px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
 .modetag.m1{background:var(--brand-soft);color:var(--brand-ink);border-color:color-mix(in srgb,var(--brand) 26%,transparent)}
 .modetag.m2{background:color-mix(in srgb,var(--ok) 12%,transparent);color:var(--ok);border-color:color-mix(in srgb,var(--ok) 30%,transparent)}
@@ -1083,10 +1078,9 @@ const RULE_COMMON = nb('各类输入框的填写限制（全页面通用）',
   ]) +
   '<p style="margin-top:8px">带红色星号的是必填项，没填或填错时输入框标红并挡住提交。灰底的框是系统算出来或从档案带出来的，不允许手工改——比如油款金额、服务费、开票抬头信息。</p>');
 
-/* ================= 列表通用：列设置 / 冻结列 / 全选 / 排序 ================= */
+/* ================= 列表通用：列设置 / 冻结列 / 全选 ================= */
 const COLDEFS = {};                 /* {listId: [colDef,...]} 注册全部可选列 */
 const colState = {};                /* {listId: {order:[k...], hidden:[k...]}} */
-const sortState = {};               /* {listId: {key,dir}} */
 
 function regCols(id, defs){ COLDEFS[id] = defs; return defs; }
 function lockedKey(id){ return (COLDEFS[id]||[{}])[0].k; }        /* 首列固定：不可隐藏、不可移动、横向滚动冻结在左 */
@@ -1107,33 +1101,18 @@ function visibleCols(id){
   const hidden = (colState[id]||{}).hidden || [];
   return colOrder(id).map(k=>map[k]).filter(c=>c && !hidden.includes(c.k));
 }
-function sortList(id, list){
-  const st = sortState[id]; if(!st) return list;
-  const col = (COLDEFS[id]||[]).find(c=>c.k===st.key); if(!col) return list;
-  const get = col.get || (o=>o[st.key]);
-  return list.slice().sort((a,b)=>{
-    let x=get(a), y=get(b);
-    if(typeof x==='number' && typeof y==='number') return st.dir==='asc'? x-y : y-x;
-    x=String(x==null?'':x); y=String(y==null?'':y);
-    return st.dir==='asc'? x.localeCompare(y,'zh') : y.localeCompare(x,'zh');
-  });
-}
 /* 统一渲染一张可配置列的表 */
 function dataTable(id, list, minWidth, empty){
   const cols = visibleCols(id);
-  const st = sortState[id]||{};
   const head = '<tr><th class="stick0" style="width:38px"><input type="checkbox" data-all="'+id+'" aria-label="全选本页"></th>' +
     cols.map((c,i)=>{
       const k = i===0 ? 'stick1' : (c.k==='ops' ? 'stickR' : '');
       const cls = k ? ' class="'+k+'"' : '';
       const w = c.w ? ' style="width:'+c.w+'"' : '';
-      if(c.nosort) return `<th${cls}${w}>${c.t}</th>`;
-      const on = st.key===c.k;
-      const ar = !on ? '<span class="sar">⇅</span>' : (st.dir==='asc'?'<span class="sar on">↑</span>':'<span class="sar on">↓</span>');
-      return `<th${cls}${w}><button class="sortbtn${on?' on':''}" data-sort="${id}:${c.k}">${c.t}${ar}</button></th>`;
+      return `<th${cls}${w}>${c.t}</th>`;
     }).join('') + '</tr>';
   const body = list.length
-    ? sortList(id, list).map(o=>'<tr><td class="stick0"><input type="checkbox" aria-label="选择本行"></td>' +
+    ? list.map(o=>'<tr><td class="stick0"><input type="checkbox" aria-label="选择本行"></td>' +
         cols.map((c,i)=>{
           const cls = [i===0?'stick1':'', c.k==='ops'?'stickR':'', c.cls||''].filter(Boolean).join(' ');
           return `<td${cls?' class="'+cls+'"':''}>${c.td(o)}</td>`;
@@ -1194,13 +1173,6 @@ document.addEventListener('click', e=>{
   const rst = e.target.closest('[data-colreset]');
   if(rst){ delete colState[colCfgId]; ensureColState(colCfgId);
     document.getElementById('modalBody').innerHTML = colCfgBody(); paint(); return; }
-  const sb = e.target.closest('[data-sort]');
-  if(sb){
-    const [id,key] = sb.dataset.sort.split(':');
-    const cur = sortState[id];
-    sortState[id] = (cur && cur.key===key && cur.dir==='asc') ? {key,dir:'desc'} : {key,dir:'asc'};
-    paint(); return;
-  }
 });
 document.addEventListener('change', e=>{
   const cs = e.target.closest('[data-colshow]');
@@ -1265,7 +1237,7 @@ const ORDER_COLS = regCols('orders', [
   {k:'pay',      t:'支付状态',   w:'96px',  td:o=>pill(o.pay)},
   {k:'recon',    t:'对账状态',   w:'92px',  td:o=>pill(o.recon)},
   {k:'inv',      t:'开票状态',   w:'92px',  td:o=>pill(o.inv)},
-  {k:'ops',      t:'操作',       w:'150px', nosort:true, cls:'acts',
+  {k:'ops',      t:'操作',       w:'150px', cls:'acts',
                  td:o=>`<button data-detail="${o.no}">详情</button>
                         <button class="${o.pay==='已支付'?'danger':'off'}">退款</button>`}
 ]);
@@ -1352,7 +1324,7 @@ VIEWS.orders = () => {
       '<p style="margin-top:8px">这一版<b>去掉了原来的「订单状态」</b>。它是由业务与资金两侧推导出来的第三个状态，既不能直接编辑，又和另外两个字段重复表达同一件事，看的人容易搞不清该信哪个。现在只留两个各自独立、含义单一的状态。</p>' +
       '<p style="margin-top:6px">常见组合：待核销 + 待支付（正常进行中）；已核销 + 支付中（油加完了，钱在途）；已核销 + 支付失败（业务成立、资金异常，走重试或人工补偿，<b>订单状态不回退</b>）。</p>') +
     nb('列表怎么读：一列一个字段',
-      '<p>列表<b>每一列只放一个字段</b>，不再把手机号、车牌、油卡、运单号挤在一格里，也不在数字下面加解释性小字。这样做有三个好处：可以按任意列排序、导出时列与页面一一对应、肉眼扫读时不用在一格里找信息。</p>' +
+      '<p>列表<b>每一列只放一个字段</b>，不再把手机号、车牌、油卡、运单号挤在一格里，也不在数字下面加解释性小字。这样做有两个好处：导出时列与页面一一对应、肉眼扫读时不用在一格里找信息。</p>' +
       tbl(['字段组','拆出来的列'],[
         ['单据','订单流水号（总单会标「总单」）、下单日期、下单时间'],
         ['客户','客户类型、客户企业、归属分公司'],
@@ -1383,9 +1355,9 @@ VIEWS.orders = () => {
       '<p style="margin-top:8px">两端各有一条分隔线和轻微投影作为边界提示，让人看得出中间区域是可滑动的。</p>' +
       '<p style="margin-top:6px">实现要点：冻结列在表头和表体都要有<b>不透明背景色</b>，否则滚动时下层内容会透上来；表头本身已经是纵向吸顶的，冻结列在交叉处的层级要更高一层，避免纵横同时滚动时穿帮；鼠标悬停行高亮时，冻结列也要跟着变色，否则那几格会显得断开。</p>' +
       '<p style="margin-top:6px">操作列固定在右侧后，它<b>不参与列设置</b>——既不能隐藏（隐藏了就没法操作），也不能调整位置（它的位置由冻结规则决定）。列设置面板里标注为「固定末列」。</p>') +
-    nb('其余表头功能',
-      '<ul><li><b>全选</b>：表头第一列的勾选框选中/取消<b>当前页</b>全部行，部分选中时显示半选状态。勾选结果用于勾选开票、按勾选导出。</li>' +
-      '<li><b>排序</b>：除「操作」外每列表头可点击排序，一次升序再点降序。金额、单价、数量、税率按<b>数值</b>排，其余按文本排（中文按拼音）。排序只作用于当前筛选结果。</li></ul>') +
+    nb('表头的全选',
+      '<p>表头第一列的勾选框选中 / 取消<b>当前页</b>全部行，部分选中时显示半选状态。勾选结果用于勾选开票、按勾选导出。</p>' +
+      '<p style="margin-top:6px"><b>表头不做点击排序。</b>列表默认按下单时间倒序，新单在最前，这是运营查单最常用的顺序。需要按金额或状态找数据时用上方筛选条件，比排序更精确——排序只是把数据换个位置，还得自己往下翻；筛选直接把不相关的行去掉。</p>') +
     nb('每个操作：什么时候能点、点了会怎样',
       tbl(['操作','什么时候能点','点了会怎样'],[
         ['详情','任何时候','打开抽屉，三个页签：订单信息 / 资金流水 / 支付凭证'],
@@ -1766,7 +1738,7 @@ const REFUND_COLS = regCols('refund', [
   {k:'s1',    t:'油站审核', w:'96px',  td:r=>pill(r.s1)},
   {k:'s2',    t:'运营终审', w:'96px',  td:r=>pill(r.s2==='—'?'待审核':r.s2)},
   {k:'st',    t:'退款状态', w:'104px', td:r=>pill(r.st)},
-  {k:'ops',   t:'操作',     w:'180px', nosort:true, cls:'acts',
+  {k:'ops',   t:'操作',     w:'180px', cls:'acts',
               td:r=>`<button data-drawer="refund" data-key="${r.id}">详情</button>
                      <button class="${r.st==='审核中'?'':'off'}">终审通过</button>
                      <button class="${r.st==='审核中'?'danger':'off'}">驳回</button>`}
@@ -1951,7 +1923,7 @@ const APPLY_COLS = regCols('invApply', [
   {k:'mode',    t:'拆票方式',   w:'100px', td:a=>a.mode},
   {k:'split',   t:'发票张数',   w:'88px',  cls:'num', td:a=>a.split},
   {k:'st',      t:'申请状态',   w:'104px', td:a=>pill(a.st)},
-  {k:'ops',     t:'操作',       w:'200px', nosort:true, cls:'acts',
+  {k:'ops',     t:'操作',       w:'200px', cls:'acts',
                 td:a=>`<button data-drawer="apply" data-key="${a.no}">申请详情</button>
                        <button class="${a.st==='已开票'?'off':''}">上传发票</button>
                        <button class="${a.st==='待油站开票'?'danger':'off'}">撤销申请</button>`}
@@ -2291,7 +2263,7 @@ const CORDER_COLS = regCols('cOrders', [
   {k:'st',      t:'订单状态',   w:'96px',  td:o=>pill(o.st)},
   {k:'pay',     t:'支付状态',   w:'96px',  td:o=>pill(o.pay)},
   {k:'inv',     t:'开票状态',   w:'92px',  td:o=>pill(o.inv)},
-  {k:'ops',     t:'操作',       w:'176px', nosort:true, cls:'acts',
+  {k:'ops',     t:'操作',       w:'176px', cls:'acts',
                 td:o=>`<button data-cdetail="${o.no}">详情</button>
                        <button class="${o.st==='已核销'&&o.pay==='已支付'&&o.inv==='未开票'?'':'off'}">申请开票</button>
                        <button class="${o.pay==='已支付'?'':'off'}">申请退款</button>`}
@@ -2376,7 +2348,7 @@ VIEWS.cOrders = () => {
       '<ul style="margin-top:8px"><li><b>列设置</b>：点列表右上角的「列设置」，可以自己勾选要显示哪些字段、用上下箭头调整顺序，设置同时作用于导出。<b>订单流水号固定在第一列</b>，不能隐藏也不能移动。</li>' +
       '<li><b>横向滚动时两端冻结</b>：左边的订单流水号和右边的操作列都不动，中间的列在它们之间滑动，看到右边的金额时仍能对上是哪一单，也不用滚回去找按钮。</li>' +
       '<li>表头第一列可<b>全选当前页</b>，用于批量申请开票和按勾选导出。</li>' +
-      '<li>除操作列外每列可<b>点击排序</b>，一次升序再点降序；金额、单价、数量按数值排。</li>' +
+      '<li>列表默认按下单时间倒序，<b>表头不做点击排序</b>；要找特定数据用上方筛选条件。</li>' +
       '<li>导出字段与列表列一一对应，<b>下单日期与下单时间是两个独立字段</b>，方便在 Excel 里按日期做透视。</li></ul>') +
     nb('每个操作：什么时候能点、点了会怎样',
       tbl(['操作','什么时候能点','点了会怎样'],[
@@ -2583,7 +2555,7 @@ const CAPPLY_COLS = regCols('cApply', [
   {k:'vol',     t:'合计数量',   w:'110px', cls:'num', td:a=>a.vol},
   {k:'split',   t:'发票张数',   w:'88px',  cls:'num', td:a=>a.split},
   {k:'st',      t:'状态',       w:'104px', td:a=>pill(a.st)},
-  {k:'ops',     t:'操作',       w:'200px', nosort:true, cls:'acts',
+  {k:'ops',     t:'操作',       w:'200px', cls:'acts',
                 td:a=>`<button>查看明细</button><button class="${a.invoiced>0?'':'off'}">下载发票</button><button class="${a.invoiced===0?'':'off'}">撤销申请</button>`}
 ]);
 const CREFUND_COLS = regCols('cRefund', [
@@ -2596,7 +2568,7 @@ const CREFUND_COLS = regCols('cRefund', [
   {k:'s1',    t:'油站审核', w:'96px',  td:r=>pill(r.s1)},
   {k:'s2',    t:'平台终审', w:'96px',  td:r=>pill(r.s2)},
   {k:'st',    t:'退款状态', w:'104px', td:r=>pill(r.st)},
-  {k:'ops',   t:'操作',     w:'110px', nosort:true, cls:'acts', td:r=>`<button>查看进度</button>`}
+  {k:'ops',   t:'操作',     w:'110px', cls:'acts', td:r=>`<button>查看进度</button>`}
 ]);
 VIEWS.cApply = () => `
   <div class="card">
