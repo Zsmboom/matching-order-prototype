@@ -72,7 +72,12 @@ button{font:inherit;color:inherit}
 .brand b{font-size:15px;letter-spacing:.02em}
 .brand small{display:block;color:var(--muted);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
 .nav{padding:4px 10px 24px;display:flex;flex-direction:column;gap:2px}
-.nav .grp{padding:14px 8px 6px;color:var(--muted);font-size:10.5px;letter-spacing:.16em}
+.nav .side{display:flex;align-items:center;gap:6px;margin:16px 0 2px;padding:7px 10px;border-radius:7px;
+  background:var(--brand-soft);color:var(--brand-ink);font-size:11.5px;font-weight:700;letter-spacing:.06em}
+.nav .side:first-child{margin-top:4px}
+.nav .side-tag{margin-left:auto;font-weight:500;font-size:10px;opacity:.7;letter-spacing:0}
+.nav .grp{padding:9px 8px 4px 14px;color:var(--muted);font-size:10.5px;letter-spacing:.14em}
+.nav a{margin-left:8px}
 .nav a{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;text-decoration:none;color:var(--ink-2);font-size:12.5px}
 .nav a:hover{background:var(--surface-3);color:var(--ink)}
 .nav a.on{background:var(--brand);color:#fff;font-weight:600;box-shadow:0 6px 14px -8px var(--brand)}
@@ -210,6 +215,11 @@ td .t1.mono,td .t2.mono,td.mono{white-space:nowrap}
 .tag.b{border-color:color-mix(in srgb,var(--brand) 35%,transparent);color:var(--brand-ink);background:var(--brand-soft)}
 .tag.f{border-color:color-mix(in srgb,var(--fee) 35%,transparent);color:var(--fee);background:var(--fee-soft)}
 .tag.o{border-color:color-mix(in srgb,var(--oil) 35%,transparent);color:var(--oil);background:var(--oil-soft)}
+.tag.info{border-color:color-mix(in srgb,var(--info,#3b7ddd) 35%,transparent);color:var(--brand-ink);background:var(--brand-soft)}
+.form-tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
+.form-tbl th{width:110px;text-align:left;font-weight:500;color:var(--muted);background:var(--bg2);padding:9px 12px;border:1px solid var(--line-2);white-space:nowrap}
+.form-tbl td{padding:9px 12px;border:1px solid var(--line-2);color:var(--ink);overflow-wrap:anywhere}
+.form-tbl td .m2{color:var(--muted);font-size:11.5px;margin-top:2px}
 .trk{display:flex;flex-direction:column;gap:4px}
 .trk .mini{font-size:10.5px;color:var(--muted);display:flex;gap:5px;align-items:center;white-space:nowrap}
 .trk .mini i{font-style:normal;width:14px;height:14px;border-radius:4px;display:grid;place-items:center;font-size:9px;font-weight:700;background:var(--surface-3);color:var(--ink-2)}
@@ -384,7 +394,8 @@ pre.code{margin:10px 0 0;background:var(--surface-2);border:1px solid var(--line
   .app{grid-template-columns:1fr}
   .rail{position:static;height:auto;flex-direction:row;overflow-x:auto;align-items:center}
   .nav{flex-direction:row;padding:8px;align-items:center}
-  .nav .grp{display:none}
+  .nav .grp,.nav .side{display:none}
+  .nav a{margin-left:0}
   .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .filters,.form{grid-template-columns:1fr}
   .sumhead .money{grid-template-columns:1fr}
@@ -565,6 +576,68 @@ const FEES = [
   {no:'FW20260826000006', order:'CHY20260826183001902', date:'2026-08-26', clock:'18:32:20',
    payer:'客户', payerName:'测试客户2', cust:'测试客户2', station:'北京大兴机场西站',
    energy:'天然气', oilAmt:3960.00, rate:1.20, amt:47.52, pay:'已支付', inv:'未开票', bill:'—'}
+];
+
+/* ================= 油站账户 · 撮合 ================= */
+/* 油站公司在易宝的虚拟账户：按「油站公司 + 能源类型」分设，互不混账 */
+const STATION_ACCOUNTS = [
+  {id:'AC200117-D', co:'中石化辽宁石油分公司', energy:'柴油',
+   acctId:'YB-S-200117', balance:57015.12, income:156230.45, withdrawn:99215.33, frozen:0,
+   status:'正常', bank:'中国银行沈阳分行', card:'6222****1234', lastWd:'2026-08-25 14:30', t:'2026-07-01',
+   wdMethod:'D0', wdType:'人工提现', wdRule:''},
+  {id:'AC200117-G', co:'中石化辽宁石油分公司', energy:'天然气',
+   acctId:'YB-S-200117G', balance:0, income:0, withdrawn:0, frozen:0,
+   status:'正常', bank:'中国银行沈阳分行', card:'6222****1234', lastWd:'—', t:'2026-07-01',
+   wdMethod:'D0', wdType:'人工提现', wdRule:''},
+  {id:'AC200289-D', co:'高灯能源科技有限公司', energy:'柴油',
+   acctId:'YB-S-200289', balance:31980.44, income:88210.20, withdrawn:56229.76, frozen:0,
+   status:'正常', bank:'工商银行济南分行', card:'6222****5678', lastWd:'2026-08-24 10:15', t:'2026-07-01',
+   wdMethod:'D1', wdType:'定期提现', wdRule:'每周五 14:00'},
+  {id:'AC200342-D', co:'中交兴路能源有限公司', energy:'柴油',
+   acctId:'YB-S-200342', balance:31970.40, income:64200.00, withdrawn:32229.60, frozen:0,
+   status:'正常', bank:'建设银行天津分行', card:'6222****9012', lastWd:'2026-08-23 16:00', t:'2026-07-01',
+   wdMethod:'D0', wdType:'定期提现', wdRule:'每日 10:00'},
+  {id:'AC200455-G', co:'畅油网络科技有限公司', energy:'天然气',
+   acctId:'YB-S-200455', balance:18960.00, income:39000.00, withdrawn:20040.00, frozen:0,
+   status:'停用', bank:'招商银行北京分行', card:'6222****3456', lastWd:'2026-08-20 09:30', t:'2026-07-01',
+   wdMethod:'D1', wdType:'人工提现', wdRule:''}
+];
+
+/* 单个油站账户的资金变动明细（账户明细抽屉用） */
+const STATION_FLOWS = [
+  {id:'SF0001', t:'2026-08-27 09:36:02', acctId:'YB-S-200117', co:'中石化辽宁石油分公司',
+   type:'收入', ev:'油款收入', amt:795.02, before:56220.10, after:57015.12, order:'CHY20260827093412006', st:'已到账'},
+  {id:'SF0002', t:'2026-08-27 09:36:09', acctId:'YB-S-200117', co:'中石化辽宁石油分公司',
+   type:'支出', ev:'服务费划转', amt:-9.54, before:57015.12, after:57005.58, order:'CHY20260827093412006', st:'已划转'},
+  {id:'SF0003', t:'2026-08-25 14:30:00', acctId:'YB-S-200117', co:'中石化辽宁石油分公司',
+   type:'支出', ev:'提现', amt:-50000.00, before:107015.12, after:57015.12, order:'—', st:'提现成功'},
+  {id:'SF0004', t:'2026-08-26 21:30:07', acctId:'YB-S-200117', co:'中石化辽宁石油分公司',
+   type:'支出', ev:'退款', amt:-362.88, before:57378.00, after:57015.12, order:'CHY20260826212244890', st:'交易成功'},
+  {id:'SF0005', t:'2026-08-27 09:13:41', acctId:'YB-S-200289', co:'高灯能源科技有限公司',
+   type:'收入', ev:'油款收入', amt:567.20, before:31413.24, after:31980.44, order:'CHY20260827091107021', st:'交易中'},
+  {id:'SF0006', t:'2026-08-24 10:15:00', acctId:'YB-S-200289', co:'高灯能源科技有限公司',
+   type:'支出', ev:'提现', amt:-30000.00, before:61980.44, after:31980.44, order:'—', st:'提现成功'},
+  {id:'SF0007', t:'2026-08-27 08:48:11', acctId:'YB-S-200342', co:'中交兴路能源有限公司',
+   type:'支出', ev:'服务费划转', amt:-10.04, before:31980.44, after:31970.40, order:'CHY20260827084533112', st:'划转失败'}
+];
+
+/* 平台服务费账户 */
+const SERVICE_FEE_ACCOUNT = {
+  acctId:'YB-P-300001', co:'万联易达科技有限公司', balance:88249.70,
+  income:156480.25, withdrawn:68230.55,
+  bank:'招商银行北京分行', card:'6222****0001', status:'正常', t:'2026-07-01',
+  wdMethod:'D0', wdType:'人工提现', wdRule:''
+};
+
+/* 平台服务费账户流水 */
+const SERVICE_FEE_FLOWS = [
+  {id:'PF0001', t:'2026-08-27 09:36:09', type:'收入', ev:'服务费收入', amt:9.54, before:88240.16, after:88249.70, order:'CHY20260827093412006', st:'交易成功', co:'中石化辽宁石油分公司', ser:'YB2026082700931309', req:'REQ-20260827-0002'},
+  {id:'PF0002', t:'2026-08-27 08:48:11', type:'收入', ev:'服务费收入', amt:10.04, before:88230.12, after:88230.16, order:'CHY20260827084533112', st:'交易失败', co:'中交兴路能源有限公司', ser:'—', req:'REQ-20260827-0014'},
+  {id:'PF0003', t:'2026-08-25 14:30:00', type:'支出', ev:'提现', amt:-50000.00, before:138240.16, after:88240.16, order:'—', st:'提现成功', co:'—', ser:'YB2026082500143001', req:'REQ-20260825-0099'},
+  {id:'PF0004', t:'2026-08-24 16:20:00', type:'收入', ev:'服务费收入', amt:8.36, before:88231.80, after:88240.16, order:'CHY20260824161512007', st:'交易成功', co:'高灯能源科技有限公司', ser:'YB2026082400162008', req:'REQ-20260824-0021'},
+  {id:'PF0005', t:'2026-08-23 18:00:00', type:'收入', ev:'服务费收入', amt:12.68, before:88219.12, after:88231.80, order:'CHY20260823175508003', st:'交易成功', co:'中石化辽宁石油分公司', ser:'YB2026082300180002', req:'REQ-20260823-0033'},
+  {id:'PF0006', t:'2026-08-22 10:15:00', type:'支出', ev:'提现', amt:-30000.00, before:118219.12, after:88219.12, order:'—', st:'提现成功', co:'—', ser:'YB2026082200101501', req:'REQ-20260822-0045'},
+  {id:'PF0007', t:'2026-08-20 14:00:00', type:'收入', ev:'服务费收入', amt:15.20, before:88203.92, after:88219.12, order:'CHY20260820135500011', st:'交易成功', co:'畅油网络科技有限公司', ser:'YB2026082000140005', req:'REQ-20260820-0052'}
 ];
 
 const FEE_RATE = 0.012;
@@ -832,6 +905,11 @@ const TONE = {
 };
 TONE['支付中'] = 'info'; TONE['待核销'] = 'warn'; TONE['退款中'] = 'warn'; TONE['网货客户']='mut'; TONE['签约客户']='mut';
 TONE['待确认'] = 'warn'; TONE['已确认'] = 'ok';
+/* 油站账户 / 服务费账户 */
+TONE['提现成功']='ok'; TONE['已到账']='ok'; TONE['已划转']='ok'; TONE['已结算']='ok'; TONE['交易成功']='ok';
+TONE['提现中']='info'; TONE['交易中']='info';
+TONE['待提现']='mut'; TONE['停用']='mut';
+TONE['提现失败']='bad'; TONE['交易失败']='bad';
 TONE['支付中2'] = TONE['调拨中'] || 'info';
 TONE['支付处理中'] = TONE['调拨中'] || 'info';
 TONE['支付成功'] = 'ok'; TONE['退款成功'] = 'ok'; TONE['处理中'] = 'info';
@@ -866,51 +944,76 @@ function rmbUpper(n){
 }
 
 /* ================= 路由 ================= */
+/* 菜单三级结构：side（平台端） → grp（业务模块） → name（菜单）
+   第一级只有三个：运营平台 / 油站端 / 客户端；第二级是模块；第三级才是页面。 */
+const SIDES = ['运营平台','油站端','客户端'];
+
 const PAGES = [
-  {id:'orders',  name:'撮合订单管理',      sub:'列表 / 详情 / 核销 / 补录 / 开票申请', grp:'订单中心 · 撮合'},
-  {id:'group',   name:'总分订单与核销',    sub:'一次加注按运单额度拆分 · 核销由油站操作', grp:'订单中心 · 撮合'},
-  {id:'quota',   name:'额度扣减流水',      sub:'冻结 / 扣减 / 解冻 / 回补', grp:'订单中心 · 撮合'},
-  {id:'flow',    name:'资金交易流水明细',  sub:'账户类型 + 账户名称 · 请求内容可查', grp:'订单中心 · 撮合'},
-  {id:'refund',  name:'订单退款申请与审核', sub:'油站 / 运营平台发起 → 运营确认 → 执行退款', grp:'订单中心 · 撮合'},
-  {id:'voucher', name:'订单支付凭证管理',  sub:'易宝电子回单 · 凭证影像 · 调拨状态', grp:'订单中心 · 撮合'},
-  {id:'fee',     name:'服务费订单',        sub:'支付方 / 支付状态 / 开票状态 独立记录 · 可开票', grp:'订单中心 · 撮合'},
+  /* ---- 运营平台 · 订单管理 ---- */
+  {id:'orders',  name:'撮合订单管理',      sub:'列表 / 详情 / 补录 / 开票申请', side:'运营平台', grp:'订单管理'},
+  {id:'group',   name:'总分订单与核销',    sub:'一次加注按运单额度拆分 · 核销由油站操作', side:'运营平台', grp:'订单管理'},
+  {id:'refund',  name:'订单退款申请与审核', sub:'油站 / 运营平台发起 → 运营确认 → 执行退款', side:'运营平台', grp:'订单管理'},
+  {id:'quota',   name:'额度扣减流水',      sub:'冻结 / 扣减 / 解冻 / 回补', side:'运营平台', grp:'订单管理'},
 
-  {id:'invApply', name:'开票申请记录', sub:'申请金额 / 已开票金额 / 未开票金额', grp:'发票管理 · 撮合'},
-  {id:'invRecord',name:'能源发票',     sub:'油品票 / 天然气票 · 与申请记录关联 · 批量下载', grp:'发票管理 · 撮合'},
-  {id:'invFee',   name:'服务费发票',   sub:'账单 → 支付方确认 → 开票上传 · 批量下载', grp:'发票管理 · 撮合'},
+  /* ---- 运营平台 · 财务管理 ---- */
+  {id:'flow',        name:'资金交易流水明细', sub:'客户 / 油站 / 平台三侧全账户流水', side:'运营平台', grp:'财务管理'},
+  {id:'voucher',     name:'订单支付凭证管理', sub:'易宝电子回单 · 凭证影像 · 调拨状态', side:'运营平台', grp:'财务管理'},
+  {id:'fee',         name:'服务费订单',       sub:'支付方 / 支付状态 / 开票状态 独立记录 · 可开票', side:'运营平台', grp:'财务管理'},
 
-  {id:'cOrders',  name:'我的加油订单',     sub:'列表 / 详情 / 进度跟踪 · 不含服务费', grp:'客户企业端 · 撮合'},
-  {id:'cQuota',   name:'我的余额与额度',     sub:'充值 / 冻结 / 已消费 / 可用余额', grp:'客户企业端 · 撮合'},
-  {id:'cFund',    name:'我的支付流水',     sub:'仅本企业账户支出与退款收款', grp:'客户企业端 · 撮合'},
-  {id:'cApply',   name:'我的开票申请',     sub:'按油站公司拆单 · 开票进度与发票下载', grp:'客户企业端 · 撮合'},
-  {id:'cRefund',  name:'我的退款申请',     sub:'整单退款 · 审核进度跟踪', grp:'客户企业端 · 撮合'}
+  /* ---- 运营平台 · 发票管理 ---- */
+  {id:'invApply', name:'开票申请记录', sub:'申请金额 / 已开票金额 / 未开票金额', side:'运营平台', grp:'发票管理'},
+  {id:'invRecord',name:'能源发票',     sub:'油品票 / 天然气票 · 与申请记录关联 · 批量下载', side:'运营平台', grp:'发票管理'},
+  {id:'invFee',   name:'服务费发票',   sub:'账单 → 支付方确认 → 开票上传 · 批量下载', side:'运营平台', grp:'发票管理'},
+
+  /* ---- 油站端 · 财务管理 ---- */
+  {id:'stationAcct', name:'油站账户管理',   sub:'余额 / 提现 / 提现配置 / 流水明细 / 账户启停', side:'油站端', grp:'财务管理'},
+  {id:'stationFlow', name:'油站资金流水',   sub:'油站账户收入 / 支出 / 提现 / 退款流水', side:'油站端', grp:'财务管理'},
+  {id:'serviceFee',  name:'服务费账户管理', sub:'服务费账户余额 / 流水明细 / 提现', side:'油站端', grp:'财务管理'},
+
+  /* ---- 客户端 ---- */
+  {id:'cOrders',  name:'我的加油订单', sub:'列表 / 详情 / 进度跟踪 · 不含服务费', side:'客户端', grp:'订单管理'},
+  {id:'cRefund',  name:'我的退款申请', sub:'整单退款 · 处理进度跟踪', side:'客户端', grp:'订单管理'},
+  {id:'cQuota',   name:'我的余额与额度', sub:'充值 / 冻结 / 已消费 / 可用余额', side:'客户端', grp:'财务管理'},
+  {id:'cFund',    name:'我的支付流水', sub:'仅本企业账户支出与退款收款', side:'客户端', grp:'财务管理'},
+  {id:'cApply',   name:'我的开票申请', sub:'按油站公司拆单 · 开票进度与发票下载', side:'客户端', grp:'发票管理'}
 ];
-const OTHER = ['客户中心','网点中心','商品管理','财务中心','风控管理','撮合合同与电子签'];
+
+
+const OTHER = ['客户中心','网点中心','商品管理','风控管理','撮合合同与电子签'];
 let current = 'orders';
 let orderFilter = '全部';
 
 function renderNav(){
-  const groups = [...new Set(PAGES.map(p=>p.grp))];
-  document.getElementById('nav').innerHTML =
-    groups.map(g=>`<div class="grp">${g}</div>` +
-      PAGES.filter(p=>p.grp===g).map(p=>`<a href="#${p.id}" class="${p.id===current?'on':''}" data-go="${p.id}"><span class="dot"></span>${p.name}</a>`).join('')
-    ).join('') +
-    `<div class="grp">其他模块</div>` +
+  let html = '';
+  SIDES.forEach(side=>{
+    const pages = PAGES.filter(p=>p.side===side);
+    if(!pages.length) return;
+    html += `<div class="side">${side}</div>`;
+    [...new Set(pages.map(p=>p.grp))].forEach(g=>{
+      html += `<div class="grp">${g}</div>` +
+        pages.filter(p=>p.grp===g).map(p=>
+          `<a href="#${p.id}" class="${p.id===current?'on':''}" data-go="${p.id}"><span class="dot"></span>${p.name}</a>`).join('');
+    });
+  });
+  html += `<div class="side">其他模块<span class="side-tag">未实现</span></div>` +
     OTHER.map(o=>`<a class="dis" title="本次不在交付范围"><span class="dot"></span>${o}</a>`).join('');
+  document.getElementById('nav').innerHTML = html;
 }
 function renderTabs(){
-  const grp = (PAGES.find(p=>p.id===current)||PAGES[0]).grp;
+  const cur = PAGES.find(p=>p.id===current) || PAGES[0];
   document.getElementById('tabstrip').innerHTML =
-    PAGES.filter(p=>p.grp===grp).map(p=>`<button class="${p.id===current?'on':''}" data-go="${p.id}">${p.name}</button>`).join('');
+    PAGES.filter(p=>p.side===cur.side && p.grp===cur.grp)
+         .map(p=>`<button class="${p.id===current?'on':''}" data-go="${p.id}">${p.name}</button>`).join('');
 }
-function isCust(id){ return (PAGES.find(x=>x.id===id)||{}).grp === '客户企业端 · 撮合'; }
+function isCust(id){ return (PAGES.find(x=>x.id===id)||{}).side === '客户端'; }
 function go(id){
   current = id;
   const p = PAGES.find(x=>x.id===id);
   document.getElementById('pageTitle').textContent = p.name;
-  document.getElementById('pageSub').textContent = p.sub;
+  document.getElementById('pageSub').textContent = p.side + ' / ' + p.grp + ' · ' + p.sub;
   const mode = document.querySelector('.mode');
-  if(isCust(id)){ mode.textContent = '客户企业端 · ' + CUST_ME; mode.classList.add('cust'); }
+  if(p.side==='客户端'){ mode.textContent = '客户企业端 · ' + CUST_ME; mode.classList.add('cust'); }
+  else if(p.side==='油站端'){ mode.textContent = '油站端 · 站点公司登录态'; mode.classList.add('cust'); }
   else { mode.textContent = '撮合模式 · 平台不进货不垫资'; mode.classList.remove('cust'); }
   renderNav(); renderTabs();
   paint();
@@ -923,7 +1026,9 @@ document.addEventListener('click', e=>{
   const d = e.target.closest('[data-detail]');   if(d){ openOrder(d.dataset.detail); return; }
   const cd = e.target.closest('[data-cdetail]'); if(cd){ openCOrder(cd.dataset.cdetail); return; }
   const t = e.target.closest('[data-drawer]');   if(t){ openSimple(t.dataset.drawer, t.dataset.key); return; }
-  const m = e.target.closest('[data-modal]');    if(m){ openModal(m.dataset.modal); return; }
+  const m = e.target.closest('[data-modal]');    if(m){ if(m.classList.contains('off')) return;
+                                                        if(m.dataset.wdAcct) window._wdAcct = m.dataset.wdAcct;
+                                                        openModal(m.dataset.modal); return; }
   const cf = e.target.closest('[data-confirm]'); if(cf){ if(cf.classList.contains('off')) return;
                                                         openConfirm(cf.dataset.confirm, cf.dataset.key); return; }
   const mx = e.target.closest('[data-mclose]');  if(mx){ modal.classList.remove('on'); return; }
@@ -948,6 +1053,10 @@ const OPT = {
   paySt2:['待支付','支付中','已支付','支付失败','已退款'],
   goods:['0# 轻柴油','-10# 柴油','-20# 柴油','LNG','CNG'],
   card:['自营卡','系统对接卡'],
+  acctStatus:['正常','停用'],
+  wdMethod:['D0','D1'],
+  wdType:['人工提现','定期提现'],
+  sfFlowSt:['交易中','交易成功','交易失败','提现成功'],
   mainSt:['待接单','已接单','加油中','待核销','已核销','资金结算中','已完成','已取消','退款中','已退款','异常（补偿中）'],
   bizSt:['待接单','已接单','加油中','待核销','已核销'],
   paySt:['待支付','调拨中','已支付','支付失败','已退款'],
@@ -1406,6 +1515,22 @@ VIEWS.orders = () => {
       ]) +
       '<p style="margin-top:8px">这一版<b>去掉了原来的「订单状态」</b>。它是由业务与资金两侧推导出来的第三个状态，既不能直接编辑，又和另外两个字段重复表达同一件事，看的人容易搞不清该信哪个。现在只留两个各自独立、含义单一的状态。</p>' +
       '<p style="margin-top:6px">常见组合：待核销 + 待支付（正常进行中）；已核销 + 支付中（油加完了，钱在途）；已核销 + 支付失败（业务成立、资金异常，走重试或人工补偿，<b>订单状态不回退</b>）。</p>') +
+    nb('菜单是三级结构：平台端 → 业务模块 → 菜单',
+      '<p>左侧导航按<b>三级</b>组织，三级各自回答一个问题：</p>' +
+      tbl(['层级','取值','回答什么'],[
+        ['一级 · 平台端','<b>运营平台 / 油站端 / 客户端</b>','<b>谁在用</b>——三端是三套不同的登录态、三套权限、三份接口下发范围'],
+        ['二级 · 业务模块','订单管理 / 财务管理 / 发票管理','<b>属于哪块业务</b>——同一个模块名在三端下都可能出现，看到的内容不同'],
+        ['三级 · 菜单','具体页面','<b>做什么事</b>']
+      ]) +
+      '<p style="margin-top:10px"><b>为什么第一级必须是「端」而不是模块。</b>撮合业务的核心特征是<b>同一件事在三端看到的东西不一样</b>：一笔订单，运营看到全量字段，油站只看到自己站的、且能核销，客户只看到自己的、且看不到服务费。如果把「订单管理」放在第一级、三端混在里面，就会出现「同一个菜单名点进去内容完全不同」的情况，权限也没法按菜单树配。<b>先分端，权限边界就是菜单树的第一层，一眼看得出谁能看到什么。</b></p>' +
+      '<p style="margin-top:6px">二级模块名<b>刻意在三端保持一致</b>（都叫订单管理 / 财务管理 / 发票管理）。同一件事在不同端叫不同名字，沟通时要反复换算——「你说的开票申请是我们的哪个菜单」。名字统一，靠一级的端来区分。</p>' +
+      tbl(['','运营平台','油站端','客户端'],[
+        ['订单管理','撮合订单管理、总分订单与核销、退款申请与审核、额度扣减流水','（本次未做页面）核销、接单、扫码确认在油站端','我的加油订单、我的退款申请'],
+        ['财务管理','资金交易流水明细、订单支付凭证管理、服务费订单','<b>油站账户管理、油站资金流水、服务费账户管理</b>','我的余额与额度、我的支付流水'],
+        ['发票管理','开票申请记录、能源发票、服务费发票','（本次未做页面）待开票申请、发票上传','我的开票申请']
+      ]) +
+      '<p style="margin-top:10px"><b>本次三端都有页面，但覆盖度不同</b>：运营平台 13 个、油站端 3 个（都在财务管理下）、客户端 5 个。油站端的订单类页面（接单、核销、扫码确认）本次不在交付范围——但<b>核销只归油站</b>这条规则从菜单结构上就看得出来：运营平台的订单管理里没有任何核销入口。</p>' +
+      '<p style="margin-top:6px">页面顶部的副标题按<b>「端 / 模块 · 页面说明」</b>展示，右上角的标识也跟着端切换（运营平台 / 油站端 / 客户企业端），从任何一个页面都能立刻知道自己在树的哪个位置、是以谁的身份在看。</p>') +
     nb('顶部统计只留两个：合计订单数量、合计金额',
       '<p>原来顶上放了四张卡：订单笔数、加油金额、已完结、待核销。这一版<b>砍到两张</b>——合计订单数量、合计金额。</p>' +
       tbl(['去掉的卡','为什么去掉'],[
@@ -3545,6 +3670,320 @@ CDTAB.cpay = o => {
   )}`;
 };
 
+/* =========================================================
+   油站账户 · 撮合
+   ========================================================= */
+
+/* ---- 油站账户管理 ---- */
+VIEWS.stationAcct = () => {
+  const totalBalance   = STATION_ACCOUNTS.reduce((t,a)=>t+a.balance,0);
+  const totalIncome    = STATION_ACCOUNTS.reduce((t,a)=>t+a.income,0);
+  const totalWithdrawn = STATION_ACCOUNTS.reduce((t,a)=>t+a.withdrawn,0);
+  const disabledCount  = STATION_ACCOUNTS.filter(a=>a.status==='停用').length;
+
+  const rows = STATION_ACCOUNTS.map(a=>`
+    <tr>
+      <td><div class="t1">${a.co}</div></td>
+      <td>${a.energy==='天然气'?'<span class="tag info">天然气</span>':'<span class="tag o">柴油</span>'}</td>
+      <td class="mono">${a.acctId}</td>
+      <td class="num" style="font-weight:600;color:var(--brand-ink)">${money(a.balance)}</td>
+      <td class="num" style="color:var(--ok)">${money(a.income)}</td>
+      <td class="num">${money(a.withdrawn)}</td>
+      <td>${pill(a.status)}</td>
+      <td><span class="tag ${a.wdMethod==='D0'?'o':'info'}">${a.wdMethod}</span></td>
+      <td>${a.wdType}<div class="t2">${a.wdRule||'—'}</div></td>
+      <td class="mono">${a.lastWd}</td>
+      <td class="acts">
+        <button data-drawer="stationAcct" data-key="${a.id}">账户明细</button>
+        <button class="${a.status==='正常'&&a.balance>0?'primary':'off'}" data-modal="withdraw" data-wd-acct="${a.id}">提现</button>
+        <button data-modal="wdConfig" data-wd-acct="${a.id}">提现配置</button>
+        <button class="${a.status==='正常'?'danger':'primary'}" data-confirm="acctToggle" data-key="${a.id}">${a.status==='正常'?'停用':'启用'}</button>
+      </td>
+    </tr>`).join('');
+
+  return `
+  <div class="card">
+    <div class="filters">
+      ${filterRow([
+        {l:'油站公司',t:'sel',o:OPT.stationCo},
+        {l:'能源类型',t:'sel',o:OPT.energy},
+        {l:'账户状态',t:'sel',o:OPT.acctStatus,w2:1},
+        {l:'提现方式',t:'sel',o:OPT.wdMethod,w2:1},
+        {l:'提现类型',t:'sel',o:OPT.wdType,w2:1},
+        {l:'账户 ID',t:'code',p:'如 YB-S-200117',max:20,w2:1},
+        {l:'可提现余额',t:'numrange',p1:'最小',p2:'最大',unit:'元',w2:1},
+        {l:'创建时间',t:'range',v1:'2026-07-01',v2:'2026-08-27',w2:1}
+      ])}
+    </div>
+    <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><span class="stripe"></span><div class="lab">总可提现余额</div><div class="val num">${money(totalBalance)}</div><div class="sub">所有正常账户合计</div></div>
+    <div class="kpi oil"><span class="stripe"></span><div class="lab">累计收入金额</div><div class="val num">${money(totalIncome)}</div><div class="sub">从开通至今</div></div>
+    <div class="kpi"><span class="stripe"></span><div class="lab">累计已提现</div><div class="val num">${money(totalWithdrawn)}</div><div class="sub">从开通至今</div></div>
+    <div class="kpi bad"><span class="stripe"></span><div class="lab">停用账户</div><div class="val num">${disabledCount}</div><div class="sub">不可收款和提现</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>油站账户列表</h2><span class="spacer"></span><button class="btn sm" data-modal="export">导出</button></div>
+    <div class="tablewrap">
+      <table style="min-width:1480px">
+        <thead><tr><th>油站公司</th><th>能源类型</th><th>易宝账户 ID</th><th>可提现余额(元)</th><th>累计收入(元)</th><th>已提现(元)</th><th>账户状态</th><th>提现方式</th><th>提现类型</th><th>最近提现</th><th style="width:270px">操作</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    ${pagerHTML(STATION_ACCOUNTS.length)}
+  </div>
+
+  ${notes(
+    nb('页面职责',
+      '<p>管理油站公司在易宝的虚拟账户。每个油站公司按能源类型分设独立账户，互不混账。本页可查看余额、发起提现、配置提现规则、查看资金流水明细，以及启用或停用账户。</p>') +
+    nb('账户模型',
+      tbl(['要素','说明','约束'],[
+        ['易宝账户 ID','易宝侧虚拟账户号 YB-S-…','与易宝一一对应'],
+        ['能源类型','柴油 / 天然气','同一油站公司不同能源类型分别开户'],
+        ['可提现余额','可立即提现的金额','= 累计收入 − 已提现 − 冻结金额'],
+        ['累计收入','从开户至今的所有收款之和','含油款收入，不含服务费支出'],
+        ['已提现','从开户至今所有成功提现金额之和','仅统计提现成功的'],
+        ['账户状态','正常 / 停用','停用后不可收款，已有余额仍可提现'],
+        ['提现方式','D0 实时到账 / D1 次日到账','按油站公司配置'],
+        ['提现类型','人工提现 / 定期提现','定期提现按规则自动发起']
+      ])) +
+    nb('资金来源与去向',
+      tbl(['事件','方向','金额','触发时点'],[
+        ['油款收入','收入 +','客户核销后的实额','客户资金交易成功后到账'],
+        ['服务费划转','支出 −','核销实额 × 费率','油款到账后自动划转到平台'],
+        ['退款','支出 −','退回客户的油款','退款确认执行后'],
+        ['提现','支出 −','油站发起的提现金额','油站端发起，实时到账'],
+        ['冻结','冻结 +','争议金额','退款处理中或人工冻结'],
+        ['解冻','冻结 −','解除冻结金额','争议解除或退款完成']
+      ]) +
+      '<p style="margin-top:8px">恒等式：<b>可提现余额 = 累计收入 − 已提现 − 冻结金额</b>，每日校验，不一致告警。</p>') +
+    nb('提现配置',
+      '<p>每个油站账户可独立配置提现方式和提现类型：</p>' +
+      tbl(['配置项','选项','说明'],[
+        ['提现方式','D0 / D1','D0 实时到账（2 分钟内），D1 次日到账（工作日次日 16:00 前）'],
+        ['提现类型','人工提现 / 定期提现','人工提现由油站主动发起；定期提现由系统按规则自动发起'],
+        ['定期规则','每日 / 每周 + 时间','定期提现时配置，系统在指定时间自动提现全部可提现余额']
+      ]) +
+      '<p style="margin-top:8px"><b>D0 与 D1 的区别</b>：D0 资金实时清算到账，适合资金周转需求高的油站；D1 次日清算到账，手续费更低。运营专员可根据油站需求配置。</p>') +
+    nb('提现规则',
+      '<ul><li><b>无需审核</b>：油站直接发起提现，实时到账。平安通道 0 手续费，不限金额。</li>' +
+      '<li><b>限制</b>：每日最多提现 3 次，单笔最低 100 元，单笔上限 50 万元，日累计上限 200 万元。（<b>具体数值待确认</b>）</li>' +
+      '<li><b>到账</b>：易宝通道实时到账（2 分钟内），提现记录可在账户明细中查看。</li>' +
+      '<li><b>提现失败</b>：银行卡信息错误、银行通道异常等导致，资金自动退回账户余额，可重新发起。</li>' +
+      '<li><b>停用账户提现</b>：账户停用后不可收款（油款无法入账），但已有余额仍可提现，提完为止。</li></ul>' +
+      '<p style="margin-top:8px">要提示油站<b>预留服务费</b>：余额提光了，下一笔服务费就划不动，会进待补划队列。</p>') +
+    nb('账户启停',
+      '<ul><li><b>停用</b>：停用后该账户不再接收油款收入，新订单的资金调拨会被拦截。已有余额仍可提现。</li>' +
+      '<li><b>启用</b>：重新启用后恢复收款能力。停用期间错过的油款需要人工补调拨。</li>' +
+      '<li>启停操作需运营专员权限，留痕记录操作人、时间和原因。</li>' +
+      '<li>停用场景：油站终止合作、油站违规暂停、油站主动要求暂停等。</li></ul>') +
+    nb('与油站资金流水页的关系',
+      '<p>本页的「账户明细」展示单个油站账户的资金变动明细，数据源与「油站资金流水」页相同，但视角不同：本页以<b>单个油站账户</b>为维度查看，资金流水页以<b>全部油站账户</b>为维度查看。两处数据一致，只是筛选维度不同。</p>') +
+    nb('余额合并展示',
+      '<p>同一油站公司可能有柴油、天然气等多个账户。油站端 H5 展示时，可将各账户余额合并为总余额，提现时再选择从哪个能源类型账户提现。本页按能源类型<b>分别展示</b>，便于精确管理与逐笔核对。</p>') +
+    nb('待确认：这三个页面放在油站端，有三处口径要对齐',
+      '<p><b>这三个页面（油站账户管理 / 油站资金流水 / 服务费账户管理）已按要求归到油站端。</b>但页面内容是从运营视角的原稿搬过来的，有三处需要业务确认，我没有自行改动：</p>' +
+      tbl(['要确认的','现在是什么样','油站端登录态下应该是什么样'],[
+        ['<b>数据可见范围</b>','列表展示<b>全部 5 个账户、4 家油站公司</b>，还能按油站公司筛选','油站端登录只能看<b>自己这一家</b>的账户（柴油 / 天然气各一个），「油站公司」筛选项应当去掉'],
+        ['<b>账户启停</b>','本页有停用 / 启用按钮，停用原因写的是「油站终止合作、油站违规暂停」','这些是<b>平台对油站</b>的管控动作，油站不会停用自己。这个入口大概率应该留在运营平台，油站端只读展示状态'],
+        ['<b>提现配置</b>','油站可自行改 D0 / D1 与定期规则','D0 / D1 涉及<b>通道成本与商务条款</b>，通常由平台配置；油站端可能只能看不能改，或只能改「定期提现规则」不能改到账方式']
+      ]) +
+      '<p style="margin-top:10px"><b>一个可行的拆法供参考</b>：同一套数据、两个入口——<b>运营平台</b>保留全量视图与管控动作（启停、到账方式配置、跨油站对比）；<b>油站端</b>只保留自己账户的余额、流水、提现和定期规则设置。这样权限边界和菜单树的第一层就对得上了。</p>' +
+      '<p style="margin-top:6px">在业务确认之前，本原型<b>维持全量展示</b>，方便评审时一次看全数据；实现时按确认结果收敛可见范围即可，页面结构不用改。</p>') +
+    RULE_COMMON
+  )}`;
+};
+
+/* ---- 油站资金流水 ---- */
+VIEWS.stationFlow = () => {
+  const list = FLOWS.filter(f=>f.acctType==='站点公司');
+  const rows = list.map(f=>`
+    <tr>
+      <td class="mono">${f.t}</td>
+      <td><div class="t1">${f.acctName}</div><div class="t2 mono">${f.acctId}</div></td>
+      <td>${f.type==='收款'?'<span class="pill ok">收款</span>':'<span class="pill info">支出</span>'}</td>
+      <td class="num" style="font-weight:600;color:${f.amt<0?'var(--bad)':'var(--ok)'}">${f.amt>0?'+':''}${money(f.amt)}</td>
+      <td class="num">${money(f.before)}</td>
+      <td class="num">${money(f.after)}</td>
+      <td>${f.ev}</td>
+      <td class="mono">${f.order}</td>
+      <td class="mono">${f.ser}</td>
+      <td>${pill(f.st)}</td>
+      <td class="acts"><button data-drawer="flowReq" data-key="${f.id}">详情</button><button data-drawer="voucher" data-key="${f.req}">回单</button><button class="${f.st==='调拨失败'?'primary':'off'}" data-confirm="transferRetry" data-key="${f.req}">重试</button></td>
+    </tr>`).join('');
+  return `
+  <div class="card">
+    <div class="filters">
+      ${filterRow([
+        {l:'油站公司',t:'sel',o:OPT.stationCo},
+        {l:'交易类型',t:'seg',o:['全部','支出','收款']},
+        {l:'发生事件',t:'sel',o:OPT.fundEvent,w2:1},
+        {l:'状态',t:'sel',o:OPT.voucherSt,w2:1},
+        {l:'关联订单',t:'code',p:'订单流水号 / 总订单号',max:32,w2:1},
+        {l:'易宝流水号',t:'code',p:'如 YB2026082700931245',max:32,w2:1},
+        {l:'变动金额',t:'numrange',p1:'最小',p2:'最大',unit:'元',w2:1},
+        {l:'发生时间',t:'range',v1:'2026-08-01',v2:'2026-08-27',w2:1}
+      ])}
+    </div>
+    <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
+  </div>
+  <div class="card">
+    <div class="card-h"><h2>油站资金流水</h2><span class="spacer"></span><button class="btn sm" data-modal="export">导出对账文件</button></div>
+    <div class="tablewrap">
+      <table style="min-width:1480px">
+        <thead><tr><th>发生时间</th><th>油站公司 / 账户 ID</th><th>交易类型</th><th>变动金额(元)</th><th>上次余额(元)</th><th>当前余额(元)</th><th>发生事件</th><th>关联订单</th><th>易宝流水号</th><th>状态</th><th style="width:190px">操作</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    ${pagerHTML(list.length)}
+  </div>
+  ${notes(
+    nb('页面职责',
+      '<p>本页只展示<b>油站账户（站点公司）</b>的资金流水，包括油款收入、服务费划转支出、退款支出、提现支出等。数据源与「油站账户管理」的账户明细相同，但本页以全部油站账户为维度，可跨油站筛选和对比。</p>' +
+      '<p style="margin-top:6px">和「资金交易流水明细」页的区别：那一页是<b>全账户</b>（客户、油站、平台三侧都有）的总账；本页只筛出油站这一侧，是给管油站结算的人用的。</p>') +
+    nb('油站账户说明',
+      tbl(['要素','说明'],[
+        ['账户名称','油站公司全称'],
+        ['账户 ID','易宝虚拟账户号 YB-S-xxxxx，按能源类型分设'],
+        ['资金动作','接收油款收入、支付服务费、退款、提现']
+      ]) +
+      '<p style="margin-top:8px"><b>账户按能源类型分设</b>：同一油站公司的柴油账户与天然气账户是两个独立虚拟账户，账户 ID 不同。所以不能把一家公司的柴油和天然气流水合起来算余额——那样算出来的数在易宝那边找不到对应。</p>') +
+    nb('流水生成规则',
+      '<ul><li>每笔调拨落地后生成流水。本页只展示站点公司侧的记录（收款或支出）。</li>' +
+      '<li>连续性约束：同一账户按时间排序，<b>上次余额 + 变动金额 = 当前余额</b> 必须恒成立。</li>' +
+      '<li>流水以易宝的通知 + 主动查询双重确认后才落库，避免假流水。</li>' +
+      '<li>流水<b>只增不改不删</b>。冲正、退回通过新增反向记录实现。</li></ul>') +
+    nb('油站账户发生事件',
+      tbl(['发生事件','方向','触发时点'],[
+        ['油款收入','收款 +','客户核销后资金调拨到账'],
+        ['服务费划转','支出 −','油款到账后自动划转给平台'],
+        ['退款','支出 −','退款确认执行后退回客户'],
+        ['提现','支出 −','油站发起提现，实时到账'],
+        ['冻结','冻结 +','退款处理中或人工冻结'],
+        ['解冻','冻结 −','争议解除或退款完成']
+      ])) +
+    nb('流水详情',
+      '<p>每条流水可点「详情」查看本次资金变动的详情，包括变动金额、上次 / 当前余额、易宝流水号、关联订单和交互时间线。点「回单」查看易宝电子回单。</p>') +
+    nb('与油站账户管理的关系',
+      '<p>本页数据源与「油站账户管理」的账户明细完全相同，区别是视角不同：本页以<b>全部油站账户</b>为维度可跨油站筛选；账户明细以<b>单个油站账户</b>为维度查看。两处数据一致。</p>') +
+    nb('对账口径',
+      '<p>导出的对账文件按<b>油站账户 + 日期</b>汇总，与易宝下发的对账文件逐笔比对，差异项转人工处理。</p>') +
+    RULE_COMMON
+  )}`;
+};
+
+/* ---- 服务费账户管理 ---- */
+VIEWS.serviceFee = () => {
+  const a = SERVICE_FEE_ACCOUNT;
+  const flows = SERVICE_FEE_FLOWS;
+  const rows = flows.map(f=>`
+    <tr>
+      <td class="mono">${f.t}</td>
+      <td>${f.co}</td>
+      <td>${f.type==='收入'?'<span class="pill ok">收入</span>':'<span class="pill info">支出</span>'}</td>
+      <td>${f.ev}</td>
+      <td class="num" style="font-weight:600;color:${f.amt<0?'var(--bad)':'var(--ok)'}">${f.amt>0?'+':''}${money(f.amt)}</td>
+      <td class="num">${money(f.before)}</td>
+      <td class="num">${money(f.after)}</td>
+      <td class="mono">${f.ser}</td>
+      <td>${pill(f.st)}</td>
+      <td class="acts">
+        <button data-drawer="sfFlow" data-key="${f.id}">详情</button>
+        <button class="${f.st==='交易失败'?'primary':'off'}" data-confirm="sfRetry" data-key="${f.id}">重试</button>
+      </td>
+    </tr>`).join('');
+
+  return `
+  <div class="kpis">
+    <div class="kpi"><span class="stripe"></span><div class="lab">可提现余额</div><div class="val num">${money(a.balance)}</div><div class="sub">平台服务费账户</div></div>
+    <div class="kpi fee"><span class="stripe"></span><div class="lab">累计服务费收入</div><div class="val num">${money(a.income)}</div><div class="sub">从开通至今</div></div>
+    <div class="kpi"><span class="stripe"></span><div class="lab">累计已提现</div><div class="val num">${money(a.withdrawn)}</div><div class="sub">从开通至今</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>账户信息</h2><span class="spacer"></span>
+      <button class="btn sm ${a.balance>0?'primary':'off'}" data-modal="sfWithdraw">提现</button></div>
+    <div class="card-b">
+      <table class="form-tbl">
+        <tr><th>账户主体</th><td>${a.co}</td><th>易宝账户 ID</th><td class="mono">${a.acctId}</td></tr>
+        <tr><th>账户状态</th><td>${pill(a.status)}</td><th>开户时间</th><td class="mono">${a.t}</td></tr>
+        <tr><th>绑定银行卡</th><td>${a.bank}</td><th>银行卡号</th><td class="mono">${a.card}</td></tr>
+        <tr><th>可提现余额</th><td class="num" style="font-weight:600;color:var(--brand-ink)">¥ ${money(a.balance)}</td><th>累计服务费收入</th><td class="num" style="color:var(--ok)">¥ ${money(a.income)}</td></tr>
+        <tr><th>累计已提现</th><td class="num">¥ ${money(a.withdrawn)}</td><th>提现方式</th><td><span class="tag ${a.wdMethod==='D0'?'o':'info'}">${a.wdMethod}</span> ${a.wdMethod==='D0'?'实时到账':'次日到账'}</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="filters">
+      ${filterRow([
+        {l:'交易类型',t:'sel',o:['收入','支出'],w2:1},
+        {l:'来源油站',t:'sel',o:OPT.stationCo},
+        {l:'交易状态',t:'sel',o:OPT.sfFlowSt,w2:1},
+        {l:'易宝流水号',t:'code',p:'如 YB2026082700931309',max:32,w2:1},
+        {l:'关联订单',t:'code',p:'订单流水号',max:32,w2:1},
+        {l:'发生时间',t:'range',v1:'2026-07-01',v2:'2026-08-27',w2:1}
+      ])}
+    </div>
+    <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>服务费流水明细</h2><span class="spacer"></span><button class="btn sm" data-modal="export">导出</button></div>
+    <div class="tablewrap">
+      <table style="min-width:1280px">
+        <thead><tr><th>发生时间</th><th>来源油站</th><th>交易类型</th><th>发生事件</th><th>变动金额(元)</th><th>上次余额(元)</th><th>当前余额(元)</th><th>易宝流水号</th><th>状态</th><th style="width:150px">操作</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    ${pagerHTML(SERVICE_FEE_FLOWS.length)}
+  </div>
+
+  ${notes(
+    nb('页面职责',
+      '<p>管理平台在易宝的<b>服务费虚拟账户</b>。每笔撮合订单交易成功后，系统自动按费率（1.20%）把服务费划转到本账户。本页可查看服务费收入流水、发起提现、查看余额变动明细。</p>' +
+      '<p style="margin-top:6px">和「服务费订单」页的分工：那一页管的是<b>每一笔服务费的业务状态</b>（支付方、支付状态、开票状态）；本页管的是<b>钱进到平台账户之后的事</b>（余额、提现、账户流水）。一个是业务台账，一个是资金账户。</p>') +
+    nb('资金来源与去向',
+      tbl(['事件','方向','金额','触发时点'],[
+        ['服务费收入','收入 +','核销实额 × 费率','油款交易成功后自动划转'],
+        ['提现','支出 −','平台发起的提现金额','运营专员主动发起'],
+        ['冲正','支出 −','调拨失败的冲回','服务费调拨失败时自动冲回'],
+        ['退款退回','支出 −','订单整单退款时退还的服务费','退款确认执行后，退给当初的支付方']
+      ]) +
+      '<p style="margin-top:8px">恒等式：<b>可提现余额 = 累计服务费收入 − 已提现 − 冲正 − 退款退回</b></p>') +
+    nb('服务费费率',
+      '<p>当前撮合服务费费率为 <b>1.20%</b>，按每笔订单<b>核销实额</b>计算。例如：订单核销金额 ¥795.02，服务费 = 795.02 × 1.20% = ¥9.54。</p>' +
+      '<p style="margin-top:6px">费率可在运营后台「撮合配置」中按油站或全局调整，<b>调整后只对新订单生效</b>——已生成的服务费记录锁定下单时的费率，不会被追溯修改。</p>') +
+    nb('提现规则',
+      '<ul><li><b>无需审核</b>：运营专员直接发起提现，实时到账。平安通道 0 手续费。</li>' +
+      '<li><b>限制</b>：每日最多提现 3 次，单笔最低 100 元，单笔上限 50 万元，日累计上限 200 万元。（<b>具体数值待确认</b>）</li>' +
+      '<li><b>到账</b>：易宝通道实时到账（2 分钟内）。</li>' +
+      '<li><b>提现失败</b>：银行卡信息错误、银行通道异常等导致，资金自动退回账户余额，可重新发起。</li></ul>') +
+    nb('与油站账户的关系',
+      '<p>每笔撮合订单交易成功后，系统执行两次资金调拨：</p>' +
+      flow([{t:'oil',x:'客户账户'},{t:'oil',x:'油站账户（油款）'}]) +
+      flow([{t:'fee',x:'油站账户'},{t:'fee',x:'平台服务费账户'}]) +
+      '<p style="margin-top:8px">两笔<b>有先后顺序</b>：油款到账了才发起服务费。油款没成功，服务费不会发起。</p>' +
+      '<p style="margin-top:6px">服务费调拨失败时，系统自动重试（1 / 5 / 15 / 30 / 60 分钟，最多 5 次），仍失败则记录异常，运营专员可在本页点「重试」按<b>原请求号</b>手动重新发起。</p>' +
+      '<p style="margin-top:6px"><b>油站账户余额不足</b>时不算失败：标记「待补划」暂缓，后续油款收入优先扣除，不进补偿工单。</p>') +
+    nb('待确认：这个页面在油站端，展示的主体是谁',
+      '<p><b>本页当前展示的是「平台服务费账户」</b>（万联易达科技有限公司，YB-P-300001）——这是<b>平台收服务费的那个账户</b>。页面已按要求归到油站端，但主体口径需要确认：</p>' +
+      tbl(['两种可能的口径','这个页面应该展示什么'],[
+        ['<b>就是给运营看的</b>，只是菜单挂在这一组','维持现状：平台服务费账户的余额、收入流水、提现。<b>但油站端登录不该看到平台账户的余额和提现</b>，那是平台自己的钱'],
+        ['<b>是给油站看的</b>，看自己付了多少服务费','要换主体：展示<b>本油站累计已付服务费、本期应付、待补划金额、对应账单与发票</b>，没有「余额」和「提现」这两个概念——服务费是油站付出去的，不是油站的资产']
+      ]) +
+      '<p style="margin-top:10px"><b>倾向第二种</b>：油站端关心的是「我一共被扣了多少服务费、这个月该付多少、票开了没有」，而不是平台账户里有多少钱。如果确认按第二种做，本页要重做成<b>「我的服务费」</b>：余额与提现两个模块去掉，换成应付账单与发票。</p>' +
+      '<p style="margin-top:6px">在确认之前维持原稿内容不动，避免凭猜测改掉一版已经评审过的页面。</p>') +
+    nb('服务费由客户承担时，这个账户怎么记',
+      '<p>合作模式配置成「客户承担」时，服务费是<b>客户账户直接付给平台账户</b>，不经过油站账户。本页的流水里「来源油站」一列会显示对应的客户企业而不是油站公司。</p>' +
+      '<p style="margin-top:6px">两种模式的钱最终都进同一个平台服务费账户，余额和提现口径完全相同；差别只在<b>钱从哪来</b>，以及后续开票时<b>受票方是谁</b>。</p>') +
+    RULE_COMMON
+  )}`;
+};
+
 /* ================= 弹窗 ================= */
 const modal = document.getElementById('modal');
 document.getElementById('modalClose').onclick = ()=>modal.classList.remove('on');
@@ -3591,6 +4030,123 @@ const MODALS = {
       </div>`;
     }
   },
+  withdraw: {
+    title:'发起提现',
+    foot:'<button class="btn" data-mclose="1">取消</button><button class="btn primary" data-confirm="withdrawSubmit">确认提现</button>',
+    bind:'withdraw',
+    body(){
+      const a = STATION_ACCOUNTS.find(v=>v.id===window._wdAcct) || STATION_ACCOUNTS[0];
+      window._wdCtx = {name:a.co+' · '+a.energy, acctId:a.acctId, bank:a.bank, card:a.card, method:a.wdMethod, balance:a.balance};
+      return `
+      <div class="banner warn"><div><b>提现无需审核，确认后立即出款</b>
+        <span class="txt">${a.wdMethod==='D0'?'D0 通道实时到账，2 分钟内到卡':'D1 通道次日到账，工作日次日 16:00 前到卡'}。请核对收款银行卡。</span></div></div>
+      <div><div class="sec-title">账户信息</div>
+        <table class="form-tbl">
+          <tr><th>油站公司</th><td>${a.co}</td><th>能源类型</th><td>${a.energy}</td></tr>
+          <tr><th>易宝账户 ID</th><td class="mono">${a.acctId}</td><th>账户状态</th><td>${pill(a.status)}</td></tr>
+          <tr><th>提现方式</th><td><span class="tag ${a.wdMethod==='D0'?'o':'info'}">${a.wdMethod}</span> ${a.wdMethod==='D0'?'实时到账（2 分钟内）':'次日到账（工作日次日 16:00 前）'}</td>
+              <th>绑定银行卡</th><td>${a.bank}<div class="m2 mono">${a.card}</div></td></tr>
+        </table>
+      </div>
+      <div class="cf-amt">
+        <div><div class="l">可提现余额</div><div class="v num oil">¥ ${money(a.balance)}</div></div>
+        <div><div class="l">冻结金额</div><div class="v num">¥ ${money(a.frozen)}</div></div>
+        <div><div class="l">累计已提现</div><div class="v num">¥ ${money(a.withdrawn)}</div></div>
+      </div>
+      <div class="form">
+        <input id="wd_balance" type="hidden" value="${a.balance}">
+        ${ff({l:'提现金额',t:'amt',id:'wd_amt',v:Math.min(a.balance,50000).toFixed(2),min:100,max:500000,req:1,unit:'元',hint:'单笔 100 元起，上限 50 万元'})}
+        ${ff({l:'提现备注',t:'text',p:'选填，记入提现记录',max:30,span:2})}
+      </div>
+      <div id="wd_check" style="font-size:12px"></div>`;
+    }
+  },
+
+  wdConfig: {
+    title:'油站提现配置',
+    foot:'<button class="btn" data-mclose="1">取消</button><button class="btn primary" data-confirm="wdConfigSave">保存配置</button>',
+    bind:'wdConfig',
+    body(){
+      const a = STATION_ACCOUNTS.find(v=>v.id===window._wdAcct) || STATION_ACCOUNTS[0];
+      window._wdCtx = {name:a.co+' · '+a.energy, acctId:a.acctId, method:a.wdMethod, type:a.wdType, rule:a.wdRule};
+      return `
+      <div><div class="sec-title">账户信息</div>
+        <table class="form-tbl">
+          <tr><th>油站公司</th><td>${a.co}</td><th>能源类型</th><td>${a.energy}</td></tr>
+          <tr><th>易宝账户 ID</th><td class="mono">${a.acctId}</td><th>当前余额</th><td class="num" style="font-weight:600">¥ ${money(a.balance)}</td></tr>
+        </table>
+      </div>
+      <div><div class="sec-title">提现方式</div>
+        <div style="display:flex;gap:18px;margin-top:10px;font-size:12.5px">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="radio" name="wdMethod" value="D0" ${a.wdMethod==='D0'?'checked':''}>
+            <span><b>D0</b> · 实时到账（2 分钟内）</span></label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="radio" name="wdMethod" value="D1" ${a.wdMethod==='D1'?'checked':''}>
+            <span><b>D1</b> · 次日到账（工作日次日 16:00 前）</span></label>
+        </div>
+        <p class="note" style="margin-top:8px">D0 资金实时清算，适合资金周转需求高的油站；D1 次日清算，手续费更低。</p>
+      </div>
+      <div><div class="sec-title">提现类型</div>
+        <div style="display:flex;gap:18px;margin-top:10px;font-size:12.5px">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="radio" name="wdType" value="人工提现" ${a.wdType==='人工提现'?'checked':''}>
+            <span><b>人工提现</b> · 油站主动发起</span></label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="radio" name="wdType" value="定期提现" ${a.wdType==='定期提现'?'checked':''}>
+            <span><b>定期提现</b> · 系统自动发起</span></label>
+        </div>
+      </div>
+      <div id="wdRuleBox" style="display:${a.wdType==='定期提现'?'':'none'}">
+        <div class="sec-title">定期提现规则</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+          <select class="inp" id="wdRuleFreq" style="width:110px">
+            <option ${(a.wdRule||'').includes('每日')?'selected':''}>每日</option>
+            <option ${(a.wdRule||'').includes('每周')?'selected':''}>每周</option>
+          </select>
+          <select class="inp" id="wdRuleDay" style="width:110px;display:${(a.wdRule||'').includes('每周')?'':'none'}">
+            <option>周一</option><option>周二</option><option>周三</option><option>周四</option>
+            <option ${(a.wdRule||'').includes('五')?'selected':''}>周五</option><option>周六</option><option>周日</option>
+          </select>
+          <span style="font-size:12.5px;color:var(--muted)">时间</span>
+          <input class="inp" type="time" id="wdRuleTime" style="width:130px" value="${((a.wdRule||'').match(/\d{2}:\d{2}/)||['10:00'])[0]}">
+        </div>
+        <p class="note" style="margin-top:8px">系统将按规则在指定时间自动发起提现，<b>提现全部可提现余额</b>至绑定银行卡。要提示油站预留服务费——余额提光了，下一笔服务费就划不动。</p>
+      </div>`;
+    }
+  },
+
+  sfWithdraw: {
+    title:'服务费提现',
+    foot:'<button class="btn" data-mclose="1">取消</button><button class="btn primary" data-confirm="withdrawSubmit">确认提现</button>',
+    bind:'withdraw',
+    body(){
+      const a = SERVICE_FEE_ACCOUNT;
+      window._wdCtx = {name:a.co+'（平台服务费账户）', acctId:a.acctId, bank:a.bank, card:a.card, method:a.wdMethod, balance:a.balance};
+      return `
+      <div class="banner warn"><div><b>提现无需审核，确认后立即出款</b>
+        <span class="txt">D0 通道实时到账，2 分钟内到卡。请核对收款银行卡。</span></div></div>
+      <div><div class="sec-title">账户信息</div>
+        <table class="form-tbl">
+          <tr><th>账户主体</th><td>${a.co}</td><th>易宝账户 ID</th><td class="mono">${a.acctId}</td></tr>
+          <tr><th>提现方式</th><td><span class="tag ${a.wdMethod==='D0'?'o':'info'}">${a.wdMethod}</span> ${a.wdMethod==='D0'?'实时到账（2 分钟内）':'次日到账'}</td>
+              <th>绑定银行卡</th><td>${a.bank}<div class="m2 mono">${a.card}</div></td></tr>
+        </table>
+      </div>
+      <div class="cf-amt">
+        <div><div class="l">可提现余额</div><div class="v num fee">¥ ${money(a.balance)}</div></div>
+        <div><div class="l">累计服务费收入</div><div class="v num">¥ ${money(a.income)}</div></div>
+        <div><div class="l">累计已提现</div><div class="v num">¥ ${money(a.withdrawn)}</div></div>
+      </div>
+      <div class="form">
+        <input id="wd_balance" type="hidden" value="${a.balance}">
+        ${ff({l:'提现金额',t:'amt',id:'wd_amt',v:Math.min(a.balance,50000).toFixed(2),min:100,max:500000,req:1,unit:'元',hint:'单笔 100 元起，上限 50 万元'})}
+        ${ff({l:'提现备注',t:'text',p:'选填，记入提现记录',max:30,span:2})}
+      </div>
+      <div id="wd_check" style="font-size:12px"></div>`;
+    }
+  },
+
   backfill: {
     title:'订单补录',
     foot:'<button class="btn" data-mclose="1">取消</button><button class="btn">保存草稿</button><button class="btn primary" data-confirm="backfillSubmit">提交补录</button>',
@@ -3713,6 +4269,34 @@ const MODALS = {
 
 /* 弹窗内的联动计算与校验 */
 const BINDS = {
+  withdraw(){
+    const $=id=>document.getElementById(id);
+    const bal=$('wd_balance'), amt=$('wd_amt'), chk=$('wd_check');
+    if(!amt) return;
+    const MAX = parseFloat(bal.value)||0;
+    const render=()=>{
+      const v = parseFloat(amt.value)||0;
+      let msg='';
+      if(v<=0)            msg='<span style="color:var(--bad)">请输入提现金额</span>';
+      else if(v<100)      msg='<span style="color:var(--bad)">最低提现金额 100 元</span>';
+      else if(v>500000)   msg='<span style="color:var(--bad)">单笔提现上限 500,000 元</span>';
+      else if(v>MAX)      msg='<span style="color:var(--bad)">提现金额不可超过可提现余额 '+money(MAX)+' 元</span>';
+      else                msg='<span style="color:var(--ok)">校验通过：提现 '+money(v)+' 元，预计 2 分钟内到账</span>';
+      chk.innerHTML = msg;
+      window._wdAmt = v;
+    };
+    amt.addEventListener('input',render);
+    render();
+  },
+  wdConfig(){
+    const box=document.getElementById('wdRuleBox'), day=document.getElementById('wdRuleDay'),
+          freq=document.getElementById('wdRuleFreq');
+    if(!box) return;
+    document.querySelectorAll('input[name="wdType"]').forEach(r=>{
+      r.addEventListener('change',()=>{ box.style.display = r.value==='定期提现' && r.checked ? '' : 'none'; });
+    });
+    if(freq) freq.addEventListener('change',()=>{ day.style.display = freq.value==='每周' ? '' : 'none'; });
+  },
   backfill(){
     const $=id=>document.getElementById(id);
     const price=$('bf_price'), qty=$('bf_qty'), amt=$('bf_amt'), fee=$('bf_fee');
@@ -4125,6 +4709,89 @@ const CONFIRMS = {
             '已红冲的服务费票不打包，对照表里单独列出。',
             '打包在后台进行，完成后在「下载中心」取；每次下载记录操作人与时间。'],
       ok:`打包下载 ${list.length} 期`, okClass:'primary'
+    };
+  },
+
+  /* --- 账户启停 --- */
+  acctToggle: key => {
+    const a = STATION_ACCOUNTS.find(x=>x.id===key) || STATION_ACCOUNTS[0];
+    const off = a.status==='正常';
+    return {
+      title: off ? '停用油站账户' : '启用油站账户', tone: off ? 'bad' : 'warn',
+      lead: off
+        ? '停用后该账户<b>不再接收油款收入</b>，新订单的资金调拨会被拦截。已有余额<b>仍可提现</b>，提完为止。'
+        : '启用后恢复收款能力。<b>停用期间错过的油款需要人工补调拨</b>，不会自动补回。',
+      amounts:[{l:'当前可提现余额',v:money(a.balance),c:'oil'},{l:'累计收入',v:money(a.income),c:''}],
+      kv:[['油站公司',a.co],['能源类型',a.energy],['易宝账户 ID',`<span class="mono">${a.acctId}</span>`],
+          ['当前状态',pill(a.status)],['绑定银行卡',`${a.bank}<div class="m2 mono">${a.card}</div>`]],
+      fields:[{l: off ? '停用原因' : '启用原因', t:'sel',
+               o: off ? ['油站终止合作','油站违规暂停','油站主动要求暂停','结算争议处理中','其他']
+                      : ['合作恢复','违规整改完成','争议已解决','其他'], req:1},
+              {l:'原因说明',t:'ta',p:'必填，写清楚具体情况',max:200,req:1,span:2}],
+      list: off
+        ? ['<b>只停这一个能源类型的账户。</b>同一油站公司的柴油账户和天然气账户是两个独立账户，停一个不影响另一个。',
+           '停用期间该油站的新订单在<b>资金调拨环节</b>被拦截，订单本身仍会生成——要彻底不接单，需要另外在油站配置里停掉。',
+           '已经在途的调拨不受影响，会正常完成。',
+           '操作留痕：记录操作人、时间和原因，账户明细里可查。']
+        : ['启用只恢复<b>收款能力</b>，不会自动补回停用期间错过的油款。',
+           '需要人工核对停用期间该油站的订单，逐笔补调拨。',
+           '操作留痕：记录操作人、时间和原因。'],
+      warn: off ? '停用会拦截该账户后续全部油款入账。请确认是这一个账户（注意能源类型）。' : null,
+      ok: off ? '确认停用' : '确认启用', okClass: off ? 'danger' : 'primary'
+    };
+  },
+
+  /* --- 提现提交 --- */
+  withdrawSubmit: () => {
+    const c = window._wdCtx || {};
+    const v = window._wdAmt || 0;
+    return {
+      title:'确认提现', tone:'bad',
+      lead:`确认后<b>立即出款</b>，无需审核、<b>无法撤回</b>。${c.method==='D0'?'D0 通道 2 分钟内到卡。':'D1 通道工作日次日 16:00 前到卡。'}请核对收款银行卡和金额。`,
+      amounts:[{l:'提现金额',v:money(v),c:'oil'},{l:'可提现余额',v:money(c.balance||0),c:''},{l:'提现后余额',v:money(Math.max(0,(c.balance||0)-v)),c:''}],
+      kv:[['提现账户',c.name||'—'],['易宝账户 ID',`<span class="mono">${c.acctId||'—'}</span>`],
+          ['收款银行',c.bank||'—'],['收款卡号',`<span class="mono">${c.card||'—'}</span>`],
+          ['到账方式',`<span class="tag ${c.method==='D0'?'o':'info'}">${c.method||'D0'}</span> ${c.method==='D0'?'实时到账（2 分钟内）':'次日到账'}`]],
+      list:['<b>提现无需审核</b>——这是刻意的：钱本来就是账户主体自己的，平台不做资金审批。所以这一步确认是唯一的把关。',
+            '限制：每日最多 3 次，单笔 100 元起、上限 50 万元，日累计上限 200 万元。（<b>具体数值待确认</b>）',
+            '提现失败（卡信息错误、通道异常）时资金<b>自动退回账户余额</b>，可重新发起，不会丢钱。',
+            '<b>预留服务费</b>：余额提光了，下一笔服务费就划不动，会进待补划队列。'],
+      warn:'银行卡号打错，钱会到别人账上。出款前请再核对一遍卡号后四位。',
+      ok:'确认提现，立即出款', okClass:'danger'
+    };
+  },
+
+  /* --- 提现配置保存 --- */
+  wdConfigSave: () => {
+    const c = window._wdCtx || {};
+    return {
+      title:'保存提现配置', tone:'warn',
+      lead:'配置<b>立即生效</b>，影响该账户之后的每一次提现。改成「定期提现」后，系统会按规则<b>自动把全部可提现余额提走</b>。',
+      kv:[['配置账户',c.name||'—'],['易宝账户 ID',`<span class="mono">${c.acctId||'—'}</span>`],
+          ['原提现方式',c.method||'—'],['原提现类型',c.type||'—'],['原定期规则',c.rule||'—']],
+      list:['<b>定期提现会提走全部余额</b>，不留缓冲。要提示油站预留服务费——余额提光了，下一笔服务费划不动，会进待补划队列。',
+            'D0 实时到账、D1 次日到账手续费更低；改方式不影响已发起的提现。',
+            '配置只对这一个账户生效。同一油站公司的柴油和天然气账户要分别配置。',
+            '操作留痕：记录操作人、时间和改动前后的值。'],
+      ok:'保存配置', okClass:'primary'
+    };
+  },
+
+  /* --- 服务费划转重试 --- */
+  sfRetry: key => {
+    const f = SERVICE_FEE_FLOWS.find(x=>x.id===key) || SERVICE_FEE_FLOWS[0];
+    return {
+      title:'重试服务费划转', tone:'warn',
+      lead:'将<b>按原请求号</b>重新发起这笔服务费划转。系统先查原请求号的真实状态：已成功则只回写结果，确实失败才重发。',
+      amounts:[{l:'服务费金额',v:money(Math.abs(f.amt)),c:'fee'},{l:'当前状态',v:f.st,c:'bad'}],
+      kv:[['流水号',`<span class="mono">${f.id}</span>`],['请求流水号',`<span class="mono">${f.req}</span>`],
+          ['来源油站',f.co],['关联订单',`<span class="mono">${f.order}</span>`],
+          ['收款方','万联易达科技有限公司（平台服务费账户）']],
+      list:['自动重试节奏 1 / 5 / 15 / 30 / 60 分钟，最多 5 次。<b>正在自动重试中不要手动点</b>，容易撞车。',
+            '若失败原因是<b>油站账户余额不足</b>，重试大概率仍失败；正确做法是等油款收入到账后由系统自动补划。',
+            '重试成功后本页流水状态更新，并同步「服务费订单」页该笔的支付状态。'],
+      warn:'换新请求号会导致<b>重复出款</b>。这是资金链路上最不能出错的一条规则。',
+      ok:'按原请求号重试', okClass:'primary'
     };
   },
 
@@ -4677,6 +5344,117 @@ function openSimple(kind,key){
         <p class="note" style="margin-top:6px">「重试划转」只在<b>支付失败</b>时可用，按<b>原请求号</b>重发——换新号会被当成一笔全新划转再扣一次钱。</p>
       </div></div>`;
     },
+    stationAcct:()=>{
+      const a = STATION_ACCOUNTS.find(v=>v.id===key);
+      const flows = STATION_FLOWS.filter(f=>f.acctId===a.acctId);
+      document.getElementById('drawerTitle').textContent='油站账户明细';
+      return `
+      <div class="sumhead"><div class="no mono">${a.acctId}</div>
+        <div class="sec">${a.co} · ${a.energy} · 开户时间 ${a.t}</div>
+        <div class="pills">${pill(a.status)}
+          ${a.energy==='天然气'?'<span class="tag info">天然气</span>':'<span class="tag o">柴油</span>'}
+          <span class="tag ${a.wdMethod==='D0'?'o':'info'}">${a.wdMethod}</span></div>
+        <div class="money">
+          <div class="oilv"><div class="l">可提现余额</div><div class="v num">¥ ${money(a.balance)}</div></div>
+          <div><div class="l">累计收入</div><div class="v num" style="color:var(--ok)">¥ ${money(a.income)}</div></div>
+          <div class="feev"><div class="l">累计已提现</div><div class="v num">¥ ${money(a.withdrawn)}</div></div>
+        </div>
+      </div>
+
+      <div class="card"><div class="card-b" style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+        <div>
+          <div class="sec-title">账户信息</div>
+          <dl class="kv">
+            <dt>油站公司</dt><dd>${a.co}</dd>
+            <dt>能源类型</dt><dd>${a.energy}<div class="m2">按能源类型分设独立账户，互不混账</div></dd>
+            <dt>易宝账户 ID</dt><dd class="mono">${a.acctId}</dd>
+            <dt>账户状态</dt><dd>${pill(a.status)}${a.status==='停用'?'<div class="m2">不可收款，已有余额仍可提现</div>':''}</dd>
+            <dt>开户时间</dt><dd class="mono">${a.t}</dd>
+            <dt>绑定银行卡</dt><dd>${a.bank}<div class="m2 mono">${a.card}</div></dd>
+          </dl>
+        </div>
+        <div>
+          <div class="sec-title">余额构成与提现配置</div>
+          <dl class="kv">
+            <dt>累计收入</dt><dd class="num" style="color:var(--ok)">${money(a.income)} 元</dd>
+            <dt>已提现</dt><dd class="num">${money(a.withdrawn)} 元</dd>
+            <dt>冻结金额</dt><dd class="num">${money(a.frozen)} 元</dd>
+            <dt>可提现余额</dt><dd><b class="num" style="color:var(--brand-ink)">${money(a.balance)} 元</b><div class="m2">= 累计收入 − 已提现 − 冻结</div></dd>
+            <dt>提现方式</dt><dd><span class="tag ${a.wdMethod==='D0'?'o':'info'}">${a.wdMethod}</span><div class="m2">${a.wdMethod==='D0'?'实时到账（2 分钟内）':'次日到账（工作日次日 16:00 前）'}</div></dd>
+            <dt>提现类型</dt><dd>${a.wdType}</dd>
+            <dt>定期规则</dt><dd>${a.wdRule||'—'}<div class="m2">${a.wdType==='定期提现'?'系统按规则自动发起提现，无需人工操作':'仅支持油站主动发起提现'}</div></dd>
+            <dt>最近提现</dt><dd class="mono">${a.lastWd}</dd>
+          </dl>
+        </div>
+      </div></div>
+
+      <div class="card">
+        <div class="card-h"><h2>资金流水明细</h2><span class="spacer"></span>
+          <span style="color:var(--muted);font-size:11.5px">本账户资金变动记录，与「油站资金流水」页数据一致</span></div>
+        <div class="tablewrap">
+          <table style="min-width:960px">
+            <thead><tr><th>时间</th><th>事件</th><th>方向</th><th>金额</th><th>变动前余额</th><th>变动后余额</th><th>关联订单</th><th>状态</th></tr></thead>
+            <tbody>${flows.length?flows.map(f=>`<tr>
+              <td class="mono">${f.t}</td>
+              <td>${f.ev}</td>
+              <td>${f.type==='收入'?'<span class="pill ok">收入</span>':'<span class="pill info">支出</span>'}</td>
+              <td class="num" style="font-weight:600;color:${f.amt<0?'var(--bad)':'var(--ok)'}">${f.amt>0?'+':''}${money(f.amt)}</td>
+              <td class="num">${money(f.before)}</td>
+              <td class="num">${money(f.after)}</td>
+              <td class="mono">${f.order}</td>
+              <td>${pill(f.st)}</td>
+            </tr>`).join(''):'<tr><td colspan="8" class="empty">暂无流水记录</td></tr>'}</tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card"><div class="card-b">
+        <div class="sec-title">可做的操作</div>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="btn ${a.status==='正常'&&a.balance>0?'primary':'off'}" data-modal="withdraw" data-wd-acct="${a.id}">提现</button>
+          <button class="btn" data-modal="wdConfig" data-wd-acct="${a.id}">提现配置</button>
+          <button class="btn ${a.status==='正常'?'danger':'primary'}" data-confirm="acctToggle" data-key="${a.id}">${a.status==='正常'?'停用账户':'启用账户'}</button>
+        </div>
+        <p class="note" style="margin-top:10px">恒等式 <b>可提现余额 = 累计收入 − 已提现 − 冻结金额</b> 每日校验一次，不成立会告警。提现前提示油站<b>预留服务费</b>——余额提光了，下一笔服务费就划不动，会进待补划队列。</p>
+      </div></div>`;
+    },
+
+    sfFlow:()=>{
+      const f = SERVICE_FEE_FLOWS.find(x=>x.id===key);
+      const failed = f.st==='交易失败';
+      document.getElementById('drawerTitle').textContent='服务费流水 · 详情';
+      return `
+      <div class="sumhead"><div class="no mono">${f.id}</div>
+        <div class="sec">${f.ev} · ${f.t}${f.order!=='—'?' · 关联订单 '+f.order:''}</div>
+        <div class="pills">${pill(f.st)}
+          ${f.type==='收入'?'<span class="tag f">收入</span>':'<span class="tag">支出</span>'}</div>
+        <div class="money">
+          <div class="feev"><div class="l">变动金额</div><div class="v num">${f.amt>0?'+':''}${money(f.amt)}</div></div>
+          <div><div class="l">上次余额</div><div class="v num">${money(f.before)}</div></div>
+          <div><div class="l">当前余额</div><div class="v num">${money(f.after)}</div></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-b">
+        <div class="sec-title">交易明细</div>
+        <table class="form-tbl">
+          <tr><th>来源油站</th><td>${f.co}</td><th>发生时间</th><td class="mono">${f.t}</td></tr>
+          <tr><th>交易类型</th><td>${f.type==='收入'?'<span class="pill ok">收入</span>':'<span class="pill info">支出</span>'}</td>
+              <th>交易状态</th><td>${pill(f.st)}</td></tr>
+          <tr><th>变动金额</th><td class="num" style="font-weight:600;color:${f.amt<0?'var(--bad)':'var(--ok)'}">${f.amt>0?'+':''}${money(f.amt)} 元</td>
+              <th>发生事件</th><td>${f.ev}</td></tr>
+          <tr><th>上次余额</th><td class="num">${money(f.before)} 元</td><th>当前余额</th><td class="num">${money(f.after)} 元</td></tr>
+          <tr><th>易宝流水号</th><td class="mono">${f.ser}</td><th>请求流水号</th><td class="mono">${f.req}</td></tr>
+          <tr><th>关联订单</th><td class="mono">${f.order}</td><th>账户</th><td class="mono">${SERVICE_FEE_ACCOUNT.acctId}</td></tr>
+        </table>
+        <p class="note" style="margin-top:10px">连续性约束：同一账户按时间排序，<b>上次余额 + 变动金额 = 当前余额</b> 必须恒成立。流水只增不改不删，冲正与退回通过新增反向记录实现。</p>
+      </div></div>
+      ${failed?`<div class="card"><div class="card-b">
+        <div class="sec-title">失败处理</div>
+        <p class="note" style="margin-top:10px">这一笔<b>没有产生真实资金变动</b>，余额未变。系统按 1 / 5 / 15 / 30 / 60 分钟自动重试，最多 5 次；仍失败则记录异常，可在此按<b>原请求号</b>手动重试。<b>绝不换新请求号</b>——换号会被当成一笔全新划转再扣一次钱。</p>
+        <div style="margin-top:10px"><button class="btn primary" data-confirm="sfRetry" data-key="${f.id}">按原请求号重试</button></div>
+      </div></div>`:''}`;
+    },
+
     refund:()=>{
       const r = REFUNDS.find(x=>x.id===key);
       const o = ORDERS.find(x=>x.no===r.order) || {};
