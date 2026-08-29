@@ -545,7 +545,7 @@ const CREFUNDS = [
    reason:'重复计费，整单申请退款', s1:'待审核', s2:'待审核', st:'待油站审核'}
 ];
 
-/* ================= 服务费明细：与订单一一对应，独立记录支付方 / 支付状态 / 开票状态 ================= */
+/* ================= 服务费订单：与订单一一对应，独立记录支付方 / 支付状态 / 开票状态 ================= */
 const FEES = [
   {no:'FW20260827000001', order:'CHY20260827093412006', date:'2026-08-27', clock:'09:36:09',
    payer:'油站', payerName:'中石化辽宁石油分公司', cust:'万联易达物流科技有限公司', station:'沈阳浑南加油站',
@@ -873,11 +873,11 @@ const PAGES = [
   {id:'flow',    name:'资金交易流水明细',  sub:'账户类型 + 账户名称 · 请求内容可查', grp:'订单中心 · 撮合'},
   {id:'refund',  name:'订单退款申请与审核', sub:'油站 / 运营平台发起 → 运营确认 → 执行退款', grp:'订单中心 · 撮合'},
   {id:'voucher', name:'订单支付凭证管理',  sub:'易宝电子回单 · 凭证影像 · 调拨状态', grp:'订单中心 · 撮合'},
-  {id:'fee',     name:'服务费明细',        sub:'支付方 / 支付状态 / 开票状态 独立记录', grp:'订单中心 · 撮合'},
+  {id:'fee',     name:'服务费订单',        sub:'支付方 / 支付状态 / 开票状态 独立记录 · 可开票', grp:'订单中心 · 撮合'},
 
   {id:'invApply', name:'开票申请记录', sub:'申请金额 / 已开票金额 / 未开票金额', grp:'发票管理 · 撮合'},
-  {id:'invRecord',name:'发票明细',     sub:'发票与申请记录关联', grp:'发票管理 · 撮合'},
-  {id:'invFee',   name:'服务费发票',   sub:'账单 → 油站确认 → 开票上传', grp:'发票管理 · 撮合'},
+  {id:'invRecord',name:'能源发票',     sub:'油品票 / 天然气票 · 与申请记录关联 · 批量下载', grp:'发票管理 · 撮合'},
+  {id:'invFee',   name:'服务费发票',   sub:'账单 → 支付方确认 → 开票上传 · 批量下载', grp:'发票管理 · 撮合'},
 
   {id:'cOrders',  name:'我的加油订单',     sub:'列表 / 详情 / 进度跟踪 · 不含服务费', grp:'客户企业端 · 撮合'},
   {id:'cQuota',   name:'我的余额与额度',     sub:'充值 / 冻结 / 已消费 / 可用余额', grp:'客户企业端 · 撮合'},
@@ -1364,10 +1364,8 @@ VIEWS.orders = () => {
   </div>
 
   <div class="kpis">
-    <div class="kpi"><span class="stripe"></span><div class="lab">订单笔数</div><div class="val num">${ORDERS.length}</div></div>
-    <div class="kpi oil"><span class="stripe"></span><div class="lab">加油金额</div><div class="val num">${money(amt)}</div></div>
-    <div class="kpi"><span class="stripe"></span><div class="lab">已完结</div><div class="val num">${ORDERS.filter(o=>o.st==='已核销'&&o.pay==='已支付').length}</div></div>
-    <div class="kpi warn"><span class="stripe"></span><div class="lab">待核销</div><div class="val num">${ORDERS.filter(o=>o.st==='待核销').length}</div></div>
+    <div class="kpi"><span class="stripe"></span><div class="lab">合计订单数量</div><div class="val num">${list.length}</div></div>
+    <div class="kpi oil"><span class="stripe"></span><div class="lab">合计金额</div><div class="val num">${money(list.reduce((t,o)=>t+(o.real||o.est),0))}</div></div>
   </div>
 
   <div class="card">
@@ -1408,6 +1406,15 @@ VIEWS.orders = () => {
       ]) +
       '<p style="margin-top:8px">这一版<b>去掉了原来的「订单状态」</b>。它是由业务与资金两侧推导出来的第三个状态，既不能直接编辑，又和另外两个字段重复表达同一件事，看的人容易搞不清该信哪个。现在只留两个各自独立、含义单一的状态。</p>' +
       '<p style="margin-top:6px">常见组合：待核销 + 待支付（正常进行中）；已核销 + 支付中（油加完了，钱在途）；已核销 + 支付失败（业务成立、资金异常，走重试或人工补偿，<b>订单状态不回退</b>）。</p>') +
+    nb('顶部统计只留两个：合计订单数量、合计金额',
+      '<p>原来顶上放了四张卡：订单笔数、加油金额、已完结、待核销。这一版<b>砍到两张</b>——合计订单数量、合计金额。</p>' +
+      tbl(['去掉的卡','为什么去掉'],[
+        ['已完结','它是「已核销 + 已支付」两个状态与出来的口径，卡片上写不下这个定义，看的人各自理解；而且下面的状态筛选条已经有「已完结」这个筛选项并带了数字，同一个数出现两次'],
+        ['待核销','同上，筛选条上就有「待核销 3」。顶部再放一遍，两处数字万一因为筛选条件不同而不一致，反而要花时间去查是不是出了 bug']
+      ]) +
+      '<p style="margin-top:10px">留下的这两个是<b>不可替代的</b>：筛选条上的每个筛选项只告诉你「有几笔」，没有金额；而运营查完一批单之后最常问的一句就是「这批一共多少钱」。合计金额只有顶部这张卡回答得了。</p>' +
+      '<p style="margin-top:6px"><b>两张卡都跟着当前筛选和状态筛选联动</b>，不是全量的固定数。筛出「支付失败」的单，卡上显示的就是这些失败单的笔数和金额——统计要和眼前看到的列表一致，否则人会拿顶部的数去对下面的表，对不上。</p>' +
+      '<p style="margin-top:6px">状态分布仍然看筛选条那一排数字：那里本来就是按状态分好的，一眼扫过去比四张卡更完整，也不用担心两处口径打架。</p>') +
     nb('列表怎么读：一列一个字段',
       '<p>列表<b>每一列只放一个字段</b>，不再把手机号、车牌、油卡、运单号挤在一格里，也不在数字下面加解释性小字。这样做有两个好处：导出时列与页面一一对应、肉眼扫读时不用在一格里找信息。</p>' +
       tbl(['字段组','拆出来的列'],[
@@ -1422,7 +1429,7 @@ VIEWS.orders = () => {
       '<p style="margin-top:8px"><b>客户类型</b>是新增字段，取值「网货客户」或「签约客户」，用于区分结算与风控口径，也是导出后做分类统计的主要维度。</p>' +
       '<p style="margin-top:6px"><b>加油金额</b>就是客户实际支付给油站的油款：核销前是下单金额，核销后是实际金额。列表不再展示「油站实收」——它等于加油金额减服务费，是算出来的，单列容易被误当成第三笔钱。</p>' +
       '<p style="margin-top:6px"><b>客户列拆成「总公司」与「分公司」。</b>总公司是签约与开票主体，分公司是实际用油的下属单位；两者都要能单独筛选，因为额度和账期按总公司走，而用量统计按分公司看。分公司为空时显示「—」，表示总公司直接下单。</p>' +
-      '<p style="margin-top:6px"><b>本页不再有服务费列，也不再有对账状态列。</b>服务费已拆到「服务费明细」独立菜单——它有自己的支付方、支付状态和开票状态，和油款不是一回事，混在同一行会让人分不清「这个支付状态说的是哪笔钱」。对账状态则是从支付状态与账单归集推导出来的，不能独立编辑，去掉后减少一个会自相矛盾的字段。<b>本页的「支付状态」「开票状态」从此只针对油款。</b></p>') +
+      '<p style="margin-top:6px"><b>本页不再有服务费列，也不再有对账状态列。</b>服务费已拆到「服务费订单」独立菜单——它有自己的支付方、支付状态和开票状态，和油款不是一回事，混在同一行会让人分不清「这个支付状态说的是哪笔钱」。对账状态则是从支付状态与账单归集推导出来的，不能独立编辑，去掉后减少一个会自相矛盾的字段。<b>本页的「支付状态」「开票状态」从此只针对油款。</b></p>') +
     nb('列设置：自己决定显示哪些字段、按什么顺序排',
       '<p>字段拆细之后列会很多，但不同岗位关心的列不一样：财务盯金额和开票，客服盯司机和车牌，运营盯状态。所以列表提供<b>列设置</b>——点列表右上角的「列设置」按钮打开。</p>' +
       flow([{x:'点「列设置」'},{x:'勾选要显示的字段'},{x:'用上下箭头调顺序'},{x:'列表实时生效'}]) +
@@ -1464,9 +1471,18 @@ VIEWS.orders = () => {
       branch([
         ['什么时候用','线下已经加过油、但没进系统的交易。比如断网、扫码失败、三方渠道回传丢失。'],
         ['和正常订单的区别','<b>不冻结额度</b>——油已经加完了，没有需要预占的环节；提交后订单状态直接是「已核销」，付款按正常两笔调拨发起。'],
-        ['必填','油机小票号、补录原因、至少一张凭证照片。'],
+        ['必填','<b>只有补录原因</b>。油机小票号和凭证影像都是选填。'],
         ['历史补录','超过 24 小时的需要运营主管审批后才生效。']
       ]) +
+      '<p style="margin-top:10px"><b>为什么把油机小票号和凭证影像改成非必填。</b>它们原本是防虚单的，出发点没错，但设成必填之后实际发生的是这样：</p>' +
+      tbl(['真实场景','必填时会怎样'],[
+        ['断网、油站系统故障，小票打不出来','交易真实发生了，但补录不进去——订单永远缺失，客户的额度和账都对不上'],
+        ['三方渠道回传丢失，平台侧根本拿不到小票','同上，而且这类补录本来就是最常见的'],
+        ['小票已丢失，只有油站台账可查','要么放弃补录，要么<b>随便填一个号、传一张无关的图</b>把校验糊弄过去']
+      ]) +
+      '<p style="margin-top:10px">最后一种最糟：必填非但没挡住虚单，反而<b>制造了假凭证</b>——系统里每条补录都"有凭证"，凭证的可信度反而归零，事后审计连该查哪几条都分不出来。</p>' +
+      '<p style="margin-top:6px">改成选填之后，<b>有凭证的是真有凭证</b>，没有的如实空着。风控从「卡住入口」改为「事后可查」：补录本来就全量记录操作人、时间、原因，无凭证的补录在列表和审计报表里单独标记出来，按笔数和金额做监控——同一个操作人或同一个油站的无凭证补录异常多，那才是真正该查的信号。</p>' +
+      '<p style="margin-top:6px"><b>补录原因保持必填</b>：它是唯一一个只能由人提供、且系统无法替代的信息，也是事后追溯的起点。</p>' +
       '<p style="margin-top:10px">这一版把补录表单精简了，去掉的都是<b>填了也没用、或者本来就不该手填</b>的字段：</p>' +
       tbl(['去掉的字段','为什么去掉'],[
         ['补录类型','取值只是「当日 / 历史」，而这个由「加油时间」和当前时间一比就知道，不需要人再选一次——两处还可能填得不一致'],
@@ -1663,8 +1679,8 @@ VIEWS.group = () => {
         ['剩余可用','扣完之后这张运单还剩多少；为 0 时标注「额度用尽」'],
         ['状态','跟随总单的核销状态，子单不能单独核销']
       ]) +
-      '<p style="margin-top:10px">为什么去掉服务费：<b>服务费按总单算一次，本来就不存在「某张运单的服务费」</b>。原来那一列是拿子单金额 × 费率现算出来给人看的，是个展示值，不是账。摊到运单上会让人以为运单头上有一笔独立的服务费开销，也会有人拿它去和「服务费明细」里的金额对，对不上——因为几个子单摊出来的数四舍五入之后，加起来未必等于总单那一笔。</p>' +
-      '<p style="margin-top:6px">服务费的完整记录（支付方、支付状态、开票状态、所属账单）在<b>「服务费明细」</b>菜单，一笔订单一条，不拆到运单。</p>' +
+      '<p style="margin-top:10px">为什么去掉服务费：<b>服务费按总单算一次，本来就不存在「某张运单的服务费」</b>。原来那一列是拿子单金额 × 费率现算出来给人看的，是个展示值，不是账。摊到运单上会让人以为运单头上有一笔独立的服务费开销，也会有人拿它去和「服务费订单」里的金额对，对不上——因为几个子单摊出来的数四舍五入之后，加起来未必等于总单那一笔。</p>' +
+      '<p style="margin-top:6px">服务费的完整记录（支付方、支付状态、开票状态、所属账单）在<b>「服务费订单」</b>菜单，一笔订单一条，不拆到运单。</p>' +
       '<p style="margin-top:6px">同理，子单行也不显示单价和油品——那些字段整个总单都一样，重复排在每一行上只是噪音，看总单那一行就够了。</p>') +
     nb('每个操作：什么时候能点、点了会怎样',
       tbl(['操作','什么时候能点','点了会怎样','之后系统做什么'],[
@@ -2027,7 +2043,7 @@ VIEWS.refund = () => {
         ['退款金额构成','油款 / 服务费 / 额度三行，各自的方向、记录位置与状态','说清这一单一共动了几笔钱、分别记在哪个页面'],
         ['确认后执行动作','完整执行链路图与失败处理说明','研发按这个实现，测试按这个验收']
       ]) +
-      '<p style="margin-top:10px">金额区块里<b>服务费那一行标注了「记录在服务费明细」</b>：本页只做展示，那一笔的支付状态以「服务费明细」页为准。这和订单页的口径一致——服务费的账在服务费自己的菜单里。</p>') +
+      '<p style="margin-top:10px">金额区块里<b>服务费那一行标注了「记录在服务费订单」</b>：本页只做展示，那一笔的支付状态以「服务费订单」页为准。这和订单页的口径一致——服务费的账在服务费自己的菜单里。</p>') +
     nb('确认之后，系统按顺序做这些事',
       '<ol style="padding-left:18px;display:flex;flex-direction:column;gap:4px">' +
       '<li>发起两笔反向转账：油款从油站公司退回客户；服务费从平台<b>退回给当初的支付方</b>（油站承担的退给油站公司，客户承担的退给客户）。两笔独立，任何一笔失败都会按原请求号自动重试。</li>' +
@@ -2059,7 +2075,7 @@ VIEWS.refund = () => {
     nb('退款执行链路：每一步失败了怎么办',
       tbl(['步骤','动作','失败怎么办'],[
         ['1 油款退回','油站公司账户 → 客户账户','按原请求号自动重试 1/5/15/30/60 分钟，最多 5 次'],
-        ['2 服务费退回','平台账户 → <b>当初的支付方账户</b>（油站或客户）','与油款各自独立，一笔失败不影响另一笔；状态以「服务费明细」为准'],
+        ['2 服务费退回','平台账户 → <b>当初的支付方账户</b>（油站或客户）','与油款各自独立，一笔失败不影响另一笔；状态以「服务费订单」为准'],
         ['3 额度回补','按各运单原样退回','写回补流水，司机与企业两个维度各一条'],
         ['4 发票红冲','触发红冲流程','油站不配合时平台强制红冲'],
         ['5 服务费账单','本期已出账的，退回金额记入<b>下期冲减项</b>','不修改已出账的账单']
@@ -2183,7 +2199,7 @@ VIEWS.voucher = () => {
   )}`;
 };
 
-/* ---- 服务费明细 ---- */
+/* ---- 服务费订单 ---- */
 const FEE_COLS = regCols('fee', [
   {k:'no',       t:'服务费流水号', w:'190px', cls:'mono', td:f=>f.no},
   {k:'order',    t:'关联订单号',   w:'200px', cls:'mono', td:f=>f.order},
@@ -2202,8 +2218,11 @@ const FEE_COLS = regCols('fee', [
   {k:'pay',      t:'支付状态',     w:'96px',  td:f=>pill(f.pay)},
   {k:'inv',      t:'开票状态',     w:'96px',  td:f=>pill(f.inv)},
   {k:'bill',     t:'所属账单',     w:'150px', cls:'mono', td:f=>f.bill},
-  {k:'ops',      t:'操作',         w:'150px', cls:'acts',
-                 td:f=>`<button data-drawer="fee" data-key="${f.no}">详情</button><button class="${f.pay==='支付失败'?'':'off'}" data-confirm="feeRetry" data-key="${f.no}">重试</button>`}
+  {k:'ops',      t:'操作',         w:'250px', cls:'acts',
+                 td:f=>`<button data-drawer="fee" data-key="${f.no}">详情</button>
+                        <button class="${f.pay==='已支付'&&f.inv==='未开票'?'':'off'}" data-confirm="feeInvoiceApply" data-key="${f.no}">申请开票</button>
+                        <button class="${f.inv==='已开票'?'':'off'}" data-confirm="feeBatchDownload" data-key="${f.no}">下载发票</button>
+                        <button class="${f.pay==='支付失败'?'':'off'}" data-confirm="feeRetry" data-key="${f.no}">重试</button>`}
 ]);
 
 let feeFilter = '全部';
@@ -2251,12 +2270,14 @@ VIEWS.fee = () => {
   </div>
 
   <div class="card">
-    <div class="card-h"><h2>服务费明细</h2><span class="spacer"></span>
+    <div class="card-h"><h2>服务费订单</h2><span class="spacer"></span>
+      <button class="btn sm primary" data-confirm="feeInvoiceApply">勾选申请开票</button>
+      <button class="btn sm" data-confirm="feeBatchDownload">批量下载发票</button>
       ${colCfgBtn('fee')}<button class="btn sm" data-modal="export">导出</button></div>
     <div class="chips">
       ${FEE_CHIPS.map(c=>`<button data-feechip="${c.k}" class="${c.k===feeFilter?'on':''}">${c.k} <b>${FEES.filter(c.f).length}</b></button>`).join('')}
     </div>
-    ${dataTable('fee', list, '2280px', '暂无服务费记录')}
+    ${dataTable('fee', list, '2380px', '暂无服务费订单')}
     ${pagerHTML(list.length)}
   </div>
 
@@ -2297,14 +2318,38 @@ VIEWS.fee = () => {
         ['客户','<b>必须展示</b>，含金额与费率','客户自己付的钱，必须能看到、能对账、能拿到发票']
       ]) +
       '<p style="margin-top:8px">实现要点：客户端接口按<b>该笔订单的支付方</b>决定是否下发服务费字段，不是全局开关。同一个客户在不同油站可能两种模式并存。</p>') +
+    nb('为什么叫「服务费订单」而不是「服务费明细」',
+      '<p>改名不只是换个词。<b>明细</b>意味着这是别处产生的数据在这里罗列一遍，是只读的账；<b>订单</b>意味着它有自己的生命周期，有自己要走完的流程。</p>' +
+      tbl(['','明细的定位','订单的定位（现在）'],[
+        ['数据从哪来','订单核销后系统写一条','一样'],
+        ['本页能做什么','看、筛、导出','看、筛、导出 + <b>申请开票</b> + <b>下载发票</b> + 重试划转'],
+        ['开票在哪做','只能去「服务费发票」页按账单开','<b>本页也能发起</b>，单笔或勾选批量'],
+        ['状态','跟着订单走','有自己的支付状态和开票状态，独立流转']
+      ]) +
+      '<p style="margin-top:10px">一笔服务费从生成到收款到开票，是一条完整的、和油款平行的业务链路。既然它有自己的四组状态、自己的支付方、自己的发票，那它就是一笔独立的单据，不是油款订单的附属明细。</p>') +
+    nb('本页新增的开票功能：怎么开、开给谁',
+      '<p>以前服务费只能在「服务费发票」页按账单整期开，问题是<b>账单是系统按账期自动生成的</b>，账期没结束就开不了票；而客户或油站常常需要提前拿到票。现在本页可以<b>主动发起开票</b>。</p>' +
+      flow([{x:'服务费划转成功'},{x:'本页申请开票（单笔或勾选批量）'},{x:'归集进当期服务费账单'},{x:'账单确认'},{t:'fee',x:'平台开服务费票 6%'},{x:'本页可下载'}]) +
+      tbl(['环节','规则'],[
+        ['什么时候能开','支付状态必须是<b>已支付</b>——钱没收到不能开票。待支付、支付中、支付失败、待补划的都点不了'],
+        ['谁是开票方','<b>永远是平台</b>（万联易达科技有限公司）。这是服务费票和能源发票最大的区别，能源发票的开票方是油站'],
+        ['谁是受票方','<b>该笔服务费的支付方</b>——油站承担的开给油站公司，客户承担的开给客户企业'],
+        ['怎么归集','按<b>支付方 + 能源类型 + 账期</b>三段合并，三段全同的才合成一张票'],
+        ['税率 / 税目','6%；税目待财务确认（经纪代理服务 / 信息技术服务），确认前按经纪代理服务'],
+        ['重复提交','提交后状态变「开票中」，本页按钮置灰，不能重复提交']
+      ]) +
+      '<p style="margin-top:10px"><b>为什么支付方不同不能合并成一张票</b>：受票方是两个不同的法人主体。一张发票只有一个抬头，把油站承担的和客户承担的合在一起，这张票开给谁都不对。</p>') +
     nb('每个操作：什么时候能点、点了会怎样',
       tbl(['操作','什么时候能点','点了会怎样'],[
-        ['详情','任何时候','看服务费的计算过程、关联订单、调拨请求与回单'],
+        ['详情','任何时候','看服务费的计算过程、支付方与收款方、支付进度、开票信息'],
+        ['申请开票','支付状态「已支付」且开票状态「未开票」','弹确认框展示受票方与归集口径；提交后归集进当期账单，状态转「开票中」'],
+        ['下载发票','开票状态「已开票」','下载该笔所属账单的正式发票文件（PDF + OFD）'],
         ['重试','支付状态为「支付失败」','按原请求号重新发起划转，先查状态再决定重发'],
+        ['勾选申请开票','勾选了至少一笔可开票记录','批量提交，按支付方 + 能源类型 + 账期自动拆成多张票'],
+        ['批量下载发票','任何时候','打包下载勾选中已开票记录的发票文件，按支付方 / 账期分文件夹'],
         ['导出','任何时候','按当前筛选与列设置导出，字段含支付方与两个状态'],
-        ['列设置','任何时候','自选显示字段与顺序；服务费流水号固定首列']
-      ]) +
-      '<p style="margin-top:8px">本页<b>没有「开票」按钮</b>——服务费开票按账单批量走，在「服务费发票」页操作，不在单笔明细上开。</p>') +
+        ['列设置','任何时候','自选显示字段与顺序；服务费流水号固定首列，操作列固定末列']
+      ])) +
     nb('服务费与账单、发票的关系',
       flow([{x:'订单核销'},{x:'生成服务费记录'},{x:'划转成功'},{x:'按账期归集进账单'},{x:'账单确认'},{x:'开服务费票'}]) +
       '<p style="margin-top:8px">「所属账单」列显示这笔服务费进了哪一期账单。<b>划转没成功的不进账单</b>（显示 —），顺延到补划成功后的账期——钱没收到不能开票。</p>' +
@@ -2543,7 +2588,8 @@ VIEWS.invRecord = () => {
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
   </div>
   <div class="card">
-    <div class="card-h"><h2>发票明细</h2><span class="spacer"></span><button class="btn sm">批量下载</button><button class="btn sm">导出</button></div>
+    <div class="card-h"><h2>能源发票</h2><span class="spacer"></span>
+      <button class="btn sm primary" data-confirm="invBatchDownload">批量下载</button><button class="btn sm" data-modal="export">导出</button></div>
     <div class="tablewrap">
       <table style="min-width:1720px">
         <thead><tr><th style="width:34px"><input type="checkbox" data-all="invRecord"></th><th>发票编号</th><th>类型 / 能源</th><th>关联申请单</th><th>开票方</th><th>受票方 / 税号</th><th>价税合计</th><th>不含税金额</th><th>税额</th><th>税率</th><th>发票状态</th><th>来源</th><th>开票时间</th><th style="width:180px">操作</th></tr></thead>
@@ -2554,8 +2600,15 @@ VIEWS.invRecord = () => {
   </div>
   ${notes(
     nb('这个页面是做什么的',
-      '<p>平台上所有发票的台账，一行就是一张票，包括红冲产生的负数票。<b>这里记的是票本身</b>——谁开的、开给谁、多少钱、什么状态；开票的流程和进度在「开票申请记录」页看。</p>' +
-      '<p style="margin-top:6px">页面基本是只读的，唯一的写操作是红冲。</p>') +
+      '<p>油站开给客户的<b>能源发票</b>台账，一行就是一张票，包括红冲产生的负数票。<b>这里记的是票本身</b>——谁开的、开给谁、多少钱、什么状态；开票的流程和进度在「开票申请记录」页看。</p>' +
+      '<p style="margin-top:6px">写操作有两个：<b>红冲</b>和<b>批量下载</b>。</p>') +
+    nb('为什么从「发票明细」改名叫「能源发票」',
+      '<p>撮合模式下平台有<b>两类发票</b>，开票方、受票方、税率、金额来源全都不一样。叫「发票明细」时，看的人第一反应是「这里应该有所有的票」，但它只装油品票和天然气票，服务费票在另一个菜单里——名字和内容对不上。</p>' +
+      tbl(['菜单','装什么票','开票方 → 受票方','税率'],[
+        ['<b>能源发票</b>（本页）','柴油票、天然气票','油站公司 → 客户企业','柴油 13% / 天然气 9%'],
+        ['<b>服务费发票</b>','服务费票','平台 → 服务费支付方','6%']
+      ]) +
+      '<p style="margin-top:10px">改叫「能源发票」之后，两个菜单名各自说清了自己装什么，不需要再点进去才知道。「能源」而不是「油品」，是因为天然气票也在这里——叫油品票会把天然气排除在外。</p>') +
     nb('平台上有两类完全不同的发票',
       '<p>撮合模式最容易搞混的地方就在这里。两类票的开票方、受票方、税率、金额来源全都不一样，走的是两条独立的链路：</p>' +
       flow([{t:'oil',x:'油站公司'},{t:'oil',x:'客户企业'}]) +
@@ -2590,8 +2643,22 @@ VIEWS.invRecord = () => {
         ['发票详情','任何时候','抽屉里看票面信息、覆盖的订单清单、开票和归档时间'],
         ['下载','有发票文件时','下载正式发票文件'],
         ['红冲','发票状态是「正常」时才亮','必须填红冲原因；确认后走红冲流程，原票状态变成「冲红」'],
-        ['批量下载 / 导出','任何时候','按当前筛选条件打包下载或导出台账']
-      ])) +
+        ['批量下载','任何时候','打包下载勾选中<b>状态正常</b>的发票文件，冲红与作废的不打包'],
+        ['导出','任何时候','导出台账（Excel），是数据不是发票文件，两者别混']
+      ]) +
+      '<p style="margin-top:10px"><b>批量下载和导出是两件事</b>，经常被搞混：导出给的是<b>台账数据</b>（Excel，票号、金额、状态那一行行），批量下载给的是<b>发票文件本身</b>（PDF / OFD 打成 ZIP）。财务对账用前者，报销归档用后者。</p>') +
+    nb('批量下载：打包规则与排除项',
+      tbl(['','规则'],[
+        ['打包方式','ZIP，按<b>油站公司 / 开票月份</b>两级分文件夹'],
+        ['文件命名','能源发票_发票号码.pdf，与票面号码完全一致，便于按号检索'],
+        ['随包清单','发票清单.xlsx——票号、开票方、受票方、能源类型、税率、金额、税额、关联申请单'],
+        ['单包上限','500 张或 200MB，超出<b>自动分卷</b>'],
+        ['排除项','<b>冲红</b>与<b>已作废</b>的票不打包，清单里单独列出票号和排除原因'],
+        ['执行方式','后台打包，完成后在「下载中心」取，大批量另发站内通知'],
+        ['留痕','每次下载记录操作人与时间——发票文件属于涉税资料']
+      ]) +
+      '<p style="margin-top:10px"><b>为什么冲红的不打包</b>：红冲后原票已经失效，混在包里报销会出问题。但清单里必须列出来，否则财务会以为漏了几张。</p>' +
+      '<p style="margin-top:6px">一张发票可能覆盖多笔订单，<b>订单与票的对应关系在随包清单里，不在票面上</b>——票面只有汇总金额。要按订单核对，用清单或去「开票申请记录」看。</p>') +
     nb('保存和合规',
       '<p>发票文件保存 10 年，和会计凭证的保存期一致，<b>不允许删除，也不允许替换</b>。</p>' +
       '<p style="margin-top:6px">发票号码一旦和申请单绑定就不能再改。开错了只有一条路：红冲重开。不提供任何「编辑发票」的入口。</p>') +
@@ -2649,7 +2716,10 @@ VIEWS.invFee = () => {
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
   </div>
   <div class="card">
-    <div class="card-h"><h2>服务费账单与发票</h2><span class="spacer"></span><button class="btn sm">生成账单</button><button class="btn sm">导出</button></div>
+    <div class="card-h"><h2>服务费账单与发票</h2><span class="spacer"></span>
+      <button class="btn sm">生成账单</button>
+      <button class="btn sm primary" data-confirm="feeInvBatchDownload">批量下载</button>
+      <button class="btn sm" data-modal="export">导出</button></div>
     <div class="tablewrap">
       <table style="min-width:1420px">
         <thead><tr><th style="width:34px"><input type="checkbox" data-all="invFee"></th><th>账单号 / 生成时间</th><th>油站公司</th><th>能源类型</th><th>账期</th><th>订单笔数</th><th>服务费合计</th><th>费率</th><th>油站确认</th><th>开票状态</th><th>发票编号</th><th style="width:210px">操作</th></tr></thead>
@@ -2698,8 +2768,21 @@ VIEWS.invFee = () => {
         ['催确认','账单还没确认时才亮','给油站公司推一次提醒；催办次数会记录'],
         ['开票上传','油站已确认（含超时默认确认）之后才亮','上传服务费发票并归档，账单状态变成已开票'],
         ['生成账单','运营手动补跑时使用','按选定的账期重新汇总；已生成过的不会重复生成'],
-        ['导出','任何时候','导出账单列表或明细']
-      ])) +
+        ['批量下载','任何时候','打包下载勾选中<b>已开票</b>账单的发票文件，按受票方 / 账期分文件夹'],
+        ['导出','任何时候','导出账单列表或明细（Excel 数据，不是发票文件）']
+      ]) +
+      '<p style="margin-top:10px"><b>「服务费订单」页也能发起开票了。</b>以前只能在本页按账单整期开，账期没结束就开不了；现在支付方可以在服务费订单页对已支付的单笔或多笔主动申请，提交后归集进当期账单，仍然在本页开票和归档——<b>发起入口有两个，出票口径只有一个</b>。</p>') +
+    nb('批量下载：打包规则与排除项',
+      tbl(['','规则'],[
+        ['打包方式','ZIP，按<b>受票方 / 账期</b>两级分文件夹'],
+        ['为什么按受票方分','服务费票的受票方是<b>支付方</b>：油站承担的开给油站公司，客户承担的开给客户企业，是两类不同主体，混在一个文件夹里没法分发'],
+        ['文件命名','服务费票_发票号码.pdf'],
+        ['随包清单','账单与发票对照表.xlsx——账单号、账期、受票方、能源类型、服务费、税额、票号'],
+        ['单包上限','500 张或 200MB，超出自动分卷'],
+        ['排除项','<b>待确认、待开票</b>的账单没有发票文件，不打包；<b>已红冲</b>的票也不打包，对照表里单独列出'],
+        ['留痕','每次下载记录操作人与时间']
+      ]) +
+      '<p style="margin-top:10px">和「能源发票」页的批量下载是<b>同一套规则、两个入口</b>：那边打包油站开给客户的票，这边打包平台开给支付方的票。两类票的受票方和开票方正好相反，所以分文件夹的维度也不同。</p>') +
     nb('待确认',
       '<p>服务费票的税目选「经纪代理服务」还是「信息技术服务」？两者都是 6%，但票面上的税目名称不一样，需要财务确认。</p>' +
       '<p style="margin-top:6px">建议按撮合业务的实质选「经纪代理服务」——平台做的确实是撮合居间，不是提供技术系统。但如果和现有直营业务的服务费票口径不一致，需要一并考虑。</p>') +
@@ -2817,7 +2900,7 @@ VIEWS.cOrders = () => {
         ['油站','不展示，接口不下发','平台不加价、无附加费用'],
         ['客户','展示金额与费率，可查发票','油款直付油站，平台按 X% 收取服务费']
       ]) +
-      '<p style="margin-top:8px">判断依据是<b>订单上的支付方字段</b>，不是全局开关——同一个客户在不同油站可能两种模式并存，同一个列表里会同时出现两种订单。运营侧的完整服务费记录在中台的「服务费明细」菜单。</p>') +
+      '<p style="margin-top:8px">判断依据是<b>订单上的支付方字段</b>，不是全局开关——同一个客户在不同油站可能两种模式并存，同一个列表里会同时出现两种订单。运营侧的完整服务费记录在中台的「服务费订单」菜单。</p>') +
     nb('两个状态：订单状态与支付状态',
       tbl(['状态','取值','客户看到时意味着什么'],[
         ['订单状态','待核销','已下单，等油站确认实际金额'],
@@ -3086,7 +3169,7 @@ VIEWS.cFund = () => {
       ]) +
       '<p style="margin-top:8px">所以文档那一条并没有错，它说的是<b>客户承担</b>的场景；原型当初的实现说的是<b>油站承担</b>的场景。两者不冲突，只是各自描述了一种模式。</p>' +
       '<p style="margin-top:6px">实现要点：客户端按<b>该笔订单的支付方</b>决定是否下发服务费字段，<b>不是全局开关</b>——同一个客户在不同油站可能两种模式并存，本页流水里会同时出现「有服务费」和「无服务费」的订单。客户承担时，服务费是独立于油款的第二笔支出，在本页单独成行，有自己的易宝流水号和电子回单。</p>' +
-      '<p style="margin-top:6px">运营侧的完整记录在「服务费明细」菜单，两种支付方的数据都在那里。</p>') +
+      '<p style="margin-top:6px">运营侧的完整记录在「服务费订单」菜单，两种支付方的数据都在那里。</p>') +
     RULE_COMMON
   )}`;
 };
@@ -3514,7 +3597,7 @@ const MODALS = {
     bind:'backfill',
     body:()=>`
       <div class="banner warn"><div><b>补录订单用于线下已发生但未进系统的加油交易</b>
-        <span class="txt">补录订单不做额度冻结，提交后订单状态直接进入「已核销」，付款按正常两笔调拨发起。必填油机小票号、补录原因和至少一张凭证影像。<b>操作人由系统日志自动记录，不需要手工填写。</b></span></div></div>
+        <span class="txt">补录订单不做额度冻结，提交后订单状态直接进入「已核销」，付款按正常两笔调拨发起。必填项只有<b>补录原因</b>；油机小票号与凭证影像<b>非必填</b>，能补尽量补。<b>操作人由系统日志自动记录，不需要手工填写。</b></span></div></div>
 
       <div><div class="group-title">补录基础信息</div>
         <div class="form" style="margin-top:12px">
@@ -3552,15 +3635,15 @@ const MODALS = {
       <div><div class="group-title">服务费与结算</div>
         <div class="form" style="margin-top:12px">
           ${ff({l:'服务费费率',t:'text',v:'1.20%',ro:1,hint:'按油站公司 + 能源类型带出，不可改'})}
-          ${ff({l:'服务费',t:'amt',id:'bf_fee',ro:1,calc:1,unit:'元',hint:'油款金额 × 费率，只读预览；正式记录写入「服务费明细」'})}
+          ${ff({l:'服务费',t:'amt',id:'bf_fee',ro:1,calc:1,unit:'元',hint:'油款金额 × 费率，只读预览；正式记录写入「服务费订单」'})}
         </div>
       </div>
 
       <div><div class="group-title">凭证与说明</div>
         <div class="form" style="margin-top:12px">
-          ${ff({l:'油机小票号',t:'code',v:'P20260826183001',max:30,req:1,hint:'用于与油站系统核对，防虚单'})}
+          ${ff({l:'油机小票号',t:'code',v:'P20260826183001',max:30,hint:'选填，用于与油站系统核对；能填尽量填'})}
           ${ff({l:'补录原因',t:'ta',v:'三方渠道回传延迟，订单未落库',max:200,req:1,span:2})}
-          ${ff({l:'凭证影像',t:'file',p:'点击或拖拽上传油机小票 / 现场照片（JPG、PNG、PDF，单个 ≤ 10MB，最多 5 张）',req:1,span:2})}
+          ${ff({l:'凭证影像',t:'file',p:'选填，点击或拖拽上传油机小票 / 现场照片（JPG、PNG、PDF，单个 ≤ 10MB，最多 5 张）',span:2})}
         </div>
       </div>`
   },
@@ -3950,6 +4033,101 @@ const CONFIRMS = {
     ok:'确认生成申请单', okClass:'primary', back:'invoice', backTxt:'返回修改'
   }),
 
+  /* --- 服务费申请开票 --- */
+  feeInvoiceApply: key => {
+    const f = key ? FEES.find(x=>x.no===key) : null;
+    const one = !!f;
+    const pool = FEES.filter(x=>x.pay==='已支付' && x.inv==='未开票');
+    const list = one ? [f] : pool;
+    const sum  = list.reduce((t,x)=>t+x.amt,0);
+    const byStation = list.filter(x=>x.payer==='油站'), byCust = list.filter(x=>x.payer==='客户');
+    return {
+      title: one ? '申请开具服务费发票' : '批量申请开具服务费发票',
+      tone:'warn',
+      lead: one
+        ? '将这笔服务费提交开票，归集进<b>该支付方当期的服务费账单</b>，由平台统一开具服务费票（6%）。'
+        : `将勾选中<b>已支付且未开票</b>的 <b>${list.length}</b> 笔服务费提交开票。系统会按<b>支付方 + 能源类型 + 账期</b>归集成账单，一个账单一张票。`,
+      amounts:[{l:'服务费合计',v:money(sum),c:'fee'},{l:'笔数',v:String(list.length),c:''},{l:'税率',v:'6%',c:''}],
+      kv: one
+        ? [['服务费流水号',`<span class="mono">${f.no}</span>`],['关联订单',`<span class="mono">${f.order}</span>`],
+           ['支付方',`${f.payer} · ${f.payerName}`],['开票方','万联易达科技有限公司（平台）'],
+           ['受票方',`${f.payerName}<div class="m2">服务费票开给支付方</div>`],['当前开票状态',pill(f.inv)]]
+        : [['开票方','万联易达科技有限公司（平台）'],
+           ['油站承担',`${byStation.length} 笔 · ${money(byStation.reduce((t,x)=>t+x.amt,0))} 元<div class="m2">票开给油站公司</div>`],
+           ['客户承担',`${byCust.length} 笔 · ${money(byCust.reduce((t,x)=>t+x.amt,0))} 元<div class="m2">票开给客户企业</div>`],
+           ['归集口径','支付方 + 能源类型 + 账期，三段都相同的才合并成一张票']],
+      list:['<b>只有已支付的服务费能开票</b>——钱没收到不能开票，划转失败或待补划的不会被提交。',
+            '<b>支付方不同不能合并</b>：油站承担的开给油站公司，客户承担的开给客户企业，是两个不同的受票主体。',
+            '能源类型不同也要分开：柴油与天然气在账单口径上是两本账。',
+            '提交后这些记录变为<b>开票中</b>，不能重复提交；开票进度在「服务费发票」页跟踪。',
+            '税目待财务确认（<b>经纪代理服务</b> 或 <b>信息技术服务</b>），确认前按经纪代理服务开。'],
+      ok: one ? '提交开票' : `提交 ${list.length} 笔开票`, okClass:'primary'
+    };
+  },
+
+  /* --- 服务费发票下载（单笔 / 批量） --- */
+  feeBatchDownload: key => {
+    const f = key ? FEES.find(x=>x.no===key) : null;
+    const list = f ? [f] : FEES.filter(x=>x.inv==='已开票');
+    return {
+      title: f ? '下载服务费发票' : '批量下载服务费发票',
+      tone:'warn',
+      lead: f
+        ? '下载这笔服务费所属账单的<b>正式发票文件</b>（PDF + OFD）。'
+        : `将打包下载勾选中<b>已开票</b>的 <b>${list.length}</b> 笔服务费对应的发票文件。未开票、开票中、已红冲的不在包内。`,
+      kv: f
+        ? [['服务费流水号',`<span class="mono">${f.no}</span>`],['所属账单',`<span class="mono">${f.bill}</span>`],
+           ['开票状态',pill(f.inv)],['文件格式','PDF + OFD']]
+        : [['打包方式','ZIP，按<b>支付方 / 账期</b>分文件夹'],['文件命名','服务费票_发票号码.pdf'],
+           ['随包附带','发票清单.xlsx（票号、账单号、支付方、金额、税额、开票时间）'],
+           ['单包上限','500 张或 200MB，超出自动分卷']],
+      list:['下载的是<b>税务系统出具的正式文件</b>，页面上看到的票样只是渲染出来的，不能拿去报销。',
+            '<b>已红冲的发票不打包</b>——红冲后原票失效，随包的清单里会单独列出被排除的票号。',
+            '打包在后台进行，完成后在「下载中心」取；大批量会收到站内通知。',
+            '每次下载都记录操作人与下载时间，发票文件属于涉税资料。'],
+      ok: f ? '下载' : `打包下载 ${list.length} 张`, okClass:'primary'
+    };
+  },
+
+  /* --- 能源发票批量下载 --- */
+  invBatchDownload: () => {
+    const list = INVOICES.filter(i=>i.kind==='油品票' && i.st==='正常');
+    return {
+      title:'批量下载能源发票', tone:'warn',
+      lead:`将打包下载勾选中<b>状态正常</b>的 <b>${list.length}</b> 张能源发票。冲红与已作废的票不在包内。`,
+      amounts:[{l:'发票张数',v:String(list.length),c:''},{l:'票面合计',v:money(list.reduce((t,i)=>t+i.amt,0)),c:'oil'}],
+      kv:[['打包方式','ZIP，按<b>油站公司 / 开票月份</b>分文件夹'],
+          ['文件命名','能源发票_发票号码.pdf'],
+          ['随包附带','发票清单.xlsx（票号、开票方、受票方、能源类型、税率、金额、税额、关联申请单）'],
+          ['单包上限','500 张或 200MB，超出自动分卷']],
+      list:['下载的是<b>油站上传的正式发票文件</b>（PDF / OFD），页面上的票样是渲染出来的，不能报销。',
+            '<b>冲红与已作废的票不打包</b>，随包清单里单独列出被排除的票号和原因。',
+            '一张发票可能对应多笔订单，订单与票的对应关系在清单里，不在票面上。',
+            '打包在后台进行，完成后在「下载中心」取；每次下载记录操作人与时间。'],
+      ok:`打包下载 ${list.length} 张`, okClass:'primary'
+    };
+  },
+
+  /* --- 服务费发票页：按账单批量下载 --- */
+  feeInvBatchDownload: () => {
+    const list = FEEBILLS.filter(f=>f.st==='已开票');
+    return {
+      title:'批量下载服务费发票', tone:'warn',
+      lead:`将打包下载勾选中<b>已开票</b>的 <b>${list.length}</b> 期服务费账单对应的发票文件。待开票、待确认的账单不在包内。`,
+      amounts:[{l:'账单期数',v:String(list.length),c:''},{l:'服务费合计',v:money(list.reduce((t,f)=>t+f.fee,0)),c:'fee'}],
+      kv:[['开票方','万联易达科技有限公司（平台）'],
+          ['打包方式','ZIP，按<b>受票方 / 账期</b>分文件夹'],
+          ['文件命名','服务费票_发票号码.pdf'],
+          ['随包附带','账单与发票对照表.xlsx（账单号、账期、受票方、能源类型、服务费、税额、票号）'],
+          ['单包上限','500 张或 200MB，超出自动分卷']],
+      list:['服务费票的<b>受票方是支付方</b>：油站承担的开给油站公司，客户承担的开给客户企业，打包时按这个分文件夹。',
+            '<b>未确认的账单不能下载</b>——账单没确认就没开票，包里不会有对应文件。',
+            '已红冲的服务费票不打包，对照表里单独列出。',
+            '打包在后台进行，完成后在「下载中心」取；每次下载记录操作人与时间。'],
+      ok:`打包下载 ${list.length} 期`, okClass:'primary'
+    };
+  },
+
   /* --- 客户端：申请退款 --- */
   cRefundApply: key => {
     const o = CORDERS.find(x=>x.no===key) || CORDERS[0];
@@ -4079,54 +4257,93 @@ function sumHead(o){
   </div>`;
 }
 
-DTAB.info = o => `
+/* 一笔订单关联到的服务费记录与发票记录（详情页「支付信息 / 发票信息」用） */
+function feeOfOrder(o){ return FEES.find(f=>f.order===o.no) || null; }
+function payTimeOf(o){ const v = VOUCHERS.find(x=>x.order===o.no && x.use==='油款'); return v?v.t:'—'; }
+function invOfOrder(o){
+  for(const k in APPLY_ORDERS){ if(APPLY_ORDERS[k].some(x=>x.no===o.no)){
+    const inv = INVOICES.find(i=>i.apply===k);
+    return {apply:k, inv:inv||null};
+  }}
+  return {apply:'—', inv:null};
+}
+
+DTAB.info = o => {
+  const f  = feeOfOrder(o);
+  const iv = invOfOrder(o);
+  const rate = o.energy==='天然气' ? '9%' : '13%';
+  return `
   ${sumHead(o)}
   <div class="card"><div class="card-b" style="display:flex;flex-direction:column;gap:18px">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
-      <div>
-        <div class="sec-title">客户与司机</div>
+
+    <div>
+      <div class="sec-title">交易详情</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px">
         <dl class="kv">
-          <dt>客户类型</dt><dd>${o.custType}</dd>
-          <dt>总公司</dt><dd>${o.cust}</dd>
-          <dt>分公司</dt><dd>${o.custSub||'—'}</dd>
+          <dt>订单流水号</dt><dd class="mono">${o.no}</dd>
+          <dt>总订单号</dt><dd class="mono">${o.group||'—'}</dd>
+          <dt>订单类型</dt><dd>${o.type}</dd>
+          <dt>下单日期</dt><dd class="mono">${o.date}</dd>
+          <dt>下单时间</dt><dd class="mono">${o.clock}</dd>
+          <dt>订单状态</dt><dd>${pill(o.st)}</dd>
+        </dl>
+        <dl class="kv">
+          <dt>油站公司</dt><dd>${o.stationCo}</dd>
+          <dt>油站名称</dt><dd>${o.station}</dd>
+          <dt>油站渠道</dt><dd>${o.channel}</dd>
           <dt>司机姓名</dt><dd>${o.driver}</dd>
           <dt>司机手机号</dt><dd class="mono">${o.phone}</dd>
           <dt>车牌号</dt><dd class="mono">${o.plate}</dd>
           <dt>运单号</dt><dd class="mono">${o.waybill}</dd>
         </dl>
       </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
       <div>
-        <div class="sec-title">油站与商品</div>
+        <div class="sec-title">商品信息</div>
         <dl class="kv">
-          <dt>油站公司</dt><dd>${o.stationCo}</dd>
-          <dt>油站名称</dt><dd>${o.station}</dd>
-          <dt>油站渠道</dt><dd>${o.channel}</dd>
           <dt>油品名称</dt><dd>${o.goods}</dd>
           <dt>能源类型</dt><dd>${o.energy}</dd>
-          <dt>单价</dt><dd class="num">${o.unit.toFixed(2)} 元</dd>
+          <dt>单价</dt><dd class="num">${o.unit.toFixed(2)} 元 / ${qtyUnit(o)}</dd>
           <dt>数量</dt><dd class="num">${o.qty?o.qty.toFixed(2)+' '+qtyUnit(o):'—'}</dd>
+          <dt>加油金额</dt><dd><b class="num" style="color:var(--oil)">${money(o.real||o.est)} 元</b><div class="t2">单价 × 数量${o.real?'，核销实额':'，下单预估'}</div></dd>
+        </dl>
+      </div>
+      <div>
+        <div class="sec-title">客户信息</div>
+        <dl class="kv">
+          <dt>客户类型</dt><dd><span class="tag">${o.custType}</span></dd>
+          <dt>总公司</dt><dd>${o.cust}<div class="t2">签约与开票主体</div></dd>
+          <dt>分公司</dt><dd>${o.custSub||'—'}<div class="t2">实际用油单位</div></dd>
         </dl>
       </div>
     </div>
+
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
       <div>
-        <div class="sec-title">金额与状态</div>
+        <div class="sec-title">支付信息</div>
         <dl class="kv">
-          <dt>加油金额</dt><dd><b class="num" style="color:var(--oil)">${money(o.real||o.est)} 元</b></dd>
-          <dt>订单状态</dt><dd>${pill(o.st)}</dd>
-          <dt>支付状态</dt><dd>${pill(o.pay)}<div class="t2">仅指油款</div></dd>
-          <dt>开票状态</dt><dd>${pill(o.inv)}<div class="t2">仅指油品票</div></dd>
-          <dt>服务费</dt><dd><a href="#" data-go="fee" style="color:var(--fee)">在「服务费明细」中查看 →</a></dd>
+          <dt>油款金额</dt><dd><b class="num" style="color:var(--oil)">${money(o.real||o.est)} 元</b></dd>
+          <dt>油款状态</dt><dd>${pill(o.pay)}</dd>
+          <dt>支付时间</dt><dd class="mono">${payTimeOf(o)}</dd>
+          <dt>收付双方</dt><dd>${o.cust}<div class="t2">↓ 付给</div>${o.stationCo}</dd>
+          <dt>服务费金额</dt><dd>${f?`<span class="num" style="color:var(--fee)">${money(f.amt)} 元</span><div class="t2">费率 ${f.rate.toFixed(2)}%</div>`:'—'}</dd>
+          <dt>服务费支付方</dt><dd>${f?(f.payer==='油站'?'<span class="tag o">油站</span> '+f.payerName:'<span class="tag b">客户</span> '+f.payerName):'—'}</dd>
+          <dt>服务费状态</dt><dd>${f?pill(f.pay):'—'}<div class="t2"><a href="#" data-go="fee" style="color:var(--fee)">在「服务费订单」中查看 →</a></div></dd>
         </dl>
       </div>
       <div>
-        <div class="sec-title">单据信息</div>
+        <div class="sec-title">发票信息</div>
         <dl class="kv">
-          <dt>订单流水号</dt><dd class="mono">${o.no}</dd>
-          <dt>总订单号</dt><dd class="mono">${o.group||'—'}</dd>
-          <dt>下单日期</dt><dd class="mono">${o.date}</dd>
-          <dt>下单时间</dt><dd class="mono">${o.clock}</dd>
-          <dt>订单类型</dt><dd>${o.type}</dd>
+          <dt>开票状态</dt><dd>${pill(o.inv)}<div class="t2">仅指能源发票</div></dd>
+          <dt>票种</dt><dd><span class="tag o">能源发票</span>（${o.energy}）</dd>
+          <dt>税率</dt><dd class="num">${rate}</dd>
+          <dt>开票方</dt><dd>${o.stationCo}<div class="t2">撮合模式下油站直接开票给客户</div></dd>
+          <dt>受票方</dt><dd>${o.cust}</dd>
+          <dt>开票申请单</dt><dd class="mono">${iv.apply}</dd>
+          <dt>发票号码</dt><dd class="mono">${iv.inv?iv.inv.no:'—'}${iv.inv?`<div class="t2">${iv.inv.t} · ${iv.inv.src}</div>`:''}</dd>
+          <dt>服务费票</dt><dd>${f?`${pill(f.inv)}<div class="t2">开给${f.payer==='油站'?'油站公司':'客户企业'}，见「服务费发票」</div>`:'—'}</dd>
         </dl>
       </div>
     </div>
@@ -4152,11 +4369,21 @@ DTAB.info = o => `
   </div></div>
   ${notes(
     nb('这个页签是做什么的',
-      '<p>一笔订单的全部信息，按<b>客户与司机 / 油站与商品 / 金额与状态 / 单据信息</b>四组排列，一个字段一行，不放解释性小字。</p>') +
+      '<p>一笔订单的全部信息，按<b>交易详情 / 商品信息 / 客户信息 / 支付信息 / 发票信息</b>五组排列，一个字段一行，不放解释性小字。</p>' +
+      '<p style="margin-top:6px">这一版重新分了组。原来是「客户与司机 / 油站与商品 / 金额与状态 / 单据信息」，问题是分组依据混着来：前两组按<b>参与方</b>分，后两组按<b>字段性质</b>分，同一件事的信息被拆到不同组里——比如开票状态在「金额与状态」，而开票方是谁根本没写。</p>' +
+      tbl(['分组','放什么','回答什么问题'],[
+        ['交易详情','单号、订单类型、下单时间、订单状态、油站、司机、车牌、运单号','这笔交易是<b>谁、在哪、什么时候</b>发生的'],
+        ['商品信息','油品、能源类型、单价、数量、加油金额','<b>加了什么、加了多少</b>'],
+        ['客户信息','客户类型、总公司、分公司','<b>算在谁头上</b>'],
+        ['支付信息','油款金额与支付状态、支付时间、收付双方；服务费金额、支付方与支付状态','<b>钱走到哪了</b>——油款和服务费<b>两笔分开列</b>'],
+        ['发票信息','开票状态、票种、税率、开票方、受票方、申请单号、发票号码；服务费票状态','<b>票开了没有、谁开给谁</b>']
+      ]) +
+      '<p style="margin-top:10px">新分组的依据是统一的：<b>按业务环节走</b>——交易发生 → 买了什么 → 算给谁 → 钱怎么付 → 票怎么开。看的人按这个顺序读下来，就是一笔订单完整的生命周期。</p>' +
+      '<p style="margin-top:6px"><b>支付信息和发票信息里都把油款和服务费并列写出来</b>：两笔钱、两张票、各自独立的状态。服务费的完整记录仍在「服务费订单」菜单，这里只做展示与跳转。</p>') +
     nb('顶部金额怎么读：本页只讲油款',
       '<p style="padding:8px 12px;background:var(--bg2);border-radius:6px">加油金额 = 单价 × 数量</p>' +
       '<ul style="margin-top:8px"><li><b>加油金额</b>就是客户实付给油站的油款，等于油站挂牌价 × 实际加注量。核销前是下单金额，核销后是实际金额。客户端看到的就是这个数。</li>' +
-      '<li><b>本页的「支付状态」「开票状态」只针对油款。</b>服务费有自己独立的支付状态与开票状态，在「服务费明细」菜单里看——同一笔订单完全可能油款已支付而服务费支付失败，写在一起就分不清说的是哪笔钱。</li>' +
+      '<li><b>本页的「支付状态」「开票状态」只针对油款。</b>服务费有自己独立的支付状态与开票状态，在「服务费订单」菜单里看——同一笔订单完全可能油款已支付而服务费支付失败，写在一起就分不清说的是哪笔钱。</li>' +
       '<li>不单列「油站实收」——它是油款减服务费的结果，不是一个独立字段，单列出来容易被误当成第三笔钱。</li>' +
       '<li>也不再展示<b>对账状态</b>：它由支付状态与账单归集推导而来，不能独立编辑，留着只会和支付状态互相矛盾。真正的对账比对结果在财务中心看。</li></ul>') +
     nb('资金流向那条线怎么读',
@@ -4179,6 +4406,7 @@ DTAB.info = o => `
       '<p style="margin-top:6px">拆票装箱时，总单是<b>不可分割的最小单位</b>：一个开票申请单拆成多张发票，同一个总单只能整个落在其中一张票上。</p>' +
       '<p style="margin-top:6px">客户要做运单级成本归集，用总分订单页的「导出子单」拿配套明细表，不靠发票票面。</p>')
   )}`;
+};
 
 DTAB.fund = o => {
   const list = FLOWS.filter(f=>f.order===o.no);
@@ -4440,11 +4668,13 @@ function openSimple(kind,key){
       <div class="card"><div class="card-b">
         <div class="sec-title">可做的操作</div>
         <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="btn ${f.pay==='已支付'&&f.inv==='未开票'?'primary':'off'}" data-confirm="feeInvoiceApply" data-key="${f.no}">申请开票</button>
+          <button class="btn ${f.inv==='已开票'?'':'off'}" data-confirm="feeBatchDownload" data-key="${f.no}">下载发票</button>
           <button class="btn ${failed?'primary':'off'}" data-confirm="feeRetry" data-key="${f.no}">重试划转</button>
           <button class="btn">查看关联订单</button>
-          <button class="btn">查看所属账单</button>
         </div>
-        <p class="note" style="margin-top:10px">「重试划转」只在<b>支付失败</b>时可用，按<b>原请求号</b>重发——换新号会被当成一笔全新划转再扣一次钱。本页<b>没有开票按钮</b>，开票在「服务费发票」页按账单操作。</p>
+        <p class="note" style="margin-top:10px">「申请开票」只在<b>已支付且未开票</b>时可用——钱没收到不能开票。单笔申请会归集到该支付方当期的服务费账单里，由平台统一开票；已经在账单里的不重复提交。</p>
+        <p class="note" style="margin-top:6px">「重试划转」只在<b>支付失败</b>时可用，按<b>原请求号</b>重发——换新号会被当成一笔全新划转再扣一次钱。</p>
       </div></div>`;
     },
     refund:()=>{
@@ -4526,13 +4756,13 @@ function openSimple(kind,key){
               <tr><td>油款</td><td class="num" style="color:var(--oil)">${money(r.amt)}</td>
                   <td>油站公司账户 → 客户账户</td><td>资金交易流水明细</td><td>${pill(done?'已退款':'待退回')}</td></tr>
               <tr><td>服务费</td><td class="num" style="color:var(--fee)">${money(r.fee)}</td>
-                  <td>平台账户 → 服务费支付方账户</td><td><b>服务费明细</b></td><td>${pill(done?'已退款':'待退回')}</td></tr>
+                  <td>平台账户 → 服务费支付方账户</td><td><b>服务费订单</b></td><td>${pill(done?'已退款':'待退回')}</td></tr>
               <tr><td>额度</td><td class="num">${money(r.amt)}</td>
                   <td>回补到原运单</td><td>额度扣减流水</td><td>${pill(done?'已生效':'待回补')}</td></tr>
             </tbody>
           </table>
         </div>
-        <p class="note" style="margin-top:10px">只支持<b>整单退款</b>，金额只读、不可修改。要退一部分，走「整单退款后按正确金额重新补录」。服务费那一笔的支付状态以<b>「服务费明细」</b>页为准，本页只做展示。</p>
+        <p class="note" style="margin-top:10px">只支持<b>整单退款</b>，金额只读、不可修改。要退一部分，走「整单退款后按正确金额重新补录」。服务费那一笔的支付状态以<b>「服务费订单」</b>页为准，本页只做展示。</p>
       </div></div>
 
       <div class="card"><div class="card-b">
