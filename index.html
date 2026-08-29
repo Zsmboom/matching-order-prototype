@@ -329,6 +329,7 @@ pre.code{margin:10px 0 0;background:var(--surface-2);border:1px solid var(--line
 .modal-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;width:min(920px,100%);box-shadow:0 30px 80px -30px rgba(0,0,0,.6)}
 .modal-card.sm{width:min(560px,100%)}
 .cf-lead{font-size:13px;line-height:1.7;margin:0}
+.banner .cf-lead b{display:inline;margin:0}
 .cf-lead b{color:var(--ink)}
 .cf-amt{display:flex;gap:10px;flex-wrap:wrap}
 .cf-amt>div{flex:1;min-width:130px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg2)}
@@ -870,8 +871,8 @@ const PAGES = [
   {id:'group',   name:'总分订单与核销',    sub:'一次加注按运单额度拆分 · 核销由油站操作', grp:'订单中心 · 撮合'},
   {id:'quota',   name:'额度扣减流水',      sub:'冻结 / 扣减 / 解冻 / 回补', grp:'订单中心 · 撮合'},
   {id:'flow',    name:'资金交易流水明细',  sub:'账户类型 + 账户名称 · 请求内容可查', grp:'订单中心 · 撮合'},
-  {id:'refund',  name:'订单退款申请与审核', sub:'油站初审 → 运营中台终审', grp:'订单中心 · 撮合'},
-  {id:'voucher', name:'订单支付凭证管理',  sub:'易宝电子回单 · 凭证影像', grp:'订单中心 · 撮合'},
+  {id:'refund',  name:'订单退款申请与审核', sub:'油站 / 运营平台发起 → 运营确认 → 执行退款', grp:'订单中心 · 撮合'},
+  {id:'voucher', name:'订单支付凭证管理',  sub:'易宝电子回单 · 凭证影像 · 调拨状态', grp:'订单中心 · 撮合'},
   {id:'fee',     name:'服务费明细',        sub:'支付方 / 支付状态 / 开票状态 独立记录', grp:'订单中心 · 撮合'},
 
   {id:'invApply', name:'开票申请记录', sub:'申请金额 / 已开票金额 / 未开票金额', grp:'发票管理 · 撮合'},
