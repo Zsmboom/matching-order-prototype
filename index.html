@@ -506,16 +506,14 @@ const cMain = o => o.st;
 /* 客户端支付流水：只有自己账户的那一条。油站公司收款方那条、
    以及服务费调拨（油站 → 平台）在客户端完全不存在。 */
 const CFLOWS = [
-  {id:'CF01', req:'REQ-20260827-0001', t:'2026-08-27 09:36:02', type:'支出', amt:-795.02, before:128430.55, after:127635.53,
-   ev:'加油付款', order:'CHY20260827093412006', payee:'中石化辽宁石油分公司', st:'支付成功', ser:'YB2026082700931245'},
-  {id:'CF02', req:'REQ-20260827-0008', t:'2026-08-27 07:15:41', type:'支出', amt:-2516.86, before:131020.11, after:128503.25,
-   ev:'加油付款', order:'CHY20260827071233188', payee:'畅油网络科技有限公司', st:'支付成功', ser:'YB2026082700887301'},
-  {id:'CF03', req:'REQ-20260826-0033', t:'2026-08-26 19:47:10', type:'支出', amt:-567.20, before:129070.45, after:128503.25,
-   ev:'加油付款', order:'CHY20260826194422507', payee:'高灯能源科技有限公司', st:'处理中', ser:'—'},
-  {id:'CF04', req:'REQ-20260825-0017', t:'2026-08-25 15:02:33', type:'收款', amt:506.69, before:127996.56, after:128503.25,
-   ev:'订单退款', order:'CHY20260825112807664', payee:'中石化辽宁石油分公司', st:'退款成功', ser:'YB2026082500712066'},
-  {id:'CF05', req:'REQ-20260824-0021', t:'2026-08-24 20:36:20', type:'支出', amt:-1396.53, before:129899.78, after:128503.25,
-   ev:'加油付款', order:'CHY20260824203311925', payee:'畅油网络科技有限公司', st:'支付成功', ser:'YB2026082400655412'}
+  {id:'CF01', t:'2026-08-27 09:36:02', type:'支出', amt:-795.02, before:128430.55, after:127635.53,
+   ev:'加油付款', order:'CHY20260827093412006', payee:'中石化辽宁石油分公司', ser:'YB2026082700931245'},
+  {id:'CF02', t:'2026-08-27 07:15:41', type:'支出', amt:-2516.86, before:131020.11, after:128503.25,
+   ev:'加油付款', order:'CHY20260827071233188', payee:'畅油网络科技有限公司', ser:'YB2026082700887301'},
+  {id:'CF04', t:'2026-08-25 15:02:33', type:'收款', amt:506.69, before:127996.56, after:128503.25,
+   ev:'订单退款', order:'CHY20260825112807664', payee:'中石化辽宁石油分公司', ser:'YB2026082500712066'},
+  {id:'CF05', t:'2026-08-24 20:36:20', type:'支出', amt:-1396.53, before:129899.78, after:128503.25,
+   ev:'加油付款', order:'CHY20260824203311925', payee:'畅油网络科技有限公司', ser:'YB2026082400655412'}
 ];
 /* 客户端电子回单：只含贵公司账户参与的那一笔，无服务费信息 */
 const CVOUCHERS = [
@@ -754,35 +752,31 @@ const STATION_ACCOUNTS = [
 /* 单个油站账户的资金变动明细（账户明细抽屉用） */
 const STATION_FLOWS = [
   {id:'ZJLS20260827000002', t:'2026-08-27 09:36:02', acctId:'YB-S-200117', co:'中石化辽宁石油分公司',
-   type:'收入', ev:'加油收入', amt:795.02, before:56220.10, after:57015.12, order:'CHY20260827093412006', st:'已到账'},
+   type:'收入', ev:'加油收入', amt:795.02, before:56220.10, after:57015.12, order:'CHY20260827093412006'},
   {id:'ZJLS20260827000003', t:'2026-08-27 09:36:09', acctId:'YB-S-200117', co:'中石化辽宁石油分公司',
-   type:'支出', ev:'服务费划转', amt:-9.54, before:57015.12, after:57005.58, order:'CHY20260827093412006', st:'已划转'},
+   type:'支出', ev:'服务费划转', amt:-9.54, before:57015.12, after:57005.58, order:'CHY20260827093412006'},
   {id:'ZJLS20260825000001', t:'2026-08-25 14:30:00', acctId:'YB-S-200117', co:'中石化辽宁石油分公司',
-   type:'支出', ev:'提现', amt:-50000.00, before:107015.12, after:57015.12, order:'—', st:'提现成功'},
+   type:'支出', ev:'提现', amt:-50000.00, before:107015.12, after:57015.12, order:'—'},
   {id:'ZJLS20260826000008', t:'2026-08-26 21:30:07', acctId:'YB-S-200117', co:'中石化辽宁石油分公司',
-   type:'支出', ev:'退款回补', amt:-362.88, before:57378.00, after:57015.12, order:'CHY20260826212244890', st:'交易成功'},
-  {id:'ZJLS20260827000008', t:'2026-08-27 09:13:41', acctId:'YB-S-200289', co:'高灯能源科技有限公司',
-   type:'收入', ev:'加油收入', amt:567.20, before:31413.24, after:31980.44, order:'CHY20260827091107021', st:'交易中'},
+   type:'支出', ev:'退款回补', amt:-362.88, before:57378.00, after:57015.12, order:'CHY20260826212244890'},
   {id:'ZJLS20260824000001', t:'2026-08-24 10:15:00', acctId:'YB-S-200289', co:'高灯能源科技有限公司',
-   type:'支出', ev:'提现', amt:-30000.00, before:61980.44, after:31980.44, order:'—', st:'提现成功'},
-  {id:'ZJLS20260827000006', t:'2026-08-27 08:48:11', acctId:'YB-S-200342', co:'中交兴路能源有限公司',
-   type:'支出', ev:'服务费划转', amt:-10.04, before:31980.44, after:31970.40, order:'CHY20260827084533112', st:'划转失败'},
+   type:'支出', ev:'提现', amt:-30000.00, before:61980.44, after:31980.44, order:'—'},
   {id:'ZJLS20260827000009', t:'2026-08-27 10:05:20', acctId:'YB-S-200117', co:'中石化辽宁石油分公司',
-   type:'收入', ev:'充值入账', amt:20000.00, before:57005.58, after:77005.58, order:'—', st:'已到账'},
+   type:'收入', ev:'充值入账', amt:20000.00, before:57005.58, after:77005.58, order:'—'},
   {id:'ZJLS20260826000009', t:'2026-08-26 15:20:00', acctId:'YB-S-200289', co:'高灯能源科技有限公司',
-   type:'收入', ev:'加油收入', amt:1766.07, before:29647.17, after:31413.24, order:'CHY20260826204118762', st:'已到账'},
+   type:'收入', ev:'加油收入', amt:1766.07, before:29647.17, after:31413.24, order:'CHY20260826204118762'},
   {id:'ZJLS20260826000010', t:'2026-08-26 15:21:30', acctId:'YB-S-200289', co:'高灯能源科技有限公司',
-   type:'支出', ev:'服务费划转', amt:-21.19, before:31413.24, after:31392.05, order:'CHY20260826204118762', st:'已划转'},
+   type:'支出', ev:'服务费划转', amt:-21.19, before:31413.24, after:31392.05, order:'CHY20260826204118762'},
   {id:'ZJLS20260826000010', t:'2026-08-26 18:32:20', acctId:'YB-S-200455', co:'畅油网络科技有限公司',
-   type:'收入', ev:'加油收入', amt:3960.00, before:15000.00, after:18960.00, order:'CHY20260826183001902', st:'已到账'},
+   type:'收入', ev:'加油收入', amt:3960.00, before:15000.00, after:18960.00, order:'CHY20260826183001902'},
   {id:'ZJLS20260823000001', t:'2026-08-23 16:00:00', acctId:'YB-S-200342', co:'中交兴路能源有限公司',
-   type:'支出', ev:'提现', amt:-15000.00, before:46980.44, after:31980.44, order:'—', st:'提现成功'},
+   type:'支出', ev:'提现', amt:-15000.00, before:46980.44, after:31980.44, order:'—'},
   {id:'ZJLS20260822000001', t:'2026-08-22 11:30:00', acctId:'YB-S-200117', co:'中石化辽宁石油分公司',
-   type:'收入', ev:'充值入账', amt:30000.00, before:77015.12, after:107015.12, order:'—', st:'已到账'},
+   type:'收入', ev:'充值入账', amt:30000.00, before:77015.12, after:107015.12, order:'—'},
   {id:'ZJLS20260821000001', t:'2026-08-21 14:45:00', acctId:'YB-S-200289', co:'高灯能源科技有限公司',
-   type:'收入', ev:'退款回补', amt:128.50, before:31263.55, after:31392.05, order:'CHY20260820153018009', st:'已到账'},
+   type:'收入', ev:'退款回补', amt:128.50, before:31263.55, after:31392.05, order:'CHY20260820153018009'},
   {id:'ZJLS20260820000001', t:'2026-08-20 10:20:00', acctId:'YB-S-200342', co:'中交兴路能源有限公司',
-   type:'收入', ev:'加油收入', amt:836.28, before:46144.16, after:46980.44, order:'CHY20260827084533112', st:'已到账'}
+   type:'收入', ev:'加油收入', amt:836.28, before:46144.16, after:46980.44, order:'CHY20260827084533112'}
 ];
 
 /* 平台服务费账户 */
@@ -795,13 +789,13 @@ const SERVICE_FEE_ACCOUNT = {
 
 /* 平台服务费账户流水 */
 const SERVICE_FEE_FLOWS = [
-  {id:'ZJLS20260827000004', t:'2026-08-27 09:36:09', type:'油站费入账', amt:9.54, before:88240.16, after:88249.70, order:'CHY20260827093412006', st:'交易成功', co:'中石化辽宁石油分公司', ser:'YB2026082700931309', req:'REQ-20260827-0002'},
-  {id:'ZJLS20260826000012', t:'2026-08-26 18:32:27', type:'客户费入账', amt:47.52, before:88156.40, after:88203.92, order:'CHY20260826183001902', st:'交易成功', co:'测试客户2', ser:'YB2026082600183227', req:'REQ-20260826-0071'},
-  {id:'ZJLS20260825000004', t:'2026-08-25 14:30:00', type:'提现', amt:-50000.00, before:138240.16, after:88240.16, order:'—', st:'提现成功', co:'—', ser:'YB2026082500143001', req:'REQ-20260825-0099'},
-  {id:'ZJLS20260824000002', t:'2026-08-24 16:20:00', type:'客户费入账', amt:8.36, before:88231.80, after:88240.16, order:'CHY20260824161512007', st:'交易成功', co:'鲁通冷链物流有限公司', ser:'YB2026082400162008', req:'REQ-20260824-0021'},
-  {id:'ZJLS20260823000002', t:'2026-08-23 18:00:00', type:'客户费退款', amt:-12.68, before:88231.80, after:88219.12, order:'CHY20260823175508003', st:'交易成功', co:'万联易达物流科技有限公司', ser:'YB2026082300180002', req:'REQ-20260823-0033'},
-  {id:'ZJLS20260822000002', t:'2026-08-22 10:15:00', type:'提现', amt:-30000.00, before:118219.12, after:88219.12, order:'—', st:'提现成功', co:'—', ser:'YB2026082200101501', req:'REQ-20260822-0045'},
-  {id:'ZJLS20260820000002', t:'2026-08-20 14:00:00', type:'油站费退款', amt:-15.20, before:88219.12, after:88203.92, order:'CHY20260820135500011', st:'交易成功', co:'畅油网络科技有限公司', ser:'YB2026082000140005', req:'REQ-20260820-0052'}
+  {id:'ZJLS20260827000004', t:'2026-08-27 09:36:09', type:'油站费入账', amt:9.54, before:88240.16, after:88249.70, order:'CHY20260827093412006', co:'中石化辽宁石油分公司', ser:'YB2026082700931309'},
+  {id:'ZJLS20260826000012', t:'2026-08-26 18:32:27', type:'客户费入账', amt:47.52, before:88156.40, after:88203.92, order:'CHY20260826183001902', co:'测试客户2', ser:'YB2026082600183227'},
+  {id:'ZJLS20260825000004', t:'2026-08-25 14:30:00', type:'提现', amt:-50000.00, before:138240.16, after:88240.16, order:'—', co:'—', ser:'YB2026082500143001'},
+  {id:'ZJLS20260824000002', t:'2026-08-24 16:20:00', type:'客户费入账', amt:8.36, before:88231.80, after:88240.16, order:'CHY20260824161512007', co:'鲁通冷链物流有限公司', ser:'YB2026082400162008'},
+  {id:'ZJLS20260823000002', t:'2026-08-23 18:00:00', type:'客户费退款', amt:-12.68, before:88231.80, after:88219.12, order:'CHY20260823175508003', co:'万联易达物流科技有限公司', ser:'YB2026082300180002'},
+  {id:'ZJLS20260822000002', t:'2026-08-22 10:15:00', type:'提现', amt:-30000.00, before:118219.12, after:88219.12, order:'—', co:'—', ser:'YB2026082200101501'},
+  {id:'ZJLS20260820000002', t:'2026-08-20 14:00:00', type:'油站费退款', amt:-15.20, before:88219.12, after:88203.92, order:'CHY20260820135500011', co:'畅油网络科技有限公司', ser:'YB2026082000140005'}
 ];
 
 const FEE_RATE = 0.012;
@@ -882,74 +876,41 @@ const SUBS = {
   ]
 };
 
-/* 资金流水：账户拆成 类型 + 名称；每条带完整请求内容 */
+/* 资金流水：只保存已记账结果；订单号用于关联业务订单，易宝流水号用于对账 */
 const FLOWS = [
   {id:'ZJLS20260827000001', t:'2026-08-27 09:36:02', acctType:'客户', acctName:'万联易达物流科技有限公司', acctId:'YB-C-100238',
    type:'支出', amt:-795.02, before:128430.55, after:127635.53, ev:'客户资金调拨', order:'CHY20260827093412006',
-   req:'REQ-20260827-0001', ser:'YB2026082700931245', api:'/yop/v2/trade/order/transfer', st:'调拨成功'},
+   ser:'YB2026082700931245'},
   {id:'ZJLS20260827000002', t:'2026-08-27 09:36:02', acctType:'站点公司', acctName:'中石化辽宁石油分公司', acctId:'YB-S-200117',
    type:'收款', amt:795.02, before:56220.10, after:57015.12, ev:'客户资金调拨', order:'CHY20260827093412006',
-   req:'REQ-20260827-0001', ser:'YB2026082700931245', api:'/yop/v2/trade/order/transfer', st:'调拨成功'},
+   ser:'YB2026082700931245'},
   {id:'ZJLS20260827000003', t:'2026-08-27 09:36:09', acctType:'站点公司', acctName:'中石化辽宁石油分公司', acctId:'YB-S-200117',
    type:'支出', amt:-9.54, before:57015.12, after:57005.58, ev:'服务费调拨', order:'CHY20260827093412006',
-   req:'REQ-20260827-0002', ser:'YB2026082700931309', api:'/yop/v2/trade/order/transfer', st:'调拨成功'},
+   ser:'YB2026082700931309'},
   {id:'ZJLS20260827000004', t:'2026-08-27 09:36:09', acctType:'平台', acctName:'万联易达科技有限公司', acctId:'YB-P-300001',
    type:'收款', amt:9.54, before:88240.16, after:88249.70, ev:'服务费调拨', order:'CHY20260827093412006',
-   req:'REQ-20260827-0002', ser:'YB2026082700931309', api:'/yop/v2/trade/order/transfer', st:'调拨成功'},
+   ser:'YB2026082700931309'},
   {id:'ZJLS20260826000009', t:'2026-08-26 18:32:20', acctType:'客户', acctName:'测试客户2', acctId:'YB-C-100677',
    type:'支出', amt:-3960.00, before:50000.00, after:46040.00, ev:'客户资金调拨', order:'CHY20260826183001902',
-   req:'REQ-20260826-0070', ser:'YB2026082600183220', api:'/yop/v2/trade/order/transfer', st:'调拨成功'},
+   ser:'YB2026082600183220'},
   {id:'ZJLS20260826000010', t:'2026-08-26 18:32:20', acctType:'站点公司', acctName:'畅油网络科技有限公司', acctId:'YB-S-200455',
    type:'收款', amt:3960.00, before:15000.00, after:18960.00, ev:'客户资金调拨', order:'CHY20260826183001902',
-   req:'REQ-20260826-0070', ser:'YB2026082600183220', api:'/yop/v2/trade/order/transfer', st:'调拨成功'},
+   ser:'YB2026082600183220'},
   {id:'ZJLS20260826000011', t:'2026-08-26 18:32:27', acctType:'客户', acctName:'测试客户2', acctId:'YB-C-100677',
    type:'支出', amt:-47.52, before:46040.00, after:45992.48, ev:'服务费调拨', order:'CHY20260826183001902',
-   req:'REQ-20260826-0071', ser:'YB2026082600183227', api:'/yop/v2/trade/order/transfer', st:'调拨成功'},
+   ser:'YB2026082600183227'},
   {id:'ZJLS20260826000012', t:'2026-08-26 18:32:27', acctType:'平台', acctName:'万联易达科技有限公司', acctId:'YB-P-300001',
    type:'收款', amt:47.52, before:88156.40, after:88203.92, ev:'服务费调拨', order:'CHY20260826183001902',
-   req:'REQ-20260826-0071', ser:'YB2026082600183227', api:'/yop/v2/trade/order/transfer', st:'调拨成功'},
+   ser:'YB2026082600183227'},
   {id:'ZJLS20260826000007', t:'2026-08-26 21:30:07', acctType:'客户', acctName:'蒙晋通达运输有限公司', acctId:'YB-C-100455',
    type:'收款', amt:362.88, before:43552.80, after:43915.68, ev:'退款（资金退回）', order:'CHY20260826212244890',
-   req:'REQ-20260826-0088', ser:'YB2026082602130077', api:'/yop/v2/trade/refund', st:'退回成功'}
+   ser:'YB2026082602130077'}
 ];
 
-/* 订单与三方资金流水的关联：只统计确认入账后的流水，请求中/失败记录留在支付凭证表 */
-const postedFundFlow = f => f.st==='调拨成功' || f.st==='退回成功' || f.st==='交易成功';
+/* 资金流水表只保存已实际记账的结果；请求中或失败记录只留在支付凭证表 */
 const fundPurpose = f => f.ev.includes('服务费') ? '服务费' : (f.ev.includes('退款') || f.ev.includes('退回') ? '退款' : '油款');
-const fundBook = f => f.acctType==='客户' ? '货主资金流水表' : (f.acctType==='站点公司' ? '油站资金流水表' : '平台资金流水表');
-const orderPostedFlows = orderNo => FLOWS.filter(f=>f.order===orderNo && postedFundFlow(f));
-const peerFundFlow = f => FLOWS.find(x=>x.req===f.req && x.id!==f.id && postedFundFlow(x));
-
-function orderFundRelationHTML(orderNo){
-  const fee = FEES.find(f=>f.order===orderNo);
-  const all = orderPostedFlows(orderNo);
-  const list = all.filter(f=>fundPurpose(f)!=='退款');
-  const refundList = all.filter(f=>fundPurpose(f)==='退款');
-  const groups = [
-    {role:'货主侧', book:'货主资金流水表', expected:fee?.payer==='客户'?2:1, rows:list.filter(f=>f.acctType==='客户')},
-    {role:'油站侧', book:'油站资金流水表', expected:fee?.payer==='客户'?1:2, rows:list.filter(f=>f.acctType==='站点公司')},
-    {role:'平台侧', book:'平台资金流水表', expected:1, rows:list.filter(f=>f.acctType==='平台')}
-  ];
-  const complete = list.length===4 && groups.every(g=>g.rows.length===g.expected);
-  return `<div class="card">
-    <div class="card-h"><h2>订单与资金流水关联</h2><span class="spacer"></span>
-      <span class="pill ${complete?'ok':'warn'}">${complete?'4 条主支付流水已完整关联':'当前已关联 '+list.length+' 条入账流水'}</span></div>
-    <div class="card-b">
-      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
-        ${groups.map(g=>`<div style="border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--surface-2)">
-          <div style="display:flex;justify-content:space-between;gap:8px"><b>${g.role}</b><span class="tag">${g.rows.length} / ${g.expected} 条</span></div>
-          <div class="t2" style="margin:3px 0 9px">${g.book}</div>
-          ${g.rows.length?g.rows.map(f=>`<div style="padding:7px 0;border-top:1px solid var(--line-2)">
-            <div style="display:flex;justify-content:space-between;gap:8px"><span>${fundPurpose(f)} · ${f.type}</span><b class="num" style="color:${f.amt<0?'var(--ok)':'var(--bad)'}">${f.amt>0?'+':''}${money(f.amt)}</b></div>
-            <div class="t2 mono">${f.id}</div>
-          </div>`).join(''):'<div class="empty" style="padding:12px 0">尚未生成入账流水</div>'}
-        </div>`).join('')}
-      </div>
-      <p class="note" style="margin-top:10px">订单号 <span class="mono">${orderNo}</span> 是三方账本的共同关联键。油站承担服务费时：货主 1 条油款支出、油站 1 条油款收入 + 1 条服务费支出、平台 1 条服务费收入；服务费由客户承担时，服务费支出改记在货主侧。每一行仍有自己独立的资金流水号。</p>
-      ${refundList.length?`<p class="note" style="margin-top:8px">该订单另有 <b>${refundList.length} 条退款资金流水</b>。退款流水是在原 4 条主支付流水之外追加的反向记账，不覆盖或修改原流水。</p>`:''}
-    </div>
-  </div>`;
-}
+const stationTxnType = f => fundPurpose(f)==='服务费' ? '服务费支出' : '订单收款';
+const orderPostedFlows = orderNo => FLOWS.filter(f=>f.order===orderNo);
 
 const QUOTA = [
   {t:'2026-08-27 09:34:12', order:'CHY20260827093412006', cust:'万联易达物流科技有限公司', driver:'田玲玲 / 辽AEK808', act:'冻结', amt:-800.00, left:19200.00, st:'已释放'},
@@ -2125,10 +2086,8 @@ VIEWS.flow = () => {
       <td class="num">${money(f.after)}</td>
       <td>${f.ev}</td>
       <td class="mono">${f.order}</td>
-      <td><div class="t1">${fundBook(f)} · ${fundPurpose(f)}</div><div class="t2 mono">对应流水 ${peerFundFlow(f)?.id||'—'}</div></td>
-      <td class="mono">${f.req}<div class="t2 mono">${f.ser}</div></td>
-      <td>${pill(f.st)}</td>
-      <td class="acts"><button data-drawer="flowReq" data-key="${f.id}">请求详情</button><button data-drawer="voucher" data-key="${f.req}">回单</button></td>
+      <td class="mono">${f.ser}</td>
+      <td class="acts"><button data-drawer="flowReq" data-key="${f.id}">详情</button><button data-drawer="voucher" data-key="${f.ser}">回单</button></td>
     </tr>`).join('');
   return `
   <div class="card">
@@ -2140,9 +2099,7 @@ VIEWS.flow = () => {
         {l:'交易类型',t:'seg',o:['全部','支出','收款']},
         {l:'资金流水号',t:'code',p:'ZJLS 开头',max:32,w2:1},
         {l:'发生事件',t:'sel',o:OPT.fundEvent,w2:1},
-        {l:'调拨状态',t:'sel',o:OPT.voucherSt,w2:1},
         {l:'订单号',t:'code',p:'CHY 开头',max:32,w2:1},
-        {l:'请求号',t:'code',p:'如 REQ-20260827-0001',max:32,w2:1},
         {l:'易宝流水号',t:'code',p:'如 YB2026082700931245',max:32,w2:1},
         {l:'变动金额',t:'numrange',p1:'最小',p2:'最大',unit:'元',w2:1},
         {l:'发生时间',t:'range',v1:'2026-08-01',v2:'2026-08-27',w2:1}
@@ -2153,8 +2110,8 @@ VIEWS.flow = () => {
   <div class="card">
     <div class="card-h"><h2>三方资金账户变动明细</h2><span class="spacer"></span><button class="btn sm">导出对账文件</button></div>
     <div class="tablewrap">
-      <table style="min-width:2040px">
-        <thead><tr><th style="width:34px"><input type="checkbox" data-all="flow"></th><th>资金流水号</th><th>发生时间</th><th>账户类型</th><th>账户名称 / ID</th><th>交易类型</th><th>变动金额</th><th>上次余额</th><th>当前余额</th><th>发生事件</th><th>订单号</th><th>账本归属 / 对应资金流水</th><th>请求号 / 易宝流水号</th><th>调拨状态</th><th style="width:200px">操作</th></tr></thead>
+      <table style="min-width:1640px">
+        <thead><tr><th style="width:34px"><input type="checkbox" data-all="flow"></th><th>资金流水号</th><th>发生时间</th><th>账户类型</th><th>账户名称 / ID</th><th>交易类型</th><th>变动金额</th><th>上次余额</th><th>当前余额</th><th>发生事件</th><th>订单号</th><th>易宝流水号</th><th style="width:200px">操作</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
@@ -2164,6 +2121,7 @@ VIEWS.flow = () => {
     nb('这个页面是做什么的',
       '<p>撮合模式下，平台<b>不碰钱</b>。钱是从客户企业的虚拟账户，直接转到油站公司的虚拟账户；油站再从自己账户里把服务费转给平台。这些转账都在易宝的虚拟账户体系里发生，这个页面就是这些转账的明细账。</p>' +
       '<p style="margin-top:6px">页面只读，不产生数据。每一行都是易宝那边转账完成后回写过来的结果。</p>' +
+      '<p style="margin-top:6px"><b>资金流水没有状态字段</b>：能进入本表就代表已经实际记账；处理中或失败的结果只在「订单支付凭证管理」中查看。</p>' +
       '<p style="margin-top:6px"><b>资金流水号</b>是资金流水表主键（ZJLS 开头）；<b>订单号</b>是订单表主键（CHY 开头）。两者只通过关联字段建立关系，不得使用相同号码或互相代替。</p>') +
     nb('一笔订单的钱是怎么走的',
       flow([{t:'oil',x:'客户企业账户'},{t:'oil',x:'油站公司账户'}]) +
@@ -2180,9 +2138,9 @@ VIEWS.flow = () => {
       ]) +
       '<p style="margin-top:8px"><b>要特别注意</b>：同一家公司的柴油账户和天然气账户是<b>两个不同的账户</b>，账户号不一样，余额也各算各的。所以不能把一家公司的柴油和天然气流水合起来算余额——那样算出来的数在易宝那边找不到对应。</p>') +
     nb('一次转账在这里是两行',
-      '<p>一次转账会写<b>两条记录</b>：付款方一条（支出，红色负数），收款方一条（收款，绿色正数）。金额一样，方向相反，共用同一个请求号。</p>' +
+      '<p>一次转账会写<b>两条记录</b>：付款方一条（支出，红色负数），收款方一条（收款，绿色正数）。金额一样，方向相反。</p>' +
       '<p style="margin-top:6px">所以一笔订单正常走完，这个页面上会有 <b>4 行</b>：油款的付方与收方各一行，服务费的付方与收方各一行。</p>' +
-      '<p style="margin-top:6px">列表的「账本归属 / 对应资金流水」会标明这一行属于货主、油站还是平台账本，并给出同一次转账在对方账本中的资金流水号。查订单用订单号，核对一笔转账的双边记录用请求号或对应资金流水号。</p>' +
+      '<p style="margin-top:6px">资金流水与业务订单只通过订单号建立关联；支付请求的请求号与处理状态统一到支付凭证页面查询。</p>' +
       '<p style="margin-top:6px">每个账户的余额是连续的：上一行的「当前余额」加上这一行的变动，一定等于这一行的「当前余额」。系统每天核对一次，断链就报警。</p>') +
     nb('什么时候才会出现在这个页面上',
       '<p>只有转账<b>确定落地</b>了才会写流水。易宝「受理成功」不等于钱到账——受理只是把请求收下了。系统会等异步通知，同时自己主动去查一次，两边都确认到账才写这一行。</p>' +
@@ -2196,9 +2154,9 @@ VIEWS.flow = () => {
         ['退款','油站公司 → 客户 / 平台 → 油站公司','退款终审通过后，油款和服务费各退各的'],
         ['冲正','按原来的方向反过来','易宝那边发起的更正，平台被动接收']
       ])) +
-    nb('点「请求详情」能看到什么',
-      '<p>每行右边可以下钻到这次转账的完整请求记录，分四块：账户信息、发出去的请求内容、收到的返回内容、以及一条交互时间线（发起 → 易宝受理 → 收到通知 → 主动查询确认，走到哪一步亮到哪一步）。</p>' +
-      '<p style="margin-top:6px">这份数据和「订单支付凭证管理」页面看到的<b>是同一份</b>，两个入口指向同一条记录，不存在两份数据对不上的情况。</p>') +
+    nb('点「详情」能看到什么',
+      '<p>详情只展示本条已记账资金流水的账户、交易类型、金额、余额、订单号和易宝流水号。</p>' +
+      '<p style="margin-top:6px">请求号、受理结果和调拨状态属于支付请求信息，统一到「订单支付凭证管理」页面查询，不写入资金流水表。</p>') +
     nb('导出和对账的分工',
       '<p>「导出对账文件」按账户和日期生成汇总表，是个异步任务，文件生成好了会通知。</p>' +
       '<p style="margin-top:6px">真正的对账比对（拿平台数据和易宝对账单逐条比）在财务中心做，比对结果会回写到订单上的对账状态。这个页面只负责<b>提供数据源和展示结果</b>，不做比对逻辑。</p>') +
@@ -2208,7 +2166,7 @@ VIEWS.flow = () => {
         ['流水连续性','同一账户按时间排序，<b>上次余额 + 变动金额 = 当前余额</b> 必须恒成立','断链告警 + 自动生成对账差异工单'],
         ['油站账户恒等式','余额 + 已提现 + 冻结 = 累计收入','告警并挂账户异常'],
         ['企业账户恒等式','余额 = 充值 − 消费 + 退款','告警并挂账户异常'],
-        ['订单与流水一致','订单金额 = 对应资金流水金额','差异工单转财务核查']
+        ['订单与流水一致','订单金额 = 订单关联流水金额','差异工单转财务核查']
       ]) +
       '<p style="margin-top:8px">每日定时跑一次。发现问题只<b>告警和建工单，绝不自动修正</b>——自动改账会把问题掩盖掉，事后追不回真相。</p>') +
     nb('易宝整体不可用时的降级方案',
@@ -2398,7 +2356,7 @@ VIEWS.voucher = () => {
       <td>${pill(v.st)}</td>
       <td class="mono">${v.ser}</td>
       <td>${v.st==='调拨失败'?'<span class="pill mut">无回单</span>':'<span class="pill ok">已生成</span>'}</td>
-      <td class="acts"><button data-drawer="voucher" data-key="${v.req}">查看回单</button><button class="${v.st==='调拨失败'?'':'off'}" data-confirm="transferRetry" data-key="${v.req}">重试</button></td>
+      <td class="acts"><button data-drawer="voucher" data-key="${v.req}">查看回单</button></td>
     </tr>`).join('');
   return `
   <div class="card">
@@ -2462,16 +2420,12 @@ VIEWS.voucher = () => {
       ]) +
       '<p style="margin-top:10px"><b>业务上需要的信息一个没少</b>：请求号、受理结果、调拨状态、易宝流水号、金额、双方账户名称、交互时间线，全部保留——排查一笔转账到底走到哪一步，这些就够了。</p>' +
       '<p style="margin-top:6px">原始报文<b>不是不存</b>，而是存在服务端日志里，按请求号可查，走运维通道，不在这个页面上渲染。字段「请求接口」也改叫<b>「业务类型」</b>，取值是「资金调拨 / 订单退款」这样的业务词，而不是接口路径。</p>') +
-    nb('重试的规矩：换号就会重复出款',
-      '<p>转账失败要重试时，<b>必须沿用原来的请求号</b>。这是整个资金链路上最不能出错的一条规则。</p>' +
-      '<p style="margin-top:6px">原因：易宝是靠请求号来判断「这个请求我是不是已经处理过了」的。用原号重发，易宝认得出来，最多返回原来的结果；换个新号重发，易宝会当成一笔全新的转账<b>再出一次钱</b>。</p>' +
-      '<p style="margin-top:8px">所以重试的动作顺序是固定的：</p>' +
-      flow([{x:'先查一次这个请求号的真实状态'},{x:'已经成功了 → 直接回写结果，不重发'},{x:'确实失败了 → 用原号重发'}]) +
-      '<p style="margin-top:8px">自动重试的节奏是 1 分钟、5 分钟、15 分钟、30 分钟、60 分钟，最多 5 次。5 次都失败就标记为调拨失败，同时生成人工补偿工单。页面上的「重试」按钮<b>只在调拨失败状态下才亮</b>，其他状态点不了——正在重试中还去手动点，容易撞车。</p>') +
+    nb('失败请求处理',
+      '<p>失败请求不进入资金流水；本页保留请求号、受理结果、调拨状态和易宝流水号供查询，异常交由后台任务或人工工单处理。</p>' +
+      '<p style="margin-top:6px">本页只提供查询和回单查看，不提供人工重试操作。</p>') +
     nb('每个操作：什么时候能点、点了会怎样',
       tbl(['操作','什么时候能点','点了会怎样'],[
         ['查看回单','任何时候','抽屉里展示回单；失败的请求展示失败原因和返回内容'],
-        ['重试','调拨状态是「调拨失败」时才亮','先查真实状态再决定重发，重试次数累加，界面上能看到第几次'],
         ['批量下载回单','任何时候','按当前筛选条件打包下载正式回单文件，异步任务'],
         ['导出','任何时候','导出请求台账，含请求号、金额、状态、易宝流水号']
       ])) +
@@ -3600,8 +3554,7 @@ VIEWS.cFund = () => {
       <td>${f.ev}</td>
       <td class="mono">${f.order}</td>
       <td>${f.payee}</td>
-      <td>${pill(f.st)}</td>
-      <td class="acts"><button class="${f.st==='处理中'?'off':''}" data-drawer="cvoucher" data-key="${f.req}">查看回单</button></td>
+      <td class="acts"><button data-drawer="cvoucher" data-key="${f.ser}">查看回单</button></td>
     </tr>`).join('');
   return `
   <div class="banner"><div><b>这里只有贵公司账户的收支</b>
@@ -3613,7 +3566,6 @@ VIEWS.cFund = () => {
         {l:'交易类型',t:'seg',o:['全部','支出','收款']},
         {l:'发生事件',t:'sel',o:['加油付款','订单退款','差额退回']},
         {l:'收款方',t:'sel',o:OPT.stationCo,w2:1},
-        {l:'交易状态',t:'sel',o:['支付成功','处理中','支付失败','退款成功'],w2:1},
         {l:'金额区间',t:'numrange',p1:'最小',p2:'最大',unit:'元',w2:1},
         {l:'交易时间',t:'range',v1:'2026-08-01',v2:'2026-08-27',w2:1}
       ])}
@@ -3624,8 +3576,8 @@ VIEWS.cFund = () => {
     <div class="card-h"><h2>我的支付流水</h2><span class="spacer"></span>
       <button class="btn sm">批量下载回单</button><button class="btn sm">导出对账文件</button></div>
     <div class="tablewrap">
-      <table style="min-width:1320px">
-        <thead><tr><th style="width:34px"><input type="checkbox" data-all="cFund"></th><th>发生时间</th><th>交易类型</th><th>变动金额</th><th>上次余额</th><th>当前余额</th><th>发生事件</th><th>关联订单</th><th>收款方</th><th>交易状态</th></tr></thead>
+      <table style="min-width:1200px">
+        <thead><tr><th style="width:34px"><input type="checkbox" data-all="cFund"></th><th>发生时间</th><th>交易类型</th><th>变动金额</th><th>上次余额</th><th>当前余额</th><th>发生事件</th><th>关联订单</th><th>收款方</th><th>操作</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
@@ -3650,8 +3602,8 @@ VIEWS.cFund = () => {
       '<p>只有钱<b>确实动了</b>才记流水。付款请求刚发出去、银行还在处理的那几十秒到几分钟，这里是没有记录的。</p>' +
       branch([
         ['订单显示「支付中」但流水里没有','正常，付款在途，稍后刷新即可'],
-        ['交易状态显示「处理中」','已经受理，还没最终到账，回单也还没生成'],
-        ['交易状态显示「支付失败」','钱没扣，平台会自动重试；额度仍处于冻结状态'],
+        ['支付请求仍在处理中','尚未实际记账，不进入资金流水；到支付凭证中查看进度'],
+        ['支付请求失败','钱没扣，不生成资金流水；失败原因保留在支付凭证中'],
         ['订单已完成但流水里始终没有','这属于异常，请联系平台，不要重复下单']
       ])) +
     nb('回单怎么用',
@@ -3970,7 +3922,6 @@ CDTAB.cfund = o => {
           <th>当前余额</th>
           <th>发生事件</th>
           <th>收款方</th>
-          <th>交易状态</th>
           <th style="width:100px">操作</th>
         </tr></thead>
         <tbody>${list.length?list.map(f=>`
@@ -3982,9 +3933,8 @@ CDTAB.cfund = o => {
             <td class="num">${money(f.after)}</td>
             <td>${f.ev}</td>
             <td>${f.payee}</td>
-            <td>${pill(f.st)}</td>
-            <td class="acts"><button class="${f.st==='处理中'?'off':''}" data-drawer="cvoucher" data-key="${f.req}">查看回单</button></td>
-          </tr>`).join(''):'<tr><td colspan="9" class="empty">这笔订单尚未产生资金往来（核销后才发起付款）</td></tr>'}</tbody>
+            <td class="acts"><button data-drawer="cvoucher" data-key="${f.ser}">查看回单</button></td>
+          </tr>`).join(''):'<tr><td colspan="8" class="empty">这笔订单尚未产生资金往来（核销后才发起付款）</td></tr>'}</tbody>
       </table>
     </div>
   </div>
@@ -4003,9 +3953,8 @@ CDTAB.cfund = o => {
     nb('资金流水和回单的关系',
       '<p>资金流水是<b>账务记录</b>（账户余额变动），回单是<b>支付凭证</b>（易宝出具的正式文件）。一笔成功的交易一定同时有流水和回单；失败的交易没有流水，但有失败的请求记录。</p>' +
       '<p style="margin-top:6px">排查问题时，先看流水有没有、对不对；流水对不上再去「支付凭证」页签看每一笔请求的详细状态和回单。</p>') +
-    nb('受理成功 ≠ 到账成功',
-      '<p>易宝先「受理」请求（收下了），再实际处理转账。受理成功不代表钱已经到账——可能后续因为账户冻结、余额不足等原因失败。</p>' +
-      '<p style="margin-top:6px"><b>交易状态字段才是最终结论</b>。只有状态为「成功」的流水才能作为对账依据。</p>')
+    nb('流水与请求状态分离',
+      '<p>资金流水页签只展示已实际记账的结果，本身没有成功、失败或处理中状态。请求是否受理、是否到账以及失败原因统一到「支付凭证」页签查看。</p>')
   )}`;
 };
 
@@ -4229,10 +4178,12 @@ VIEWS.txns = () => {
   });
   const allCount = customerOrderFlows.length + RECHARGES.length;
 
-  // 加油记录（企业端资金流水）
-  const txnRows = customerOrderFlows.map(({t,f,purpose})=>`
+  // 订单支付记录：油款与服务费分别形成独立的企业资金流水
+  const txnRows = customerOrderFlows.map(({t,f,purpose})=>{
+    const txnType = purpose==='服务费' ? '服务费支付' : '加油支付';
+    return `
     <tr>
-      <td><span class="tag o">加油</span><div class="t2">${purpose}</div></td>
+      <td><span class="tag ${purpose==='服务费'?'f':'o'}">${txnType}</span><div class="t2">${purpose}</div></td>
       <td class="mono">${f.id}</td>
       <td class="mono">${t.no}</td>
       <td class="mono">—</td>
@@ -4246,7 +4197,8 @@ VIEWS.txns = () => {
       <td class="num" style="color:${purpose==='服务费'?'var(--fee)':'var(--muted)'}">${purpose==='服务费'?money(Math.abs(f.amt)):'—'}</td>
       <td class="num" style="font-weight:600;color:var(--ok)">− ${money(Math.abs(f.amt))}</td>
       <td class="acts"><button data-drawer="txnDetail" data-key="${f.id}">详情</button></td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 
   // 充值 / 订单退款记录（退款行从原订单带出业务数据）
   const rechargeRows = RECHARGES.map(r=>{
@@ -4297,7 +4249,7 @@ VIEWS.txns = () => {
   <div class="card">
     <div class="filters">
       ${filterRow([
-        {l:'交易类型',t:'sel',o:['全部','加油','充值','退款'],w2:1},
+        {l:'交易类型',t:'sel',o:['全部','加油支付','充值','退款','服务费支付'],w2:1},
         {l:'日期范围',t:'range',v1:'2026-08-01',v2:'2026-08-27'},
         {l:'资金流水号',t:'code',p:'ZJLS 开头',max:32},
         {l:'订单号',t:'code',p:'CHY 开头；充值可为空',max:32},
@@ -4325,10 +4277,11 @@ VIEWS.txns = () => {
 
     ${notes(
     nb('页面定位',
-      '\u003cp\u003e逐笔交易的资金明细表，供\u003cb\u003e企业财务\u003c/b\u003e查看。页面只区分「加油 / 充值 / 退款」三类交易，不在列表展示交易状态和开票状态。\u003c/p\u003e') +
+      '\u003cp\u003e逐笔交易的资金明细表，供\u003cb\u003e企业财务\u003c/b\u003e查看。交易类型统一为「加油支付 / 充值 / 退款 / 服务费支付」四类，不在列表展示交易状态和开票状态。\u003c/p\u003e') +
     nb('核心数据来源',
       tbl(['数据项','来源表/变量','说明'],[
-        ['加油记录','TXNS / 资金流水表 + 订单表','资金流水通过订单号关联加油订单'],
+        ['加油支付记录','TXNS / 资金流水表 + 订单表','油款资金流水通过订单号关联加油订单'],
+        ['服务费支付记录','资金流水表 + 服务费订单','仅展示实际从本企业账户扣除的服务费流水'],
         ['充值记录','RECHARGES（type=充值）','企业账户充值记录'],
         ['退款记录','RECHARGES + REFUNDS + TXNS','退款资金流水关联退款单和原订单，订单数据为展示基础'],
         ['资金流水号','TXNS.flowNo / RECHARGES.flowNo','资金流水表主键，ZJLS开头，全局唯一'],
@@ -4337,9 +4290,9 @@ VIEWS.txns = () => {
         ['变动金额','TXNS.total 或 RECHARGES.amt','加油为负，充值和退款回补为正']
       ])) +
     nb('字段定义说明',
-      '\u003cp\u003e\u003cb\u003e加油类记录：\u003c/b\u003e\u003c/p\u003e' +
+      '\u003cp\u003e\u003cb\u003e加油支付 / 服务费支付记录：\u003c/b\u003e\u003c/p\u003e' +
       tbl(['字段名','取值规则/枚举','业务含义'],[
-        ['交易类型','固定为"加油"','标签展示'],
+        ['交易类型','加油支付 / 服务费支付','油款流水标记为加油支付；服务费流水标记为服务费支付'],
         ['资金流水号','ZJLS编号','资金流水表唯一标识'],
         ['订单号','CHY编号','关联订单表，不复用资金流水号'],
         ['充值/退款单号','—','加油记录不产生充值单或退款单'],
@@ -4350,8 +4303,8 @@ VIEWS.txns = () => {
         ['单价','元/L 或 元/kg','-'],
         ['数量','数值（L/kg）','实际加油量'],
         ['油款','金额','油款金额'],
-        ['服务费','金额','【口径待确认】客户承担的才展示'],
-        ['变动金额','金额 = 油款 + 服务费（客户承担时）','客户实付总额']
+        ['服务费','金额','仅服务费支付流水展示本笔服务费金额'],
+        ['变动金额','当前资金流水的实际变动金额','油款和服务费不合并为同一条流水']
       ]) +
       '\u003cp style="margin-top:8px"\u003e\u003cb\u003e充值类记录：\u003c/b\u003e\u003c/p\u003e' +
       tbl(['字段名','取值规则/枚举','业务含义'],[
@@ -4382,16 +4335,16 @@ VIEWS.txns = () => {
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e退款必须关联原订单：\u003c/b\u003e列表和详情中的司机、车牌、油站、能源、油品、单价和数量均从原订单带出；退款单只记录退款原因、退款金额与资金执行结果。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e颜色规则（全系统统一）：\u003c/b\u003e变动金额颜色遵循"红收绿支"——\u003cb style="color:var(--bad)"\u003e红色=收入（充值/退款回补，带+号）\u003c/b\u003e，\u003cb style="color:var(--ok)"\u003e绿色=支出（消费，带−号）\u003c/b\u003e。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e服务费口径：\u003c/b\u003e仅当服务费实际记入本企业账户时，才在企业资金流水中单独展示。\u003c/p\u003e' +
-      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e混排展示：\u003c/b\u003e加油、充值、退款三类记录按时间倒序混排在同一列表中，用交易类型标签区分。\u003c/p\u003e') +
+      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e混排展示：\u003c/b\u003e加油支付、充值、退款、服务费支付四类记录按时间倒序混排在同一列表中，用交易类型标签区分。\u003c/p\u003e') +
     nb('操作说明',
       tbl(['操作','触发条件','执行逻辑/影响范围'],[
-        ['详情','加油类记录','查看订单资金明细'],
+        ['详情','加油支付 / 服务费支付记录','查看本笔流水及关联订单信息'],
         ['详情','退款类记录','查看退款执行结果及关联的原订单数据']
       ])) +
     nb('边界情况',
       tbl(['场景','处理方式'],[
         ['同一天有多笔充值和消费','按时间倒序混排，用标签区分交易类型'],
-        ['服务费口径不确定','【待确认】客户承担的才展示服务费列'],
+        ['服务费未记入本企业账户','不生成服务费支付流水，也不在企业端展示'],
         ['未实际发生资金变动的失败交易','不进入账户资金流水；失败原因到对应业务单据中查询'],
         ['退款与原订单的关联','退款记录单独成行，直接展示原订单号并带出订单业务数据'],
         ['资金流水号与订单号相同','视为数据生成异常，禁止入库并记录告警'],
@@ -4538,24 +4491,20 @@ VIEWS.stationFlow = () => {
       <td class="mono">${f.id}</td>
       <td class="mono">${f.t}</td>
       <td><div class="t1">${f.acctName}</div><div class="t2 mono">${f.acctId}</div></td>
-      <td>${f.type==='收款'?'<span class="pill ok">收款</span>':'<span class="pill info">支出</span>'}</td>
+      <td>${f.amt>0?`<span class="pill ok">${stationTxnType(f)}</span>`:`<span class="pill info">${stationTxnType(f)}</span>`}</td>
       <td class="num" style="font-weight:600;color:${f.amt<0?'var(--ok)':'var(--bad)'}">${f.amt>0?'+':''}${money(f.amt)}</td>
       <td class="num">${money(f.before)}</td>
       <td class="num">${money(f.after)}</td>
-      <td>${f.ev}</td>
       <td class="mono">${f.order}</td>
       <td class="mono">${f.ser}</td>
-      <td>${pill(f.st)}</td>
-      <td class="acts"><button data-drawer="flowReq" data-key="${f.id}">详情</button><button data-drawer="voucher" data-key="${f.req}">回单</button></td>
+      <td class="acts"><button data-drawer="flowReq" data-key="${f.id}">详情</button><button data-drawer="voucher" data-key="${f.ser}">回单</button></td>
     </tr>`).join('');
   return `
   <div class="card">
     <div class="filters">
       ${filterRow([
-        {l:'交易类型',t:'seg',o:['全部','支出','收款']},
+        {l:'交易类型',t:'seg',o:['全部','订单收款','服务费支出']},
         {l:'资金流水号',t:'code',p:'ZJLS 开头',max:32,w2:1},
-        {l:'发生事件',t:'sel',o:OPT.fundEvent,w2:1},
-        {l:'状态',t:'sel',o:OPT.voucherSt,w2:1},
         {l:'订单号',t:'code',p:'CHY 开头',max:32,w2:1},
         {l:'易宝流水号',t:'code',p:'如 YB2026082700931245',max:32,w2:1},
         {l:'变动金额',t:'numrange',p1:'最小',p2:'最大',unit:'元',w2:1},
@@ -4567,8 +4516,8 @@ VIEWS.stationFlow = () => {
   <div class="card">
     <div class="card-h"><h2>油站资金流水</h2><span class="spacer"></span><button class="btn sm" data-modal="export">导出对账文件</button></div>
     <div class="tablewrap">
-      <table style="min-width:1640px">
-        <thead><tr><th>资金流水号</th><th>发生时间</th><th>油站公司 / 账户 ID</th><th>交易类型</th><th>变动金额(元)</th><th>上次余额(元)</th><th>当前余额(元)</th><th>发生事件</th><th>订单号</th><th>易宝流水号</th><th>状态</th><th style="width:140px">操作</th></tr></thead>
+      <table style="min-width:1400px">
+        <thead><tr><th>资金流水号</th><th>发生时间</th><th>油站公司 / 账户 ID</th><th>交易类型</th><th>变动金额(元)</th><th>上次余额(元)</th><th>当前余额(元)</th><th>订单号</th><th>易宝流水号</th><th style="width:140px">操作</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
@@ -4576,33 +4525,30 @@ VIEWS.stationFlow = () => {
   </div>
   ${notes(
     nb('页面职责',
-      '<p>本页只展示当前登录油站 <b>'+STATION_ME+'</b> 自有账户的资金流水，包括油款收入、服务费划转支出、退款支出、提现支出等。</p>' +
+      '<p>本页只展示当前登录油站 <b>'+STATION_ME+'</b> 自有账户的资金流水，交易类型只分为<b>订单收款</b>和<b>服务费支出</b>。</p>' +
       '<p style="margin-top:6px">平台总账、货主账户及其他油站的资金流水均不在本页展示；订单号只用于追溯本油站自身的加油业务。</p>') +
     nb('油站账户说明',
       tbl(['要素','说明'],[
         ['账户名称','油站公司全称'],
         ['账户 ID','易宝虚拟账户号 YB-S-xxxxx，按能源类型分设'],
-        ['资金动作','接收油款收入、支付服务费、退款、提现']
+        ['资金动作','订单收款、服务费支出']
       ]) +
       '<p style="margin-top:8px"><b>账户按能源类型分设</b>：同一油站公司的柴油账户与天然气账户是两个独立虚拟账户，账户 ID 不同。所以不能把一家公司的柴油和天然气流水合起来算余额——那样算出来的数在易宝那边找不到对应。</p>') +
     nb('流水生成规则',
-      '<ul><li>每笔调拨落地后生成流水。本页只展示当前登录油站账户侧的记录（收款或支出）。</li>' +
+      '<ul><li>各端共用同一套资金流水字段结构，通过账户类型和登录主体隔离数据；本页只展示当前登录油站账户侧的记录。</li>' +
+      '<li>资金流水表不保存成功、失败或处理中状态；支付请求只有确认记账后才生成流水。</li>' +
       '<li><b>资金流水号</b>是每条资金变动记录的唯一标识（ZJLS 开头）；<b>订单号</b>是被该记录关联的订单主键（CHY 开头），两者不共用编号。</li>' +
       '<li>同一订单如在本油站账户发生多次资金变动，则每次变动各自形成一条流水；本页不展示货主侧或平台侧流水。</li>' +
       '<li>连续性约束：同一账户按时间排序，<b>上次余额 + 变动金额 = 当前余额</b> 必须恒成立。</li>' +
       '<li>流水以易宝的通知 + 主动查询双重确认后才落库，避免假流水。</li>' +
       '<li>流水<b>只增不改不删</b>。冲正、退回通过新增反向记录实现。</li></ul>') +
-    nb('油站账户发生事件',
-      tbl(['发生事件','方向','触发时点'],[
-        ['油款收入','收款 +','客户核销后资金调拨到账'],
-        ['服务费划转','支出 −','油款到账后自动划转给平台'],
-        ['退款','支出 −','退款确认执行后退回客户'],
-        ['提现','支出 −','油站发起提现，实时到账'],
-        ['冻结','冻结 +','退款处理中或人工冻结'],
-        ['解冻','冻结 −','争议解除或退款完成']
+    nb('交易类型',
+      tbl(['交易类型','方向','触发时点'],[
+        ['订单收款','收入 +','订单支付成功、油款调拨到本油站账户'],
+        ['服务费支出','支出 −','订单收款后，服务费从本油站账户划转至平台']
       ])) +
     nb('流水详情',
-      '<p>每条流水可点「详情」查看本次资金变动的详情，包括变动金额、上次 / 当前余额、易宝流水号、关联订单和交互时间线。点「回单」查看易宝电子回单。</p>') +
+      '<p>每条流水可点「详情」查看交易类型、变动金额、上次 / 当前余额、易宝流水号和订单号。点「回单」查看易宝电子回单。</p>') +
     nb('与油站账户管理的关系',
       '<p>本页数据源与「油站账户管理」的账户明细相同：本页汇总当前登录油站名下各账户的流水，账户明细则下钻到其中一个具体账户。两处数据必须一致。</p>') +
     nb('对账口径',
@@ -4616,9 +4562,7 @@ VIEWS.stationFlow = () => {
 VIEWS.serviceFee = () => {
   const a = SERVICE_FEE_ACCOUNT;
   const flows = SERVICE_FEE_FLOWS;
-  const rows = flows.map(f=>{
-    const payerFlow = FLOWS.find(x=>x.order===f.order && x.req===f.req && x.amt<0 && postedFundFlow(x));
-    return `
+  const rows = flows.map(f=>`
     <tr>
       <td class="mono">${f.id}</td>
       <td class="mono">${f.t}</td>
@@ -4628,13 +4572,11 @@ VIEWS.serviceFee = () => {
       <td class="num">${money(f.before)}</td>
       <td class="num">${money(f.after)}</td>
       <td class="mono">${f.order}</td>
-      <td class="mono">${payerFlow?.id||'—'}<div class="t2">${payerFlow?fundBook(payerFlow)+' · '+fundPurpose(payerFlow):'非订单入账或对端未回写'}</div></td>
       <td class="mono">${f.ser}</td>
       <td class="acts">
         <button data-drawer="sfFlow" data-key="${f.id}">详情</button>
       </td>
-    </tr>`;
-  }).join('');
+    </tr>`).join('');
 
   return `
   <div class="card">
@@ -4681,8 +4623,8 @@ VIEWS.serviceFee = () => {
   <div class="card">
     <div class="card-h"><h2>服务费流水明细</h2><span class="spacer"></span><button class="btn sm" data-modal="export">导出</button></div>
     <div class="tablewrap">
-      <table style="min-width:1600px">
-        <thead><tr><th>资金流水号</th><th>发生时间</th><th>来源公司</th><th>交易类型</th><th>变动金额(元)</th><th>上次余额(元)</th><th>当前余额(元)</th><th>订单号</th><th>付款方资金流水</th><th>易宝流水号</th><th style="width:90px">操作</th></tr></thead>
+      <table style="min-width:1450px">
+        <thead><tr><th>资金流水号</th><th>发生时间</th><th>来源公司</th><th>交易类型</th><th>变动金额(元)</th><th>上次余额(元)</th><th>当前余额(元)</th><th>订单号</th><th>易宝流水号</th><th style="width:90px">操作</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
@@ -4697,7 +4639,6 @@ VIEWS.serviceFee = () => {
         ['流水列表','SERVICE_FEE_FLOWS / 服务费流水表','平台服务费账户的资金流水'],
         ['资金流水号','SERVICE_FEE_FLOWS.id','资金流水表主键，ZJLS 开头'],
         ['订单号','SERVICE_FEE_FLOWS.order','订单表主键，CHY 开头；提现流水无订单号'],
-        ['付款方资金流水','FLOWS.id（同请求号）','服务费付款方账本中的对应支出流水；油站承担时指向油站资金流水'],
         ['发生时间','SERVICE_FEE_FLOWS.t','资金变动时间'],
         ['来源公司','SERVICE_FEE_FLOWS.co','对应油站或客户公司名；提现显示“—”'],
         ['交易类型','SERVICE_FEE_FLOWS.type','客户费入账 / 油站费入账 / 客户费退款 / 油站费退款 / 提现'],
@@ -4708,7 +4649,6 @@ VIEWS.serviceFee = () => {
       tbl(['字段名','取值规则/枚举','业务含义'],[
         ['资金流水号','ZJLS 开头','本条资金变动的唯一标识'],
         ['订单号','CHY 开头或“—”','追溯对应订单；提现不关联订单'],
-        ['付款方资金流水','ZJLS 开头或“—”','同一笔服务费转账在付款方账本中的对应流水'],
         ['发生时间','-','资金变动时间'],
         ['来源公司','-','对应油站或客户公司名称'],
         ['交易类型','五种固定类型','客户费入账、油站费入账、客户费退款、油站费退款、提现'],
@@ -4721,9 +4661,9 @@ VIEWS.serviceFee = () => {
       '\u003cp\u003e\u003cb\u003e账户性质：\u003c/b\u003e服务费账户是平台侧账户，用于归集所有服务费收入。服务费从油站账户（油站承担模式）或客户账户（客户承担模式）划转至本账户。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e颜色规则：\u003c/b\u003e变动金额遵循全系统统一颜色规则——\u003cb style="color:var(--bad)"\u003e红色=收入（正数）\u003c/b\u003e，\u003cb style="color:var(--ok)"\u003e绿色=支出（负数）\u003c/b\u003e，即"红收绿支"。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e单号分离：\u003c/b\u003e资金流水号和订单号分别由资金流水表、订单表独立生成，不能使用相同号码或将易宝流水号当作平台资金流水号。\u003c/p\u003e' +
-      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e订单关联：\u003c/b\u003e油站承担服务费时，平台资金流水表只记录平台服务费账户收到的 1 条服务费入账流水；列表同时展示订单号和油站侧对应的服务费支出资金流水号，可沿订单号查看完整四条主支付流水。\u003c/p\u003e' +
+      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e订单关联：\u003c/b\u003e服务费流水通过订单号关联服务费订单；资金流水表不额外保存付款方流水号或支付请求号。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e提现：\u003c/b\u003e支持提现至平台绑定银行账户。\u003c/p\u003e' +
-      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e失败处理：\u003c/b\u003e交易失败记录仅供查询，本页不提供重试入口；异常交易由后台任务或人工工单处理。\u003c/p\u003e' +
+      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e失败处理：\u003c/b\u003e失败请求不进入资金流水；请求结果到支付凭证或业务工单查询。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e【待确认】\u003c/b\u003e服务费账户的完整业务规则、提现限额、与服务费订单/发票的联动关系。\u003c/p\u003e') +
     nb('操作说明',
       tbl(['操作','触发条件','执行逻辑/影响范围'],[
@@ -4732,7 +4672,7 @@ VIEWS.serviceFee = () => {
       ])) +
     nb('边界情况',
       tbl(['场景','处理方式'],[
-        ['服务费收入划转失败','记录失败结果并转后台任务或人工工单处理，本页不可重试'],
+        ['服务费收入划转失败','不生成资金流水；失败结果保留在支付请求或业务工单中'],
         ['订单退款导致服务费退回','从服务费账户原路退回支付方'],
         ['提现失败','资金退回账户余额，可重新发起']
       ])) +
@@ -4761,7 +4701,7 @@ const MODALS = {
         'orders':{name:'订单列表',cols:visibleCols('orders'),data:ORDERS},
         'group':{name:'总分订单',cols:rawCols([['no','订单号'],['group','总订单号'],['cust','客户企业'],['driver','司机'],['station','油站'],['real','加油金额'],['st','订单状态'],['pay','支付状态']]),data:ORDERS.filter(o=>o.isGroup)},
         'quota':{name:'额度扣减流水',cols:visibleCols('quota'),data:QUOTA},
-        'flow':{name:'资金交易流水',cols:rawCols([['id','资金流水号'],['order','订单号'],['book','归属账本'],['purpose','资金用途'],['peer','对应资金流水'],['t','发生时间'],['acctType','账户类型'],['acctName','账户名称'],['type','交易类型'],['amt','变动金额'],['before','上次余额'],['after','当前余额'],['ser','易宝流水号']]),data:FLOWS.map(f=>({...f,book:fundBook(f),purpose:fundPurpose(f),peer:peerFundFlow(f)?.id||'—'}))},
+        'flow':{name:'资金交易流水',cols:rawCols([['id','资金流水号'],['order','订单号'],['t','发生时间'],['acctType','账户类型'],['acctName','账户名称'],['acctId','账户ID'],['type','交易类型'],['amt','变动金额'],['before','上次余额'],['after','当前余额'],['ev','发生事件'],['ser','易宝流水号']]),data:FLOWS},
         'voucher':{name:'订单支付凭证',cols:rawCols([['req','请求号'],['t','发生时间'],['order','关联订单'],['from','付款方'],['to','收款方'],['amt','金额'],['use','用途'],['st','调拨状态'],['ser','易宝流水号']]),data:VOUCHERS},
         'refund':{name:'退款列表',cols:visibleCols('refund'),data:REFUNDS},
         'fee':{name:'服务费订单',cols:visibleCols('fee'),data:FEES},
@@ -4770,7 +4710,7 @@ const MODALS = {
         'stationInv':{name:'油站端发票管理',cols:visibleCols('stationInv'),data:APPLIES},
         'stationFeeInv':{name:'油站端服务费发票',cols:visibleCols('stationFeeInv'),data:FEE_INV_APPLIES.filter(a=>a.payer==='油站'&&a.payerName===STATION_ME&&invoiceEligibleFeeOrders(a.bill).length>0)},
         'stationAcct':{name:'油站账户',cols:rawCols([['co','油站公司'],['energy','能源类型'],['acctId','易宝账户ID'],['balance','可提现余额'],['income','累计收入'],['withdrawn','已提现'],['status','账户状态'],['wdMethod','提现方式'],['wdType','提现类型'],['lastWd','最近提现']]),data:STATION_ACCOUNTS},
-        'stationFlow':{name:'油站资金流水',cols:rawCols([['id','资金流水号'],['order','订单号'],['t','发生时间'],['acctName','油站公司'],['acctId','账户ID'],['type','交易类型'],['amt','变动金额'],['before','上次余额'],['after','当前余额'],['ser','易宝流水号']]),data:FLOWS.filter(f=>f.acctType==='站点公司'&&f.acctName===STATION_ME)},
+        'stationFlow':{name:'油站资金流水',cols:rawCols([['id','资金流水号'],['order','订单号'],['t','发生时间'],['acctName','油站公司'],['acctId','账户ID'],['type','交易类型'],['amt','变动金额'],['before','上次余额'],['after','当前余额'],['ser','易宝流水号']]),data:FLOWS.filter(f=>f.acctType==='站点公司'&&f.acctName===STATION_ME).map(f=>({...f,type:stationTxnType(f)}))},
         'cOrders':{name:'企业端订单',cols:visibleCols('cOrders'),data:CORDERS},
         'cRefund':{name:'企业端退款',cols:visibleCols('cRefund'),data:CREFUNDS},
         'cQuota':{name:'企业端余额与额度',cols:visibleCols('cQuota'),data:CQUOTA},
@@ -4780,7 +4720,10 @@ const MODALS = {
         'txns':{name:'账户资金流水',cols:rawCols([['type','交易类型'],['purpose','资金用途'],['flowNo','资金流水号'],['subDocNo','充值/退款单号'],['order','订单号'],['t','发生时间'],['driver','司机'],['plate','车牌号'],['station','油站'],['energy','能源类型'],['amount','变动金额']]),data:[
           ...ACCOUNT_TXNS().flatMap(t=>{
             const linked = orderPostedFlows(t.no).filter(f=>f.acctType==='客户'&&f.amt<0);
-            return linked.length ? linked.map(f=>({...t,type:'加油',purpose:fundPurpose(f),flowNo:f.id,subDocNo:'—',order:t.no,amount:f.amt})) : [{...t,type:'加油',purpose:'油款',subDocNo:'—',order:t.no,amount:-customerDebitAmount(t)}];
+            return linked.length ? linked.map(f=>{
+              const purpose = fundPurpose(f);
+              return {...t,type:purpose==='服务费'?'服务费支付':'加油支付',purpose,flowNo:f.id,subDocNo:'—',order:t.no,amount:f.amt};
+            }) : [{...t,type:'加油支付',purpose:'油款',subDocNo:'—',order:t.no,amount:-customerDebitAmount(t)}];
           }),
           ...RECHARGES.map(r=>{
             const refund = r.type==='退款' ? REFUNDS.find(x=>x.id===r.id) : null;
@@ -4789,7 +4732,7 @@ const MODALS = {
             return {...(order||{}),...r,purpose:r.type==='退款'?'退款回补':'充值',subDocNo:r.id,order:orderNo,amount:r.amt};
           })
         ]},
-        'serviceFee':{name:'服务费账户流水',cols:rawCols([['id','资金流水号'],['order','订单号'],['payerFlow','付款方资金流水'],['t','发生时间'],['co','来源公司'],['type','交易类型'],['amt','变动金额'],['before','上次余额'],['after','当前余额'],['ser','易宝流水号']]),data:SERVICE_FEE_FLOWS.map(f=>({...f,payerFlow:FLOWS.find(x=>x.order===f.order&&x.req===f.req&&x.amt<0&&postedFundFlow(x))?.id||'—'}))}
+        'serviceFee':{name:'服务费账户流水',cols:rawCols([['id','资金流水号'],['order','订单号'],['t','发生时间'],['co','来源公司'],['type','交易类型'],['amt','变动金额'],['before','上次余额'],['after','当前余额'],['ser','易宝流水号']]),data:SERVICE_FEE_FLOWS}
       };
       const cfg = pageMap[current] || pageMap['orders'];
       const cols = cfg.cols.filter(c=>c.k!=='ops'&&c.k!=='_chk');
@@ -5513,39 +5456,6 @@ const CONFIRMS = {
       list:['只有<b>待审核</b>的退款单能撤销；已确认的钱已在路上，撤不了。',
             '撤销不影响重新发起——核实清楚后可以再提一张新的退款单。'],
       ok:'确认撤销', okClass:'danger'
-    };
-  },
-
-  /* --- 服务费重试划转 --- */
-  feeRetry: key => {
-    const f = FEES.find(x=>x.no===key) || FEES[0];
-    return {
-      title:'重试服务费划转', tone:'warn',
-      lead:'将<b>按原请求号</b>重新发起这笔服务费划转。系统会先查一次原请求号的真实状态，已经成功就直接回写结果、不重复出款。',
-      amounts:[{l:'服务费金额',v:money(f.amt),c:'fee'},{l:'加油金额',v:money(f.oilAmt),c:'oil'},{l:'费率',v:f.rate.toFixed(2)+'%',c:''}],
-      kv:[['服务费流水号',`<span class="mono">${f.no}</span>`],['关联订单',`<span class="mono">${f.order}</span>`],
-          ['支付方',`${f.payer} · ${f.payerName}`],['收款方','万联易达科技有限公司（平台）'],['当前状态',pill(f.pay)]],
-      list:['<b>绝不换新请求号</b>——换号易宝会当成一笔全新划转，再扣一次钱。',
-            '若失败原因是<b>账户余额不足</b>，重试大概率还是失败；正确做法是等油款收入到账后由系统自动补划。',
-            '重试结果会更新本页支付状态，不影响订单页的油款支付状态。'],
-      ok:'按原请求号重试', okClass:'primary'
-    };
-  },
-
-  /* --- 资金调拨重试 --- */
-  transferRetry: key => {
-    const v = VOUCHERS.find(x=>x.req===key) || VOUCHERS[0];
-    return {
-      title:'重试资金调拨', tone:'warn',
-      lead:'将<b>按原请求号</b>重新发起这笔调拨。系统先查原请求号的真实状态：已成功则只回写结果，确实失败才重发。',
-      amounts:[{l:'调拨金额',v:money(v.amt),c:v.use==='油款'?'oil':'fee'},{l:'当前状态',v:v.st,c:'bad'}],
-      kv:[['请求号',`<span class="mono">${v.req}</span>`],['业务类型',v.api],['关联订单',`<span class="mono">${v.order}</span>`],
-          ['付款方',`${v.from}<div class="m2">${v.fromAcct}</div>`],['收款方',`${v.to}<div class="m2">${v.toAcct}</div>`],
-          ['受理结果',v.res]],
-      list:['自动重试节奏是 1 / 5 / 15 / 30 / 60 分钟，最多 5 次。<b>正在自动重试中不要手动点</b>，容易撞车。',
-            '5 次仍失败会标记调拨失败并生成人工补偿工单。'],
-      warn:'换新请求号会导致<b>重复出款</b>。这是资金链路上最不能出错的一条规则。',
-      ok:'按原请求号重试', okClass:'primary'
     };
   },
 
@@ -6415,21 +6325,18 @@ DTAB.fund = o => {
   const list = FLOWS.filter(f=>f.order===o.no);
   return `
   ${sumHead(o)}
-  ${orderFundRelationHTML(o.no)}
   <div class="card">
     <div class="card-h"><h2>本单资金交易流水</h2></div>
     <div class="tablewrap">
-      <table style="min-width:1460px">
-        <thead><tr><th>资金流水号</th><th>订单号</th><th>归属账本</th><th>时间</th><th>账户类型</th><th>账户名称</th><th>资金用途</th><th>交易类型</th><th>变动金额</th><th>上次余额</th><th>当前余额</th><th>发生事件</th><th>对应资金流水</th></tr></thead>
+      <table style="min-width:1320px">
+        <thead><tr><th>资金流水号</th><th>订单号</th><th>时间</th><th>账户类型</th><th>账户名称</th><th>交易类型</th><th>变动金额</th><th>上次余额</th><th>当前余额</th><th>发生事件</th><th>易宝流水号</th></tr></thead>
         <tbody>${list.length?list.map(f=>`
-          <tr><td class="mono">${f.id}</td><td class="mono">${f.order}</td><td>${fundBook(f)}</td><td class="mono">${f.t}</td><td>${acctTag(f.acctType)}</td>
+          <tr><td class="mono">${f.id}</td><td class="mono">${f.order}</td><td class="mono">${f.t}</td><td>${acctTag(f.acctType)}</td>
           <td>${f.acctName}<div class="t2 mono">${f.acctId}</div></td>
-          <td>${fundPurpose(f)}</td>
           <td>${f.type==='收款'?'<span class="pill ok">收款</span>':'<span class="pill info">支出</span>'}</td>
           <td class="num" style="font-weight:600;color:${f.amt<0?'var(--ok)':'var(--bad)'}">${f.amt>0?'+':''}${money(f.amt)}</td>
-          <td class="num">${money(f.before)}</td><td class="num">${money(f.after)}</td><td>${f.ev}</td>
-          <td class="mono">${peerFundFlow(f)?.id||'—'}<div class="t2">同一请求号 ${f.req}</div></td>
-          </tr>`).join(''):'<tr><td colspan="13" class="empty">该订单尚未产生资金流水</td></tr>'}</tbody>
+          <td class="num">${money(f.before)}</td><td class="num">${money(f.after)}</td><td>${f.ev}</td><td class="mono">${f.ser}</td>
+          </tr>`).join(''):'<tr><td colspan="11" class="empty">该订单尚未产生资金流水</td></tr>'}</tbody>
       </table>
     </div>
   </div>
@@ -6437,15 +6344,9 @@ DTAB.fund = o => {
     nb('这个页签是做什么的',
       '<p>把这一笔订单牵动的<b>钱</b>和<b>额度</b>放在一起看。上面是真实资金往来，下面是额度的占用与释放。两者是不同的东西：额度只是授权，资金才是真钱。</p>' +
       '<p style="margin-top:6px">列表同时展示资金流水号（ZJLS）和订单号（CHY）：前者定位流水表的一行，后者定位订单表的一单，两者不共用编号。</p>') +
-    nb('一笔订单正常会有几行资金流水',
-      '<p>支付成功且由油站承担服务费时，主支付链路一共生成 <b>4 条资金流水</b>。这是两次转账在三本资金流水表中的双边记账结果：</p>' +
-      tbl(['转账','货主资金流水表','油站资金流水表','平台资金流水表'],[
-        ['油款：货主 → 油站','1 条支出','1 条收入','—'],
-        ['服务费：油站 → 平台','—','1 条支出','1 条收入']
-      ]) +
-      '<p style="margin-top:8px">因此同一个订单号会关联：货主侧 1 条、油站侧 2 条、平台侧 1 条。四条记录的资金流水号各不相同；同一次转账的付款方与收款方两条记录用同一个请求号配对。</p>' +
-      '<p style="margin-top:6px">若服务费由客户承担，总数仍为 4 条，但分布改为货主侧 2 条、油站侧 1 条、平台侧 1 条。</p>' +
-      '<p style="margin-top:8px">总分订单也是 4 行，<b>不会因为拆了几张运单就变多</b>——油枪跳了一次，钱就只走一次。子单层面不存在付款这件事。</p>') +
+    nb('订单与资金流水怎么关联',
+      '<p>本页通过订单号查询该订单实际生成的记账流水，不额外增加跨表派生字段或支付请求号字段。</p>' +
+      '<p style="margin-top:6px">支付请求号、受理结果和调拨状态统一到「订单支付凭证管理」页面查询。</p>') +
     nb('什么时候这里是空的',
       branch([
         ['订单还没核销','正常。核销才触发付款，此前只有额度冻结。'],
@@ -6475,10 +6376,8 @@ DTAB.voucher = o => {
       '<p style="margin-top:8px">两者<b>必须分两个字段展示</b>，不能合并成一个「成功」。业务专用章只在调拨真正成功时才渲染，失败的回单编号位置显示「受理失败，未生成回单」。</p>') +
     nb('页面上的回单是画出来的，不是易宝给的图',
       '<p>为了快速查看，回单由前端按模板渲染，金额大写也是前端按人民币规范生成的。<b>有法律效力的是可下载的 PDF / OFD 文件</b>，那才是易宝出具的正式回单，保存 10 年，只增不删不替换。</p>') +
-    nb('重试：绝对不能换请求号',
-      '<p>易宝靠请求号判断「这笔我是不是已经处理过」。用原号重发，最多返回原结果；<b>换新号重发，易宝会当成一笔全新转账再出一次钱</b>。</p>' +
-      flow([{x:'先查原请求号的真实状态'},{x:'已成功 → 回写结果，不重发'},{x:'确实失败 → 用原号重发'}]) +
-      '<p style="margin-top:8px">自动重试 1/5/15/30/60 分钟，最多 5 次，之后转人工补偿工单。页面「重试」按钮只在调拨失败时可用——正在重试中还手动点，容易撞车。</p>')
+    nb('失败请求处理',
+      '<p>失败请求保留在支付凭证中供查询，不生成资金流水；本页不提供人工重试操作，异常交由后台任务或人工工单处理。</p>')
   );
 };
 
@@ -6753,13 +6652,13 @@ function openSimple(kind,key){
   const map = {
     flowReq:()=>{
       const f = FLOWS.find(x=>x.id===key);
-      const v = VOUCHERS.find(x=>x.req===f.req);
       const stationScoped = current==='stationFlow';
-      document.getElementById('drawerTitle').textContent='资金流水 · 请求详情';
+      const flowTxnType = stationScoped ? stationTxnType(f) : f.type;
+      document.getElementById('drawerTitle').textContent='资金流水详情';
       return `
       <div class="sumhead"><div class="no mono">${f.id}</div>
-        <div class="sec">${f.ev} · ${f.t} · 订单号 ${f.order} · 请求号 ${f.req}</div>
-        <div class="pills">${pill(f.st)}${acctTag(f.acctType)}<span class="tag">${f.type}</span></div>
+        <div class="sec">${stationScoped?flowTxnType:f.ev} · ${f.t} · 订单号 ${f.order}</div>
+        <div class="pills">${acctTag(f.acctType)}<span class="tag">${flowTxnType}</span></div>
         <div class="money">
           <div class="oilv"><div class="l">变动金额</div><div class="v num">${f.amt>0?'+':''}${money(f.amt)}</div></div>
           <div><div class="l">上次余额</div><div class="v num">${money(f.before)}</div></div>
@@ -6771,34 +6670,22 @@ function openSimple(kind,key){
         <dl class="kv">
           <dt>资金流水号</dt><dd class="mono">${f.id}</dd>
           <dt>订单号</dt><dd class="mono">${f.order}</dd>
-          <dt>归属账本</dt><dd>${fundBook(f)}</dd>
-          <dt>资金用途</dt><dd>${fundPurpose(f)}</dd>
-          ${stationScoped?'':`<dt>对应资金流水</dt><dd class="mono">${peerFundFlow(f)?.id||'—'}<div class="m2">同一请求号下的对方账本记录</div></dd>`}
-          <dt>请求号</dt><dd class="mono">${f.req}</dd>
+          <dt>交易类型</dt><dd>${flowTxnType}</dd>
+          ${stationScoped?'':`<dt>发生事件</dt><dd>${f.ev}</dd>`}
           <dt>账户类型</dt><dd>${acctTag(f.acctType)}</dd>
           <dt>账户名称</dt><dd>${f.acctName}</dd>
           <dt>账户 ID</dt><dd class="mono">${f.acctId}</dd>
-          <dt>业务类型</dt><dd>${f.api}</dd>
           <dt>易宝流水号</dt><dd class="mono">${f.ser}</dd>
         </dl>
-      </div></div>
-      <div class="card"><div class="card-b">
-        <div class="sec-title">处理时间线</div>
-        <div class="tl" style="margin-top:10px">
-          <div class="it"><div class="dot"></div><div><div class="h">发起调拨</div><div class="m">${f.t} · 系统自动 · ${f.api}</div></div></div>
-          <div class="it"><div class="dot ${f.st==='调拨失败'?'fail':''}"></div><div><div class="h">易宝受理</div><div class="m">${v?v.res:'—'}</div></div></div>
-          <div class="it"><div class="dot ${f.st==='调拨成功'||f.st==='退回成功'?'':'pend'}"></div><div><div class="h">易宝到账通知</div><div class="m">${f.ser==='—'?'未收到到账通知':'已收到到账通知（2 次），首次 '+f.t}</div></div></div>
-          <div class="it"><div class="dot ${f.st==='调拨成功'||f.st==='退回成功'?'':'pend'}"></div><div><div class="h">平台复核入账</div><div class="m">${f.ser==='—'?'复核确认为失败，准备按原请求号重试':'复核结果与到账通知一致，已入账'}</div></div></div>
-        </div>
       </div></div>`;
     },
     voucher:()=>{
-      const v = VOUCHERS.find(x=>x.req===key);
+      const v = VOUCHERS.find(x=>x.ser===key || x.req===key);
       document.getElementById('drawerTitle').textContent='支付凭证 · 电子回单';
       return receiptHTML(v);
     },
     cvoucher:()=>{
-      const v = CVOUCHERS.find(x=>x.req===key);
+      const v = CVOUCHERS.find(x=>x.ser===key);
       document.getElementById('drawerTitle').textContent='付款凭证 · 电子回单';
       return receiptHTML(v) + notes(
         nb('这张回单能用来做什么',
@@ -6995,11 +6882,12 @@ function openSimple(kind,key){
       const t = TXNS.find(x=>x.no===currentFlow?.order || x.flowNo===key) || TXNS[0];
       const currentFlowNo = currentFlow?.id || t.flowNo;
       const currentPurpose = currentFlow ? fundPurpose(currentFlow) : '油款';
+      const currentTxnType = currentPurpose==='服务费' ? '服务费支付' : '加油支付';
       document.getElementById('drawerTitle').textContent = '资金流水详情';
       return `
       <div class="sumhead"><div class="no mono">${currentFlowNo}</div>
         <div class="sec">订单号 ${t.no} · ${t.t} · ${t.driver} · ${t.plate}</div>
-        <div class="pills"><span class="tag ${t.energy==='柴油'?'o':'info'}">${t.energy}</span><span class="tag b">${currentPurpose}</span></div>
+        <div class="pills"><span class="tag ${t.energy==='柴油'?'o':'info'}">${t.energy}</span><span class="tag ${currentPurpose==='服务费'?'f':'b'}">${currentTxnType}</span></div>
         <div class="money">
           <div class="oilv"><div class="l">本次变动</div><div class="v num">− ¥ ${money(Math.abs(currentFlow?.amt??customerDebitAmount(t)))}</div></div>
           <div><div class="l">上次余额</div><div class="v num">${currentFlow?`¥ ${money(currentFlow.before)}`:'—'}</div></div>
@@ -7013,6 +6901,7 @@ function openSimple(kind,key){
             <dl class="kv">
               <dt>资金流水号</dt><dd class="mono">${currentFlowNo}</dd>
               <dt>订单号</dt><dd class="mono">${t.no}</dd>
+              <dt>交易类型</dt><dd>${currentTxnType}</dd>
               <dt>资金用途</dt><dd>${currentPurpose}</dd>
               <dt>油站</dt><dd>${t.station}<div class="m2">${t.stationCo}</div></dd>
               <dt>能源 / 油品</dt><dd>${t.energy} / ${t.goods}</dd>
@@ -7099,7 +6988,7 @@ function openSimple(kind,key){
     },
     stationAcct:()=>{
       const a = STATION_ACCOUNTS.find(v=>v.id===key);
-      const flows = STATION_FLOWS.filter(f=>f.acctId===a.acctId);
+      const flows = STATION_FLOWS.filter(f=>f.acctId===a.acctId && ['加油收入','服务费划转'].includes(f.ev));
       document.getElementById('drawerTitle').textContent='油站账户明细';
       return `
       <div class="sumhead"><div class="no mono">${a.acctId}</div>
@@ -7143,19 +7032,17 @@ function openSimple(kind,key){
         <div class="card-h"><h2>资金流水明细</h2><span class="spacer"></span>
           <span style="color:var(--muted);font-size:11.5px">本账户资金变动记录，与「油站资金流水」页数据一致</span></div>
         <div class="tablewrap">
-          <table style="min-width:1120px">
-            <thead><tr><th>资金流水号</th><th>订单号</th><th>时间</th><th>事件</th><th>方向</th><th>金额</th><th>变动前余额</th><th>变动后余额</th><th>状态</th></tr></thead>
+          <table style="min-width:920px">
+            <thead><tr><th>资金流水号</th><th>订单号</th><th>发生时间</th><th>交易类型</th><th>变动金额</th><th>上次余额</th><th>当前余额</th></tr></thead>
             <tbody>${flows.length?flows.map(f=>`<tr>
               <td class="mono">${f.id}</td>
               <td class="mono">${f.order}</td>
               <td class="mono">${f.t}</td>
-              <td>${f.ev}</td>
-              <td>${f.type==='收入'?'<span class="pill ok">收入</span>':'<span class="pill info">支出</span>'}</td>
+              <td>${f.amt>0?`<span class="pill ok">${stationTxnType(f)}</span>`:`<span class="pill info">${stationTxnType(f)}</span>`}</td>
               <td class="num" style="font-weight:600;color:${f.amt<0?'var(--ok)':'var(--bad)'}">${f.amt>0?'+':''}${money(f.amt)}</td>
               <td class="num">${money(f.before)}</td>
               <td class="num">${money(f.after)}</td>
-              <td>${pill(f.st)}</td>
-            </tr>`).join(''):'<tr><td colspan="9" class="empty">暂无流水记录</td></tr>'}</tbody>
+            </tr>`).join(''):'<tr><td colspan="7" class="empty">暂无流水记录</td></tr>'}</tbody>
           </table>
         </div>
       </div>
@@ -7173,12 +7060,11 @@ function openSimple(kind,key){
 
     sfFlow:()=>{
       const f = SERVICE_FEE_FLOWS.find(x=>x.id===key);
-      const payerFlow = FLOWS.find(x=>x.order===f.order && x.req===f.req && x.amt<0 && postedFundFlow(x));
       document.getElementById('drawerTitle').textContent='服务费流水 · 详情';
       return `
       <div class="sumhead"><div class="no mono">${f.id}</div>
         <div class="sec">${f.t}${f.order!=='—'?' · 订单号 '+f.order:''}</div>
-        <div class="pills">${pill(f.st)}</div>
+        <div class="pills"><span class="tag f">${f.type}</span></div>
         <div class="money">
           <div class="feev"><div class="l">变动金额</div><div class="v num">${f.amt>0?'+':''}${money(f.amt)}</div></div>
           <div><div class="l">上次余额</div><div class="v num">${money(f.before)}</div></div>
@@ -7189,12 +7075,11 @@ function openSimple(kind,key){
         <div class="sec-title">交易明细</div>
         <table class="form-tbl">
           <tr><th>资金流水号</th><td class="mono">${f.id}</td><th>订单号</th><td class="mono">${f.order}</td></tr>
-          <tr><th>归属账本</th><td>平台资金流水表</td><th>付款方资金流水</th><td class="mono">${payerFlow?.id||'—'}</td></tr>
           <tr><th>来源公司</th><td>${f.co}</td><th>发生时间</th><td class="mono">${f.t}</td></tr>
-          <tr><th>交易状态</th><td>${pill(f.st)}</td>
+          <tr><th>交易类型</th><td>${f.type}</td>
               <th>变动金额</th><td class="num" style="font-weight:600;color:${f.amt<0?'var(--ok)':'var(--bad)'}">${f.amt>0?'+':''}${money(f.amt)} 元</td></tr>
           <tr><th>上次余额</th><td class="num">${money(f.before)} 元</td><th>当前余额</th><td class="num">${money(f.after)} 元</td></tr>
-          <tr><th>易宝流水号</th><td class="mono">${f.ser}</td><th>请求号</th><td class="mono">${f.req}</td></tr>
+          <tr><th>易宝流水号</th><td class="mono" colspan="3">${f.ser}</td></tr>
           <tr><th>账户</th><td class="mono" colspan="3">${SERVICE_FEE_ACCOUNT.acctId}</td></tr>
         </table>
 
@@ -7269,13 +7154,9 @@ function openSimple(kind,key){
       <div class="card"><div class="card-b">
         <div class="sec-title">异常情况处理</div>
         <div style="margin-top:10px;padding:10px 12px;background:var(--surface-2);border-radius:6px;font-size:12px;line-height:1.8">
-          <div><b>退款失败：</b>若油款或服务费任一转账失败，系统自动重试 3 次（间隔 5 分钟），仍失败则标记为「退款失败」，需运营人工介入处理。</div>
-          <div style="margin-top:6px"><b>部分退款：</b>两笔转账独立执行，可能出现油款退回成功但服务费退回失败的情况。此时状态为「部分成功」，失败的一笔可单独重试。</div>
-          <div style="margin-top:6px"><b>处理入口：</b>退款失败或部分成功时，本页显示「重试退款」按钮，可手动触发重新转账。</div>
-        </div>
-        <div style="margin-top:10px;display:flex;gap:8px">
-          <button class="btn danger off">重试退款</button>
-
+          <div><b>退款失败：</b>若油款或服务费任一转账失败，标记为「退款失败」，转运营人工工单处理。</div>
+          <div style="margin-top:6px"><b>部分退款：</b>两笔转账独立执行，可能出现油款退回成功但服务费退回失败的情况。此时状态为「部分成功」，由运营人工核实处理。</div>
+          <div style="margin-top:6px"><b>处理入口：</b>本页只展示处理结果，不提供人工重试操作。</div>
         </div>
       </div></div>`;
     },
