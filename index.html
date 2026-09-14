@@ -4362,7 +4362,7 @@ VIEWS.serviceFee = () => {
     <div class="filters">
       ${filterRow([
         {l:'交易类型',t:'sel',o:['客户费入账','油站费入账','客户费退款','油站费退款','提现'],w2:1},
-        {l:'来源公司',t:'sel',o:[...OPT.cust,...OPT.stationCo]},
+        {l:'来源公司',t:'text',p:'输入公司名称关键词',max:50},
         {l:'易宝流水号',t:'code',p:'如 YB2026082700931309',max:32,w2:1},
         {l:'订单号',t:'code',p:'CHY 开头；提现可为空',max:32,w2:1},
         {l:'发生时间',t:'range',v1:'2026-07-01',v2:'2026-08-27',w2:1}
@@ -4411,6 +4411,7 @@ VIEWS.serviceFee = () => {
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e颜色规则：\u003c/b\u003e变动金额遵循全系统统一颜色规则——\u003cb style="color:var(--bad)"\u003e红色=收入（正数）\u003c/b\u003e，\u003cb style="color:var(--ok)"\u003e绿色=支出（负数）\u003c/b\u003e，即"红收绿支"。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e流水标识：\u003c/b\u003e本菜单不设置或展示额外的平台侧流水编号，以易宝流水号作为列表、查询、详情、导出和对账的主标识。订单号只用于关联服务费订单，不能替代易宝流水号。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e订单关联：\u003c/b\u003e服务费流水通过订单号关联服务费订单；本页不额外保存付款方流水号或支付请求号。\u003c/p\u003e' +
+      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e来源公司筛选：\u003c/b\u003e输入公司名称关键词后按包含关系模糊匹配，不提供候选项或下拉列表。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e可提现余额：\u003c/b\u003e账户概览仅展示可提现余额与累计服务费收入；银行信息不在本页面展示。\u003c/p\u003e') +
     nb('操作说明',
       tbl(['操作','触发条件','执行逻辑/影响范围'],[
