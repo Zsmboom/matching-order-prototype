@@ -4343,7 +4343,7 @@ VIEWS.serviceFee = () => {
     <div class="card-h"><h2>服务费账户</h2><span class="spacer"></span>
       </div>
     <div class="card-b">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:20px;align-items:stretch">
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:stretch">
         <div style="padding:16px 18px;background:linear-gradient(135deg,#f0f7ff,#e6f0ff);border-radius:8px;border:1px solid #d0e3ff">
           <div style="font-size:12px;color:var(--muted);margin-bottom:8px">可提现余额</div>
           <div style="font-size:28px;font-weight:700;color:var(--brand-ink);font-family:'JetBrains Mono',monospace">¥${money(a.balance)}</div>
@@ -4353,14 +4353,6 @@ VIEWS.serviceFee = () => {
           <div style="font-size:12px;color:var(--muted);margin-bottom:8px">累计服务费收入</div>
           <div style="font-size:28px;font-weight:700;color:var(--ok);font-family:'JetBrains Mono',monospace">¥${money(a.income)}</div>
           <div style="font-size:11px;color:var(--muted);margin-top:6px">从开通至今</div>
-        </div>
-        <div style="padding:16px 18px;background:var(--surface-2);border-radius:8px;border:1px solid var(--line)">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:10px">银行信息</div>
-          <dl class="kv" style="margin:0">
-            <dt>银行名称</dt><dd>${a.bank}</dd>
-            <dt>银行卡号</dt><dd class="mono">${a.card}</dd>
-            <dt>提现方式</dt><dd><span class="tag ${a.wdMethod==='D0'?'o':'info'}">${a.wdMethod}</span> ${a.wdMethod==='D0'?'实时到账':'次日到账'}</dd>
-          </dl>
         </div>
       </div>
     </div>
@@ -4419,7 +4411,7 @@ VIEWS.serviceFee = () => {
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e颜色规则：\u003c/b\u003e变动金额遵循全系统统一颜色规则——\u003cb style="color:var(--bad)"\u003e红色=收入（正数）\u003c/b\u003e，\u003cb style="color:var(--ok)"\u003e绿色=支出（负数）\u003c/b\u003e，即"红收绿支"。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e流水标识：\u003c/b\u003e本菜单不设置或展示额外的平台侧流水编号，以易宝流水号作为列表、查询、详情、导出和对账的主标识。订单号只用于关联服务费订单，不能替代易宝流水号。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e订单关联：\u003c/b\u003e服务费流水通过订单号关联服务费订单；本页不额外保存付款方流水号或支付请求号。\u003c/p\u003e' +
-      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e可提现余额：\u003c/b\u003e页面展示平台绑定银行账户与可提现余额，作为资金概览。\u003c/p\u003e') +
+      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e可提现余额：\u003c/b\u003e账户概览仅展示可提现余额与累计服务费收入；银行信息不在本页面展示。\u003c/p\u003e') +
     nb('操作说明',
       tbl(['操作','触发条件','执行逻辑/影响范围'],[
         ['详情','任何时候','按易宝流水号查看来源公司、金额、余额和关联订单'],
