@@ -65,6 +65,10 @@ body{
 a{color:inherit}
 button{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--brand-2);outline-offset:2px;border-radius:4px}
+.visually-hidden:where(:not(:focus-within,:active)){
+  position:absolute!important;clip-path:inset(50%)!important;overflow:hidden!important;
+  width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;border:0!important;white-space:nowrap!important
+}
 
 /* shell */
 .app{display:grid;grid-template-columns:216px minmax(0,1fr);min-height:100vh}
@@ -112,6 +116,7 @@ button{font:inherit;color:inherit}
 .filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 18px;padding:16px 16px 6px}
 .filters.collapsed .f:nth-child(n+13){display:none}
 .f{display:flex;align-items:center;gap:10px;min-width:0}
+.f.span2{grid-column:span 2}
 .f>label{width:78px;flex:none;text-align:right;color:var(--ink-2);font-size:12px}
 .f>label.w2{width:88px}
 .ctrl{flex:1;min-width:0;height:30px;border:1px solid var(--line);background:var(--surface-2);border-radius:7px;padding:0 10px;font-size:12px;color:var(--ink);display:flex;align-items:center;gap:6px;cursor:default}
@@ -704,6 +709,28 @@ const RECHARGES = [
    order:'CHY20260826212244890', bank:'—', acct:'—', st:'退款成功', ser:'YB-TK-20260826001', note:'订单退款回补'}
 ];
 
+/* 企业端账户资金流水：列表、筛选与导出只读取本资金流水数据表，不再拼接订单等业务表。 */
+const ENTERPRISE_FUND_FLOWS = [
+  {company:'万联易达上海分公司', driver:'田玲玲', driverPhone:'15701078321', station:'沈阳浑南加油站', stationCompany:'中石化辽宁石油分公司',
+   fundFlowNo:'ZJLS20260827000001', thirdFlowNo:'YB2026082700931245', type:'加油支付', amount:-795.02, status:'交易成功', time:'2026-08-27 09:36:02',
+   orderNo:'CHY20260827093412006', refundFlowNo:'—', bankCard:'—'},
+  {company:'万联易达上海分公司', driver:'田玲玲', driverPhone:'15701078321', station:'沈阳浑南加油站', stationCompany:'中石化辽宁石油分公司',
+   fundFlowNo:'ZJLS20260827000013', thirdFlowNo:'YB2026082700931309', type:'服务费支付', amount:-9.54, status:'交易成功', time:'2026-08-27 09:36:09',
+   orderNo:'CHY20260827093412006', refundFlowNo:'—', bankCard:'—'},
+  {company:'万联易达上海分公司', driver:'陈志刚', driverPhone:'13611209876', station:'北京大兴机场西站', stationCompany:'畅油网络科技有限公司',
+   fundFlowNo:'ZJLS20260827000008', thirdFlowNo:'YB2026082700887301', type:'加油支付', amount:-2516.86, status:'交易成功', time:'2026-08-27 07:15:41',
+   orderNo:'CHY20260827071233188', refundFlowNo:'—', bankCard:'—'},
+  {company:'万联易达天津分公司', driver:'周慧敏', driverPhone:'13905312277', station:'沈阳浑南加油站', stationCompany:'中石化辽宁石油分公司',
+   fundFlowNo:'ZJLS20260825000007', thirdFlowNo:'YB-TK-20260825006', type:'退款', amount:506.69, status:'交易成功', time:'2026-08-25 15:02:33',
+   orderNo:'CHY20260825112807664', refundFlowNo:'ZJLS20260825000006', bankCard:'—'},
+  {company:'万联易达物流科技有限公司', driver:'—', driverPhone:'—', station:'—', stationCompany:'—',
+   fundFlowNo:'ZJLS20260801000001', thirdFlowNo:'YB-CZ-20260801001', type:'充值', amount:100000.00, status:'交易成功', time:'2026-08-01 09:00:00',
+   orderNo:'—', refundFlowNo:'—', bankCard:'—'},
+  {company:'万联易达物流科技有限公司', driver:'—', driverPhone:'—', station:'—', stationCompany:'—',
+   fundFlowNo:'ZJLS20260728000018', thirdFlowNo:'YB-TX-20260728018', type:'提现', amount:-30000.00, status:'交易成功', time:'2026-07-28 14:22:16',
+   orderNo:'—', refundFlowNo:'—', bankCard:'中国银行 6225****8899'}
+];
+
 /* 企业账户资金流水只展示已实际发生的资金变动；服务费仅在客户承担时计入企业账户 */
 const ACCOUNT_TXNS = () => TXNS.filter(t=>t.pay==='已支付' || t.pay==='已退款');
 const customerFeeAmount = t => {
@@ -1206,7 +1233,7 @@ const PAGES = [
   {id:'cQuota',   name:'我的余额与额度', sub:'充值 / 冻结 / 已消费 / 可用余额', side:'企业端', grp:'财务管理'},
   {id:'daily',    name:'日账单',       sub:'按日汇总消费 / 可下钻逐笔', side:'企业端', grp:'财务管理'},
   {id:'monthly',  name:'月账单',       sub:'按月汇总 / 期初期末余额 / 充值退款', side:'企业端', grp:'财务管理'},
-  {id:'txns', name:'账户资金流水',   sub:'加油 / 充值 / 退款资金明细', side:'企业端', grp:'财务管理'},
+  {id:'txns', name:'账户资金流水',   sub:'企业账户资金流水数据查询', side:'企业端', grp:'财务管理'},
 
 ];
 
@@ -1388,7 +1415,7 @@ function ctlHTML(o){
     case 'dt':
       return `<input class="${cls}" type="datetime-local"${id}${val}${ro}${o.req?' required':''}>`;
     case 'range':
-      return `<input class="inp" type="date" value="${o.v1||''}"><span class="dash">～</span><input class="inp" type="date" value="${o.v2||''}">`;
+      return `<input class="inp" type="date"${o.id?` id="${o.id}-start" name="${o.id}Start"`:''} value="${o.v1||''}"><span class="dash">～</span><input class="inp" type="date"${o.id?` id="${o.id}-end" name="${o.id}End"`:''} value="${o.v2||''}">`;
     case 'monthrange':
       return `<input class="inp" type="month" value="${o.v1||''}"><span class="dash">～</span><input class="inp" type="month" value="${o.v2||''}">`;
     case 'dtrange':
@@ -1408,7 +1435,10 @@ function ctlHTML(o){
 
 /* 查询区：label 在左 */
 function filterRow(items){
-  return items.map(i=>`<div class="f"><label class="${i.w2?'w2':''}">${i.l}</label><div class="fc">${ctlHTML(i)}</div></div>`).join('');
+  return items.map(i=>{
+    const labelFor = i.id ? ` for="${i.t==='range'?i.id+'-start':i.id}"` : '';
+    return `<div class="f ${i.span?'span'+i.span:''}"><label class="${i.w2?'w2':''}"${labelFor}>${i.l}</label><div class="fc">${ctlHTML(i)}</div></div>`;
+  }).join('');
 }
 /* 表单区：label 在上，带 hint */
 function ff(o){
@@ -3940,192 +3970,104 @@ VIEWS.monthly = () => {
 
 };
 
-/* ---- 交易明细 ---- */
+/* ---- 账户资金流水 ---- */
 VIEWS.txns = () => {
-  const postedTxns = ACCOUNT_TXNS();
-  const txnTotal = postedTxns.reduce((s,t)=>s+customerDebitAmount(t),0);
-  const rechargeIn = RECHARGES.filter(r=>r.type==='充值').reduce((s,r)=>s+r.amt,0);
-  const refundIn = RECHARGES.filter(r=>r.type==='退款').reduce((s,r)=>s+r.amt,0);
-  const customerOrderFlows = postedTxns.flatMap(t=>{
-    const linked = orderPostedFlows(t.no).filter(f=>f.acctType==='客户' && f.amt<0);
-    return linked.length ? linked.map(f=>({t,f,purpose:fundPurpose(f)})) : [{t,f:{id:t.flowNo,amt:-customerDebitAmount(t)},purpose:'油款'}];
-  });
-  const allCount = customerOrderFlows.length + RECHARGES.length;
-
-  // 订单支付记录：油款与服务费分别形成独立的企业资金流水
-  const txnRows = customerOrderFlows.map(({t,f,purpose})=>{
-    const txnType = purpose==='服务费' ? '服务费支付' : '加油支付';
+  const rows = ENTERPRISE_FUND_FLOWS.map(f=>{
+    const typeClass = ({'加油支付':'o','服务费支付':'f','充值':'ok','退款':'info','提现':'b'})[f.type] || '';
+    const amountSign = f.amount>0 ? '+' : '−';
+    const amountColor = f.amount>0 ? 'var(--bad)' : 'var(--ok)';
     return `
     <tr>
-      <td><span class="tag ${purpose==='服务费'?'f':'o'}">${txnType}</span><div class="t2">${purpose}</div></td>
-      <td class="mono">${f.id}</td>
-      <td class="mono">${t.no}</td>
-      <td class="mono">—</td>
-      <td class="mono">${t.t}</td>
-      <td><div class="t1">${t.driver}</div><div class="t2 mono">${t.plate} · ${t.phone}</div></td>
-      <td><div class="t1">${t.station}</div><div class="t2">${t.stationCo}</div></td>
-      <td>${t.energy==='天然气'?'<span class="tag info">天然气</span>':'<span class="tag o">柴油</span>'}<div class="t2">${t.goods}</div></td>
-      <td class="num">${t.unit}</td>
-      <td class="num">${t.qty}</td>
-      <td class="num">${purpose==='油款'?money(Math.abs(f.amt)):'—'}</td>
-      <td class="num" style="color:${purpose==='服务费'?'var(--fee)':'var(--muted)'}">${purpose==='服务费'?money(Math.abs(f.amt)):'—'}</td>
-      <td class="num" style="font-weight:600;color:var(--ok)">− ${money(Math.abs(f.amt))}</td>
-      <td class="acts"><button data-drawer="txnDetail" data-key="${f.id}">详情</button></td>
+      <td>${f.company}</td>
+      <td>${f.driver}</td>
+      <td class="mono">${f.driverPhone}</td>
+      <td>${f.station}</td>
+      <td>${f.stationCompany}</td>
+      <td class="mono">${f.fundFlowNo}</td>
+      <td class="mono">${f.thirdFlowNo}</td>
+      <td><span class="tag ${typeClass}">${f.type}</span></td>
+      <td class="num" style="font-weight:600;color:${amountColor}">${amountSign} ${money(Math.abs(f.amount))}</td>
+      <td>${pill(f.status)}</td>
+      <td class="mono">${f.time}</td>
+      <td class="mono">${f.orderNo}</td>
+      <td class="mono">${f.refundFlowNo}</td>
+      <td class="mono">${f.type==='提现'?f.bankCard:'—'}</td>
     </tr>`;
   }).join('');
-
-  // 充值 / 订单退款记录（退款行从原订单带出业务数据）
-  const rechargeRows = RECHARGES.map(r=>{
-    if(r.type==='退款'){
-      const refund = REFUNDS.find(x=>x.id===r.id);
-      const orderNo = r.order || refund?.order;
-      const o = TXNS.find(x=>x.no===orderNo);
-      if(o) return `
-    <tr style="background:#f7fbff">
-      <td><span class="tag info">退款</span></td>
-      <td class="mono">${r.flowNo}</td>
-      <td class="mono">${o.no}</td>
-      <td class="mono">${r.id}</td>
-      <td class="mono">${r.t}</td>
-      <td><div class="t1">${o.driver}</div><div class="t2 mono">${o.plate} · ${o.phone}</div></td>
-      <td><div class="t1">${o.station}</div><div class="t2">${o.stationCo}</div></td>
-      <td>${o.energy==='天然气'?'<span class="tag info">天然气</span>':'<span class="tag o">柴油</span>'}<div class="t2">${o.goods}</div></td>
-      <td class="num">${o.unit}</td>
-      <td class="num">${o.qty}</td>
-      <td class="num">${money(r.amt)}<div class="t2">退回油款</div></td>
-      <td class="num" style="color:var(--muted)">0.00<div class="t2">未计入本账户退款</div></td>
-      <td class="num" style="font-weight:600;color:var(--bad)">+ ${money(r.amt)}</td>
-      <td class="acts"><button data-drawer="refundTxnDetail" data-key="${r.flowNo}">详情</button></td>
-    </tr>`;
-    }
-    return `
-    <tr style="background:#fafbfc">
-      <td><span class="tag ${r.type==='充值'?'ok':'info'}">${r.type}</span></td>
-      <td class="mono">${r.flowNo}</td>
-      <td class="mono">—</td>
-      <td class="mono">${r.id}</td>
-      <td class="mono">${r.t}</td>
-      <td><div class="t1">—</div><div class="t2 mono">${r.channel}</div></td>
-      <td><div class="t1">${r.bank}</div><div class="t2 mono">${r.acct}</div></td>
-      <td>—</td>
-      <td class="num">—</td>
-      <td class="num">—</td>
-      <td class="num">—</td>
-      <td class="num">—</td>
-      <td class="num" style="font-weight:600;color:var(--bad)">+ ${money(r.amt)}</td>
-      <td class="acts"><span style="color:var(--muted)">—</span></td>
-    </tr>`;
-  }).join('');
-
-  const rows = txnRows + rechargeRows;
 
   return `
-  <div class="card">
+  <form class="card" action="#" method="get" onsubmit="return false">
     <div class="filters">
       ${filterRow([
-        {l:'交易类型',t:'sel',o:['全部','加油支付','充值','退款','服务费支付'],w2:1},
-        {l:'日期范围',t:'range',v1:'2026-08-01',v2:'2026-08-27'},
-        {l:'资金流水号',t:'code',p:'ZJLS 开头',max:32},
-        {l:'订单号',t:'code',p:'CHY 开头；充值可为空',max:32},
-        {l:'充值/退款单号',t:'code',p:'CZ 或 TK 开头',max:32,w2:1},
-        {l:'司机姓名',t:'text',p:'姓名',max:20,w2:1},
-        {l:'车牌号',t:'text',p:'如 辽AEK808',max:8,w2:1},
-        {l:'油站',t:'sel',o:['全部','沈阳浑南加油站','津南万顺站','济南历下高新站','北京大兴机场西站','济南章丘服务区站'],w2:1},
-        {l:'能源类型',t:'sel',o:['全部','柴油','天然气'],w2:1},
-        {l:'金额范围',t:'numrange',p1:'最小',p2:'最大',unit:'元',w2:1}
+        {id:'txn-driver',l:'司机名称 / 手机号',t:'text',p:'请输入司机名称或手机号',max:20,w2:1},
+        {id:'txn-station',l:'油站名称',t:'text',p:'请输入油站名称',max:40,w2:1},
+        {id:'txn-station-company',l:'油站公司名称',t:'text',p:'请输入油站公司名称',max:50,w2:1},
+        {id:'txn-merchant-flow',l:'商户交易流水号',t:'code',p:'请输入商户交易流水号',max:32,w2:1},
+        {id:'txn-type',l:'交易类型',t:'sel',o:['全部','加油支付','服务费支付','充值','退款','提现'],w2:1},
+        {id:'txn-status',l:'交易状态',t:'sel',o:['全部','交易成功'],w2:1},
+        {id:'txn-time',l:'交易时间范围',t:'range',v1:'2026-07-01',v2:'2026-08-27',w2:1,span:2},
+        {id:'txn-order',l:'订单号',t:'code',p:'请输入订单号',max:32,w2:1}
       ])}
     </div>
-    <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
-  </div>
+    <div class="filter-actions"><button class="btn primary" type="submit">搜索</button><button class="btn" type="reset">重置</button></div>
+  </form>
 
-    <div class="card">
-    <div class="card-h"><h2>账户资金流水 <span class="title-stat">共 <b>${allCount}</b> 笔 · 消费 <b class="num-ok">¥${money(txnTotal)}</b> · 充值 <b class="num-bad">¥${money(rechargeIn)}</b> · 退款 <b class="num-bad">¥${money(refundIn)}</b></span></h2><span class="spacer"></span><button class="btn sm" data-modal="export">导出</button></div>
+  <div class="card">
+    <div class="card-h"><h2>账户资金流水 <span class="title-stat">共 <b>${ENTERPRISE_FUND_FLOWS.length}</b> 笔</span></h2><span class="spacer"></span><button class="btn sm" data-modal="export">导出</button></div>
     <div class="tablewrap">
-      <table style="min-width:1780px">
-        <thead><tr><th style="width:90px">交易类型</th><th>资金流水号</th><th>订单号</th><th>充值/退款单号</th><th>发生时间</th><th>司机 / 车牌</th><th>油站 / 银行</th><th>能源 / 油品</th><th>单价</th><th>数量</th><th>油款</th><th>服务费</th><th>变动金额</th><th style="width:120px">操作</th></tr></thead>
+      <table style="min-width:2260px">
+        <caption class="visually-hidden">企业账户资金流水数据</caption>
+        <thead><tr><th scope="col">公司名称</th><th scope="col">司机名称</th><th scope="col">司机手机号</th><th scope="col">油站名称</th><th scope="col">油站公司名称</th><th scope="col">资金交易流水号</th><th scope="col">三方交易流水号</th><th scope="col">交易类型</th><th scope="col">交易金额</th><th scope="col">交易状态</th><th scope="col">交易时间</th><th scope="col">订单号</th><th scope="col">退款关联流水号</th><th scope="col">银行卡</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
-    ${pagerHTML(allCount)}
+    ${pagerHTML(ENTERPRISE_FUND_FLOWS.length)}
   </div>
 
-    ${notes(
+  ${notes(
     nb('页面定位',
-      '\u003cp\u003e逐笔交易的资金明细表，供\u003cb\u003e企业财务\u003c/b\u003e查看。交易类型统一为「加油支付 / 充值 / 退款 / 服务费支付」四类，不在列表展示交易状态和开票状态。\u003c/p\u003e') +
+      '<p>企业财务用于查询本企业账户资金变动的流水页。页面内容直接读取企业资金流水数据表，不再从订单、服务费订单、充值或退款业务表拼接展示字段。</p>') +
     nb('核心数据来源',
       tbl(['数据项','来源表/变量','说明'],[
-        ['加油支付记录','TXNS / 资金流水表 + 订单表','油款资金流水通过订单号关联加油订单'],
-        ['服务费支付记录','资金流水表 + 服务费订单','仅展示实际从本企业账户扣除的服务费流水'],
-        ['充值记录','RECHARGES（type=充值）','企业账户充值记录'],
-        ['退款记录','RECHARGES + REFUNDS + TXNS','退款资金流水关联退款单和原订单，订单数据为展示基础'],
-        ['资金流水号','TXNS.flowNo / RECHARGES.flowNo','资金流水表主键，ZJLS开头，全局唯一'],
-        ['充值/退款单号','RECHARGES.id','充值为 CZ 单号，退款为 TK 单号；加油记录为空'],
-        ['订单号','TXNS.no / RECHARGES.order','订单表主键，CHY开头；充值流水无订单号'],
-        ['变动金额','TXNS.total 或 RECHARGES.amt','加油为负，充值和退款回补为正']
+        ['账户资金流水列表','ENTERPRISE_FUND_FLOWS / 企业资金流水数据表','列表、筛选、分页和导出均使用同一份资金流水数据'],
+        ['主体与交易对象','company / driver / driverPhone / station / stationCompany','字段由资金流水记录直接返回'],
+        ['流水标识','fundFlowNo / thirdFlowNo','资金交易流水号与三方交易流水号分别保存'],
+        ['交易信息','type / amount / status / time','交易类型、金额、状态和记账时间'],
+        ['关联信息','orderNo / refundFlowNo / bankCard','订单号、退款关联流水号和提现银行卡']
       ])) +
     nb('字段定义说明',
-      '\u003cp\u003e\u003cb\u003e加油支付 / 服务费支付记录：\u003c/b\u003e\u003c/p\u003e' +
       tbl(['字段名','取值规则/枚举','业务含义'],[
-        ['交易类型','加油支付 / 服务费支付','油款流水标记为加油支付；服务费流水标记为服务费支付'],
-        ['资金流水号','ZJLS编号','资金流水表唯一标识'],
-        ['订单号','CHY编号','关联订单表，不复用资金流水号'],
-        ['充值/退款单号','—','加油记录不产生充值单或退款单'],
-        ['发生时间','日期时间','资金变动入账时间'],
-        ['司机/车牌','司机姓名 + 车牌 + 手机号','-'],
-        ['油站','油站名称 + 公司名','-'],
-        ['能源/油品','能源类型 + 商品名','-'],
-        ['单价','元/L 或 元/kg','-'],
-        ['数量','数值（L/kg）','实际加油量'],
-        ['油款','金额','油款金额'],
-        ['服务费','金额','仅服务费支付流水展示本笔服务费金额'],
-        ['变动金额','当前资金流水的实际变动金额','油款和服务费不合并为同一条流水']
-      ]) +
-      '\u003cp style="margin-top:8px"\u003e\u003cb\u003e充值类记录：\u003c/b\u003e\u003c/p\u003e' +
-      tbl(['字段名','取值规则/枚举','业务含义'],[
-        ['交易类型','充值','账户资金入账'],
-        ['资金流水号','ZJLS编号','资金流水表唯一标识'],
-        ['充值单号','CZ编号','充值业务单号，与资金流水号分开'],
-        ['订单号','—','充值不关联订单'],
-        ['发生时间','日期时间','充值资金入账时间'],
-        ['充值渠道','银行转账等','充值无司机和订单信息'],
-        ['银行及卡号','银行名 + 卡号','-'],
-        ['变动金额','金额（+）','充值入账']
-      ]) +
-      '\u003cp style="margin-top:8px"\u003e\u003cb\u003e退款类记录：\u003c/b\u003e\u003c/p\u003e' +
-      tbl(['字段名','取值规则/枚举','业务含义'],[
-        ['资金流水号','ZJLS开头','退款回补写入资金流水表后的唯一标识'],
-        ['退款单号','TK开头','退款业务单据的唯一标识'],
-        ['原订单','CHY开头','退款必须关联一笔原加油订单'],
-        ['司机/车牌、油站、能源/油品','从原订单带出','不在退款流水中重复维护'],
-        ['单价/数量','从原订单带出','用于核对本次退款对应的加油业务'],
-        ['退回油款','退款单实际回补金额','以资金回补结果为准'],
-        ['变动金额','金额（+）','退款返回企业账户，属于资金流入']
+        ['公司名称','企业总公司或所属分公司名称','该笔资金流水所属企业主体'],
+        ['司机名称 / 司机手机号','文本；无司机时显示“—”','资金流水记录中的司机信息'],
+        ['油站名称 / 油站公司名称','文本；不涉及油站时显示“—”','资金流水记录中的交易油站信息'],
+        ['资金交易流水号','资金流水表唯一编号','原“商户交易流水号”的展示名称'],
+        ['三方交易流水号','第三方支付渠道流水编号','用于与支付渠道对账'],
+        ['交易类型','加油支付 / 服务费支付 / 充值 / 退款 / 提现','资金变动类型'],
+        ['交易金额','金额；收入为正、支出为负','该笔流水的实际资金变动金额'],
+        ['交易状态','资金流水表返回值','直接展示流水记录中的状态'],
+        ['交易时间','日期时间','资金流水记录时间'],
+        ['订单号','CHY 编号；不关联订单时显示“—”','原“订单 ID”的展示名称'],
+        ['退款关联流水号','原资金流水编号；非退款显示“—”','退款流水关联被退回的原资金流水'],
+        ['银行卡','银行名称 + 脱敏卡号','仅提现显示，其他交易统一显示“—”']
       ])) +
     nb('业务规则',
-      '\u003cp\u003e\u003cb\u003e最细粒度数据：\u003c/b\u003e交易明细是最细粒度数据，日账单和月账单都是从交易明细汇总而来。\u003c/p\u003e' +
-      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e编号体系必须分离：\u003c/b\u003e资金流水号是资金流水表主键，订单号是订单表主键，两者不能取相同编号或互相代替。列表以资金流水号为主标识，通过订单号追溯订单；充值、退款则另外保留充值单号或退款单号。\u003c/p\u003e' +
-      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e展示范围：\u003c/b\u003e企业端只展示实际记入本企业账户的资金流水；订单号用于追溯本企业的加油业务，不展示其他账本的流水数量或流水号。\u003c/p\u003e' +
-      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e三层级一致性：\u003c/b\u003e交易明细 = 日账单汇总 = 月账单汇总，三个层级金额必须严格一致。\u003c/p\u003e' +
-      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e退款必须关联原订单：\u003c/b\u003e列表和详情中的司机、车牌、油站、能源、油品、单价和数量均从原订单带出；退款单只记录退款原因、退款金额与资金执行结果。\u003c/p\u003e' +
-      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e颜色规则（全系统统一）：\u003c/b\u003e变动金额颜色遵循"红收绿支"——\u003cb style="color:var(--bad)"\u003e红色=收入（充值/退款回补，带+号）\u003c/b\u003e，\u003cb style="color:var(--ok)"\u003e绿色=支出（消费，带−号）\u003c/b\u003e。\u003c/p\u003e' +
-      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e服务费口径：\u003c/b\u003e仅当服务费实际记入本企业账户时，才在企业资金流水中单独展示。\u003c/p\u003e' +
-      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e混排展示：\u003c/b\u003e加油支付、充值、退款、服务费支付四类记录按时间倒序混排在同一列表中，用交易类型标签区分。\u003c/p\u003e') +
+      '<p><b>单一数据源：</b>页面不查询订单表补充车牌、能源、油品、单价、数量、油款、服务费等订单字段；所有可见字段必须由企业资金流水数据表直接提供。</p>' +
+      '<p style="margin-top:6px"><b>银行卡展示：</b>交易类型为“提现”时展示资金流水记录中的脱敏银行卡，其他交易类型一律展示“—”。</p>' +
+      '<p style="margin-top:6px"><b>空值展示：</b>充值、提现等不涉及司机、油站或订单的流水，对应字段统一展示“—”。</p>') +
     nb('操作说明',
-      tbl(['操作','触发条件','执行逻辑/影响范围'],[
-        ['详情','加油支付 / 服务费支付记录','查看本笔流水及关联订单信息'],
-        ['详情','退款类记录','查看退款执行结果及关联的原订单数据']
+      tbl(['操作','执行逻辑/影响范围'],[
+        ['搜索','按司机名称或手机号、油站名称、油站公司名称、商户交易流水号、交易类型、交易状态、交易时间范围、订单号查询资金流水表'],
+        ['重置','清空全部搜索条件并恢复默认列表'],
+        ['导出','按当前搜索条件导出资金流水表中的可见字段']
       ])) +
     nb('边界情况',
       tbl(['场景','处理方式'],[
-        ['同一天有多笔充值和消费','按时间倒序混排，用标签区分交易类型'],
-        ['服务费未记入本企业账户','不生成服务费支付流水，也不在企业端展示'],
-        ['未实际发生资金变动的失败交易','不进入账户资金流水；失败原因到对应业务单据中查询'],
-        ['退款与原订单的关联','退款记录单独成行，直接展示原订单号并带出订单业务数据'],
-        ['部分退款','保留原订单信息，油款与客户承担服务费按实际退回金额分别记账；退款原因和计算依据从退款单追溯']
+        ['非提现流水存在银行卡值','前端仍显示“—”，避免在无关交易中暴露银行卡'],
+        ['流水不关联订单或退款','订单号、退款关联流水号显示“—”'],
+        ['订单等业务表数据变化','不影响本页历史流水展示，本页只以资金流水数据表记录为准']
       ])) +
     RULE_COMMON
   )}`;
-
 };
 
 /* ---- 充值与退款 ---- */
@@ -4459,21 +4401,11 @@ const MODALS = {
         'cApply':{name:'企业端发票',cols:visibleCols('cApply'),data:CAPPLIES},
         'daily':{name:'日账单',cols:rawCols([['date','日期'],['energy','能源类型'],['count','交易笔数'],['qty','加油量'],['oil','加油金额'],['fee','服务费'],['total','消费合计'],['inv','开票状态']]),data:DAILY},
         'monthly':{name:'月账单',cols:rawCols([['month','月份'],['energy','能源类型'],['count','交易笔数'],['qty','加油量'],['oil','加油金额'],['fee','服务费'],['total','消费合计'],['recharge','充值'],['refund','退款'],['opening','期初余额'],['closing','期末余额'],['invoiced','已开票'],['inv','开票状态']]),data:MONTHLY},
-        'txns':{name:'账户资金流水',cols:rawCols([['type','交易类型'],['purpose','资金用途'],['flowNo','资金流水号'],['subDocNo','充值/退款单号'],['order','订单号'],['t','发生时间'],['driver','司机'],['plate','车牌号'],['station','油站'],['energy','能源类型'],['amount','变动金额']]),data:[
-          ...ACCOUNT_TXNS().flatMap(t=>{
-            const linked = orderPostedFlows(t.no).filter(f=>f.acctType==='客户'&&f.amt<0);
-            return linked.length ? linked.map(f=>{
-              const purpose = fundPurpose(f);
-              return {...t,type:purpose==='服务费'?'服务费支付':'加油支付',purpose,flowNo:f.id,subDocNo:'—',order:t.no,amount:f.amt};
-            }) : [{...t,type:'加油支付',purpose:'油款',subDocNo:'—',order:t.no,amount:-customerDebitAmount(t)}];
-          }),
-          ...RECHARGES.map(r=>{
-            const refund = r.type==='退款' ? REFUNDS.find(x=>x.id===r.id) : null;
-            const orderNo = r.order || refund?.order || '—';
-            const order = orderNo!=='—' ? TXNS.find(x=>x.no===orderNo) : null;
-            return {...(order||{}),...r,purpose:r.type==='退款'?'退款回补':'充值',subDocNo:r.id,order:orderNo,amount:r.amt};
-          })
-        ]},
+        'txns':{name:'账户资金流水',cols:rawCols([
+          ['company','公司名称'],['driver','司机名称'],['driverPhone','司机手机号'],['station','油站名称'],['stationCompany','油站公司名称'],
+          ['fundFlowNo','资金交易流水号'],['thirdFlowNo','三方交易流水号'],['type','交易类型'],['amount','交易金额'],['status','交易状态'],
+          ['time','交易时间'],['orderNo','订单号'],['refundFlowNo','退款关联流水号'],['bankCard','银行卡']
+        ]),data:ENTERPRISE_FUND_FLOWS},
         'serviceFee':{name:'服务费账户流水',cols:rawCols([['ser','易宝流水号'],['order','订单号'],['t','发生时间'],['co','来源公司'],['type','交易类型'],['amt','变动金额'],['before','上次余额'],['after','当前余额']]),data:SERVICE_FEE_FLOWS}
       };
       const cfg = pageMap[current] || pageMap['orders'];
@@ -6509,11 +6441,12 @@ function serviceOrdersForApply(a){
     return {no:f.order,t:`${f.date} ${f.clock}`,qty:o?.qty?`${o.qty.toFixed(2)} ${qtyUnit(o)}`:'—',amt:f.oilAmt};
   });
 }
-function applicationOrderTable(rows,enterprise=false){
+function applicationOrderTable(rows,enterprise=false,showOrderAction=true){
+  const columnCount = showOrderAction ? 5 : 4;
   return `<div class="card"><div class="card-b"><div class="sec-title">订单明细</div>
-    <div class="tablewrap" style="margin-top:10px"><table style="min-width:720px"><thead><tr>
-      <th>订单流水号</th><th>加油时间</th><th>商品数量</th><th>金额</th><th style="width:80px">操作</th>
-    </tr></thead><tbody>${rows.length?rows.map(o=>`<tr><td class="mono">${o.no}</td><td class="mono">${o.t}</td><td class="num">${o.qty}</td><td class="num">${money(o.amt)}</td><td class="acts"><button onclick="${enterprise?'openCOrder':'openOrder'}('${o.no}')">查看</button></td></tr>`).join(''):'<tr><td colspan="5" class="empty">暂无关联订单</td></tr>'}</tbody></table></div>
+    <div class="tablewrap" style="margin-top:10px"><table style="min-width:${showOrderAction?'720':'640'}px"><thead><tr>
+      <th>订单流水号</th><th>加油时间</th><th>商品数量</th><th>金额</th>${showOrderAction?'<th style="width:80px">操作</th>':''}
+    </tr></thead><tbody>${rows.length?rows.map(o=>`<tr><td class="mono">${o.no}</td><td class="mono">${o.t}</td><td class="num">${o.qty}</td><td class="num">${money(o.amt)}</td>${showOrderAction?`<td class="acts"><button onclick="${enterprise?'openCOrder':'openOrder'}('${o.no}')">查看</button></td>`:''}</tr>`).join(''):`<tr><td colspan="${columnCount}" class="empty">暂无关联订单</td></tr>`}</tbody></table></div>
   </div></div>`;
 }
 function applicationFileCard(a,isEnergy,kind=''){
@@ -6541,7 +6474,7 @@ function invoiceApplicationDetail(kind,key){
       ${isEnergy?`<dt>能源类型</dt><dd>${a.energy}</dd><dt>提交批次号</dt><dd class="mono">${a.batch}</dd>`:`<dt>拆单维度</dt><dd>支付方：${a.payerName}</dd><dt>申请时间</dt><dd class="mono">${a.t}</dd>`}
       <dt>申请金额</dt><dd class="num">${money(a.amt)} 元</dd><dt>关联订单数</dt><dd class="num">${rows.length} 笔</dd>
     </dl></div></div>
-    ${applicationOrderTable(rows,false)}
+    ${applicationOrderTable(rows,false,current!=='stationInv')}
     ${applicationFileCard(a,isEnergy,kind)}`;
 }
 
