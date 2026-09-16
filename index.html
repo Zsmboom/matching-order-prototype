@@ -711,22 +711,22 @@ const RECHARGES = [
 
 /* 企业端账户资金流水：列表、筛选与导出只读取本资金流水数据表，不再拼接订单等业务表。 */
 const ENTERPRISE_FUND_FLOWS = [
-  {company:'万联易达上海分公司', driver:'田玲玲', driverPhone:'15701078321', station:'沈阳浑南加油站', stationCompany:'中石化辽宁石油分公司',
+  {company:CUST_ME, driver:'田玲玲', driverPhone:'15701078321', station:'沈阳浑南加油站', stationCompany:'中石化辽宁石油分公司',
    fundFlowNo:'ZJLS20260827000001', thirdFlowNo:'YB2026082700931245', type:'加油支付', amount:-795.02, status:'交易成功', time:'2026-08-27 09:36:02',
    orderNo:'CHY20260827093412006', refundFlowNo:'—', bankCard:'—'},
-  {company:'万联易达上海分公司', driver:'田玲玲', driverPhone:'15701078321', station:'沈阳浑南加油站', stationCompany:'中石化辽宁石油分公司',
+  {company:CUST_ME, driver:'田玲玲', driverPhone:'15701078321', station:'沈阳浑南加油站', stationCompany:'中石化辽宁石油分公司',
    fundFlowNo:'ZJLS20260827000013', thirdFlowNo:'YB2026082700931309', type:'服务费支付', amount:-9.54, status:'交易成功', time:'2026-08-27 09:36:09',
    orderNo:'CHY20260827093412006', refundFlowNo:'—', bankCard:'—'},
-  {company:'万联易达上海分公司', driver:'陈志刚', driverPhone:'13611209876', station:'北京大兴机场西站', stationCompany:'畅油网络科技有限公司',
+  {company:CUST_ME, driver:'陈志刚', driverPhone:'13611209876', station:'北京大兴机场西站', stationCompany:'畅油网络科技有限公司',
    fundFlowNo:'ZJLS20260827000008', thirdFlowNo:'YB2026082700887301', type:'加油支付', amount:-2516.86, status:'交易成功', time:'2026-08-27 07:15:41',
    orderNo:'CHY20260827071233188', refundFlowNo:'—', bankCard:'—'},
-  {company:'万联易达天津分公司', driver:'周慧敏', driverPhone:'13905312277', station:'沈阳浑南加油站', stationCompany:'中石化辽宁石油分公司',
+  {company:CUST_ME, driver:'周慧敏', driverPhone:'13905312277', station:'沈阳浑南加油站', stationCompany:'中石化辽宁石油分公司',
    fundFlowNo:'ZJLS20260825000007', thirdFlowNo:'YB-TK-20260825006', type:'退款', amount:506.69, status:'交易成功', time:'2026-08-25 15:02:33',
    orderNo:'CHY20260825112807664', refundFlowNo:'ZJLS20260825000006', bankCard:'—'},
-  {company:'万联易达物流科技有限公司', driver:'—', driverPhone:'—', station:'—', stationCompany:'—',
+  {company:CUST_ME, driver:'—', driverPhone:'—', station:'—', stationCompany:'—',
    fundFlowNo:'ZJLS20260801000001', thirdFlowNo:'YB-CZ-20260801001', type:'充值', amount:100000.00, status:'交易成功', time:'2026-08-01 09:00:00',
    orderNo:'—', refundFlowNo:'—', bankCard:'—'},
-  {company:'万联易达物流科技有限公司', driver:'—', driverPhone:'—', station:'—', stationCompany:'—',
+  {company:CUST_ME, driver:'—', driverPhone:'—', station:'—', stationCompany:'—',
    fundFlowNo:'ZJLS20260728000018', thirdFlowNo:'YB-TX-20260728018', type:'提现', amount:-30000.00, status:'交易成功', time:'2026-07-28 14:22:16',
    orderNo:'—', refundFlowNo:'—', bankCard:'中国银行 6225****8899'}
 ];
@@ -4026,18 +4026,18 @@ VIEWS.txns = () => {
 
   ${notes(
     nb('页面定位',
-      '<p>企业财务用于查询本企业账户资金变动的流水页。页面内容直接读取企业资金流水数据表，不再从订单、服务费订单、充值或退款业务表拼接展示字段。</p>') +
+      '<p>企业财务用于查询本企业账户资金变动的流水页。接口按当前登录企业隔离数据，页面内容直接读取该企业的资金流水数据表，不再从订单、服务费订单、充值或退款业务表拼接展示字段。</p>') +
     nb('核心数据来源',
       tbl(['数据项','来源表/变量','说明'],[
         ['账户资金流水列表','ENTERPRISE_FUND_FLOWS / 企业资金流水数据表','列表、筛选、分页和导出均使用同一份资金流水数据'],
-        ['主体与交易对象','company / driver / driverPhone / station / stationCompany','字段由资金流水记录直接返回'],
+        ['主体与交易对象','company / driver / driverPhone / station / stationCompany','company 固定为当前登录企业，其余字段由资金流水记录直接返回'],
         ['流水标识','fundFlowNo / thirdFlowNo','资金交易流水号与三方交易流水号分别保存'],
         ['交易信息','type / amount / status / time','交易类型、金额、状态和记账时间'],
         ['关联信息','orderNo / refundFlowNo / bankCard','订单号、退款关联流水号和提现银行卡']
       ])) +
     nb('字段定义说明',
       tbl(['字段名','取值规则/枚举','业务含义'],[
-        ['公司名称','企业总公司或所属分公司名称','该笔资金流水所属企业主体'],
+        ['公司名称','当前登录企业名称','企业端已按登录主体隔离，列表内固定显示当前企业'],
         ['司机名称 / 司机手机号','文本；无司机时显示“—”','资金流水记录中的司机信息'],
         ['油站名称 / 油站公司名称','文本；不涉及油站时显示“—”','资金流水记录中的交易油站信息'],
         ['资金交易流水号','资金流水表唯一编号','原“商户交易流水号”的展示名称'],
@@ -4051,7 +4051,8 @@ VIEWS.txns = () => {
         ['银行卡','银行名称 + 脱敏卡号','仅提现显示，其他交易统一显示“—”']
       ])) +
     nb('业务规则',
-      '<p><b>单一数据源：</b>页面不查询订单表补充车牌、能源、油品、单价、数量、油款、服务费等订单字段；所有可见字段必须由企业资金流水数据表直接提供。</p>' +
+      '<p><b>企业隔离：</b>企业端接口按当前登录企业过滤，列表中的公司名称固定为当前企业，不显示其他企业或分公司主体。</p>' +
+      '<p style="margin-top:6px"><b>单一数据源：</b>页面不查询订单表补充车牌、能源、油品、单价、数量、油款、服务费等订单字段；所有可见字段必须由企业资金流水数据表直接提供。</p>' +
       '<p style="margin-top:6px"><b>银行卡展示：</b>交易类型为“提现”时展示资金流水记录中的脱敏银行卡，其他交易类型一律展示“—”。</p>' +
       '<p style="margin-top:6px"><b>空值展示：</b>充值、提现等不涉及司机、油站或订单的流水，对应字段统一展示“—”。</p>') +
     nb('操作说明',
