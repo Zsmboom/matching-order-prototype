@@ -353,6 +353,15 @@ pre.code{margin:10px 0 0;background:var(--surface-2);border:1px solid var(--line
 .modal.on{display:flex}
 .modal-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;width:min(920px,100%);box-shadow:0 30px 80px -30px rgba(0,0,0,.6)}
 .modal-card.sm{width:min(560px,100%)}
+.modal-card.sm.invoice-preview{width:min(820px,100%)}
+.invoice-order-detail{border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:12px}
+.invoice-order-detail h4{margin:0;padding:10px 14px;background:var(--surface-3);font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.invoice-order-detail h4 .invoice-order-meta{font-size:12px;font-weight:500;color:var(--brand-ink);white-space:nowrap}
+.invoice-order-detail table{min-width:700px}
+.invoice-order-detail tr[hidden]{display:none}
+.invoice-order-pager{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;padding:10px 12px;color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
+.invoice-order-pager [data-application-order-page-info]{margin-right:auto}
+.invoice-order-pager .btn:disabled{opacity:.45;cursor:not-allowed}
 .cf-lead{font-size:13px;line-height:1.7;margin:0}
 .banner .cf-lead b{display:inline;margin:0}
 .cf-lead b{color:var(--ink)}
@@ -1267,6 +1276,7 @@ function paint(){
 }
 
 document.addEventListener('click', e=>{
+  const ap = e.target.closest('[data-application-order-page]'); if(ap){ changeApplicationOrderPage(ap); return; }
   const g = e.target.closest('[data-go]');       if(g){ e.preventDefault(); go(g.dataset.go); return; }
   const d = e.target.closest('[data-detail]');   if(d){ openOrder(d.dataset.detail); return; }
   const cd = e.target.closest('[data-cdetail]'); if(cd){ openCOrder(cd.dataset.cdetail); return; }
@@ -1751,7 +1761,7 @@ VIEWS.orders = () => {
         ['详情','任何时候','打开抽屉，展示订单信息 / 资金流水 / 支付凭证三个页签'],
         ['退款','支付状态为"已支付"','发起整单退款申请，进入退款审核流程'],
         ['订单补录','任何时候','补录线下已发生交易，不冻结额度，提交后状态直接为"已完成"，正常发起两笔调拨'],
-        ['批量申请开票','订单主状态、支付状态满足可开票值，且分账处理完成','按开票方+受票方+能源类型拆分申请单；提交后状态为待开票'],
+        ['批量申请开票','订单主状态、支付状态满足可开票值，且分账处理完成','按开票方+受票方+能源类型拆分申请单；提交前按申请单展示对应订单，每组超过5笔可独立翻页；提交后状态为待开票'],
         ['导出','任何时候','导出当前筛选（或已勾选）结果，字段与列表列一一对应']
       ])) +
     nb('边界情况',
@@ -3245,7 +3255,8 @@ VIEWS.cOrders = () => {
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e数据权限：\u003c/b\u003e总公司账号可查看所属全部子公司数据；子公司账号仅查看自身数据。两者均不能查看其他企业或油站公司的数据。\u003c/p\u003e') +
     nb('操作说明',
       tbl(['操作','触发条件','执行逻辑/影响范围'],[
-        ['详情','任何时候','查看订单详情、加油信息、支付状态']
+        ['详情','任何时候','查看订单详情、加油信息、支付状态'],
+        ['批量申请开票','订单主状态、支付状态满足可开票值，且分账处理完成','按开票方+受票方+能源类型拆分申请单；提交前按申请单展示对应订单，每组超过5笔可独立翻页']
       ])) +
     nb('边界情况',
       tbl(['场景','处理方式'],[
@@ -5710,7 +5721,9 @@ function cfFields(f){
 function openConfirm(kind, key){
   const c = CONFIRMS[kind]; if(!c) return;
   const m = typeof c==='function' ? c(key) : c;
-  document.getElementById('modal').querySelector('.modal-card').classList.add('sm');
+  const card = document.getElementById('modal').querySelector('.modal-card');
+  card.classList.add('sm');
+  card.classList.toggle('invoice-preview', ['orderBatchInvoice','feeBatchInvoice','feeInvoiceApply','cInvoiceBatch','invoiceSubmit'].includes(kind));
   document.getElementById('modalTitle').textContent = m.title;
   document.getElementById('modalBody').innerHTML =
     (m.lead ? `<div class="banner ${m.tone||'warn'}"><div><p class="cf-lead">${m.lead}</p></div></div>` : '') +
@@ -5728,7 +5741,7 @@ function openConfirm(kind, key){
 
 function openModal(kind){
   const m = MODALS[kind];
-  document.getElementById('modal').querySelector('.modal-card').classList.remove('sm');
+  document.getElementById('modal').querySelector('.modal-card').classList.remove('sm','invoice-preview');
   document.getElementById('modalTitle').textContent = m.title;
   document.getElementById('modalBody').innerHTML = m.body();
   document.getElementById('modalFoot').innerHTML = m.foot;
@@ -7039,8 +7052,8 @@ function invoiceListNotes(kind){
       ? '<p>能源发票申请提交后直接进入<b>待开票</b>，完成后进入<b>已开票</b>，待开票申请可手动撤销为<b>已撤销</b>。本期不支持部分开票。</p>'
       : '<p>服务费发票与能源发票使用同一状态口径：<b>待开票 / 已开票 / 已撤销</b>。申请提交成功即为待开票，不设置未开票、开票中。</p>') +
     nb('拆单与资格', energy
-      ? '<p><b>拆单：</b>按开票方、受票方、能源类型三项共同分组；组内仅在单张票额超过阈值时拆票，拆票结果只在提交前预览页展示。</p><p style="margin-top:6px"><b>资格：</b>订单主状态或支付状态任一不满足可开票值即排除，并以分账处理完成为前置条件。</p>'
-      : '<p><b>拆单：</b>仅按支付方分组，不使用账期或能源类型。<b>资格：</b>只判断订单主状态和支付状态，不以服务费账单是否确认为条件。</p>') +
+      ? '<p><b>拆单：</b>按开票方、受票方、能源类型三项共同分组；提交前逐个展示申请单及其关联订单，每组超过5笔可独立翻页。</p><p style="margin-top:6px"><b>资格：</b>订单主状态或支付状态任一不满足可开票值即排除，并以分账处理完成为前置条件。</p>'
+      : '<p><b>拆单：</b>仅按支付方分组，不使用账期或能源类型；提交前逐个展示申请单及其关联订单，每组超过5笔可独立翻页。<b>资格：</b>只判断订单主状态和支付状态，不以服务费账单是否确认为条件。</p>') +
     nb('文件、导出与退款',
       '<p>发票仅支持图片和 PDF；单张发票直接本地下载，批量下载与导出异步提交到下载中心，单批最多 2 万条，完成后系统推送提醒。</p><p style="margin-top:6px">本期不做红冲、自动开票、催办、开票预填单及退款逆向联动；已开票订单退款不回滚发票状态和流程。</p>') +
     RULE_COMMON
@@ -7113,7 +7126,7 @@ VIEWS.fee = () => {
   ${notes(
     nb('搜索项说明','<p>加油订单填写关联的加油订单号（CHY 开头），与服务费流水号（FW 开头）是两个不同编号。</p>')+
     nb('可开票资格','<p>服务费订单仅依据<b>订单主状态</b>和<b>支付状态</b>判定资格；任一项不满足可开票值即排除。是否确认服务费账单不参与判定。</p>')+
-    nb('申请与拆单','<p>勾选可开票订单提交后直接进入<b>待开票</b>。申请单仅按<b>支付方</b>拆分，不关联账期和能源类型；本期不提供自动开票。</p>')+
+    nb('申请与拆单','<p>勾选可开票订单后，按<b>支付方</b>拆分申请单；提交前逐个展示申请单及其关联订单，每组超过5笔可独立翻页。提交后直接进入<b>待开票</b>，不关联账期和能源类型；本期不提供自动开票。</p>')+
     RULE_COMMON
   )}`;
 };
@@ -7133,6 +7146,32 @@ CINVTAB.cInvOrders = a => {
 };
 CINVTAB.cInvFiles = a => `${applySumHead(a)}${applicationFileCard(a,true)}`;
 
+function invoiceApplicationLabel(index, group, type){
+  return type==='fee'
+    ? `申请单${index+1}：${group.payerName} · ${group.payer}`
+    : `申请单${index+1}：${group.drawer} · ${group.energy}`;
+}
+function invoiceApplicationOrderDetails(groups, type){
+  const pageSize=5;
+  const isFee=type==='fee';
+  return `<div class="sec-title">申请单订单明细</div>${groups.map((g,index)=>{
+    const pages=Math.ceil(g.orders.length/pageSize);
+    return `<section class="invoice-order-detail" data-application-order-detail data-page="1"><h4><span>${invoiceApplicationLabel(index,g,type)}</span><span class="invoice-order-meta">${g.orders.length} 笔订单 · ¥${money(g.amt)}</span></h4><div class="tablewrap"><table><thead><tr>${isFee?'<th>服务费订单号</th><th>加油订单号</th><th>订单时间</th><th>服务费金额</th>':'<th>订单号</th><th>订单时间</th><th>油站名称</th><th>油品</th><th>订单金额</th>'}</tr></thead><tbody>${g.orders.map((order,i)=>`<tr data-application-order-row${i>=pageSize?' hidden':''}>${isFee?`<td class="mono">${order.no}</td><td class="mono">${order.order}</td><td class="mono">${order.date} ${order.clock}</td><td class="num">${money(order.amt)}</td>`:`<td class="mono">${order.no}</td><td class="mono">${order.date} ${order.clock}</td><td>${order.station}</td><td>${order.goods}</td><td class="num">${money(order.real||order.est)}</td>`}</tr>`).join('')}</tbody></table></div>${pages>1?`<div class="invoice-order-pager"><span data-application-order-page-info aria-live="polite">第 1 / ${pages} 页 · 共 ${g.orders.length} 笔订单</span><button type="button" class="btn sm" data-application-order-page="-1" disabled>上一页</button><button type="button" class="btn sm" data-application-order-page="1">下一页</button></div>`:''}</section>`;
+  }).join('')}`;
+}
+function changeApplicationOrderPage(button){
+  const detail=button.closest('[data-application-order-detail]');
+  if(!detail) return;
+  const rows=[...detail.querySelectorAll('[data-application-order-row]')];
+  const pageSize=5;
+  const pages=Math.ceil(rows.length/pageSize);
+  const page=Math.min(pages,Math.max(1,Number(detail.dataset.page)+Number(button.dataset.applicationOrderPage)));
+  detail.dataset.page=String(page);
+  rows.forEach((row,i)=>{row.hidden=i<(page-1)*pageSize||i>=page*pageSize;});
+  detail.querySelector('[data-application-order-page-info]').textContent=`第 ${page} / ${pages} 页 · 共 ${rows.length} 笔订单`;
+  detail.querySelector('[data-application-order-page="-1"]').disabled=page===1;
+  detail.querySelector('[data-application-order-page="1"]').disabled=page===pages;
+}
 function energyApplicationPreview(list){
   const groups = {};
   list.forEach(o=>{
@@ -7143,11 +7182,11 @@ function energyApplicationPreview(list){
     groups[k].amt += (o.real||o.est);
   });
   const rows = Object.values(groups);
-  return {rows,html:`<div class="tablewrap"><table style="min-width:760px"><thead><tr><th>开票方</th><th>受票方</th><th>能源类型</th><th>申请金额</th><th>订单数</th><th>拆票规则</th></tr></thead><tbody>${rows.map(g=>`<tr><td>${g.drawer}</td><td>${g.recipient}</td><td>${g.energy}</td><td class="num">${money(g.amt)}</td><td class="num">${g.orders.length}</td><td>仅按系统配置的单张票额阈值</td></tr>`).join('')}</tbody></table></div><p class="note" style="margin-top:8px">本表仅在提交前预览展示；详情页不展示拆票信息，也不按发票行数拆票。</p>`};
+  return {rows,html:`<div class="sec-title">开票申请明细</div><div class="tablewrap"><table style="min-width:700px"><thead><tr><th>开票申请单</th><th>开票方</th><th>受票方</th><th>能源类型</th><th>申请金额</th><th>订单数</th></tr></thead><tbody>${rows.map((g,index)=>`<tr><td>申请单${index+1}</td><td>${g.drawer}</td><td>${g.recipient}</td><td>${g.energy}</td><td class="num">${money(g.amt)}</td><td class="num">${g.orders.length}</td></tr>`).join('')}</tbody></table></div>`};
 }
 function energyConfirm(list,title){
   const preview = energyApplicationPreview(list);
-  return {title,tone:'warn',lead:`已选择 <b>${list.length}</b> 笔符合资格的订单，将按<b>开票方 + 受票方 + 能源类型</b>生成 <b>${preview.rows.length}</b> 个申请单。`,amounts:[{l:'申请金额合计',v:money(list.reduce((s,o)=>s+(o.real||o.est),0)),c:'oil'},{l:'申请单数',v:String(preview.rows.length),c:''},{l:'提交后状态',v:'待开票',c:''}],body:preview.html,list:['能源发票须满足订单主状态、支付状态要求，并以分账处理完成为前置条件。','申请单号统一按 KP+日期+序号生成。','本期不支持部分开票、自动开票或开票预填单。'],ok:`提交 ${preview.rows.length} 个申请单`,okClass:'primary'};
+  return {title,tone:'warn',lead:`已选择 <b>${list.length}</b> 笔订单，拆分为 <b>${preview.rows.length}</b> 个开票申请单。`,amounts:[{l:'申请金额合计',v:money(list.reduce((s,o)=>s+(o.real||o.est),0)),c:'oil'},{l:'开票申请单数',v:String(preview.rows.length),c:''},{l:'订单笔数',v:String(list.length),c:''}],body:preview.html+invoiceApplicationOrderDetails(preview.rows,'energy'),ok:`提交 ${preview.rows.length} 个申请单`,okClass:'primary'};
 }
 CONFIRMS.orderBatchInvoice = key => {
   const nos=(key||'').split(',');
@@ -7161,13 +7200,13 @@ CONFIRMS.invoiceSubmit = () => energyConfirm(ORDERS.filter(isEnergyInvoiceEligib
 function serviceFeeConfirm(list){
   const groups={};
   list.forEach(f=>{
-    const k=f.payerName;
-    if(!groups[k]) groups[k]={payer:f.payer,payerName:f.payerName,orders:0,amt:0};
-    groups[k].orders+=1; groups[k].amt+=f.amt;
+    const k=`${f.payer}|${f.payerName}`;
+    if(!groups[k]) groups[k]={payer:f.payer,payerName:f.payerName,orders:[],amt:0};
+    groups[k].orders.push(f); groups[k].amt+=f.amt;
   });
   const rows=Object.values(groups);
-  const body=`<div class="tablewrap"><table><thead><tr><th>支付方</th><th>支付方类型</th><th>关联订单数</th><th>申请金额</th></tr></thead><tbody>${rows.map(g=>`<tr><td>${g.payerName}</td><td>${g.payer}</td><td class="num">${g.orders}</td><td class="num">${money(g.amt)}</td></tr>`).join('')}</tbody></table></div>`;
-  return {title:'申请开具服务费发票',tone:'warn',lead:`已选择 <b>${list.length}</b> 笔符合资格的服务费订单，仅按<b>支付方</b>拆分为 <b>${rows.length}</b> 个申请单。`,amounts:[{l:'服务费合计',v:money(list.reduce((s,f)=>s+f.amt,0)),c:'fee'},{l:'申请单数',v:String(rows.length),c:''},{l:'提交后状态',v:'待开票',c:''}],body,list:['不按账期或能源类型拆分。','只依据订单主状态和支付状态判定，不依赖账单确认。','本期不提供自动开票。'],ok:`提交 ${rows.length} 个申请单`,okClass:'primary'};
+  const body=`<div class="sec-title">开票申请明细</div><div class="tablewrap"><table><thead><tr><th>开票申请单</th><th>支付方</th><th>支付方类型</th><th>关联订单数</th><th>申请金额</th></tr></thead><tbody>${rows.map((g,index)=>`<tr><td>申请单${index+1}</td><td>${g.payerName}</td><td>${g.payer}</td><td class="num">${g.orders.length}</td><td class="num">${money(g.amt)}</td></tr>`).join('')}</tbody></table></div>${invoiceApplicationOrderDetails(rows,'fee')}`;
+  return {title:'申请开具服务费发票',tone:'warn',lead:`已选择 <b>${list.length}</b> 笔订单，拆分为 <b>${rows.length}</b> 个开票申请单。`,amounts:[{l:'服务费合计',v:money(list.reduce((s,f)=>s+f.amt,0)),c:'fee'},{l:'开票申请单数',v:String(rows.length),c:''},{l:'订单笔数',v:String(list.length),c:''}],body,list:['不按账期或能源类型拆分。','只依据订单主状态和支付状态判定，不依赖账单确认。','本期不提供自动开票。'],ok:`提交 ${rows.length} 个申请单`,okClass:'primary'};
 }
 CONFIRMS.feeBatchInvoice = key => {
   const nos=(key||'').split(',');
