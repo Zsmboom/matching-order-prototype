@@ -7289,27 +7289,11 @@ VIEWS.fee = () => {
   return `
   <div class="card"><div class="filters">${filterRow([
     {l:'服务费流水号',t:'code',p:'FW 开头',max:32},
-    {l:'关联订单号',t:'code',p:'CHY 开头',max:32},
+    {l:'加油订单',t:'code',p:'加油订单号，CHY 开头',max:32},
     {l:'订单状态',t:'sel',o:OPT.orderSt,w2:1},
     {l:'支付状态',t:'sel',o:OPT.feePaySt,w2:1},
     {l:'开票状态',t:'sel',o:OPT.feeInvSt,w2:1},
-    {l:'支付方',t:'sel',o:OPT.feePayer,w2:1},
-    {l:'下单日期',t:'range',v1:'2026-08-01',v2:'2026-08-27',w2:1},
-    {l:'油站公司',t:'sel',o:OPT.stationCo,w2:1},
-    {l:'加油订单支付状态',t:'sel',o:OPT.paySt2,w2:1},
-    {l:'加油订单开票状态',t:'sel',o:OPT.invFlowSt,w2:1},
-    {l:'车牌号',t:'plate',p:'如 辽AEK808'},
-    {l:'司机手机号',t:'tel',p:'11 位手机号'},
-    {l:'油品名称',t:'sel',o:OPT.goods,w2:1},
-    {l:'运单号',t:'code',p:'UD 开头，字母数字',max:32,k:'waybill'},
-    {l:'油站名称',t:'text',p:'油站名称模糊查询',max:30,w2:1},
-    {l:'客户类型',t:'sel',o:OPT.custType},
-    {l:'总公司',t:'sel',o:OPT.cust,w2:1},
-    {l:'分公司',t:'sel',o:OPT.custSub,w2:1},
-    {l:'司机姓名',t:'text',p:'姓名',max:20,w2:1},
-    {l:'油站渠道',t:'sel',o:OPT.channel,w2:1},
-    {l:'能源类型',t:'sel',o:OPT.energy,w2:1},
-    {l:'加油金额',t:'numrange',p1:'最小',p2:'最大',unit:'元',w2:1}
+    {l:'支付方',t:'sel',o:OPT.feePayer,w2:1}
   ])}</div><div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div></div>
   <div class="card" style="border:0;background:none;box-shadow:none"><div class="chips" style="padding:0;justify-content:flex-start">
     ${FEE_CHIPS.map(x=>`<button class="${feeFilter===x.k?'on':''}" data-feechip="${x.k}">${x.k} <b>${FEES.filter(x.f).length}</b></button>`).join('')}
@@ -7319,6 +7303,7 @@ VIEWS.fee = () => {
     ${dataTable('fee',list,'2050px','暂无服务费订单')}${pagerHTML(list.length)}
   </div>
   ${notes(
+    nb('搜索项说明','<p>加油订单填写关联的加油订单号（CHY 开头），与服务费流水号（FW 开头）是两个不同编号。</p>')+
     nb('可开票资格','<p>服务费订单仅依据<b>订单主状态</b>和<b>支付状态</b>判定资格；任一项不满足可开票值即排除。是否确认服务费账单不参与判定。</p>')+
     nb('申请与拆单','<p>勾选可开票订单提交后直接进入<b>待开票</b>。申请单仅按<b>支付方</b>拆分，不关联账期和能源类型；本期不提供自动开票。</p>')+
     RULE_COMMON
