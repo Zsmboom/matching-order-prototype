@@ -1318,12 +1318,32 @@ document.addEventListener('click', e=>{
   const dl = e.target.closest('[data-download]'); if(dl){ if(dl.classList.contains('off')) return;
                                                         showToast('单张发票已开始本地下载'); return; }
   const ex = e.target.closest('[data-export-async]'); if(ex){ startAsyncExport(ex.dataset.exportAsync); return; }
+  const feeReset = e.target.closest('[data-fee-reset]'); if(feeReset){ feeSearch = {}; feeFilter = '全部'; paint(); return; }
+  const feeExpand = e.target.closest('[data-fee-expand]'); if(feeExpand){
+    feeFiltersExpanded = !feeFiltersExpanded;
+    document.getElementById('feeOrderFilterFields').classList.toggle('collapsed',!feeFiltersExpanded);
+    feeExpand.textContent = feeFiltersExpanded ? '收起筛选' : '展开更多筛选';
+    return;
+  }
   const mx = e.target.closest('[data-mclose]');  if(mx){ modal.classList.remove('on'); return; }
   const c = e.target.closest('[data-chip]');     if(c){ orderFilter = c.dataset.chip; paint(); return; }
   const cc = e.target.closest('[data-cchip]');   if(cc){ cOrderFilter = cc.dataset.cchip; paint(); return; }
   const fc = e.target.closest('[data-feechip]'); if(fc){ feeFilter = fc.dataset.feechip; paint(); return; }
   const fic = e.target.closest('[data-feeinvchip]'); if(fic){ feeInvFilter = fic.dataset.feeinvchip; paint(); return; }
   const sfic = e.target.closest('[data-station-feeinvchip]'); if(sfic){ stationFeeInvFilter = sfic.getAttribute('data-station-feeinvchip'); paint(); return; }
+});
+document.addEventListener('submit', e=>{
+  if(e.target.id!=='feeOrderFilters') return;
+  e.preventDefault();
+  const next = Object.fromEntries(new FormData(e.target));
+  if(next.feeOrderDateStart && next.feeOrderDateEnd && next.feeOrderDateStart>next.feeOrderDateEnd){
+    showToast('下单日期起始时间不能晚于结束时间'); return;
+  }
+  if(next.feeOilAmountMin && next.feeOilAmountMax && Number(next.feeOilAmountMin)>Number(next.feeOilAmountMax)){
+    showToast('加油金额最小值不能大于最大值'); return;
+  }
+  feeSearch = next;
+  paint();
 });
 
 /* ================= 下拉选项字典 ================= */
@@ -1384,59 +1404,60 @@ const OPT = {
       range 日期区间 | numrange 数字区间 | seg 分段 | ta 多行文本 | file 文件 */
 function ctlHTML(o){
   const id = o.id ? ` id="${o.id}"` : '';
+  const name = o.id ? ` name="${o.id}"` : '';
   const ro = o.ro ? ' readonly tabindex="-1"' : '';
   const cls = 'inp' + (o.calc?' calc':'') + (o.mono?' mono':'') + (o.req?' req-input':'');
   const ph = o.p ? ` placeholder="${o.p}"` : '';
   const val = o.v!==undefined ? ` value="${o.v}"` : '';
   switch(o.t){
     case 'sel':
-      return `<select size="1" class="${cls} is-empty"${id}${o.req?' required':''} data-sel>
+      return `<select size="1" class="${cls} is-empty"${id}${name}${o.req?' required':''} data-sel>
         <option value="">${o.p||'请选择'}</option>
         ${(o.o||[]).map(v=>`<option${o.v===v?' selected':''}>${v}</option>`).join('')}</select>`;
     case 'num': case 'amt': {
       const step = o.step!==undefined?o.step:(o.t==='amt'?'0.01':'1');
       const min = o.min!==undefined?o.min:0;
       const max = o.max!==undefined?o.max:(o.t==='amt'?99999999.99:999999);
-      return `<input class="${cls}" type="number" inputmode="decimal"${id}${ph}${val}${ro}
+      return `<input class="${cls}" type="number" inputmode="decimal"${id}${name}${ph}${val}${ro}
         min="${min}" max="${max}" step="${step}"${o.req?' required':''} data-dec="${String(step).split('.')[1]?String(step).split('.')[1].length:0}">`;
     }
     case 'tel':
-      return `<input class="${cls} mono" type="tel" inputmode="numeric"${id}${ph}${val}${ro}
+      return `<input class="${cls} mono" type="tel" inputmode="numeric"${id}${name}${ph}${val}${ro}
         maxlength="11" pattern="1[3-9][0-9]{9}"${o.req?' required':''} data-digits>`;
     case 'plate':
-      return `<input class="${cls}" type="text"${id}${ph}${val}${ro} maxlength="8"${o.req?' required':''} data-upper>`;
+      return `<input class="${cls}" type="text"${id}${name}${ph}${val}${ro} maxlength="8"${o.req?' required':''} data-upper>`;
     case 'code':
-      return `<input class="${cls} mono" type="text"${id}${ph}${val}${ro}
+      return `<input class="${cls} mono" type="text"${id}${name}${ph}${val}${ro}
         maxlength="${o.max||32}" pattern="[A-Za-z0-9_-]{0,${o.max||32}}"${o.req?' required':''} data-upper data-code>`;
     case 'taxno':
-      return `<input class="${cls} mono" type="text"${id}${ph}${val}${ro} maxlength="20" pattern="[0-9A-Z]{15,20}"${o.req?' required':''} data-upper data-code>`;
+      return `<input class="${cls} mono" type="text"${id}${name}${ph}${val}${ro} maxlength="20" pattern="[0-9A-Z]{15,20}"${o.req?' required':''} data-upper data-code>`;
     case 'date':
-      return `<input class="${cls}" type="date"${id}${val}${ro}${o.req?' required':''}>`;
+      return `<input class="${cls}" type="date"${id}${name}${val}${ro}${o.req?' required':''}>`;
     case 'dt':
-      return `<input class="${cls}" type="datetime-local"${id}${val}${ro}${o.req?' required':''}>`;
+      return `<input class="${cls}" type="datetime-local"${id}${name}${val}${ro}${o.req?' required':''}>`;
     case 'range':
-      return `<input class="inp" type="date"${o.id?` id="${o.id}-start" name="${o.id}Start"`:''} value="${o.v1||''}"><span class="dash">～</span><input class="inp" type="date"${o.id?` id="${o.id}-end" name="${o.id}End"`:''} value="${o.v2||''}">`;
+      return `<input class="inp" type="date"${o.id?` id="${o.id}-start" name="${o.id}Start"`:''} value="${o.v1||''}"><span class="dash">～</span><input class="inp" type="date"${o.id?` id="${o.id}-end" name="${o.id}End" aria-label="${o.l}结束"`:''} value="${o.v2||''}">`;
     case 'monthrange':
       return `<input class="inp" type="month" value="${o.v1||''}"><span class="dash">～</span><input class="inp" type="month" value="${o.v2||''}">`;
     case 'dtrange':
       return `<input class="inp" type="datetime-local" value="${o.v1||''}"><span class="dash">～</span><input class="inp" type="datetime-local" value="${o.v2||''}">`;
     case 'numrange':
-      return `<input class="inp" type="number" inputmode="decimal" min="0" step="${o.step||'0.01'}" placeholder="${o.p1||'最小'}"><span class="dash">～</span><input class="inp" type="number" inputmode="decimal" min="0" step="${o.step||'0.01'}" placeholder="${o.p2||'最大'}">${o.unit?`<span class="unit">${o.unit}</span>`:''}`;
+      return `<input class="inp" type="number" inputmode="decimal" min="0" step="${o.step||'0.01'}"${o.id?` id="${o.id}-start" name="${o.id}Min"`:''} value="${o.v1||''}" placeholder="${o.p1||'最小'}"><span class="dash">～</span><input class="inp" type="number" inputmode="decimal" min="0" step="${o.step||'0.01'}"${o.id?` id="${o.id}-end" name="${o.id}Max" aria-label="${o.l}最大值"`:''} value="${o.v2||''}" placeholder="${o.p2||'最大'}">${o.unit?`<span class="unit">${o.unit}</span>`:''}`;
     case 'seg':
       return `<div class="seg" data-seg>${o.o.map((s,k)=>`<span class="${k===0?'on':''}">${s}</span>`).join('')}</div>`;
     case 'ta':
-      return `<textarea class="${cls}"${id}${ph}${ro} maxlength="${o.max||200}"${o.req?' required':''} data-count>${o.v||''}</textarea>`;
+      return `<textarea class="${cls}"${id}${name}${ph}${ro} maxlength="${o.max||200}"${o.req?' required':''} data-count>${o.v||''}</textarea>`;
     case 'file':
       return `<label class="up" tabindex="0">${o.p}<input type="file" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)" accept="${o.accept||'image/*,application/pdf'}"${o.req?' required':''}></label>`;
     default:
-      return `<input class="${cls}" type="text"${id}${ph}${val}${ro} maxlength="${o.max||50}"${o.req?' required':''}>`;
+      return `<input class="${cls}" type="text"${id}${name}${ph}${val}${ro} maxlength="${o.max||50}"${o.req?' required':''}>`;
   }
 }
 
 /* 查询区：label 在左 */
 function filterRow(items){
   return items.map(i=>{
-    const labelFor = i.id ? ` for="${i.t==='range'?i.id+'-start':i.id}"` : '';
+    const labelFor = i.id ? ` for="${['range','numrange'].includes(i.t)?i.id+'-start':i.id}"` : '';
     return `<div class="f ${i.span?'span'+i.span:''}"><label class="${i.w2?'w2':''}"${labelFor}>${i.l}</label><div class="fc">${ctlHTML(i)}</div></div>`;
   }).join('');
 }
@@ -2351,8 +2372,36 @@ const FEE_COLS = regCols('fee', [
 ]);
 
 let feeFilter = '全部';
+let feeSearch = {};
+let feeFiltersExpanded = false;
 let feeInvFilter = '全部';
 let stationFeeInvFilter = '全部';
+
+function feeMatchesSearch(f, q=feeSearch){
+  const o = ORDERS.find(order=>order.no===f.order);
+  const contains = (value,key) => !q[key] || String(value??'').toLocaleLowerCase().includes(q[key].trim().toLocaleLowerCase());
+  const equals = (value,key) => !q[key] || value===q[key];
+  const from = (value,key) => !q[key] || (value && value>=q[key]);
+  const to = (value,key) => !q[key] || (value && value<=q[key]);
+  const min = (value,key) => !q[key] || value>=Number(q[key]);
+  const max = (value,key) => !q[key] || value<=Number(q[key]);
+  return contains(f.no,'feeNo') && contains(f.order,'feeOrderNo') &&
+    equals(o?.st,'feeOrderStatus') && equals(f.pay,'feePayStatus') &&
+    equals(f.inv,'feeInvoiceStatus') && equals(f.payer,'feePayer') &&
+    from(o?.date,'feeOrderDateStart') && to(o?.date,'feeOrderDateEnd') &&
+    equals(o?.stationCo,'feeStationCompany') && equals(o?.pay,'feeOilPayStatus') &&
+    equals(o?.inv,'feeOilInvoiceStatus') && contains(o?.plate,'feePlate') &&
+    contains(o?.phone,'feeDriverPhone') && equals(o?.goods,'feeGoods') &&
+    contains(o?.waybill,'feeWaybill') && contains(f.station,'feeStation') &&
+    equals(o?.custType,'feeCustomerType') && equals(f.cust,'feeCustomer') &&
+    equals(o?.custSub,'feeCustomerBranch') && contains(o?.driver,'feeDriver') &&
+    equals(o?.channel,'feeChannel') && equals(f.energy,'feeEnergy') &&
+    min(f.oilAmt,'feeOilAmountMin') && max(f.oilAmt,'feeOilAmountMax');
+}
+function filteredFeeOrders(){
+  const chip = FEE_CHIPS.find(x=>x.k===feeFilter) || FEE_CHIPS[0];
+  return FEES.filter(f=>chip.f(f) && feeMatchesSearch(f));
+}
 
 /* 服务费订单勾选与批量操作 */
 function toggleFeeCheckAll(cb){
@@ -2406,7 +2455,7 @@ function startAsyncDownload(count){
   setTimeout(()=>showToast('批量下载任务已完成，可前往下载中心获取'),1200);
 }
 function startAsyncExport(name){
-  const counts = {fee:FEES.length, energyInvApply:APPLIES.length, feeInvApply:FEE_INV_APPLIES.length, stationInv:APPLIES.length, stationFeeInv:FEE_INV_APPLIES.length, cApply:CAPPLIES.length};
+  const counts = {fee:filteredFeeOrders().length, energyInvApply:APPLIES.length, feeInvApply:FEE_INV_APPLIES.length, stationInv:APPLIES.length, stationFeeInv:FEE_INV_APPLIES.length, cApply:CAPPLIES.length};
   const count = counts[name] || 0;
   if(count>20000){ showToast('当前结果超过 2 万条，请缩小筛选范围后重试'); return; }
   showToast(`已提交 ${count} 条数据的导出任务，请到下载中心查看`);
@@ -4389,7 +4438,7 @@ const MODALS = {
         'flow':{name:'资金交易流水',cols:rawCols([['id','资金流水号'],['order','订单号'],['t','发生时间'],['acctType','账户类型'],['acctName','账户名称'],['acctId','账户ID'],['type','交易类型'],['amt','变动金额'],['before','上次余额'],['after','当前余额'],['ev','发生事件'],['ser','易宝流水号']]),data:FLOWS},
         'voucher':{name:'订单支付凭证',cols:rawCols([['req','请求号'],['t','发生时间'],['order','关联订单'],['from','付款方'],['to','收款方'],['amt','金额'],['use','用途'],['st','调拨状态'],['ser','易宝流水号']]),data:VOUCHERS},
         'refund':{name:'退款列表',cols:visibleCols('refund'),data:REFUNDS},
-        'fee':{name:'服务费订单',cols:visibleCols('fee'),data:FEES},
+        'fee':{name:'服务费订单',cols:visibleCols('fee'),data:filteredFeeOrders()},
         'energyInvApply':{name:'能源发票管理',cols:visibleCols('energyInvApply'),data:APPLIES},
         'feeInvApply':{name:'服务费发票管理',cols:visibleCols('feeInvApply'),data:FEE_INV_APPLIES.filter(a=>invoiceEligibleFeeOrders(a.bill).length>0)},
         'stationInv':{name:'油站端发票管理',cols:visibleCols('stationInv'),data:APPLIES},
@@ -7283,26 +7332,47 @@ VIEWS.stationInv = () => renderEnergyInvoiceList('station');
 VIEWS.cApply = () => renderEnergyInvoiceList('enterprise');
 VIEWS.feeInvApply = () => renderServiceInvoiceList('ops');
 VIEWS.stationFeeInv = () => renderServiceInvoiceList('station');
+const feeFilterValue = key => String(feeSearch[key]??'').replace(/[&"<>]/g, ch=>({'&':'&amp;','"':'&quot;','<':'&lt;','>':'&gt;'}[ch]));
 VIEWS.fee = () => {
-  const chip = FEE_CHIPS.find(x=>x.k===feeFilter) || FEE_CHIPS[0];
-  const list = FEES.filter(chip.f);
+  const list = filteredFeeOrders();
+  const v = feeFilterValue;
   return `
-  <div class="card"><div class="filters">${filterRow([
-    {l:'服务费流水号',t:'code',p:'FW 开头',max:32},
-    {l:'关联订单号',t:'code',p:'CHY 开头',max:32},
-    {l:'订单状态',t:'sel',o:OPT.orderSt,w2:1},
-    {l:'支付状态',t:'sel',o:OPT.feePaySt,w2:1},
-    {l:'开票状态',t:'sel',o:OPT.feeInvSt,w2:1},
-    {l:'支付方',t:'sel',o:OPT.feePayer,w2:1}
-  ])}</div><div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div></div>
+  <form class="card" id="feeOrderFilters" action="#fee" method="get">
+    <div class="filters ${feeFiltersExpanded?'':'collapsed'}" id="feeOrderFilterFields">${filterRow([
+      {l:'服务费流水号',id:'feeNo',t:'code',p:'FW 开头',max:32,v:v('feeNo')},
+      {l:'关联订单号',id:'feeOrderNo',t:'code',p:'CHY 开头',max:32,v:v('feeOrderNo')},
+      {l:'加油订单下单日期',id:'feeOrderDate',t:'range',v1:v('feeOrderDateStart'),v2:v('feeOrderDateEnd'),w2:1},
+      {l:'油站公司',id:'feeStationCompany',t:'sel',o:OPT.stationCo,v:v('feeStationCompany'),w2:1},
+      {l:'加油订单状态',id:'feeOrderStatus',t:'sel',o:OPT.orderSt,v:v('feeOrderStatus'),w2:1},
+      {l:'加油订单支付状态',id:'feeOilPayStatus',t:'sel',o:OPT.paySt2,v:v('feeOilPayStatus'),w2:1},
+      {l:'加油订单开票状态',id:'feeOilInvoiceStatus',t:'sel',o:OPT.invFlowSt,v:v('feeOilInvoiceStatus'),w2:1},
+      {l:'服务费支付状态',id:'feePayStatus',t:'sel',o:OPT.feePaySt,v:v('feePayStatus'),w2:1},
+      {l:'服务费开票状态',id:'feeInvoiceStatus',t:'sel',o:OPT.feeInvSt,v:v('feeInvoiceStatus'),w2:1},
+      {l:'支付方',id:'feePayer',t:'sel',o:OPT.feePayer,v:v('feePayer'),w2:1},
+      {l:'车牌号',id:'feePlate',t:'plate',p:'如 辽AEK808',v:v('feePlate')},
+      {l:'司机手机号',id:'feeDriverPhone',t:'tel',p:'11 位手机号',v:v('feeDriverPhone')},
+      {l:'油品名称',id:'feeGoods',t:'sel',o:OPT.goods,v:v('feeGoods'),w2:1},
+      {l:'运单号',id:'feeWaybill',t:'code',p:'UD 开头',max:32,v:v('feeWaybill')},
+      {l:'油站名称',id:'feeStation',t:'text',p:'油站名称模糊查询',max:30,v:v('feeStation'),w2:1},
+      {l:'客户类型',id:'feeCustomerType',t:'sel',o:OPT.custType,v:v('feeCustomerType')},
+      {l:'总公司',id:'feeCustomer',t:'sel',o:OPT.cust,v:v('feeCustomer'),w2:1},
+      {l:'分公司',id:'feeCustomerBranch',t:'sel',o:OPT.custSub,v:v('feeCustomerBranch'),w2:1},
+      {l:'司机姓名',id:'feeDriver',t:'text',p:'姓名',max:20,v:v('feeDriver'),w2:1},
+      {l:'油站渠道',id:'feeChannel',t:'sel',o:OPT.channel,v:v('feeChannel'),w2:1},
+      {l:'能源类型',id:'feeEnergy',t:'sel',o:OPT.energy,v:v('feeEnergy'),w2:1},
+      {l:'加油金额',id:'feeOilAmount',t:'numrange',p1:'最小',p2:'最大',unit:'元',v1:v('feeOilAmountMin'),v2:v('feeOilAmountMax'),w2:1}
+    ])}</div>
+    <div class="filter-actions"><button class="btn primary" type="submit">搜索</button><button class="btn" type="button" data-fee-reset>重置</button><span class="spacer"></span><button class="btn link" type="button" data-fee-expand>${feeFiltersExpanded?'收起筛选':'展开更多筛选'}</button></div>
+  </form>
   <div class="card" style="border:0;background:none;box-shadow:none"><div class="chips" style="padding:0;justify-content:flex-start">
-    ${FEE_CHIPS.map(x=>`<button class="${feeFilter===x.k?'on':''}" data-feechip="${x.k}">${x.k} <b>${FEES.filter(x.f).length}</b></button>`).join('')}
+    ${FEE_CHIPS.map(x=>`<button class="${feeFilter===x.k?'on':''}" data-feechip="${x.k}">${x.k} <b>${FEES.filter(f=>x.f(f)&&feeMatchesSearch(f)).length}</b></button>`).join('')}
   </div></div>
   <div class="card"><div class="card-h"><h2>服务费订单<span class="title-stat">共 <b>${list.length}</b> 笔</span></h2><span class="spacer"></span>
     <button class="btn sm primary" onclick="batchFeeInvoice()">批量申请开票</button>${colCfgBtn('fee')}<button class="btn sm" data-export-async="fee">导出</button></div>
     ${dataTable('fee',list,'2050px','暂无服务费订单')}${pagerHTML(list.length)}
   </div>
   ${notes(
+    nb('搜索口径','<p>服务费流水号、支付方和服务费状态取自服务费订单；加油订单下单日期、油站公司、订单状态、司机、车辆、油品、运单、客户类型、分公司、渠道及油款支付/开票状态取自关联加油订单。关联订单不在当前演示订单主表中的记录，不会匹配缺失的加油订单字段；搜索结果、快捷筛选计数与导出范围保持一致。</p>')+
     nb('可开票资格','<p>服务费订单仅依据<b>订单主状态</b>和<b>支付状态</b>判定资格；任一项不满足可开票值即排除。是否确认服务费账单不参与判定。</p>')+
     nb('申请与拆单','<p>勾选可开票订单提交后直接进入<b>待开票</b>。申请单仅按<b>支付方</b>拆分，不关联账期和能源类型；本期不提供自动开票。</p>')+
     RULE_COMMON
