@@ -653,16 +653,16 @@ const ACCT = {
 
 /* 日账单 */
 const DAILY = [
-  {date:'2026-08-27', wday:'周四', energy:'柴油', txCount:3, qty:285.60, oilAmt:1900.52, fee:22.81, total:1923.33, inv:'未开票', stations:2, drivers:'田玲玲,王志刚,李强'},
-  {date:'2026-08-27', wday:'周四', energy:'天然气', txCount:1, qty:120.00, oilAmt:732.00, fee:8.78, total:740.78, inv:'未开票', stations:1, drivers:'李强'},
-  {date:'2026-08-26', wday:'周三', energy:'柴油', txCount:5, qty:468.30, oilAmt:3101.72, fee:37.22, total:3138.94, inv:'未开票', stations:3, drivers:'田玲玲,赵德明,孙倩,王志刚,李强'},
-  {date:'2026-08-25', wday:'周二', energy:'柴油', txCount:2, qty:156.00, oilAmt:1037.88, fee:12.45, total:1050.33, inv:'部分开票', stations:1, drivers:'田玲玲,赵德明'},
-  {date:'2026-08-24', wday:'周一', energy:'柴油', txCount:4, qty:389.50, oilAmt:2585.47, fee:31.03, total:2616.50, inv:'未开票', stations:2, drivers:'王志刚,李强,孙倩,赵德明'},
-  {date:'2026-08-23', wday:'周日', energy:'柴油', txCount:1, qty:62.30, oilAmt:414.85, fee:4.98, total:419.83, inv:'未开票', stations:1, drivers:'李强'},
-  {date:'2026-08-22', wday:'周六', energy:'柴油', txCount:3, qty:201.80, oilAmt:1338.74, fee:16.06, total:1354.80, inv:'已开票', stations:1, drivers:'田玲玲,赵德明,孙倩'},
-  {date:'2026-08-21', wday:'周五', energy:'柴油', txCount:6, qty:532.10, oilAmt:3533.47, fee:42.40, total:3575.87, inv:'已开票', stations:3, drivers:'全员'},
-  {date:'2026-08-20', wday:'周四', energy:'天然气', txCount:2, qty:248.00, oilAmt:1512.80, fee:18.15, total:1530.95, inv:'未开票', stations:1, drivers:'李强,王志刚'},
-  {date:'2026-08-20', wday:'周四', energy:'柴油', txCount:3, qty:278.90, oilAmt:1853.27, fee:22.24, total:1875.51, inv:'已开票', stations:2, drivers:'田玲玲,赵德明,孙倩'}
+  {date:'2026-08-27', wday:'周四', energy:'柴油', txCount:3, qty:285.60, oilAmt:1900.52, fee:22.81, total:1923.33, inv:'未开票', stations:2},
+  {date:'2026-08-27', wday:'周四', energy:'天然气', txCount:1, qty:120.00, oilAmt:732.00, fee:8.78, total:740.78, inv:'未开票', stations:1},
+  {date:'2026-08-26', wday:'周三', energy:'柴油', txCount:5, qty:468.30, oilAmt:3101.72, fee:37.22, total:3138.94, inv:'未开票', stations:3},
+  {date:'2026-08-25', wday:'周二', energy:'柴油', txCount:2, qty:156.00, oilAmt:1037.88, fee:12.45, total:1050.33, inv:'部分开票', stations:1},
+  {date:'2026-08-24', wday:'周一', energy:'柴油', txCount:4, qty:389.50, oilAmt:2585.47, fee:31.03, total:2616.50, inv:'未开票', stations:2},
+  {date:'2026-08-23', wday:'周日', energy:'柴油', txCount:1, qty:62.30, oilAmt:414.85, fee:4.98, total:419.83, inv:'未开票', stations:1},
+  {date:'2026-08-22', wday:'周六', energy:'柴油', txCount:3, qty:201.80, oilAmt:1338.74, fee:16.06, total:1354.80, inv:'已开票', stations:1},
+  {date:'2026-08-21', wday:'周五', energy:'柴油', txCount:6, qty:532.10, oilAmt:3533.47, fee:42.40, total:3575.87, inv:'已开票', stations:3},
+  {date:'2026-08-20', wday:'周四', energy:'天然气', txCount:2, qty:248.00, oilAmt:1512.80, fee:18.15, total:1530.95, inv:'未开票', stations:1},
+  {date:'2026-08-20', wday:'周四', energy:'柴油', txCount:3, qty:278.90, oilAmt:1853.27, fee:22.24, total:1875.51, inv:'已开票', stations:2}
 ];
 
 /* 月账单 */
@@ -738,44 +738,6 @@ const customerFeeAmount = t => {
   return feeOrder?.payer==='客户' ? t.fee : 0;
 };
 const customerDebitAmount = t => t.oilAmt + customerFeeAmount(t);
-
-/* 日明细（按日展开的逐笔交易，模拟数据） */
-const DAILY_TXNS = {
-  '2026-08-27':[
-    {no:'CHY20260827093412006', t:'09:34', driver:'田玲玲', plate:'辽AEK808', station:'沈阳浑南加油站', energy:'柴油', qty:118.30, unit:6.72, oilAmt:795.02, fee:9.54, total:804.56},
-    {no:'CHY20260827091107021', t:'09:11', driver:'孙倩', plate:'蒙A2288L', station:'津南万顺站', energy:'柴油', qty:78.50, unit:7.20, oilAmt:565.20, fee:6.78, total:571.98},
-    {no:'CHY20260827084533112', t:'08:45', driver:'王志刚', plate:'鲁F1234Q', station:'济南章丘服务区站', energy:'柴油', qty:88.80, unit:6.58, oilAmt:584.30, fee:7.01, total:591.31}
-  ],
-  '2026-08-26':[
-    {no:'CHY20260826204118762', t:'20:41', driver:'王志刚', plate:'鲁F1234Q', station:'济南历下高新站', energy:'柴油', qty:268.40, unit:6.58, oilAmt:1766.07, fee:21.19, total:1787.26},
-    {no:'CHY20260826183001902', t:'18:30', driver:'李强', plate:'京A1234Q', station:'北京大兴机场西站', energy:'天然气', qty:649.18, unit:6.10, oilAmt:3960.00, fee:47.52, total:4007.52},
-    {no:'CHY20260826212244890', t:'21:22', driver:'孙倩', plate:'蒙A2288L', station:'沈阳浑南加油站', energy:'柴油', qty:54.00, unit:6.72, oilAmt:362.88, fee:4.35, total:367.23}
-  ]
-};
-
-/* 月度加油明细（模拟整月逐笔交易，含司机类型） */
-const MONTHLY_TXNS = [
-  {no:'CHY20260827093412006', t:'08-27 09:34', driver:'田玲玲', plate:'辽AEK808', dType:'内部', station:'沈阳浑南加油站', energy:'柴油', qty:118.30, unit:6.72, oilAmt:795.02, fee:9.54, total:804.56},
-  {no:'CHY20260827091107021', t:'08-27 09:11', driver:'孙倩', plate:'蒙A2288L', dType:'外协', station:'津南万顺站', energy:'柴油', qty:78.50, unit:7.20, oilAmt:565.20, fee:6.78, total:571.98},
-  {no:'CHY20260827084533112', t:'08-27 08:45', driver:'王志刚', plate:'鲁F1234Q', dType:'内部', station:'济南章丘服务区站', energy:'柴油', qty:88.80, unit:6.58, oilAmt:584.30, fee:7.01, total:591.31},
-  {no:'CHY20260826204118762', t:'08-26 20:41', driver:'王志刚', plate:'鲁F1234Q', dType:'内部', station:'济南历下高新站', energy:'柴油', qty:268.40, unit:6.58, oilAmt:1766.07, fee:21.19, total:1787.26},
-  {no:'CHY20260826212244890', t:'08-26 21:22', driver:'孙倩', plate:'蒙A2288L', dType:'外协', station:'沈阳浑南加油站', energy:'柴油', qty:54.00, unit:6.72, oilAmt:362.88, fee:4.35, total:367.23},
-  {no:'CHY20260826183001902', t:'08-26 18:30', driver:'李强', plate:'京A1234Q', dType:'内部', station:'北京大兴机场西站', energy:'天然气', qty:649.18, unit:6.10, oilAmt:3960.00, fee:47.52, total:4007.52},
-  {no:'CHY20260825143012501', t:'08-25 14:30', driver:'田玲玲', plate:'辽AEK808', dType:'内部', station:'济南历下高新站', energy:'柴油', qty:96.50, unit:6.65, oilAmt:641.73, fee:7.70, total:649.43},
-  {no:'CHY20260825101209003', t:'08-25 10:12', driver:'赵德明', plate:'京B6666S', dType:'外协', station:'济南历下高新站', energy:'柴油', qty:59.50, unit:6.65, oilAmt:395.68, fee:4.75, total:400.43},
-  {no:'CHY20260824184523001', t:'08-24 18:45', driver:'王志刚', plate:'鲁F1234Q', dType:'内部', station:'沈阳浑南加油站', energy:'柴油', qty:112.30, unit:6.64, oilAmt:745.67, fee:8.95, total:754.62},
-  {no:'CHY20260824140211008', t:'08-24 14:02', driver:'李强', plate:'京A1234Q', dType:'内部', station:'津南万顺站', energy:'柴油', qty:138.70, unit:6.64, oilAmt:921.02, fee:11.05, total:932.07},
-  {no:'CHY20260824101533004', t:'08-24 10:15', driver:'孙倩', plate:'蒙A2288L', dType:'外协', station:'济南章丘服务区站', energy:'柴油', qty:85.50, unit:6.64, oilAmt:567.72, fee:6.81, total:574.53},
-  {no:'CHY20260824103856011', t:'08-24 10:38', driver:'赵德明', plate:'京B6666S', dType:'外协', station:'沈阳浑南加油站', energy:'柴油', qty:53.00, unit:6.64, oilAmt:351.92, fee:4.22, total:356.14},
-  {no:'CHY20260822193001002', t:'08-22 19:30', driver:'田玲玲', plate:'辽AEK808', dType:'内部', station:'沈阳浑南加油站', energy:'柴油', qty:78.60, unit:6.63, oilAmt:520.82, fee:6.25, total:527.07},
-  {no:'CHY20260822174512005', t:'08-22 17:45', driver:'赵德明', plate:'京B6666S', dType:'外协', station:'沈阳浑南加油站', energy:'柴油', qty:65.20, unit:6.63, oilAmt:432.28, fee:5.19, total:437.47},
-  {no:'CHY20260822153018009', t:'08-22 15:30', driver:'孙倩', plate:'蒙A2288L', dType:'外协', station:'沈阳浑南加油站', energy:'柴油', qty:58.00, unit:6.63, oilAmt:384.54, fee:4.61, total:389.15},
-  {no:'CHY20260821182044001', t:'08-21 18:20', driver:'田玲玲', plate:'辽AEK808', dType:'内部', station:'沈阳浑南加油站', energy:'柴油', qty:92.40, unit:6.64, oilAmt:613.54, fee:7.36, total:620.90},
-  {no:'CHY20260821142009004', t:'08-21 14:20', driver:'赵德明', plate:'京B6666S', dType:'外协', station:'济南历下高新站', energy:'柴油', qty:85.60, unit:6.64, oilAmt:568.38, fee:6.82, total:575.20},
-  {no:'CHY20260820191522003', t:'08-20 19:15', driver:'李强', plate:'京A1234Q', dType:'内部', station:'北京大兴机场西站', energy:'天然气', qty:148.00, unit:6.10, oilAmt:902.80, fee:10.83, total:913.63},
-  {no:'CHY20260820174519007', t:'08-20 17:45', driver:'王志刚', plate:'鲁F1234Q', dType:'内部', station:'沈阳浑南加油站', energy:'柴油', qty:100.00, unit:6.66, oilAmt:666.00, fee:7.99, total:673.99},
-  {no:'CHY20260820153018006', t:'08-20 15:30', driver:'田玲玲', plate:'辽AEK808', dType:'内部', station:'沈阳浑南加油站', energy:'柴油', qty:78.90, unit:6.66, oilAmt:525.47, fee:6.31, total:531.78}
-];
 
 /* ================= 油站账户 · 撮合 ================= */
 /* 油站公司在易宝的虚拟账户：按「油站公司 + 能源类型」分设，互不混账 */
@@ -1231,8 +1193,8 @@ const PAGES = [
 
   /* ---- 企业端 · 财务管理 ---- */
   {id:'cQuota',   name:'我的余额与额度', sub:'充值 / 冻结 / 已消费 / 可用余额', side:'企业端', grp:'财务管理'},
-  {id:'daily',    name:'日账单',       sub:'按日汇总消费 / 可下钻逐笔', side:'企业端', grp:'财务管理'},
-  {id:'monthly',  name:'月账单',       sub:'按月汇总 / 期初期末余额 / 充值退款', side:'企业端', grp:'财务管理'},
+  {id:'daily',    name:'日账单',       sub:'按日汇总消费', side:'企业端', grp:'财务管理'},
+  {id:'monthly',  name:'月账单',       sub:'按月汇总 / 充值退款', side:'企业端', grp:'财务管理'},
   {id:'txns', name:'账户资金流水',   sub:'企业账户资金流水数据查询', side:'企业端', grp:'财务管理'},
 
 ];
@@ -3458,7 +3420,7 @@ VIEWS.cFund = () => {
       '<p>企业财务对账时最常遇到的问题是「平台账单和银行流水对不上」。系统提供三级穿透，让每一个数字都能往下查到源头：</p>' +
       flow([{x:'月账单（总额）'},{x:'日账单（按天）'},{x:'交易明细（每笔）'},{x:'易宝流水号（银行侧凭证）'}]) +
       tbl(['层级','看什么','用来做什么'],[
-        ['月账单','当月充值、消费、退款、期末余额','和财务月度账核对'],
+        ['月账单','当月充值、消费、退款','和财务月度账核对'],
         ['日账单','按天汇总的收支','定位差异发生在哪一天'],
         ['交易明细','每一笔的时间、金额、收款方、关联订单','定位到具体哪一笔'],
         ['电子回单','易宝流水号 + 正式回单文件','拿这个和银行流水核对，作为付款凭证']
@@ -3801,9 +3763,7 @@ VIEWS.daily = () => {
       <td class="num" style="color:var(--fee)">${money(d.fee)}</td>
       <td class="num" style="font-weight:600;color:var(--bad)">${money(d.total)}</td>
       <td class="num">${d.stations}</td>
-      <td class="t2" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.drivers}</td>
       <td>${pill(d.inv)}</td>
-      <td class="acts"><button data-drawer="dailyDetail" data-key="${d.date}">逐笔明细</button></td>
     </tr>`).join('');
 
   return `
@@ -3824,8 +3784,8 @@ VIEWS.daily = () => {
   <div class="card">
     <div class="card-h"><h2>日账单 <span class="title-stat">消费合计 <b class="num-ok">¥${money(dailyTotal)}</b> · 共 <b>${DAILY.length}</b> 天</span></h2><span class="spacer"></span><button class="btn sm">导出</button></div>
     <div class="tablewrap">
-      <table style="min-width:1300px">
-        <thead><tr><th>日期</th><th>能源类型</th><th>交易笔数</th><th>加油量(L/kg)</th><th>加油金额(元)</th><th>服务费(元)</th><th>消费合计(元)</th><th>涉及油站</th><th>司机</th><th>开票状态</th><th style="width:200px">操作</th></tr></thead>
+      <table style="min-width:1100px">
+        <thead><tr><th>日期</th><th>能源类型</th><th>交易笔数</th><th>加油量(L/kg)</th><th>加油金额(元)</th><th>服务费(元)</th><th>消费合计(元)</th><th>涉及油站</th><th>开票状态</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
@@ -3854,7 +3814,6 @@ VIEWS.daily = () => {
         ['服务费','金额','当日企业实际承担的服务费总额；油站承担的部分不计入'],
         ['消费合计','金额','客户账户当日实际支出 = 加油金额 + 客户承担服务费'],
         ['涉及油站','整数','当日加油的油站数量'],
-        ['司机','文本（逗号分隔）','当日加油司机列表，超出宽度省略'],
         ['开票状态','未开票 / 部分开票 / 已开票','当日开票进度']
       ])) +
     nb('业务规则',
@@ -3863,15 +3822,14 @@ VIEWS.daily = () => {
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e三层级一致性：\u003c/b\u003e交易明细 = 日账单汇总 = 月账单汇总，金额必须严格一致。\u003c/p\u003e') +
     nb('操作说明',
       tbl(['操作','触发条件','执行逻辑/影响范围'],[
-        ['逐笔明细','任何时候','下钻查看当日的逐笔交易明细'],
-        ['导出','任何时候','导出日账单数据，含每日明细、汇总行和开票进度']
+        ['导出','任何时候','导出日账单列表数据']
       ])) +
     nb('边界情况',
       tbl(['场景','处理方式'],[
         ['当日有退款','退款作为独立资金流入记录，不改写原加油日的消费金额和交易笔数'],
         ['跨能源类型同日消费','分行展示，柴油一行、天然气一行'],
         ['当日服务费有多种支付方','只汇总客户承担且已记账的部分，油站承担部分不向企业端下发'],
-        ['导出对账表','导出Excel格式，含明细、汇总、开票进度，用于财务核算和税务申报']
+        ['导出对账表','导出日账单列表数据，用于财务核算']
       ])) +
     RULE_COMMON
   )}`;
@@ -3891,11 +3849,8 @@ VIEWS.monthly = () => {
       <td class="num" style="font-weight:600">${money(m.total)}</td>
       <td class="num" style="color:var(--ok)">+ ${money(m.recharge)}</td>
       <td class="num">${m.refund>0?'+ '+money(m.refund):'—'}</td>
-      <td class="num">${money(m.opening)}</td>
-      <td class="num" style="font-weight:600;color:var(--brand-ink)">${money(m.closing)}</td>
       <td class="num" style="color:var(--ok)">${money(m.invoiced)}</td>
       <td>${pill(m.inv)}</td>
-      <td class="acts"><button data-drawer="monthlyDetail" data-key="${m.month+'_'+m.energy}">月度明细</button></td>
     </tr>`).join('');
 
   return `
@@ -3912,8 +3867,8 @@ VIEWS.monthly = () => {
     <div class="card">
     <div class="card-h"><h2>月账单</h2><span class="spacer"></span><button class="btn sm">导出</button></div>
     <div class="tablewrap">
-      <table style="min-width:1620px">
-        <thead><tr><th>月份</th><th>能源类型</th><th>交易笔数</th><th>加油量(L/kg)</th><th>加油金额(元)</th><th>服务费(元)</th><th>消费合计(元)</th><th>充值(元)</th><th>退款(元)</th><th>期初余额(元)</th><th>期末余额(元)</th><th>已开票(元)</th><th>开票状态</th><th style="width:200px">操作</th></tr></thead>
+      <table style="min-width:1300px">
+        <thead><tr><th>月份</th><th>能源类型</th><th>交易笔数</th><th>加油量(L/kg)</th><th>加油金额(元)</th><th>服务费(元)</th><th>消费合计(元)</th><th>充值(元)</th><th>退款(元)</th><th>已开票(元)</th><th>开票状态</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
@@ -3922,15 +3877,14 @@ VIEWS.monthly = () => {
 
     ${notes(
     nb('页面定位',
-      '\u003cp\u003e按月汇总消费、充值、退款情况的页面，供\u003cb\u003e企业财务\u003c/b\u003e使用。展示期初/期末余额，是企业月度财务核算的主要依据。\u003c/p\u003e') +
+      '\u003cp\u003e按月汇总消费、充值、退款情况的页面，供\u003cb\u003e企业财务\u003c/b\u003e使用。\u003c/p\u003e') +
     nb('核心数据来源',
       tbl(['数据项','来源表/变量','说明'],[
         ['月账单列表','MONTHLY / 月账单汇总表','按月份+能源类型汇总'],
         ['月份+能源','MONTHLY.month + energy','同月份不同能源分行'],
         ['消费汇总','MONTHLY.txCount / qty / oilAmt / fee / total','当月消费汇总'],
         ['充值/退款','MONTHLY.recharge + refund','当月充值总额、退款总额'],
-        ['余额','MONTHLY.opening + closing','期初余额、期末余额'],
-        ['开票信息','MONTHLY.invoiced + invoicing + inv','已开票金额、开票中金额、开票状态']
+        ['开票信息','MONTHLY.invoiced + inv','已开票金额、开票状态']
       ])) +
     nb('字段定义说明',
       tbl(['字段名','取值规则/枚举','业务含义'],[
@@ -3943,25 +3897,20 @@ VIEWS.monthly = () => {
         ['消费合计','金额','当月客户账户实际支出 = 油款 + 客户承担服务费'],
         ['充值','金额（正值）','当月充值总额'],
         ['退款','金额（0显示"—"）','当月退款总额'],
-        ['期初余额','金额','月初账户余额'],
-        ['期末余额','金额','月末账户余额'],
         ['已开票','金额','当月已开票金额'],
-        ['开票中金额','金额','已提交开票申请、尚未完成开票的金额（明细页展示）'],
         ['开票状态','未开票 / 部分开票 / 已开票','当月开票进度']
       ])) +
     nb('业务规则',
-      '\u003cp\u003e\u003cb\u003e余额恒等式：\u003c/b\u003e期末余额 = 期初余额 + 充值 - 消费 + 退款\u003c/p\u003e' +
-      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e数据来源：\u003c/b\u003e月账单 = 同月同能源类型的日账单汇总。三层层级一致性：交易明细 = 日账单汇总 = 月账单汇总，金额必须严格一致。\u003c/p\u003e' +
+      '\u003cp\u003e\u003cb\u003e数据来源：\u003c/b\u003e月账单 = 同月同能源类型的日账单汇总。三层层级一致性：交易明细 = 日账单汇总 = 月账单汇总，金额必须严格一致。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e服务费口径：\u003c/b\u003e与日账单一致，仅汇总当前企业承担且已记入企业账户的服务费；油站承担部分不计入服务费和消费合计。\u003c/p\u003e' +
-      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e导出：\u003c/b\u003e支持导出月度财务报表，含消费明细、充值退款、余额变动。\u003c/p\u003e') +
+      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e导出：\u003c/b\u003e支持导出月账单列表数据。\u003c/p\u003e') +
     nb('操作说明',
       tbl(['操作','触发条件','执行逻辑/影响范围'],[
-        ['月度明细','任何时候','下钻查看当月的逐日明细或逐笔明细'],
-        ['导出','任何时候','导出当月完整账单Excel，含概览、消费明细、充值退款、开票明细']
+        ['导出','任何时候','导出月账单列表数据']
       ])) +
     nb('边界情况',
       tbl(['场景','处理方式'],[
-        ['当月有退款','退款作为独立流入计入“退款”，不改写原消费；期末余额按退款金额增加'],
+        ['当月有退款','退款作为独立流入计入“退款”，不改写原消费'],
         ['跨月订单','以订单完成时间（核销时间）归属到对应月份'],
         ['同月服务费有多种支付方','仅累加客户承担且已记账的服务费，与日账单和账户流水保持一致']
       ])) +
@@ -4400,8 +4349,8 @@ const MODALS = {
         'cRefund':{name:'企业端退款',cols:visibleCols('cRefund'),data:CREFUNDS},
         'cQuota':{name:'企业端余额与额度',cols:visibleCols('cQuota'),data:CQUOTA},
         'cApply':{name:'企业端发票',cols:visibleCols('cApply'),data:CAPPLIES},
-        'daily':{name:'日账单',cols:rawCols([['date','日期'],['energy','能源类型'],['count','交易笔数'],['qty','加油量'],['oil','加油金额'],['fee','服务费'],['total','消费合计'],['inv','开票状态']]),data:DAILY},
-        'monthly':{name:'月账单',cols:rawCols([['month','月份'],['energy','能源类型'],['count','交易笔数'],['qty','加油量'],['oil','加油金额'],['fee','服务费'],['total','消费合计'],['recharge','充值'],['refund','退款'],['opening','期初余额'],['closing','期末余额'],['invoiced','已开票'],['inv','开票状态']]),data:MONTHLY},
+        'daily':{name:'日账单',cols:rawCols([['date','日期'],['energy','能源类型'],['txCount','交易笔数'],['qty','加油量'],['oilAmt','加油金额'],['fee','服务费'],['total','消费合计'],['stations','涉及油站'],['inv','开票状态']]),data:DAILY},
+        'monthly':{name:'月账单',cols:rawCols([['month','月份'],['energy','能源类型'],['txCount','交易笔数'],['qty','加油量'],['oilAmt','加油金额'],['fee','服务费'],['total','消费合计'],['recharge','充值'],['refund','退款'],['invoiced','已开票'],['inv','开票状态']]),data:MONTHLY},
         'txns':{name:'账户资金流水',cols:rawCols([
           ['company','公司名称'],['driver','司机名称'],['driverPhone','司机手机号'],['station','油站名称'],['stationCompany','油站公司名称'],
           ['fundFlowNo','资金交易流水号'],['thirdFlowNo','三方交易流水号'],['type','交易类型'],['amount','交易金额'],['status','交易状态'],
@@ -6151,19 +6100,6 @@ function receiptHTML(v){
   </div></div>`;
 }
 
-/* 月账单明细抽屉内的两个页签 */
-function switchMTab(n){
-  const t1=document.getElementById('mtab1'), t2=document.getElementById('mtab2');
-  if(!t1) return;
-  t1.style.display = n===1?'':'none';
-  t2.style.display = n===2?'':'none';
-  document.querySelectorAll('.mtab-btn').forEach((b,i)=>{
-    b.style.borderBottomColor = i+1===n?'var(--brand)':'transparent';
-    b.style.color = i+1===n?'var(--brand-ink)':'var(--ink-2)';
-    b.style.fontWeight = i+1===n?'600':'400';
-  });
-}
-
 /* 企业端 · 发票申请详情抽屉 */
 const CINV_TABS = [
   {id:'cInvInfo', name:'申请单信息'},
@@ -6371,7 +6307,7 @@ let simpleDrawerTab = '';
 let simpleDrawerTabs = [];
 const SIMPLE_DRAWER_NAMES = {
   flowReq:['账户信息'], voucher:['电子回单'], cvoucher:['电子回单','使用说明'],
-  fee:['收付与订单','发票信息'], dailyDetail:['逐笔交易'], monthlyDetail:['账单概览','逐笔交易'],
+  fee:['收付与订单','发票信息'],
   txnDetail:['交易信息'], refundTxnDetail:['退款信息'], stationAcct:['账户信息','资金流水','可用操作'],
   sfFlow:['交易明细'], refund:['处理进度','申请信息','金额明细','异常处理'],
   feeInvApply:['申请单信息','订单明细','发票文件'], stationFeeInv:['申请单信息','订单明细','发票文件'],
@@ -6587,134 +6523,6 @@ function openSimple(kind,key){
           <dt>票种 / 税率</dt><dd>服务费票 · 6%</dd>
         </dl>
       </div></div>`;
-    },
-    dailyDetail:()=>{
-      const d = DAILY.find(x=>x.date===key);
-      const txns = DAILY_TXNS[key] || [];
-      document.getElementById('drawerTitle').textContent = `日账单明细 · ${key}`;
-      return `
-      <div class="sumhead"><div class="no mono">${key}（${d?.wday||''}）</div>
-        <div class="sec">${d?.energy||''} · ${d?.txCount||0} 笔交易 · ${d?.stations||0} 个油站</div>
-        <div class="pills">${pill(d?.inv||'未开票')}<span class="tag ${d?.energy==='柴油'?'o':''}">${d?.energy||''}</span></div>
-        <div class="money">
-          <div class="oilv"><div class="l">加油量</div><div class="v num">${(d?.qty||0).toFixed(2)} L/kg</div></div>
-          <div><div class="l">加油金额</div><div class="v num">¥ ${money(d?.oilAmt||0)}</div></div>
-          <div class="feev"><div class="l">消费合计</div><div class="v num">¥ ${money(d?.total||0)}</div></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-h"><h2>逐笔交易</h2><span class="spacer"></span><span style="color:var(--muted);font-size:11.5px">共 ${txns.length} 笔</span></div>
-        <div class="tablewrap">
-          <table style="min-width:760px">
-            <thead><tr><th>时间</th><th>订单号</th><th>司机 / 车牌</th><th>油站</th><th>能源</th><th>数量</th><th>单价</th><th>油款</th><th>服务费</th><th>合计</th></tr></thead>
-            <tbody>${txns.length?txns.map(t=>`<tr>
-              <td class="mono">${t.t}</td>
-              <td class="mono">${t.no}</td>
-              <td><div class="t1">${t.driver}</div><div class="t2 mono">${t.plate}</div></td>
-              <td>${t.station}</td>
-              <td>${t.energy==='天然气'?'<span class="tag info">天然气</span>':'<span class="tag o">柴油</span>'}</td>
-              <td class="num">${t.qty}</td>
-              <td class="num">${t.unit}</td>
-              <td class="num">${money(t.oilAmt)}</td>
-              <td class="num" style="color:var(--fee)">${money(t.fee)}</td>
-              <td class="num" style="font-weight:600">${money(t.total)}</td>
-            </tr>`).join(''):`<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:24px">该日暂无逐笔明细数据</td></tr>`}</tbody>
-          </table>
-        </div>
-      </div>`;
-    },
-    monthlyDetail:()=>{
-      const [month,energy] = key.split('_');
-      const m = MONTHLY.find(x=>x.month===month && x.energy===energy);
-      const mTxns = MONTHLY_TXNS.filter(t=>t.energy===energy);
-      const pageTxns = mTxns.slice(0, 10);
-      const drivers = [...new Set(mTxns.map(t=>t.driver))];
-      const internalD = [...new Set(mTxns.filter(t=>t.dType==='内部').map(t=>t.driver))];
-      const externalD = [...new Set(mTxns.filter(t=>t.dType==='外协').map(t=>t.driver))];
-      const totalQty = mTxns.reduce((s,t)=>s+t.qty,0);
-      const totalAmt = mTxns.reduce((s,t)=>s+t.total,0);
-      const totalOil = mTxns.reduce((s,t)=>s+t.oilAmt,0);
-      const totalFee = mTxns.reduce((s,t)=>s+t.fee,0);
-      const stations = [...new Set(mTxns.map(t=>t.station))];
-      document.getElementById('drawerTitle').textContent = `月账单明细 · ${month} · ${energy}`;
-      return `
-      <div class="sumhead"><div class="no mono">${month} · ${energy}</div>
-        <div class="sec">${m.txCount} 笔交易 · 加油量 ${m.qty.toFixed(2)} L/kg</div>
-        <div class="pills">${pill(m.inv)}<span class="tag ${energy==='柴油'?'o':''}">${energy}</span></div>
-        <div class="money">
-          <div class="oilv"><div class="l">消费合计</div><div class="v num">¥ ${money(m.total)}</div></div>
-          <div><div class="l">期末余额</div><div class="v num">¥ ${money(m.closing)}</div></div>
-          <div class="feev"><div class="l">已开票</div><div class="v num">¥ ${money(m.invoiced)}</div></div>
-        </div>
-      </div>
-      <div style="display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:14px">
-        <button class="mtab-btn" onclick="switchMTab(1)" style="background:none;border:0;padding:9px 14px;font-size:12.5px;cursor:pointer;border-bottom:2px solid var(--brand);color:var(--brand-ink);font-weight:600">账单明细</button>
-        <button class="mtab-btn" onclick="switchMTab(2)" style="background:none;border:0;padding:9px 14px;font-size:12.5px;cursor:pointer;border-bottom:2px solid transparent;color:var(--ink-2)">整月加油明细</button>
-      </div>
-      <div id="mtab1">
-        <div class="card"><div class="card-b">
-          <div class="sec-title">账单统计</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 24px">
-            <div><span style="color:var(--muted);font-size:12px">司机人数</span><div style="font-size:18px;font-weight:600">${drivers.length} 人</div><div style="font-size:11px;color:var(--muted)">内部 ${internalD.length} / 外协 ${externalD.length}</div></div>
-            <div><span style="color:var(--muted);font-size:12px">加油量</span><div style="font-size:18px;font-weight:600">${totalQty.toFixed(2)} ${energy==='天然气'?'kg':'L'}</div><div style="font-size:11px;color:var(--muted)">${stations.length} 个油站</div></div>
-            <div><span style="color:var(--muted);font-size:12px">消费金额</span><div style="font-size:18px;font-weight:600">¥ ${money(totalAmt)}</div><div style="font-size:11px;color:var(--muted)">加油金额 ${money(totalOil)} + 服务费 ${money(totalFee)}</div></div>
-            <div><span style="color:var(--muted);font-size:12px">交易笔数</span><div style="font-size:18px;font-weight:600">${mTxns.length} 笔</div><div style="font-size:11px;color:var(--muted)">日均 ${(mTxns.length/30).toFixed(1)} 笔</div></div>
-          </div>
-        </div></div>
-        <div class="card"><div class="card-b">
-          <div class="sec-title">月末资金</div>
-          <dl class="kv">
-            <dt>期初余额</dt><dd class="num">¥ ${money(m.opening)}</dd>
-            <dt>+ 充值</dt><dd class="num" style="color:var(--ok)">+ ¥ ${money(m.recharge)}</dd>
-            <dt>− 消费</dt><dd class="num" style="color:var(--bad)">− ¥ ${money(m.total)}</dd>
-            <dt>+ 退款</dt><dd class="num" style="color:var(--info)">+ ¥ ${money(m.refund)}</dd>
-            <dt>= 期末余额</dt><dd><b class="num" style="font-size:15px">¥ ${money(m.closing)}</b></dd>
-          </dl>
-        </div></div>
-        <div class="card"><div class="card-b">
-          <div class="sec-title">消费明细</div>
-          <dl class="kv">
-            <dt>加油金额</dt><dd class="num">¥ ${money(m.oilAmt)}</dd>
-            <dt>服务费</dt><dd class="num" style="color:var(--fee)">¥ ${money(m.fee)}（费率 1.20%）</dd>
-            <dt>消费合计</dt><dd><b class="num">¥ ${money(m.total)}</b></dd>
-            <dt>加油量</dt><dd>${m.qty.toFixed(2)} L/kg</dd>
-            <dt>交易笔数</dt><dd>${m.txCount} 笔</dd>
-          </dl>
-        </div></div>
-        <div class="card"><div class="card-b">
-          <div class="sec-title">开票进度</div>
-          <dl class="kv">
-            <dt>已开票金额</dt><dd class="num" style="color:var(--ok)">¥ ${money(m.invoiced)}</dd>
-            <dt>开票中金额</dt><dd class="num" style="color:var(--info)">¥ ${money(m.invoicing)}</dd>
-            <dt>未开票金额</dt><dd class="num" style="color:var(--warn)">¥ ${money(m.total - m.invoiced - m.invoicing)}</dd>
-            <dt>开票状态</dt><dd>${pill(m.inv)}</dd>
-          </dl>
-        </div></div>
-      </div>
-      <div id="mtab2" style="display:none">
-        <div class="card">
-          <div class="card-h"><h2>整月加油明细</h2><span class="spacer"></span><span style="color:var(--muted);font-size:11.5px">共 ${mTxns.length} 笔</span><button class="btn sm" data-modal="export">导出 Excel</button></div>
-          <div class="tablewrap">
-            <table style="min-width:860px">
-              <thead><tr><th>日期</th><th>订单号</th><th>司机/车牌</th><th>类型</th><th>油站</th><th>能源</th><th>数量</th><th>单价</th><th>加油金额</th><th>服务费</th><th>合计</th></tr></thead>
-              <tbody>${pageTxns.map(t=>`<tr>
-                <td class="mono">${t.t}</td>
-                <td class="mono">${t.no}</td>
-                <td><div class="t1">${t.driver}</div><div class="t2 mono">${t.plate}</div></td>
-                <td>${t.dType==='内部'?'<span class="tag b">内部</span>':'<span class="tag f">外协</span>'}</td>
-                <td>${t.station}</td>
-                <td>${t.energy==='天然气'?'<span class="tag info">天然气</span>':'<span class="tag o">柴油</span>'}</td>
-                <td class="num">${t.qty}</td>
-                <td class="num">${t.unit}</td>
-                <td class="num">${money(t.oilAmt)}</td>
-                <td class="num" style="color:var(--fee)">${money(t.fee)}</td>
-                <td class="num" style="font-weight:600">${money(t.total)}</td>
-              </tr>`).join('')}</tbody>
-            </table>
-          </div>
-          ${pagerHTML10(mTxns.length)}
-        </div>
-      </div>`;
     },
     txnDetail:()=>{
       const currentFlow = FLOWS.find(x=>x.id===key && x.acctType==='客户');
