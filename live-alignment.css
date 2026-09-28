@@ -72,8 +72,19 @@ body.live-surface .drawer-main .kv { font-size: 13px; gap: 13px 18px; }
   body.live-surface .body > .card:has(> .filters) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   body.live-surface .body > .card > .filter-actions { grid-column: 1 / -1; grid-row: auto; justify-content: flex-end; }
 }
-@media (max-width: 900px) {
+@media (max-width: 1180px) {
   body.live-surface .app { grid-template-columns: minmax(0, 1fr); }
+  body.live-surface .rail { position: static; height: auto; min-height: 72px; flex-direction: row; overflow-x: auto; align-items: center; }
+  body.live-surface .brand { min-height: 72px; padding: 10px 16px; flex: none; white-space: nowrap; }
+  body.live-surface .brand .mark { width: 32px; height: 32px; font-size: 15px; }
+  body.live-surface .brand b { font-size: 16px; }
+  body.live-surface .nav { flex-direction: row; align-items: center; flex: none; width: max-content; padding: 6px 12px; }
+  body.live-surface .nav .side,
+  body.live-surface .nav .grp,
+  body.live-surface .nav .subgrp { display: none; }
+  body.live-surface .nav a { flex: none; white-space: nowrap; }
+}
+@media (max-width: 900px) {
   body.live-surface .body > .card:has(> .filters) { grid-template-columns: minmax(0, 1fr); padding: 20px; }
   body.live-surface .body > .card > .filter-actions { grid-column: 1; }
   body.live-surface .head .row1 { min-height: 62px; padding: 12px 18px; }
