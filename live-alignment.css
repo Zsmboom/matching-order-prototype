@@ -59,7 +59,9 @@ body.live-surface tbody tr:nth-child(even) { background: #f7f8fb; }
 body.live-surface tbody tr:hover { background: #eef4ff; }
 body.live-surface td .t2 { font-size: 12px; margin-top: 5px; }
 body.live-surface .pill { border-radius: 5px; background: #fff; border-width: 1px; font-size: 12px; padding: 3px 7px; }
-body.live-surface .acts { background: inherit; }
+body.live-surface .acts { background: #fff; min-width: 92px; border-left: 1px solid var(--line-2); }
+body.live-surface tbody tr:nth-child(even) .acts { background: #f7f8fb; }
+body.live-surface tbody tr:hover .acts { background: #eef4ff; }
 body.live-surface .acts button { font-size: 13px; }
 body.live-surface .drawer { background: #f7f9fc; }
 body.live-surface .drawer-h { min-height: 70px; }
