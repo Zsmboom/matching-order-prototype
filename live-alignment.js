@@ -60,12 +60,14 @@ function liveFilters(page){
   return '<div class="card"><div class="filters">'+LIVE_FILTERS[page].map(([label,key,type,opt])=>{
     const id='live-'+page+'-'+key, value=liveQuery[page]?.[key]||'';
     const control=type==='select'
-      ?'<select class="inp" id="'+id+'"><option value="">全部</option>'+opt.map(x=>'<option'+(x===value?' selected':'')+'>'+x+'</option>').join('')+'</select>'
-      :type==='range'||type==='amountRange'
-      ?'<input class="inp" id="'+id+'-start" type="'+(type==='range'?'date':'number')+'" '+(type==='amountRange'?'min="0" step="0.01"':'')+' placeholder="最小" value="'+(Array.isArray(value)?value[0]:'')+'"><span class="dash">～</span><input class="inp" id="'+id+'-end" type="'+(type==='range'?'date':'number')+'" '+(type==='amountRange'?'min="0" step="0.01"':'')+' aria-label="'+label+'结束值" placeholder="最大" value="'+(Array.isArray(value)?value[1]:'')+'">'
+      ?'<select class="inp" id="'+id+'"><option value="">请选择</option>'+opt.map(x=>'<option'+(x===value?' selected':'')+'>'+x+'</option>').join('')+'</select>'
+      :type==='range'
+      ?'<details class="live-date"><summary>'+((Array.isArray(value)&&(value[0]||value[1]))?(value[0]||'开始日期')+' ～ '+(value[1]||'结束日期'):'请选择日期时间范围')+'</summary><div class="live-date-pop"><label>开始日期<input class="inp" id="'+id+'-start" type="date" value="'+(Array.isArray(value)?value[0]:'')+'"></label><label>结束日期<input class="inp" id="'+id+'-end" type="date" value="'+(Array.isArray(value)?value[1]:'')+'"></label></div></details>'
+      :type==='amountRange'
+      ?'<input class="inp" id="'+id+'-start" type="number" min="0" step="0.01" placeholder="最小" value="'+(Array.isArray(value)?value[0]:'')+'"><span class="dash">～</span><input class="inp" id="'+id+'-end" type="number" min="0" step="0.01" aria-label="'+label+'结束值" placeholder="最大" value="'+(Array.isArray(value)?value[1]:'')+'">'
       :'<input class="inp" id="'+id+'" type="'+(type==='month'?'month':type==='date'?'date':type==='number'?'number':'text')+'" placeholder="'+(Array.isArray(opt)?'':opt)+'" value="'+value+'">';
     return '<div class="f"><label for="'+id+(type==='range'||type==='amountRange'?'-start':'')+'">'+label+'</label><div class="fc">'+control+'</div></div>';
-  }).join('')+'</div><div class="filter-actions"><button class="btn primary" onclick="liveSearch(\''+page+'\')">搜索</button><button class="btn" onclick="liveReset(\''+page+'\')">重置</button></div></div>';
+  }).join('')+'</div><div class="filter-actions"><span class="filter-note">'+({orders:'支付、核销、退款、服务费和发票分别维护状态',fee:'明细是服务费唯一业务事实，公式和系数使用订单发生时快照',refund:'撮合退款仅支持待核销一键支付订单整单全额退款'}[page]||'')+'</span><button class="btn" onclick="liveReset(\''+page+'\')">重置</button><button class="btn primary" onclick="liveSearch(\''+page+'\')">⌕&nbsp; 搜索</button></div></div>';
 }
 function liveSearch(page){
   liveQuery[page]={};
@@ -104,19 +106,24 @@ const liveBtn=(kind,key,label)=>'<button type="button" class="btn sm" onclick="l
 const liveBadge=s=>pill(s);
 function liveExport(page){showToast('已按当前筛选条件提交导出任务，请在下载中心查看');}
 function liveSection(title,rows){
-  return '<div class="card"><div class="card-b"><div class="sec-title">'+title+'</div><dl class="kv">'+rows.map(([k,v])=>'<dt>'+k+'</dt><dd>'+v+'</dd>').join('')+'</dl></div></div>';
+  return '<div class="card"><div class="card-b"><div class="sec-title">'+title+'</div><dl class="kv oms-live-kv">'+rows.map(([k,v])=>'<div class="oms-live-field"><dt>'+k+'</dt><dd>'+v+'</dd></div>').join('')+'</dl></div></div>';
 }
 function liveHead(title,subtitle,status,amount,label){
   return '<div class="sumhead"><div class="no mono">'+title+'</div><div class="sec">'+subtitle+'</div><div class="pills">'+liveBadge(status)+'</div><div class="money"><div class="oilv"><div class="l">'+label+'</div><div class="v num">'+liveMoney(amount)+'</div></div></div></div>';
 }
 function liveListCard(title,extra,headers,rows,width){
-  return '<div class="card"><div class="card-h"><h2>'+title+'</h2><span class="title-stat">共 <b>'+rows.length+'</b> 条</span><span class="spacer"></span>'+extra+'</div>'+liveTable(headers,rows,width)+pagerHTML(rows.length)+'</div>';
+  const page=current;
+  const listOnly=['orders','fee','refund','withdrawRecord'].includes(page);
+  const leading=['orders','fee','refund','withdrawRecord'].includes(page);
+  const label=page==='energyInvApply'||page==='feeInvApply'?'共 <b>'+rows.length+'</b> 笔申请':'共 <b>'+rows.length+'</b> 条';
+  const summary=page==='refund'?'<span class="live-refund-summary">待油站审核 <b>1</b>　退款处理中 <b>0</b>　本月已退款 <b>¥0.10</b></span>':'';
+  return '<div class="card live-list-card live-list-'+page+'"><div class="card-h">'+(listOnly?'':'<h2>'+title+'</h2><span class="title-stat">'+label+'</span>')+(leading?extra:'')+'<span class="spacer"></span>'+summary+(leading?'':extra)+'</div>'+liveTable(headers,rows,width)+pagerHTML(rows.length)+'</div>';
 }
 
 VIEWS.orders=()=>{
   const list=liveRows('orders');
   const rows=list.map(o=>'<tr><td><input type="checkbox" class="live-order-check" value="'+o.no+'" '+(o.invoice==='未开票'&&o.status==='支付成功'&&!LIVE.refunds.some(r=>r.order===o.no&&r.status==='待审核')?'':'disabled')+' aria-label="选择订单 '+o.no+'"></td><td><b class="mono">'+o.no+'</b><div class="t2">'+o.time+' · '+o.source+'</div></td><td>'+liveBadge(o.status)+'<div class="t2">'+o.verify+'</div></td><td>'+liveBadge(o.invoice)+'</td><td>'+o.customer+'<div class="t2">撮合账户 · '+o.energy+'</div></td><td>'+o.driver+' · '+o.phone+'<div class="t2">'+o.plate+'</div></td><td>'+o.station+'<div class="t2">'+o.stationCo+'</div></td><td>'+o.goods+'<div class="t2">'+o.qty+' · 油机价 '+o.machinePrice+' · 企业价 '+o.enterprisePrice+'</div></td><td class="num">'+liveMoney(o.amount)+'</td><td>客户 '+liveMoney(o.customerFee)+' · 油站 '+liveMoney(o.stationFee)+'<div class="t2">'+o.feeState+'</div></td><td class="acts">'+liveAct('order',o.no)+(o.refundable?' '+liveBtn('refundApply',o.no,'申请退款'):'')+'</td></tr>');
-  return liveFilters('orders')+liveListCard('能源订单管理','<button class="btn sm" onclick="liveDrawer(\'backfill\',\'new\')">撮合订单补单</button><button class="btn sm primary" onclick="liveModal(\'energyBatch\',\'\')">批量申请开票</button><button class="btn sm" onclick="liveExport(\'orders\')">导出</button>', ['选择','订单信息','订单状态','开票状态','客户公司','司机与车辆','油站 / 油站公司','加注油品','金额信息','服务费','操作'],rows,'2400px')+notes(nb('实际页面口径','<p>支付、核销、退款、服务费与发票分别维护状态。能源订单编号以 MH 开头；退款申请仅适用于待核销的一键支付订单。列表中的客户与油站服务费分别显示，客户无服务费时金额为 0。</p>'));
+  return liveFilters('orders')+liveListCard('能源订单管理','<button class="btn sm" onclick="liveDrawer(\'backfill\',\'new\')">撮合订单补单</button><button class="btn sm" onclick="liveExport(\'orders\')">导出</button><button class="btn sm primary" onclick="liveModal(\'energyBatch\',\'\')">批量申请开票</button>', ['选择','订单信息','订单状态','开票状态','客户公司','司机与车辆','油站 / 油站公司','加注油品','金额信息','服务费','操作'],rows,'2400px')+notes(nb('实际页面口径','<p>支付、核销、退款、服务费与发票分别维护状态。能源订单编号以 MH 开头；退款申请仅适用于待核销的一键支付订单。列表中的客户与油站服务费分别显示，客户无服务费时金额为 0。</p>'));
 };
 VIEWS.fee=()=>{
   const list=liveRows('fee');
@@ -126,7 +133,7 @@ VIEWS.fee=()=>{
 VIEWS.refund=()=>{
   const list=liveRows('refund');
   const rows=list.map(r=>'<tr><td><b class="mono">'+r.no+'</b><div class="t2">整单全额退款</div></td><td class="mono">'+r.order+'<div class="t2">'+r.customer+'</div></td><td>'+r.driver+' · '+r.phone+'<div class="t2">'+r.plate+'</div></td><td>'+r.station+'</td><td class="num">'+liveMoney(r.amount)+'<div class="t2">双方服务费影响 '+liveMoney(r.fee)+'</div></td><td>'+r.reason+'<div class="t2">'+r.source+'</div></td><td>'+liveBadge(r.status)+'<div class="t2">'+r.time+'</div></td><td class="acts">'+liveAct('refund',r.no)+(r.status==='待审核'?' '+liveAct('refundAudit',r.no,'审核'):'')+'</td></tr>');
-  return liveFilters('refund')+'<div class="card"><div class="card-b">待油站审核 <b>1</b>　退款处理中 <b>0</b>　本月已退款 <b>¥0.10</b></div></div>'+liveListCard('退款申请管理','<button class="btn sm" onclick="liveExport(\'refund\')">导出</button>', ['退款申请','原订单与客户','司机与车辆','油站','退款金额','申请原因','状态与时间','操作'],rows,'1550px')+notes(nb('退款资格与影响','<p>当前撮合退款仅支持待核销一键支付订单的整单全额退款。审核通过后，商品本金原路退回，已支付服务费原路退回、未支付服务费取消应收，关联网货子单冲销并恢复司机扣减或补贴。申请处理中暂停核销和新开票。</p>'));
+  return liveFilters('refund')+liveListCard('退款申请管理','<button class="btn sm" onclick="liveExport(\'refund\')">导出</button>', ['退款申请','原订单与客户','司机与车辆','油站','退款金额','申请原因','状态与时间','操作'],rows,'1550px')+notes(nb('退款资格与影响','<p>当前撮合退款仅支持待核销一键支付订单的整单全额退款。审核通过后，商品本金原路退回，已支付服务费原路退回、未支付服务费取消应收，关联网货子单冲销并恢复司机扣减或补贴。申请处理中暂停核销和新开票。</p>'));
 };
 VIEWS.energyInvApply=()=>{
   const list=liveRows('energyInvApply');
@@ -194,14 +201,14 @@ function liveOrderLogs(o){
 }
 function liveFeeDetail(f){
   return liveHead(f.no,'关联加油订单 '+f.order+' · '+f.time+' · '+f.station,f.invoice,f.amount,'服务费金额')+
-    liveSection('收付双方信息',[
+    '<div class="oms-fee-two-col">'+liveSection('收付双方信息',[
       ['支付方',f.payer],['支付方名称',f.payerName],['服务费收款方','万联易达'],['支付状态',f.payment]
     ])+
     liveSection('关联订单信息',[
       ['发生时间',f.time],['关联加油订单',f.order],['关联客户',f.customer],['关联油站',f.station],
       ['加油金额',liveMoney(f.oilAmount)],['费率',f.rate],
       ['能源订单开票状态',f.energyInvoice],['能源发票申请单号',f.energyApply]
-    ])+
+    ])+'</div>'+
     liveSection('发票基本信息',f.feeApply!=='—'?[
       ['申请单号',f.feeApply],['服务费开票状态',f.invoice],['开票方','万联易达'],['受票方',f.payerName],['税率','6%']
     ]:[['服务费开票状态',f.invoice],['发票信息','暂无发票信息']]);
@@ -266,17 +273,14 @@ function liveFeeFlowDetail(f){
     ]);
 }
 function liveWithdrawDetail(w){
-  return liveHead(w.no,w.company+' · 油站端申请',w.status,w.amount,'提现金额')+
-    liveSection('提现信息',[
-      ['提现账户',w.account],['账户类型 / 能源',w.accountName+' · '+w.energy],
-      ['提现人',w.person+' · '+w.phone],['当前状态',w.status],['提现时间',w.time],
-      ['完成时间',w.finish],['三方交易流水',w.third],['到账银行卡',w.bank+' · '+w.bankCard],
-      ['开户支行','招商银行股份有限公司示例分行']
-    ])+
-    liveSection('处理进度',[
-      ['提现申请已提交',w.time],['三方支付通道已受理','已受理'],
-      [w.status,w.status==='提现成功'?w.finish:'通道返回失败']
-    ]);
+  const item=(label,value)=>'<div class="oms-detail-item"><div class="oms-detail-label">'+label+'</div><div class="oms-detail-value">'+value+'</div></div>';
+  return '<div class="oms-withdraw-sheet"><div class="oms-withdraw-hero"><div class="oms-sw-icon">SW</div><div class="oms-withdraw-ident"><h3>'+w.no+'</h3><p>'+w.company+' · 油站端申请</p></div><div class="oms-withdraw-amount"><b>'+liveMoney(w.amount)+'</b><span>提现金额</span></div></div>'+
+    '<section class="oms-detail-section"><h4>提现信息</h4><div class="oms-detail-grid">'+
+    item('提现账户',w.account)+item('账户类型 / 能源',w.accountName+' · '+w.energy)+
+    item('提现人',w.person+' · '+w.phone)+item('当前状态','<span class="oms-state">'+w.status+'</span>')+
+    item('提现时间',w.time)+item('完成时间',w.finish)+item('三方交易流水',w.third)+
+    '</div></section><section class="oms-detail-section"><h4>到账银行卡</h4><div class="oms-bank-card"><div>'+w.bank+' <span>对公结算账户</span></div><strong>'+w.bankCard+'</strong><small>开户支行　招商银行股份有限公司示例分行</small></div></section>'+
+    '<section class="oms-detail-section"><h4>处理进度</h4><div class="tl"><div class="it"><span class="dot"></span><div><div class="h">提现申请已提交</div><div class="m">'+w.time+'</div></div></div><div class="it"><span class="dot"></span><div><div class="h">三方支付通道已受理</div></div></div><div class="it"><span class="dot '+(w.status==='提现成功'?'':'fail')+'"></span><div><div class="h">'+w.status+'</div><div class="m">'+w.finish+'</div></div></div></div></section></div>';
 }
 function liveBackfill(step){
   const stepTitle=['订单资料','支付确认','支付执行'][step];
@@ -314,8 +318,9 @@ function liveDrawer(kind,key,tab=0){
   const titles={order:'撮合订单详情',fee:'服务费详情',refund:'退款申请详情',refundAudit:'退款申请详情',energyInvoice:'发票详情',feeInvoice:'服务费发票管理详情',feeFlow:'服务费流水详情',withdraw:'提现记录详情',backfill:'撮合订单补单'};
   const tabs=kind==='order'?['订单信息','发票信息','退款信息','操作日志']:(kind==='energyInvoice'||kind==='feeInvoice')?['申请单信息','订单明细','发票文件']:kind==='backfill'?['订单资料','支付确认','支付执行']:[];
   const drawer=document.getElementById('drawer');
+  drawer.dataset.kind=kind;
   const nav=document.getElementById('drawerNav'),main=document.getElementById('drawerMain');
-  document.getElementById('drawerTitle').textContent=titles[kind];
+  document.getElementById('drawerTitle').innerHTML=titles[kind]+(kind==='withdraw'?'<small>油站资金管理</small>':'');
   document.getElementById('drawerBody').classList.toggle('nonav',tabs.length===0);
   nav.innerHTML=tabs.map((label,i)=>'<button type="button" class="'+(i===tab?'on':'')+'" role="tab" aria-selected="'+(i===tab)+'" onclick="liveDrawer(\''+kind+'\',\''+key+'\','+i+')">'+drawerIcon(label)+'<span>'+label+'</span></button>').join('');
   main.innerHTML=kind==='order'?[liveOrderInfo,liveOrderInvoice,liveOrderRefund,liveOrderLogs][tab](row):

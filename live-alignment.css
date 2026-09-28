@@ -93,3 +93,190 @@ body.live-surface .drawer-main .kv { font-size: 13px; gap: 13px 18px; }
   body.live-surface .head h1 { font-size: 20px; }
   body.live-surface .body { padding: 18px 14px 32px; }
 }
+
+/* 1920px OMS reference viewport: shell, query forms and lists. */
+body.live-surface {
+  --ground:#f8faff; --surface:#fff; --surface-2:#fff; --surface-3:#f8f9fb;
+  --brand:#245ab6; --brand-2:#174d9e; --brand-ink:#245ab6;
+  --ink:#20242c; --ink-2:#5f6777; --muted:#9fa6b4;
+  --line:#e8ebf1; --line-2:#eef0f4;
+  --shadow:0 5px 18px rgba(36,65,119,.075); --radius:17px;
+  font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;
+}
+body.live-surface .app{grid-template-columns:300px minmax(0,1fr)}
+body.live-surface .rail{box-shadow:none;border-right:1px solid #f4f5f8}
+body.live-surface .brand{height:130px;min-height:130px;padding:28px 42px 12px;gap:17px}
+body.live-surface .brand .mark{width:40px;height:40px;border-radius:0;background:none;color:#255993;font-size:0;position:relative}
+body.live-surface .brand .mark::before{content:"W";font:900 italic 40px/1 Arial,sans-serif;letter-spacing:-.13em;position:absolute;inset:0;color:#245890;transform:skew(-6deg)}
+body.live-surface .brand .mark::after{content:"●";font-size:16px;position:absolute;right:-2px;top:-8px;color:#ee8832;text-shadow:0 3px 0 #ffb44f}
+body.live-surface .brand b{font-size:23px;font-weight:650;letter-spacing:0;white-space:nowrap}
+body.live-surface .nav{padding:0 26px 32px;gap:0}
+body.live-surface .oms-group-title{display:flex;align-items:center;gap:16px;height:56px;padding:0 16px;font-size:16px;color:#7d879e;white-space:nowrap}
+body.live-surface .oms-entry-icon{width:22px;flex:none;text-align:center;color:#7d89a3;font-size:17px;line-height:1}
+body.live-surface .oms-chevron{margin-left:auto;font-size:15px;color:#9ba5b8}
+body.live-surface .oms-group.expanded>.oms-group-title{color:#245ab6}
+body.live-surface .oms-group.expanded>.oms-group-title .oms-entry-icon{color:#245ab6}
+body.live-surface .oms-children{margin:0 0 5px;padding:0}
+body.live-surface .nav .oms-entry{display:flex;align-items:center;gap:8px;width:100%;min-height:45px;margin:1px 0;padding:7px 12px 7px 54px;border-radius:10px;font-size:14px;color:#778299}
+body.live-surface .nav .oms-entry .oms-entry-icon{display:none}
+body.live-surface .nav .oms-entry.on{background:#245ab6;color:#fff;font-weight:600;min-height:56px}
+body.live-surface .head{position:relative;box-shadow:none;border:0}
+body.live-surface .head .row1{height:63px;min-height:63px;padding:0 34px}
+body.live-surface .head h1{font-size:25px;font-weight:600;display:flex;align-items:center;gap:13px}
+body.live-surface .head h1::before{content:"♧";font-size:27px;font-weight:400;color:#23548e;line-height:1}
+body.live-surface .head .row1::after{content:"♛";display:grid;place-items:center;width:39px;height:39px;border-radius:50%;background:#ffc84f;color:#fff;font-size:26px}
+body.live-surface .tabstrip{height:49px;align-items:center;padding:0 18px;border:0;gap:0;box-shadow:0 8px 18px rgba(39,69,120,.025)}
+body.live-surface .tabstrip button{height:49px;padding:0 18px;font-size:14px;color:#606a7c;border-bottom:1px solid transparent;font-weight:400}
+body.live-surface .tabstrip button.on{border-color:#245ab6;color:#245ab6}
+body.live-surface .oms-home-tab{min-width:72px}
+body.live-surface .oms-tab-close{font-size:12px;color:#b2b8c4;margin-left:13px}
+body.live-surface .oms-tab-arrow{color:#9ba4b1;font-size:25px;padding:0 6px}
+body.live-surface .oms-tab-last{margin-left:auto}
+body.live-surface .body{padding:18px 32px 52px;gap:23px}
+body.live-surface:is([data-live-page="orders"],[data-live-page="fee"]) .body{gap:26px}
+body.live-surface[data-live-page="refund"] .body{gap:18px}
+body.live-surface:is([data-live-page="energyInvApply"],[data-live-page="feeInvApply"],[data-live-page="serviceFee"],[data-live-page="withdrawRecord"]) .body{gap:24px}
+body.live-surface .body>.card:has(>.filters){display:block;position:relative;padding:24px 24px 27px;border:0;min-height:0;box-shadow:var(--shadow)}
+body.live-surface:is([data-live-page="energyInvApply"],[data-live-page="feeInvApply"],[data-live-page="serviceFee"],[data-live-page="withdrawRecord"]) .body>.card:has(>.filters){padding-bottom:30px}
+body.live-surface .body>.card>.filters{display:grid;grid-template-columns:repeat(3,310px);column-gap:18px;row-gap:22px;padding:0 0 0 0;width:max-content;max-width:100%}
+body.live-surface .body>.card>.filters>.f{display:flex;width:310px;gap:10px;height:36px}
+body.live-surface .body>.card>.filters>.f>label{width:100px;flex:none;color:#353b47;font-size:14px;text-align:right;line-height:36px;white-space:nowrap}
+body.live-surface .body>.card>.filters>.f .fc{min-width:0;flex:1}
+body.live-surface .body>.card>.filters>.f .inp{height:36px;border:1px solid #dfe2e8;border-radius:19px;font-size:13px;color:#4c5667;padding:0 14px}
+body.live-surface .body>.card>.filters>.f .inp::placeholder{color:#b8bdc7}
+body.live-surface .body>.card>.filters>.f select.inp{background-position:calc(100% - 15px) 16px,calc(100% - 11px) 16px;color:#a2a9b7}
+body.live-surface .body>.card>.filter-actions{display:flex;align-items:center;gap:10px;grid-column:auto;grid-row:auto;padding:0}
+body.live-surface .filter-note{flex:1;color:#9ba3b1;font-size:12px}
+body.live-surface .btn{height:34px;border-radius:18px;padding:0 18px;border-color:#dfe3ea;font-size:13px;color:#444b57;box-shadow:none}
+body.live-surface .btn.primary{color:#fff;border-color:#245ab6;background:#245ab6}
+body.live-surface .btn.sm{height:32px;font-size:12px;padding:0 17px}
+body.live-surface:is([data-live-page="orders"],[data-live-page="fee"],[data-live-page="refund"]) .body>.card:has(>.filters){padding-bottom:19px}
+body.live-surface:is([data-live-page="orders"],[data-live-page="fee"],[data-live-page="refund"]) .body>.card>.filter-actions{margin-top:4px;padding:10px 0 0;border-top:1px solid #edf0f4;min-height:0}
+body.live-surface:is([data-live-page="energyInvApply"],[data-live-page="feeInvApply"],[data-live-page="serviceFee"],[data-live-page="withdrawRecord"]) .body>.card>.filter-actions{position:absolute;top:24px;right:24px}
+body.live-surface:is([data-live-page="energyInvApply"],[data-live-page="feeInvApply"],[data-live-page="serviceFee"],[data-live-page="withdrawRecord"]) .filter-note{display:none}
+body.live-surface .live-date{width:100%;position:relative}
+body.live-surface .live-date>summary{height:36px;display:flex;align-items:center;padding:0 15px;border:1px solid #dfe2e8;border-radius:18px;color:#b8bdc7;font-size:13px;list-style:none;cursor:pointer;white-space:nowrap}
+body.live-surface .live-date>summary::-webkit-details-marker{display:none}
+body.live-surface .live-date>summary::before{content:"▦";font-size:13px;margin-right:9px;color:#c0c5cd}
+body.live-surface .live-date-pop{position:absolute;z-index:30;top:42px;left:0;width:240px;background:#fff;box-shadow:0 8px 28px #203a6a25;border:1px solid #e8ebf1;border-radius:10px;padding:16px;display:grid;gap:10px}
+body.live-surface .live-date-pop label{font-size:12px;color:#6c7585}
+body.live-surface .live-date-pop input{margin-top:4px}
+body.live-surface .body>.live-list-card{overflow:hidden}
+body.live-surface .live-list-card .card-h{min-height:65px;border:0;padding:20px 24px;flex-wrap:nowrap;gap:11px}
+body.live-surface .live-list-card .card-h h2{font-size:16px;font-weight:600;white-space:nowrap}
+body.live-surface .live-list-card .title-stat{font-size:13px;color:#697283;white-space:nowrap}
+body.live-surface .live-list-card .live-refund-summary{font-size:14px;color:#555e6f;white-space:nowrap}
+body.live-surface .live-list-card .live-refund-summary b{color:#264f91}
+body.live-surface .live-list-card .tablewrap{margin:0 24px}
+body.live-surface .live-list-card table{border-collapse:collapse}
+body.live-surface .live-list-card thead th{height:46px;padding:11px 10px;background:#fff;color:#a2aab8;font-size:13px;font-weight:500;border-bottom:1px solid #e8ebef}
+body.live-surface .live-list-card tbody td{height:78px;padding:15px 10px;font-size:13px;color:#303640;border-bottom:1px solid #f0f2f5}
+body.live-surface .live-list-card tbody tr:nth-child(even){background:#fff}
+body.live-surface .live-list-card tbody tr:hover{background:#f8faff}
+body.live-surface .live-list-card tbody tr .acts,body.live-surface .live-list-card tbody tr:nth-child(even) .acts{background:#fff;min-width:80px;border-left:0}
+body.live-surface .live-list-card tbody tr:hover .acts{background:#f8faff}
+body.live-surface .live-list-card tbody td .t2{color:#8f98a8;font-size:12px;margin-top:5px}
+body.live-surface .live-list-card .pill{border-radius:2px;padding:1px 5px;font-size:12px;background:#fff;font-weight:500}
+body.live-surface .live-list-card .pager{border-top:0;padding:18px 24px}
+body.live-surface .live-list-orders .card-h .btn:first-child{background:#245ab6;border-color:#245ab6;color:#fff}
+body.live-surface .live-list-orders .card-h .btn.primary{background:#f8b947;border-color:#f8b947;color:#fff}
+body.live-surface .live-list-fee .card-h .btn.primary{background:#f8b947;border-color:#f8b947;color:#fff}
+body.live-surface .live-list-refund .card-h{min-height:65px}
+body.live-surface .live-list-serviceFee .card-h{display:flex;flex-direction:column;align-items:flex-start;gap:16px;min-height:108px;padding:20px 24px 11px}
+body.live-surface .live-list-serviceFee .card-h .title-stat{display:none}
+body.live-surface .live-list-serviceFee .card-h .spacer{display:none}
+body.live-surface[data-live-page="serviceFee"] .body>.card:first-child .card-h{border:0;padding:22px 24px 0}
+body.live-surface[data-live-page="serviceFee"] .body>.card:first-child{min-height:221px;margin-bottom:-24px}
+body.live-surface[data-live-page="serviceFee"] .body>.card:first-child .card-b{padding:19px 24px 24px}
+body.live-surface[data-live-page="serviceFee"] .body>.card:first-child .sumhead{border:0;border-radius:5px;padding:22px 24px;display:block;background:#f4f4f9}
+body.live-surface[data-live-page="serviceFee"] .body>.card:first-child .sumhead:last-child{background:#eefaf2}
+body.live-surface[data-live-page="serviceFee"] .body>.card:first-child .sumhead .v{color:#245ab6;font-size:25px;font-weight:600;margin-top:4px}
+body.live-surface[data-live-page="serviceFee"] .body>.card:first-child .sumhead:last-child .v{color:#20c66b}
+body.live-surface[data-live-page="serviceFee"] .body>.card:first-child .sumhead .l{color:#929baa;font-size:13px}
+body.live-surface .drawer{background:#f8faff}
+body.live-surface .drawer{left:0;right:auto;width:min(70vw,1380px);border-left:0;border-right:1px solid #e9edf3;transform:translateX(-100%);box-shadow:22px 0 60px -30px #0006}
+body.live-surface .drawer:is([data-kind="energyInvoice"],[data-kind="feeInvoice"]){width:min(52.5vw,1100px)}
+body.live-surface .drawer[data-kind="fee"]{width:min(56vw,1160px)}
+body.live-surface .drawer[data-kind="refund"]{width:min(60vw,1240px)}
+body.live-surface .drawer.on{transform:none}
+body.live-surface .drawer-h{min-height:68px;padding:11px 28px 11px 52px}
+body.live-surface .drawer-h h2{font-size:20px;display:flex;flex-direction:column;align-items:flex-start;gap:0;position:relative}
+body.live-surface .drawer-h h2::before{content:"▣";position:absolute;left:-34px;top:3px;font-size:26px;color:#245ab6}
+body.live-surface .drawer-h h2 small{font-size:12px;color:#9da5b3;font-weight:400}
+body.live-surface .drawer-h .x{width:44px;height:44px;font-size:22px;font-weight:300;color:#8c96a6}
+body.live-surface .drawer-main{gap:16px;padding:18px 32px 40px}
+body.live-surface .drawer-main .card,body.live-surface .drawer-main .sumhead{border-radius:12px}
+body.live-surface .drawer-main .card-b{padding:24px 28px 30px}
+body.live-surface .drawer-main .sec-title{font-size:16px;padding-bottom:16px;color:#272c35}
+body.live-surface .drawer-main .oms-live-kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:32px;row-gap:28px;margin:18px 0 0}
+body.live-surface .drawer-main .oms-live-field{min-width:0}
+body.live-surface .drawer-main .oms-live-field dt{font-size:13px;color:#9098a6;margin-bottom:8px}
+body.live-surface .drawer-main .oms-live-field dd{font-size:14px;color:#303744;min-width:0;overflow-wrap:anywhere}
+body.live-surface .drawer:is([data-kind="energyInvoice"],[data-kind="feeInvoice"]) .drawer-main .oms-live-kv{grid-template-columns:repeat(3,minmax(0,1fr))}
+body.live-surface .drawer:is([data-kind="energyInvoice"],[data-kind="feeInvoice"]) .drawer-body{grid-template-columns:136px minmax(0,1fr)}
+body.live-surface .drawer:is([data-kind="energyInvoice"],[data-kind="feeInvoice"]) .drawer-nav{padding:0;border-right:1px solid #e8eaf0;background:#fff}
+body.live-surface .drawer:is([data-kind="energyInvoice"],[data-kind="feeInvoice"]) .drawer-nav button{border:0;border-radius:0;min-height:48px;padding:10px 14px;font-size:14px;color:#8f98a7;white-space:nowrap}
+body.live-surface .drawer:is([data-kind="energyInvoice"],[data-kind="feeInvoice"]) .drawer-nav button.on{box-shadow:none;color:#245ab6;background:#fff}
+body.live-surface .drawer:is([data-kind="energyInvoice"],[data-kind="feeInvoice"]) .drawer-nav button.on::after{display:none}
+body.live-surface .drawer:is([data-kind="energyInvoice"],[data-kind="feeInvoice"]) .drawer-nav button svg{display:none}
+body.live-surface .drawer[data-kind="fee"] .sumhead .money{display:block}
+body.live-surface .drawer[data-kind="fee"] .sumhead .money .v{font-size:32px;color:#b98838}
+body.live-surface .drawer[data-kind="fee"] .sumhead{padding:28px}
+body.live-surface .drawer[data-kind="fee"] .sumhead .no{font-size:22px}
+body.live-surface .drawer[data-kind="fee"] .sumhead .sec{font-size:14px;margin-top:7px}
+body.live-surface .drawer[data-kind="fee"] .sumhead .pills{margin-top:13px}
+body.live-surface .drawer[data-kind="fee"] .sumhead .money{margin-top:22px;padding-top:18px}
+body.live-surface .drawer[data-kind="fee"] .oms-fee-two-col{display:grid;grid-template-columns:1fr 1fr;background:#fff;border-radius:16px;box-shadow:var(--shadow);gap:0}
+body.live-surface .drawer[data-kind="fee"] .oms-fee-two-col>.card{box-shadow:none;border:0;background:transparent}
+body.live-surface .drawer[data-kind="fee"] .oms-fee-two-col .oms-live-kv{grid-template-columns:1fr;row-gap:22px}
+body.live-surface .drawer-body.nonav{grid-template-columns:minmax(0,1fr)}
+body.live-surface .drawer-main:has(>.oms-withdraw-sheet){padding:18px 32px 40px}
+body.live-surface .oms-withdraw-sheet{border-radius:16px;background:#fff;box-shadow:var(--shadow);padding:24px 28px 42px;min-height:100%}
+body.live-surface .oms-withdraw-hero{display:flex;align-items:flex-start;gap:24px;min-height:116px}
+body.live-surface .oms-sw-icon{width:80px;height:80px;border-radius:10px;background:linear-gradient(135deg,#ffa7b0,#f6c8bb);display:grid;place-items:center;font-size:26px;color:#fff;flex:none}
+body.live-surface .oms-withdraw-ident{flex:1;min-width:0}
+body.live-surface .oms-withdraw-ident h3{font-size:21px;font-weight:650;margin:1px 0 3px;overflow-wrap:anywhere}
+body.live-surface .oms-withdraw-ident p{font-size:14px;color:#9da4af;margin:0}
+body.live-surface .oms-withdraw-amount{display:flex;flex-direction:column;align-items:center;padding:8px 10px}
+body.live-surface .oms-withdraw-amount b{font-size:26px;color:#245ab6;line-height:1.2}
+body.live-surface .oms-withdraw-amount span{font-size:12px;color:#9da4af}
+body.live-surface .oms-detail-section{margin-top:24px}
+body.live-surface .oms-detail-section h4{font-size:16px;margin:0 0 22px;padding-bottom:14px;border-bottom:1px solid #e9ecf1;font-weight:650}
+body.live-surface .oms-detail-grid{display:grid;grid-template-columns:1fr 1fr;column-gap:36px;row-gap:28px;padding:0 16px}
+body.live-surface .oms-detail-label{font-size:14px;color:#8d96a5;margin-bottom:12px}
+body.live-surface .oms-detail-value{font-size:15px;color:#2c3440;overflow-wrap:anywhere}
+body.live-surface .oms-state{color:#245ab6}
+body.live-surface .oms-bank-card{margin:0 16px;padding:22px 26px;background:#f1f6fd;border:1px solid #d9e5f5;border-left:4px solid #245ab6;border-radius:8px;display:flex;flex-direction:column;gap:12px}
+body.live-surface .oms-bank-card div{font-size:15px;font-weight:600}
+body.live-surface .oms-bank-card span{border:1px solid #245ab6;color:#245ab6;font-weight:400;font-size:12px;padding:2px 6px;margin-left:8px}
+body.live-surface .oms-bank-card strong{font-size:25px;letter-spacing:.2em;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+body.live-surface .oms-bank-card small{color:#8b95a4;font-size:13px}
+body.live-surface .oms-drawer-footer{height:64px;flex:none;display:flex;align-items:center;justify-content:flex-end;padding:0 24px;background:#fff;border-top:1px solid #edf0f3}
+body.live-surface .oms-drawer-footer .btn{min-width:112px;height:40px;justify-content:center;border-radius:22px;font-size:14px}
+body:not(.live-surface) .oms-drawer-footer{display:none}
+@media(max-width:900px){body.live-surface .drawer,body.live-surface .drawer:is([data-kind="energyInvoice"],[data-kind="feeInvoice"],[data-kind="fee"],[data-kind="refund"]){width:100vw}}
+@media(max-width:1500px){
+  body.live-surface .body>.card>.filters{grid-template-columns:repeat(2,minmax(270px,1fr));width:calc(100% - 210px)}
+  body.live-surface .body>.card>.filters>.f{width:auto}
+  body.live-surface .filter-actions{flex-wrap:wrap}
+}
+@media(max-width:1180px){
+  body.live-surface .app{grid-template-columns:minmax(0,1fr)}
+  body.live-surface .rail{height:auto;min-height:72px;flex-direction:row;overflow-x:auto}
+  body.live-surface .brand{height:72px;min-height:72px;padding:12px 16px}
+  body.live-surface .brand b{font-size:16px}
+  body.live-surface .nav{display:flex;flex-direction:row;align-items:center;padding:0 12px;white-space:nowrap}
+  body.live-surface .nav .oms-group-title{height:54px;font-size:13px}
+  body.live-surface .nav .oms-children,body.live-surface .nav .oms-static{display:none}
+  body.live-surface .body>.card>.filters{width:100%}
+  body.live-surface:is([data-live-page="energyInvApply"],[data-live-page="feeInvApply"],[data-live-page="serviceFee"],[data-live-page="withdrawRecord"]) .body>.card>.filter-actions{position:static;margin-top:16px;justify-content:flex-end}
+}
+@media(max-width:760px){
+  body.live-surface .body{padding:16px;gap:16px}
+  body.live-surface .head .row1{height:58px;min-height:58px;padding:0 16px}
+  body.live-surface .head h1{font-size:20px}
+  body.live-surface .tabstrip{overflow:auto}
+  body.live-surface .body>.card>.filters{grid-template-columns:minmax(0,1fr)}
+  body.live-surface .body>.card>.filters>.f{width:100%}
+  body.live-surface .live-list-card .card-h{flex-wrap:wrap}
+}

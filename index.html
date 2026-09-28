@@ -479,6 +479,7 @@ pre.code{margin:10px 0 0;background:var(--surface-2);border:1px solid var(--line
     <div class="drawer-nav" id="drawerNav"></div>
     <div class="drawer-main" id="drawerMain"></div>
   </div>
+  <div class="oms-drawer-footer"><button type="button" class="btn" onclick="showDrawer(false)">关闭</button></div>
 </aside>
 
 <div class="modal" id="modal">
@@ -1239,6 +1240,22 @@ let current = 'orders';
 let orderFilter = '全部';
 
 function renderNav(){
+  const livePages=['orders','fee','refund','energyInvApply','feeInvApply','serviceFee','withdrawRecord'];
+  if(livePages.includes(current)){
+    const entry=(id,label,depth=0)=>`<a href="#${id}" class="oms-entry ${depth?'oms-child':''} ${id===current?'on':''}" data-go="${id}"><span class="oms-entry-icon" aria-hidden="true">${depth?'▫':'▥'}</span>${label}</a>`;
+    const group=(label,icon,items,active)=>`<div class="oms-group ${active?'expanded':''}"><div class="oms-group-title"><span class="oms-entry-icon" aria-hidden="true">${icon}</span>${label}<span class="oms-chevron">⌄</span></div>${active?'<div class="oms-children">'+items+'</div>':''}</div>`;
+    const order=['orders','fee','refund'].includes(current), invoice=['energyInvApply','feeInvApply'].includes(current), finance=['serviceFee','withdrawRecord'].includes(current);
+    document.getElementById('nav').innerHTML =
+      '<div class="oms-group-title oms-static"><span class="oms-entry-icon">◉</span>首页</div>'+
+      '<div class="oms-group-title oms-static"><span class="oms-entry-icon">▥</span>仪表盘</div>'+
+      group('客户中心','♙','',false)+group('网点中心','♧','',false)+group('商品管理','♙','',false)+group('订单中心','▤','',false)+
+      group('撮合订单','♧',entry('orders','能源订单管理',1)+entry('fee','服务费订单管理',1)+entry('refund','退款申请管理',1),order)+
+      group('部门中心','▥','',false)+group('OA中心','♣','',false)+group('开票中心','▣',entry('energyInvApply','能源发票管理',1)+entry('feeInvApply','服务费发票管理',1),invoice)+
+      '<div class="oms-group-title oms-static"><span class="oms-entry-icon">▣</span>发票中心<span class="oms-chevron">⌄</span></div>'+
+      group('财务中心','◩',entry('serviceFee','服务费账户',1)+entry('withdrawRecord','提现记录',1),finance)+
+      '<div class="oms-group-title oms-static"><span class="oms-entry-icon">▣</span>授信管理<span class="oms-chevron">⌄</span></div>';
+    return;
+  }
   let html = '';
   SIDES.forEach(side=>{
     const pages = PAGES.filter(p=>p.side===side);
@@ -1270,6 +1287,11 @@ function renderNav(){
   document.getElementById('nav').innerHTML = html;
 }
 function renderTabs(){
+  if(['orders','fee','refund','energyInvApply','feeInvApply','serviceFee','withdrawRecord'].includes(current)){
+    const tabs=[['orders','能源订单管理'],['fee','服务费订单管理'],['refund','退款申请管理'],['energyInvApply','能源发票管理'],['feeInvApply','服务费发票管理'],['serviceFee','服务费账户'],['withdrawRecord','提现记录']];
+    document.getElementById('tabstrip').innerHTML='<span class="oms-tab-arrow">‹</span><button class="oms-home-tab" data-go="orders">首页</button>'+tabs.map(([id,label])=>`<button class="${id===current?'on':''}" data-go="${id}">${label}<span class="oms-tab-close" aria-hidden="true">×</span></button>`).join('')+'<span class="oms-tab-arrow oms-tab-last">›</span>';
+    return;
+  }
   const cur = PAGES.find(p=>p.id===current) || PAGES[0];
   let tabPages;
   if(cur.subgrp){
@@ -1284,6 +1306,7 @@ function isCust(id){ return (PAGES.find(x=>x.id===id)||{}).side === '企业端';
 function go(id){
   current = id;
   document.body.classList.toggle('live-surface', ['orders','fee','refund','energyInvApply','feeInvApply','serviceFee','withdrawRecord'].includes(id));
+  document.body.dataset.livePage = id;
   const p = PAGES.find(x=>x.id===id);
   document.getElementById('pageTitle').textContent = p.name;
   const path = p.subgrp ? p.side + ' / ' + p.grp + ' / ' + p.subgrp : p.side + ' / ' + p.grp;
