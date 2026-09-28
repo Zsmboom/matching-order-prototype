@@ -37,8 +37,8 @@ const LIVE = {
   feeFlows:[
     {no:'PT1026092214000000010000001',time:'2026-09-28 15:07:30',company:'示例能源有限公司',type:'油站费入账',amount:0.01,before:6.64,after:6.65,order:'MH20260928150700000006',account:'YB-1001'},
     {no:'PT1026092811000000010000007',time:'2026-09-28 11:18:00',company:'示例能源有限公司',type:'油站费退款',amount:-0.01,before:6.59,after:6.58,order:'MH20260928103100000008',account:'YB-1001'},
-    {no:'RF1026092811000000010000001',time:'2026-09-28 11:16:51',company:'示例物流有限公司',type:'客户费退款',amount:-0.01,before:6.60,after:6.59,order:'MH20260928110900000007',account:'YB-1001'},
-    {no:'PT1026092811000000010000008',time:'2026-09-28 11:09:38',company:'示例物流有限公司',type:'客户费入账',amount:0.01,before:6.59,after:6.60,order:'MH20260928110900000007',account:'YB-1001'}
+    {no:'RF1026092811000000010000001',time:'2026-09-28 11:16:51',company:'示例能源有限公司',type:'油站费退款',amount:-0.01,before:6.60,after:6.59,order:'MH20260928110900000007',account:'YB-1001'},
+    {no:'PT1026092811000000010000008',time:'2026-09-28 11:09:38',company:'示例能源有限公司',type:'油站费入账',amount:0.01,before:6.59,after:6.60,order:'MH20260928110900000007',account:'YB-1001'}
   ],
   withdrawals:[
     {no:'SW202609231642000001',time:'2026-09-23 16:42:30',company:'示例能源有限公司',accountName:'柴油撮合账户',account:'AC2100000000000000000000000000000001',energy:'柴油',amount:0.10,status:'提现成功',bank:'招商银行',bankCard:'**** **** **** 1234',person:'张经理',phone:'185****8691',finish:'2026-09-23 16:42:32',third:'181026092700000000000000001'},
@@ -48,7 +48,7 @@ const LIVE = {
 
 const LIVE_FILTERS = {
   orders:[['订单编号','no','text','总单号/子单号'],['订单来源','source','select',['正常下单','运营补单']],['客户公司','customer','text','消费公司/付款公司'],['司机信息','driver','text','姓名/手机号'],['油站名称','station','text','油站公司/网点'],['支付方式','payment','select',['一键支付无核销']],['订单状态','status','select',['支付成功','退款成功','支付失败']],['时间范围','time','range','']],
-  fee:[['服务费流水号','no','text','输入服务费流水号'],['关联订单号','order','text','输入能源订单号'],['出账周期','time','month',''],['支付状态','payment','select',['已收','待收']],['开票状态','invoice','select',['未开票','开票中','已开票']],['支付方','payerName','text','输入支付方名称'],['油站','station','text','输入油站名称'],['能源发票申请单号','energyApply','text','KP 开头'],['能源订单开票状态','energyInvoice','select',['未开票','开票中','已开票']]],
+  fee:[['服务费流水号','no','text','输入服务费流水号'],['关联订单号','order','text','输入能源订单号'],['出账周期','time','month',''],['支付状态','payment','select',['已收','待收']],['服务费开票状态','invoice','select',['未开票','开票中','已开票']],['支付方','payerName','text','输入支付方名称'],['油站','station','text','输入油站名称'],['能源发票申请单号','energyApply','text','KP 开头'],['能源订单开票状态','energyInvoice','select',['未开票','开票中','已开票']]],
   refund:[['退款编号','no','text','输入退款编号'],['原订单号','order','text','输入撮合总单号'],['客户公司','customer','text','输入客户公司'],['油站名称','station','text','输入油站名称'],['退款状态','status','select',['待审核','退款处理中','退款成功','已拒绝']],['申请时间','time','range','']],
   energyInvApply:[['开票日期','time','range',''],['发票状态','status','select',['开票中','已开票','已撤销']],['申请单号','no','text','KP 开头，字母数字'],['提交批次号','batch','text','BAT 开头，字母数字'],['油站公司','stationCo','text','输入油站公司'],['能源类型','energy','select',['柴油','天然气','尿素']],['申请金额','amount','amountRange','']],
   feeInvApply:[['申请单号','no','text','FZK 开头，字母数字'],['申请时间','time','range',''],['申请状态','status','select',['开票中','已开票','已撤销']],['支付方','payer','select',['油站承担','企业承担']],['申请金额','amount','amountRange',''],['支付方名称','payerName','text','油站公司或客户企业']],
