@@ -443,6 +443,7 @@ pre.code{margin:10px 0 0;background:var(--surface-2);border:1px solid var(--line
   .drawer-main{padding:14px}
 }
 </style>
+<link rel="stylesheet" href="live-alignment.css">
 
 <div class="app">
   <aside class="rail">
@@ -1282,6 +1283,7 @@ function renderTabs(){
 function isCust(id){ return (PAGES.find(x=>x.id===id)||{}).side === '企业端'; }
 function go(id){
   current = id;
+  document.body.classList.toggle('live-surface', ['orders','fee','refund','energyInvApply','feeInvApply','serviceFee','withdrawRecord'].includes(id));
   const p = PAGES.find(x=>x.id===id);
   document.getElementById('pageTitle').textContent = p.name;
   const path = p.subgrp ? p.side + ' / ' + p.grp + ' / ' + p.subgrp : p.side + ' / ' + p.grp;

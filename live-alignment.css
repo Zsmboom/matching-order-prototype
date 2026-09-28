@@ -1,0 +1,82 @@
+/* OMS-inspired presentation for the seven reviewed operation pages only. */
+body.live-surface {
+  --ground: #f6f8fc;
+  --surface-2: #fff;
+  --surface-3: #f7f8fb;
+  --brand: #225bb5;
+  --brand-2: #1e4f9f;
+  --brand-ink: #225bb5;
+  --line: #e4e8f0;
+  --line-2: #edf0f5;
+  --muted: #8992a4;
+  --ink-2: #5b6475;
+  --shadow: 0 10px 32px rgba(30, 53, 99, .08);
+  --radius: 17px;
+  font-size: 14px;
+}
+body.live-surface .app { grid-template-columns: 268px minmax(0, 1fr); }
+body.live-surface .rail { border-right: 0; box-shadow: 4px 0 24px rgba(37, 65, 116, .035); }
+body.live-surface .brand { min-height: 105px; padding: 28px 26px; gap: 14px; }
+body.live-surface .brand .mark { width: 42px; height: 42px; border-radius: 12px; font-size: 20px; }
+body.live-surface .brand b { font-size: 23px; }
+body.live-surface .brand small { display: none; }
+body.live-surface .nav { padding: 8px 18px 28px; gap: 3px; }
+body.live-surface .nav .side { background: transparent; color: #6d7c98; font-size: 12px; margin-top: 18px; padding: 8px 14px; }
+body.live-surface .nav .grp { font-size: 13px; letter-spacing: 0; padding: 11px 14px 5px; }
+body.live-surface .nav .subgrp { font-size: 12px; padding-left: 22px; }
+body.live-surface .nav a { margin-left: 0; padding: 10px 14px; font-size: 14px; border-radius: 9px; }
+body.live-surface .nav a.on { box-shadow: none; }
+body.live-surface .head { position: relative; border-bottom: 0; box-shadow: 0 1px 8px rgba(25, 50, 92, .035); }
+body.live-surface .head .row1 { min-height: 76px; padding: 16px 30px 10px; }
+body.live-surface .head h1 { font-size: 25px; font-weight: 650; }
+body.live-surface .head .sub,
+body.live-surface .head .mode { display: none; }
+body.live-surface .tabstrip { padding: 0 26px; gap: 4px; border-top: 1px solid var(--line-2); }
+body.live-surface .tabstrip button { font-size: 14px; padding: 13px 17px; }
+body.live-surface .body { padding: 25px 28px 52px; gap: 22px; }
+body.live-surface .card { border: 0; }
+body.live-surface .body > .card:has(> .filters) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 18px 20px;
+  align-items: center;
+  padding: 28px 26px;
+}
+body.live-surface .body > .card > .filters { display: contents; }
+body.live-surface .body > .card > .filters > .f { gap: 12px; }
+body.live-surface .body > .card > .filters > .f > label { width: 86px; font-size: 14px; color: #535b68; }
+body.live-surface .body > .card > .filters > .f .inp { height: 38px; font-size: 13px; border-radius: 19px; padding: 0 15px; }
+body.live-surface .body > .card > .filter-actions { grid-column: 4; grid-row: 1; padding: 0; white-space: nowrap; }
+body.live-surface .btn { border-radius: 20px; height: 36px; font-size: 13px; background: #fff; }
+body.live-surface .btn.sm { height: 32px; font-size: 12px; }
+body.live-surface .btn.primary { background: var(--brand); color: #fff; }
+body.live-surface .card-h { padding: 20px 24px; gap: 12px; }
+body.live-surface .card-h h2 { font-size: 16px; }
+body.live-surface .card-b { padding: 22px 24px; }
+body.live-surface thead th { background: #fff; padding: 16px 16px; font-size: 13px; color: #8b94a5; }
+body.live-surface tbody td { padding: 15px 16px; font-size: 13px; }
+body.live-surface tbody tr:nth-child(even) { background: #f7f8fb; }
+body.live-surface tbody tr:hover { background: #eef4ff; }
+body.live-surface td .t2 { font-size: 12px; margin-top: 5px; }
+body.live-surface .pill { border-radius: 5px; background: #fff; border-width: 1px; font-size: 12px; padding: 3px 7px; }
+body.live-surface .acts { background: inherit; }
+body.live-surface .acts button { font-size: 13px; }
+body.live-surface .drawer { background: #f7f9fc; }
+body.live-surface .drawer-h { min-height: 70px; }
+body.live-surface .drawer-main { gap: 18px; }
+body.live-surface .drawer-main .card,
+body.live-surface .drawer-main .sumhead { border-radius: 14px; }
+body.live-surface .drawer-main .sec-title { font-size: 15px; }
+body.live-surface .drawer-main .kv { font-size: 13px; gap: 13px 18px; }
+@media (max-width: 1450px) {
+  body.live-surface .body > .card:has(> .filters) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body.live-surface .body > .card > .filter-actions { grid-column: 1 / -1; grid-row: auto; justify-content: flex-end; }
+}
+@media (max-width: 900px) {
+  body.live-surface .app { grid-template-columns: minmax(0, 1fr); }
+  body.live-surface .body > .card:has(> .filters) { grid-template-columns: minmax(0, 1fr); padding: 20px; }
+  body.live-surface .body > .card > .filter-actions { grid-column: 1; }
+  body.live-surface .head .row1 { min-height: 62px; padding: 12px 18px; }
+  body.live-surface .head h1 { font-size: 20px; }
+  body.live-surface .body { padding: 18px 14px 32px; }
+}
