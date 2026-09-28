@@ -1193,10 +1193,10 @@ function rmbUpper(n){
 const SIDES = ['运营平台','油站端','企业端'];
 
 const PAGES = [
-  /* ---- 运营平台 · 订单中心 · 撮合订单管理 ---- */
-  {id:'orders',  name:'能源订单',          sub:'列表 / 详情 / 补录 / 开票申请', side:'运营平台', grp:'订单中心', subgrp:'撮合订单管理'},
-  {id:'fee',     name:'服务费订单',        sub:'独立服务费开票 · 关联能源发票申请单与状态', side:'运营平台', grp:'订单中心', subgrp:'撮合订单管理'},
-  {id:'refund',  name:'订单退款申请与审核', sub:'油站 / 运营平台发起 → 运营确认 → 执行退款', side:'运营平台', grp:'订单中心', subgrp:'撮合订单管理'},
+  /* ---- 运营平台 · 撮合订单 ---- */
+  {id:'orders',  name:'能源订单管理', sub:'列表 / 详情 / 撮合订单补单 / 开票申请', side:'运营平台', grp:'撮合订单'},
+  {id:'fee',     name:'服务费订单管理', sub:'服务费流水 / 开票申请 / 能源发票关联', side:'运营平台', grp:'撮合订单'},
+  {id:'refund',  name:'退款申请管理', sub:'整单全额退款 / 审核 / 进度', side:'运营平台', grp:'撮合订单'},
 
   /* ---- 运营平台 · 财务中心 ---- */
   {id:'flow',    name:'资金交易流水明细', sub:'客户 / 油站 / 平台三侧全账户流水', side:'运营平台', grp:'财务中心', subgrp:'资金流水管理'},
@@ -1211,6 +1211,7 @@ const PAGES = [
 
   /* ---- 运营平台 · 财务中心 · 服务费账户管理 ---- */
   {id:'serviceFee',  name:'服务费账户', sub:'账户余额 / 流水明细 / 订单与发票关联', side:'运营平台', grp:'财务中心', subgrp:'服务费账户管理'},
+  {id:'withdrawRecord', name:'提现记录', sub:'油站公司提现查询 / 详情 / 导出', side:'运营平台', grp:'财务中心', subgrp:'油站公司账户'},
 
   /* ---- 油站端 · 财务管理 ---- */
   {id:'stationAcct', name:'油站账户管理', sub:'余额 / 提现 / 提现配置 / 流水明细 / 账户启停', side:'油站端', grp:'财务管理'},
@@ -7341,6 +7342,7 @@ CONFIRMS.cRefundApply = key => {
 /* ================= 启动 ================= */
 go('orders');
 </script>
+<script src="./live-alignment.js"></script>
 
 </body>
 </html>
