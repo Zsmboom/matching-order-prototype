@@ -91,6 +91,10 @@ button{font:inherit;color:inherit}
 .nav a .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.45;flex:none}
 .nav a.on .dot{opacity:1}
 .nav a.dis{opacity:.42;cursor:not-allowed}
+.site-switch{display:flex;gap:2px;margin:0 14px 8px;padding:3px;border-radius:9px;background:var(--surface-3);border:1px solid var(--line-2)}
+.site-switch button{flex:1;min-width:0;border:0;background:none;padding:6px 4px;border-radius:7px;font-size:12px;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.site-switch button:hover{color:var(--ink)}
+.site-switch button.on{background:var(--surface);color:var(--brand-ink);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 
 .main{min-width:0;display:flex;flex-direction:column}
 .head{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
@@ -181,6 +185,9 @@ th.stickR,td.stickR{position:sticky;right:0;z-index:5;background:var(--surface);
 thead th.stickR{z-index:7;background:var(--surface-3)}
 td.stickR{box-shadow:-6px 0 8px -8px rgba(0,0,0,.28)}
 tbody tr:hover td.stickR{background:var(--surface-2)}
+/* 操作列表头也要冻结：表体操作列用 .acts 冻结在右，表头若不同步冻结，
+   横向滚动后表头与表体会错开一列 */
+thead th.acts{position:sticky;right:0;z-index:7;background:var(--surface-3)}
 /* 列设置面板 */
 .colcfg{display:flex;flex-direction:column;gap:6px;max-height:420px;overflow:auto;padding:2px}
 .colrow{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-size:12px}
@@ -425,9 +432,12 @@ pre.code{margin:10px 0 0;background:var(--surface-2);border:1px solid var(--line
 @media(max-width:1180px){
   .app{grid-template-columns:1fr}
   .rail{position:static;height:auto;flex-direction:row;overflow-x:auto;align-items:center}
+  .site-switch{flex:none;margin:0 8px}
+  .site-switch button{padding:6px 10px}
   .nav{flex-direction:row;padding:8px;align-items:center}
-  .nav .grp,.nav .side{display:none}
-  .nav a{margin-left:0}
+  .nav .grp,.nav .side,.nav .subgrp{display:none}
+  .nav a{margin-left:0;flex:none;white-space:nowrap}
+  .brand{flex:none;white-space:nowrap}
   .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .filters,.form{grid-template-columns:1fr}
   .sumhead .money{grid-template-columns:1fr}
@@ -442,6 +452,192 @@ pre.code{margin:10px 0 0;background:var(--surface-2);border:1px solid var(--line
   .drawer-nav button.on::after{display:none}
   .drawer-main{padding:14px}
 }
+
+/* =========================================================
+   商品中心 · 货主锁站锁价
+   页面 UI 与其余运营页统一（go() 挂 live-surface 对齐层皮肤），
+   本段为 freightLock 专属控件样式（清单、明细、选择器、分段等），
+   颜色与圆角走 CSS 变量，跟随皮肤自动适配
+   ========================================================= */
+.filter-note{flex:1;color:var(--muted);font-size:11.5px;text-align:right;padding-right:4px}
+/* 抽屉底部栏：基础皮肤下也要显示（live-surface 有自己的样式），
+   内容由 setDrawerFoot() 切换 */
+body.drawer-foot-on:not(.live-surface) .oms-drawer-footer{display:flex;flex:none;align-items:center;
+  justify-content:flex-end;gap:10px;padding:12px 16px;background:var(--surface);border-top:1px solid var(--line)}
+body.drawer-foot-on:not(.live-surface) .oms-drawer-footer .btn{min-width:92px;justify-content:center}
+
+/* 抽屉内表单布局 */
+.lock-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}
+.lock-form .fi{display:flex;flex-direction:column;gap:6px;min-width:0}
+.lock-form .fi.span2{grid-column:1/-1}
+.lock-form .fi>label{font-size:12px;color:var(--ink-2);font-weight:600}
+.lock-form .fi .row{display:flex;align-items:center;gap:8px;min-width:0}
+.lock-form .req{color:var(--bad)}
+.ck-tip{font-weight:400;color:var(--muted);font-size:11px;margin-left:8px}
+
+/* 网货主体：搜索下拉多选 */
+.ck-picker{position:relative;width:100%}
+.ck-picker-ctl{width:100%;min-height:30px;display:flex;align-items:center;flex-wrap:wrap;gap:6px;
+  padding:4px 28px 4px 10px;border:1px solid var(--line);background:var(--surface-2);border-radius:7px;
+  cursor:pointer;text-align:left;font-size:12px;position:relative}
+.ck-picker-ctl:hover{border-color:color-mix(in srgb,var(--brand) 40%,var(--line))}
+.ck-ph{color:var(--muted)}
+.ck-caret{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:10px}
+.ck-chip{display:inline-flex;align-items:center;gap:4px;padding:1px 5px;border-radius:5px;
+  background:var(--brand-soft);color:var(--brand-ink);font-size:11.5px}
+.ck-chip i{font-style:normal;cursor:pointer;opacity:.6;font-size:10px}
+.ck-chip i:hover{opacity:1}
+.ck-picker-pop{position:absolute;z-index:40;top:calc(100% + 4px);left:0;right:0;background:var(--surface);
+  border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:8px}
+.ck-picker-pop .inp{margin-bottom:6px}
+.ck-picker-list{max-height:210px;overflow:auto;display:flex;flex-direction:column;gap:2px}
+.ck-picker-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12px}
+.ck-picker-item:hover{background:var(--surface-2)}
+.ck-picker-item input{accent-color:var(--brand);flex:none}
+.ck-picker-item span:first-of-type{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ck-picker-id{color:var(--muted);font-size:11px}
+
+/* 货主企业：粘贴 / 上传 + 解析清单 */
+.ck-owner-box{flex-direction:column;align-items:stretch!important;gap:8px!important;width:100%}
+.ck-owner-tabs{display:flex;gap:6px}
+.ck-owner-tabs button{border:1px solid var(--line);background:var(--surface-2);border-radius:7px;
+  padding:5px 12px;font-size:12px;color:var(--ink-2);cursor:pointer}
+.ck-owner-tabs button.on{background:var(--brand-soft);border-color:color-mix(in srgb,var(--brand) 40%,transparent);
+  color:var(--brand-ink);font-weight:600}
+.ck-paste{width:100%;height:96px;padding:8px 10px;line-height:1.6;resize:vertical;font-family:inherit}
+.ck-owner-actions{display:flex;align-items:center;gap:10px}
+.ck-upload{display:flex;flex-direction:column;gap:6px;padding:12px;border:1px dashed var(--line);
+  border-radius:8px;background:var(--surface-2)}
+.ck-upload-hint{font-size:11.5px;color:var(--muted)}
+.ck-owner-list{display:flex;flex-direction:column;gap:4px;max-height:300px;overflow:auto}
+/* 货主企业清单无生效状态：清单内每一行都进入适用范围，不需要的删除 */
+.ck-owner-row{display:grid;grid-template-columns:minmax(0,1fr) 130px 22px;align-items:center;gap:8px;
+  padding:6px 8px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface-2);font-size:12px}
+/* 列表工具条：搜索 + 状态分段 + 批量操作 */
+.ck-list-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ck-list-tools .inp{flex:1;min-width:180px}
+.ck-list-tools .ck-tools-right{margin-left:auto;display:flex;gap:6px}
+.ck-seg-sm{height:28px;flex:none}
+.ck-seg-sm button{padding:0 10px;font-size:11.5px}
+.ck-owner-box-inner{display:block}
+
+/* 详情抽屉：只读货主企业清单（搜索 / 匹配状态筛选 / 分页） */
+.lk-view-lead{font-size:11.5px;color:var(--muted);margin-bottom:8px}
+.lk-view-lead b{color:var(--brand-ink)}
+.lk-view-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.lk-view-tools .inp{flex:1;min-width:180px}
+.lk-view-tools .ck-seg-sm{height:28px;flex:none}
+.lk-view-tools .ck-seg-sm button{padding:0 10px;font-size:11.5px}
+.lk-view-sum{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:8px}
+.lk-view-sum b{color:var(--brand-ink)}
+.lk-view-sum b.bad{color:var(--warn)}
+
+/* 内嵌分页条 */
+.ck-pager{display:flex;align-items:center;gap:10px;padding:8px 2px 2px;flex-wrap:wrap}
+.ck-pager .ck-pager-info{color:var(--muted);font-size:11.5px}
+.ck-pager .ck-pager-info b{color:var(--ink-2)}
+.ck-pager .pg{display:flex;gap:4px;margin-left:auto}
+.ck-pager .pg span{min-width:26px;height:26px;display:grid;place-items:center;border:1px solid var(--line);
+  border-radius:6px;cursor:pointer;color:var(--ink-2);background:var(--surface-2);font-size:12px}
+.ck-pager .pg span.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+.ck-pager .pg span.dis{opacity:.4;cursor:not-allowed}
+.ck-pager .spacer{flex:1}
+
+.ck-owner-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ck-owner-id{color:var(--muted);font-size:11.5px}
+.ck-owner-sum{font-size:11.5px;color:var(--ink-2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ck-owner-sum b{color:var(--brand-ink)}
+.ck-owner-sum b.bad{color:var(--warn)}
+.ck-del{all:unset;cursor:pointer;color:var(--bad);font-size:11.5px;padding:0 4px;border-radius:4px}
+.ck-del:hover{background:var(--bad-soft)}
+.ck-empty{padding:10px;color:var(--muted);font-size:12px;text-align:center}
+.ck-empty-lg{padding:26px;border:1px dashed var(--line);border-radius:8px}
+.ck-warn{margin-top:8px;padding:8px 12px;border-radius:8px;background:var(--warn-soft);
+  border:1px solid color-mix(in srgb,var(--warn) 35%,transparent);color:var(--warn);font-size:12px;line-height:1.7}
+
+/* 油站与油品选择器 */
+.ck-pick-filters{grid-template-columns:minmax(0,1fr) minmax(0,1fr);display:grid;padding:14px 16px 4px;gap:10px 18px}
+.ck-pick-filters .filter-actions{grid-column:1/-1}
+.ck-pick-tools{padding:14px 16px 0}
+.ck-pick-list{display:flex;flex-direction:column;gap:10px;max-height:400px;overflow:auto;padding:12px 16px 8px}
+/* flex:none：滚动容器内的子项不可被压缩（overflow:hidden 会让最小高度归 0，
+   20 个油站卡片会被均分成几像素的细条，看起来像没有数据） */
+.ck-pick-station{border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none}
+.ck-pick-station.on{border-color:color-mix(in srgb,var(--brand) 45%,transparent);background:var(--brand-soft)}
+/* 弹窗以油站为粒度：一行一站，勾选即带出该站全部油品行 */
+.ck-pick-row{display:flex;align-items:center;gap:10px;padding:10px 12px;font-size:12.5px;cursor:pointer}
+.ck-pick-row input{accent-color:var(--brand);flex:none;width:14px;height:14px;margin:0}
+.ck-pick-row .ck-pick-main{flex:1;min-width:0}
+.ck-pick-row .ck-pick-main b{font-weight:600}
+.ck-pick-row .ck-pick-main .t2{margin-top:2px}
+.ck-pick-code{flex:none;color:var(--muted);font-size:11px}
+/* 油品行已勾选时的显性「已选择」标识 */
+.ck-pick-sel{flex:none;font-size:10.5px;font-weight:600;line-height:1;padding:3px 6px;border-radius:4px;
+  background:color-mix(in srgb,var(--brand) 14%,transparent);color:var(--brand-ink);white-space:nowrap}
+
+@media(max-width:900px){
+  .lock-form{grid-template-columns:minmax(0,1fr)}
+  .ck-pick-filters{grid-template-columns:minmax(0,1fr)}
+}
+
+.lock-matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+.lock-matrix thead th{text-align:left;font-weight:600;color:var(--ink-2);font-size:11.5px;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--surface-3);white-space:nowrap}
+.lock-matrix tbody td{padding:11px 12px;border-bottom:1px solid var(--line-2);color:var(--ink);vertical-align:middle}
+.lock-matrix tbody tr:hover{background:var(--surface-2)}
+.lock-matrix .t1{font-weight:600}
+.lock-matrix .t2{color:var(--muted);font-size:11px;margin-top:3px}
+
+.live-list-freightLock .acts{min-width:238px;gap:8px}
+.live-list-freightLock .acts button{white-space:nowrap}
+
+.ck-combos{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.ck-combo{display:inline-flex;align-items:center;gap:5px;padding:2px 7px;border-radius:5px;background:var(--brand-soft);color:var(--brand-ink);font-size:11px;white-space:nowrap}
+.ck-plus{color:var(--muted)}
+.ck-more{color:var(--muted);font-size:11px}
+
+.ck-scope{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0 4px;max-height:250px;overflow:auto}
+.ck-tree{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--surface-2)}
+.ck-entity{font-size:12.5px;font-weight:600;color:var(--ink);padding-bottom:8px;margin-bottom:6px;border-bottom:1px solid var(--line-2)}
+.ck-own{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12.5px;color:var(--ink-2);cursor:pointer}
+.ck-own input{width:14px;height:14px;accent-color:var(--brand)}
+
+.ck-toolbar{display:flex;align-items:center;gap:8px;margin-top:4px}
+.ck-toolbar .filter-note{margin-left:auto;text-align:right}
+.ck-toolbar .filter-note b{color:var(--brand-ink)}
+
+.ck-modes{height:auto;border:0;display:flex;gap:10px;overflow:visible;flex:1}
+.ck-modes label{display:flex;align-items:center;gap:7px;padding:8px 14px;border:1px solid var(--line);border-radius:8px;font-size:12.5px;color:var(--ink-2);cursor:pointer;background:var(--surface-2)}
+.ck-modes label:has(input:checked){border-color:color-mix(in srgb,var(--brand) 45%,transparent);background:var(--brand-soft);color:var(--brand-ink);font-weight:600}
+.ck-modes input{accent-color:var(--brand)}
+
+.ck-tablewrap{margin-top:8px;border:1px solid var(--line);border-radius:8px;max-height:330px;overflow:auto}
+.lock-pool{width:100%;border-collapse:collapse;min-width:900px;font-size:12.5px}
+.lock-pool thead th{position:sticky;top:0;z-index:2;text-align:left;font-weight:600;color:var(--ink-2);font-size:11.5px;padding:10px 12px;background:var(--surface-3);border-bottom:1px solid var(--line);white-space:nowrap}
+.lock-pool tbody td{padding:10px 12px;border-bottom:1px solid var(--line-2);color:var(--ink);vertical-align:middle}
+.lock-pool tbody tr:hover{background:var(--surface-2)}
+.lock-pool .t1{font-weight:600}
+.lock-pool .t2{color:var(--muted);font-size:11px;margin-top:2px}
+.lock-pool .num.over{color:var(--bad);font-weight:600}
+/* 锁站锁价模式下「减价金额未填写」的行：标红提示，保存时同样会被拦截 */
+.lock-pool input.lk-req{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 6%,transparent)}
+.lock-pool input.lk-req::placeholder{color:var(--bad);opacity:.75}
+/* 抽屉「基本信息」里的备注：多行文本 */
+.lock-form textarea#lockRemark{height:auto;min-height:56px;padding:8px 10px;line-height:1.6;resize:vertical;font-family:inherit}
+.ck-hint{margin:9px 0 0;color:var(--muted);font-size:11.5px;line-height:1.7}
+
+.ck-seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;height:28px}
+.ck-seg button{border:0;background:var(--surface-2);padding:0 11px;font-size:12px;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.ck-seg button+button{border-left:1px solid var(--line-2)}
+.ck-seg button.on{background:var(--brand);color:#fff;font-weight:600}
+.ck-seg button.on.bad{background:var(--bad)}
+
+@media(max-width:1080px){
+  .ck-scope{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:720px){
+  .ck-toolbar{flex-wrap:wrap}
+  .ck-modes{flex-direction:column}
+}
 </style>
 <link rel="stylesheet" href="live-alignment.css">
 
@@ -451,6 +647,7 @@ pre.code{margin:10px 0 0;background:var(--surface-2);border:1px solid var(--line
       <div class="mark">万</div>
       <div><b>运营中台</b><small>Matching</small></div>
     </div>
+    <div class="site-switch" id="siteSwitch" role="group" aria-label="切换平台端"></div>
     <nav class="nav" id="nav"></nav>
   </aside>
 
@@ -479,7 +676,7 @@ pre.code{margin:10px 0 0;background:var(--surface-2);border:1px solid var(--line
     <div class="drawer-nav" id="drawerNav"></div>
     <div class="drawer-main" id="drawerMain"></div>
   </div>
-  <div class="oms-drawer-footer"><button type="button" class="btn" onclick="showDrawer(false)">关闭</button></div>
+  <div class="oms-drawer-footer" id="drawerFoot"><button type="button" class="btn" onclick="showDrawer(false)">关闭</button></div>
 </aside>
 
 <div class="modal" id="modal">
@@ -1156,6 +1353,8 @@ TONE['充值成功']='ok'; TONE['退款成功']='ok'; TONE['充值中']='info'; 
 TONE['支付中2'] = TONE['调拨中'] || 'info';
 TONE['支付处理中'] = TONE['调拨中'] || 'info';
 TONE['支付成功'] = 'ok'; TONE['退款成功'] = 'ok'; TONE['处理中'] = 'info';
+/* 货主锁站锁价：规则状态只有「生效 / 停用」 */
+TONE['生效']='ok'; TONE['停用']='mut';
 const tone = s => TONE[s] || 'mut';
 const pill = s => `<span class="pill ${tone(s)}">${s}</span>`;
 function custTypeTag(t){
@@ -1226,6 +1425,9 @@ const PAGES = [
   /* ---- 企业端 · 发票管理 ---- */
   {id:'cApply',   name:'发票列表', sub:'按油站公司拆单 · 开票进度与发票下载', side:'企业端', grp:'发票管理'},
 
+  /* ---- 运营平台 · 商品中心 ---- */
+  {id:'freightLock', name:'货主锁站锁价', sub:'网货主体 + 货主 维度限制可见油站 · 锁站 / 锁价 / 共享规则', side:'运营平台', grp:'商品中心'},
+
   /* ---- 企业端 · 财务管理 ---- */
   {id:'cQuota',   name:'我的余额与额度', sub:'充值 / 冻结 / 已消费 / 可用余额', side:'企业端', grp:'财务管理'},
   {id:'daily',    name:'日账单',       sub:'按日汇总消费', side:'企业端', grp:'财务管理'},
@@ -1235,61 +1437,63 @@ const PAGES = [
 ];
 
 
-const OTHER = ['客户中心','网点中心','商品管理','风控管理','撮合合同与电子签'];
+const LIVE_PAGES = ['orders','fee','refund','energyInvApply','feeInvApply','serviceFee','withdrawRecord'];
+/* 商品中心在 OMS 现网为既有模块（路由 goodsCenter），货主锁站锁价挂在该模块下；
+   页面 UI 与其余运营页统一走 live-surface 对齐层皮肤，菜单分组同为 OMS 结构。 */
+const PHASE2_PAGES = ['freightLock'];
+/* 运营平台按 OMS 现网菜单展示；只保留有页面的分组 */
+const LIVE_NAV = [
+  ['撮合订单','♧',['orders','fee','refund']],
+  ['开票中心','▣',['energyInvApply','feeInvApply']],
+  ['财务中心','◩',['serviceFee','withdrawRecord']],
+  ['商品中心','◇',['freightLock']],
+];
+/* 走 OMS 菜单外壳的页面（= 7 个已对齐运营页 + 货主锁站锁价）；
+   live-surface 皮肤仍然只有 LIVE_PAGES，两者不再共用同一个常量 */
+const OMS_NAV_PAGES = [...LIVE_PAGES, ...PHASE2_PAGES];
+/* 三端各自独立站点：切换后菜单只显示本端页面 */
+const SITES = {
+  '运营平台':{brand:'运营中台', home:'orders'},
+  '油站端':  {brand:'油站管理端', home:'stationInv'},
+  '企业端':  {brand:'企业客户端', home:'cOrders'},
+};
+const siteLast = {};
+const navOpen = new Set();
 let current = 'orders';
 let orderFilter = '全部';
 
+function sideOf(id){ return (PAGES.find(p=>p.id===id)||PAGES[0]).side; }
+function renderSiteSwitch(side){
+  document.querySelector('.brand b').textContent = SITES[side].brand;
+  document.getElementById('siteSwitch').innerHTML = SIDES.map(s=>
+    `<button type="button" class="${s===side?'on':''}" data-site="${s}" aria-pressed="${s===side}">${s}</button>`).join('');
+}
 function renderNav(){
-  const livePages=['orders','fee','refund','energyInvApply','feeInvApply','serviceFee','withdrawRecord'];
-  if(livePages.includes(current)){
-    const entry=(id,label,depth=0)=>`<a href="#${id}" class="oms-entry ${depth?'oms-child':''} ${id===current?'on':''}" data-go="${id}"><span class="oms-entry-icon" aria-hidden="true">${depth?'▫':'▥'}</span>${label}</a>`;
-    const group=(label,icon,items,active)=>`<div class="oms-group ${active?'expanded':''}"><div class="oms-group-title"><span class="oms-entry-icon" aria-hidden="true">${icon}</span>${label}<span class="oms-chevron">⌄</span></div>${active?'<div class="oms-children">'+items+'</div>':''}</div>`;
-    const order=['orders','fee','refund'].includes(current), invoice=['energyInvApply','feeInvApply'].includes(current), finance=['serviceFee','withdrawRecord'].includes(current);
-    document.getElementById('nav').innerHTML =
-      '<div class="oms-group-title oms-static"><span class="oms-entry-icon">◉</span>首页</div>'+
-      '<div class="oms-group-title oms-static"><span class="oms-entry-icon">▥</span>仪表盘</div>'+
-      group('客户中心','♙','',false)+group('网点中心','♧','',false)+group('商品管理','♙','',false)+group('订单中心','▤','',false)+
-      group('撮合订单','♧',entry('orders','能源订单管理',1)+entry('fee','服务费订单管理',1)+entry('refund','退款申请管理',1),order)+
-      group('部门中心','▥','',false)+group('OA中心','♣','',false)+group('开票中心','▣',entry('energyInvApply','能源发票管理',1)+entry('feeInvApply','服务费发票管理',1),invoice)+
-      '<div class="oms-group-title oms-static"><span class="oms-entry-icon">▣</span>发票中心<span class="oms-chevron">⌄</span></div>'+
-      group('财务中心','◩',entry('serviceFee','服务费账户',1)+entry('withdrawRecord','提现记录',1),finance)+
-      '<div class="oms-group-title oms-static"><span class="oms-entry-icon">▣</span>授信管理<span class="oms-chevron">⌄</span></div>';
+  const side = sideOf(current);
+  renderSiteSwitch(side);
+  if(OMS_NAV_PAGES.includes(current) && side==='运营平台'){
+    const entry=id=>`<a href="#${id}" class="oms-entry oms-child ${id===current?'on':''}" data-go="${id}"><span class="oms-entry-icon" aria-hidden="true">▫</span>${PAGES.find(p=>p.id===id).name}</a>`;
+    const grp = LIVE_NAV.find(g=>g[2].includes(current));
+    document.getElementById('nav').innerHTML = LIVE_NAV.map(([label,icon,ids])=>
+      `<div class="oms-group ${navOpen.has(label)||label===grp?.[0]?'expanded':''}"><div class="oms-group-title" data-nav-toggle="${label}"><span class="oms-entry-icon" aria-hidden="true">${icon}</span>${label}<span class="oms-chevron">⌄</span></div><div class="oms-children">${ids.map(entry).join('')}</div></div>`).join('');
     return;
   }
+  const link=p=>`<a href="#${p.id}" class="${p.id===current?'on':''}" data-go="${p.id}"><span class="dot"></span>${p.name}</a>`;
+  const pages = PAGES.filter(p=>p.side===side);
   let html = '';
-  SIDES.forEach(side=>{
-    const pages = PAGES.filter(p=>p.side===side);
-    if(!pages.length) return;
-    html += `<div class="side">${side}</div>`;
-    [...new Set(pages.map(p=>p.grp))].forEach(g=>{
-      html += `<div class="grp">${g}</div>`;
-      const grpPages = pages.filter(p=>p.grp===g);
-      const subgrps = [...new Set(grpPages.map(p=>p.subgrp).filter(Boolean))];
-      if(subgrps.length){
-        subgrps.forEach(sg=>{
-          html += `<div class="subgrp">${sg}</div>` +
-            grpPages.filter(p=>p.subgrp===sg).map(p=>
-              `<a href="#${p.id}" class="${p.id===current?'on':''}" data-go="${p.id}"><span class="dot"></span>${p.name}</a>`).join('');
-        });
-        const noSub = grpPages.filter(p=>!p.subgrp);
-        if(noSub.length){
-          html += noSub.map(p=>
-            `<a href="#${p.id}" class="${p.id===current?'on':''}" data-go="${p.id}"><span class="dot"></span>${p.name}</a>`).join('');
-        }
-      } else {
-        html += grpPages.map(p=>
-          `<a href="#${p.id}" class="${p.id===current?'on':''}" data-go="${p.id}"><span class="dot"></span>${p.name}</a>`).join('');
-      }
+  [...new Set(pages.map(p=>p.grp))].forEach(g=>{
+    html += `<div class="grp">${g}</div>`;
+    const grpPages = pages.filter(p=>p.grp===g);
+    [...new Set(grpPages.map(p=>p.subgrp).filter(Boolean))].forEach(sg=>{
+      html += `<div class="subgrp">${sg}</div>` + grpPages.filter(p=>p.subgrp===sg).map(link).join('');
     });
+    html += grpPages.filter(p=>!p.subgrp).map(link).join('');
   });
-  html += `<div class="side">其他模块<span class="side-tag">未实现</span></div>` +
-    OTHER.map(o=>`<a class="dis" title="本次不在交付范围"><span class="dot"></span>${o}</a>`).join('');
   document.getElementById('nav').innerHTML = html;
 }
 function renderTabs(){
-  if(['orders','fee','refund','energyInvApply','feeInvApply','serviceFee','withdrawRecord'].includes(current)){
-    const tabs=[['orders','能源订单管理'],['fee','服务费订单管理'],['refund','退款申请管理'],['energyInvApply','能源发票管理'],['feeInvApply','服务费发票管理'],['serviceFee','服务费账户'],['withdrawRecord','提现记录']];
-    document.getElementById('tabstrip').innerHTML='<span class="oms-tab-arrow">‹</span><button class="oms-home-tab" data-go="orders">首页</button>'+tabs.map(([id,label])=>`<button class="${id===current?'on':''}" data-go="${id}">${label}<span class="oms-tab-close" aria-hidden="true">×</span></button>`).join('')+'<span class="oms-tab-arrow oms-tab-last">›</span>';
+  if(OMS_NAV_PAGES.includes(current)){
+    document.getElementById('tabstrip').innerHTML='<span class="oms-tab-arrow">‹</span><button class="oms-home-tab" data-go="orders">首页</button>'+OMS_NAV_PAGES.map(id=>`<button class="${id===current?'on':''}" data-go="${id}">${PAGES.find(p=>p.id===id).name}<span class="oms-tab-close" aria-hidden="true">×</span></button>`).join('')+'<span class="oms-tab-arrow oms-tab-last">›</span>';
     return;
   }
   const cur = PAGES.find(p=>p.id===current) || PAGES[0];
@@ -1305,9 +1509,21 @@ function renderTabs(){
 function isCust(id){ return (PAGES.find(x=>x.id===id)||{}).side === '企业端'; }
 function go(id){
   current = id;
-  document.body.classList.toggle('live-surface', ['orders','fee','refund','energyInvApply','feeInvApply','serviceFee','withdrawRecord'].includes(id));
+  /* 皮肤覆盖全部 OMS 菜单外壳页面（7 个已对齐运营页 + 货主锁站锁价）；
+     油站端、企业端仍走原型基础皮肤 */
+  const live = OMS_NAV_PAGES.includes(id);
+  if(document.body.classList.contains('live-surface') !== live){
+    /* 两套外壳的抽屉停靠方向不同，切换时不播放滑动动画 */
+    const drawer = document.getElementById('drawer');
+    drawer.style.transition = 'none';
+    document.body.classList.toggle('live-surface', live);
+    drawer.offsetWidth;
+    drawer.style.transition = '';
+  }
   document.body.dataset.livePage = id;
   const p = PAGES.find(x=>x.id===id);
+  siteLast[p.side] = id;
+  if(location.hash !== '#'+id) history.replaceState(null, '', '#'+id);
   document.getElementById('pageTitle').textContent = p.name;
   const path = p.subgrp ? p.side + ' / ' + p.grp + ' / ' + p.subgrp : p.side + ' / ' + p.grp;
   document.getElementById('pageSub').textContent = path + ' · ' + p.sub;
@@ -1327,6 +1543,10 @@ function paint(){
 document.addEventListener('click', e=>{
   const ap = e.target.closest('[data-application-order-page]'); if(ap){ changeApplicationOrderPage(ap); return; }
   const bill = e.target.closest('[data-bill-orders]'); if(bill){ openBillOrderDrawer(bill.dataset.billOrders,Number(bill.dataset.billIndex)); return; }
+  const st = e.target.closest('[data-site]');    if(st){ go(siteLast[st.dataset.site] || SITES[st.dataset.site].home); return; }
+  const nt = e.target.closest('[data-nav-toggle]'); if(nt){ const k = nt.dataset.navToggle;
+                                                        navOpen.has(k) ? navOpen.delete(k) : navOpen.add(k);
+                                                        nt.parentElement.classList.toggle('expanded', navOpen.has(k)); return; }
   const g = e.target.closest('[data-go]');       if(g){ e.preventDefault(); go(g.dataset.go); return; }
   const d = e.target.closest('[data-detail]');   if(d){ openOrder(d.dataset.detail); return; }
   const cd = e.target.closest('[data-cdetail]'); if(cd){ openCOrder(cd.dataset.cdetail); return; }
@@ -1346,6 +1566,13 @@ document.addEventListener('click', e=>{
   const fc = e.target.closest('[data-feechip]'); if(fc){ feeFilter = fc.dataset.feechip; paint(); return; }
   const fic = e.target.closest('[data-feeinvchip]'); if(fic){ feeInvFilter = fic.dataset.feeinvchip; paint(); return; }
   const sfic = e.target.closest('[data-station-feeinvchip]'); if(sfic){ stationFeeInvFilter = sfic.getAttribute('data-station-feeinvchip'); paint(); return; }
+  /* 货主锁站锁价 */
+  const lv = e.target.closest('[data-lockview]');   if(lv){ openLockRuleView(lv.dataset.lockview); return; }
+  const le = e.target.closest('[data-lockedit]');   if(le){ openLockEditor(le.dataset.lockedit); return; }
+  const lt = e.target.closest('[data-locktoggle]'); if(lt){ openConfirm('lockRuleToggle', lt.dataset.locktoggle); return; }
+  const lc = e.target.closest('[data-lockcopy]');   if(lc){ openLockEditor(lc.dataset.lockcopy, true); return; }
+  /* 点空白处收起网货主体下拉 */
+  if(lockEntityOpen && !e.target.closest('#lockEntityPicker')){ lockEntityOpen = false; lockRefresh(); }
 });
 
 /* ================= 下拉选项字典 ================= */
@@ -1399,6 +1626,255 @@ const OPT = {
   invType:['增值税专用发票','增值税普通发票'],
   pageSize:['20条/页','50条/页','100条/页']
 };
+
+/* ================= 货主锁站锁价（商品中心） =================
+   规则口径（2026-10-09 确认）：
+     · 网货主体即现网客户企业，单独配置、搜索下拉获取
+     · 货主企业由运营录入（粘贴清单 / Excel 上传「名称 + 企业ID」），不预置组合
+     · 油站从系统已有油站选择，按「油站 + 油品」逐行配置
+     · 价格 = 现网企业价 − 减价金额（减多少钱），不是绝对定价
+     · 模式只有两类：锁站（不减价）/ 锁站锁价（逐行减价）
+     · 状态只有两个：生效 / 停用
+     · 同一「网货主体 + 货主企业」不允许存在两条生效规则
+   优先级：命中「网货主体 + 货主企业」的生效规则 > 回落现网「企业网点商品价格」
+   本层只做收敛：现网未推送的油站，货主规则无法让其可见 */
+
+/* 网货主体：现网客户企业主数据，页面用搜索下拉读取 */
+const FREIGHT_ENTITIES = [
+  {id:'E1001', name:'万联易达物流科技有限公司', short:'万联易达', status:'启用'},
+  {id:'E1002', name:'蒙晋通达运输有限公司',     short:'蒙晋通达', status:'启用'},
+  {id:'E1003', name:'鲁通冷链物流有限公司',     short:'鲁通冷链', status:'启用'},
+  {id:'E1004', name:'津冀联合运输有限公司',     short:'津冀联合', status:'启用'},
+];
+
+/* 货主企业清单：由运营粘贴 / Excel 上传录入，以导入的「名称+企业ID」为准，不做主数据匹配 */
+const FREIGHT_OWNERS = [
+  {id:'SH0200001', name:'万联易达上海分公司', source:'EXCEL'},
+  {id:'SH0200002', name:'万联易达天津分公司', source:'EXCEL'},
+  {id:'SH0100001', name:'万联易达物流科技有限公司', source:'PASTE'},
+  {id:'SH0200003', name:'蒙晋通达天津分公司', source:'EXCEL'},
+  {id:'SH0100002', name:'蒙晋通达运输有限公司', source:'PASTE'},
+  {id:'SH0200004', name:'鲁通冷链济南分公司', source:'EXCEL'},
+  {id:'SH0100003', name:'鲁通冷链物流有限公司', source:'PASTE'},
+  {id:'SH0900001', name:'唐山曹妃甸物流有限公司', source:'PASTE'},
+];
+
+/* 油站目录：来源于现网「企业网点商品价格」已推送的「油站 × 油品」及企业价、成本价
+   entPrice 即减价基准；本层不新建油站与油品 */
+const LOCK_STATIONS = [
+  {code:'ST0001', name:'沈阳浑南加油站',   co:'中石化辽宁石油分公司', energy:'柴油',   city:'沈阳', goods:[
+    {goodsId:'G01', goodsName:'0# 轻柴油', entPrice:6.68, cost:6.12},
+    {goodsId:'G02', goodsName:'-10# 柴油', entPrice:6.95, cost:6.40}]},
+  {code:'ST0002', name:'天津武清京津站',   co:'中石油天津销售分公司', energy:'柴油',   city:'天津', goods:[
+    {goodsId:'G02', goodsName:'-10# 柴油', entPrice:6.85, cost:6.30}]},
+  {code:'ST0003', name:'津南万顺站',       co:'中石化辽宁石油分公司', energy:'柴油',   city:'天津', goods:[
+    {goodsId:'G01', goodsName:'0# 轻柴油', entPrice:6.62, cost:6.10}]},
+  {code:'ST0004', name:'济南章丘服务区站', co:'中交兴路能源有限公司', energy:'柴油',   city:'济南', goods:[
+    {goodsId:'G01', goodsName:'0# 轻柴油', entPrice:6.55, cost:6.05}]},
+  {code:'ST0005', name:'济南历下高新站',   co:'高灯能源科技有限公司', energy:'柴油',   city:'济南', goods:[
+    {goodsId:'G02', goodsName:'-10# 柴油', entPrice:6.78, cost:6.26}]},
+  {code:'ST0006', name:'北京大兴机场西站', co:'畅油网络科技有限公司', energy:'天然气', city:'北京', goods:[
+    {goodsId:'G03', goodsName:'LNG', entPrice:5.92, cost:5.40}]},
+  {code:'ST0007', name:'沈阳铁西重工站',   co:'中石化辽宁石油分公司', energy:'柴油',   city:'沈阳', goods:[
+    {goodsId:'G01', goodsName:'0# 轻柴油', entPrice:6.70, cost:6.15}]},
+  {code:'ST0008', name:'天津滨海新区站',   co:'中石油天津销售分公司', energy:'天然气', city:'天津', goods:[
+    {goodsId:'G03', goodsName:'LNG', entPrice:5.86, cost:5.35}]},
+];
+/* 大数据量演示数据：油站目录在既有 8 个样例基础上补齐到约 300 个，
+   用于验证抽屉里油站选择器与「油站 + 油品」明细的搜索 / 筛选 / 分页。
+   实际项目里这份目录来自现网「企业网点商品价格」已推送的油站与油品。 */
+(function seedLockStations(){
+  const cos = ['中石化辽宁石油分公司','中石油天津销售分公司','高灯能源科技有限公司',
+               '中交兴路能源有限公司','畅油网络科技有限公司','中化石油华北有限公司'];
+  const cities = ['沈阳','大连','天津','北京','济南','青岛','石家庄','唐山','郑州','太原'];
+  const goodsPool = [
+    {goodsId:'G01', goodsName:'0# 轻柴油', base:6.55},
+    {goodsId:'G02', goodsName:'-10# 柴油', base:6.80},
+    {goodsId:'G04', goodsName:'-20# 柴油', base:7.05},
+    {goodsId:'G03', goodsName:'LNG',       base:5.90},
+    {goodsId:'G05', goodsName:'CNG',       base:5.60},
+  ];
+  for(let n=1; LOCK_STATIONS.length < 300; n++){
+    const city = cities[n % cities.length];
+    const co = cos[n % cities.length];
+    const isGas = n % 7 === 0;
+    /* 每个油站固定 2 个油品：加气站给 LNG + CNG，加油站给两种柴油牌号，
+       300 个油站正好展开成 600 行「油站 + 油品」明细 */
+    const pick = isGas ? [goodsPool[3], goodsPool[4]]
+                       : [goodsPool[n % 3], goodsPool[(n + 1) % 3]];
+    LOCK_STATIONS.push({
+      code: 'ST' + String(1000 + n).padStart(4,'0'),
+      name: city + ['东部','西部','南部','北部','高新','机场','港口','开发区'][n % 8] + (isGas ? '加气站' : '加油站'),
+      co, energy: isGas ? '天然气' : '柴油', city,
+      goods: pick.map(g=>({
+        goodsId: g.goodsId, goodsName: g.goodsName,
+        entPrice: Number((g.base + ((n % 9) - 4) * 0.03).toFixed(2)),
+        cost: Number((g.base + ((n % 9) - 4) * 0.03 - 0.55).toFixed(2))
+      }))
+    });
+  }
+})();
+
+const lockStation = code => LOCK_STATIONS.find(s=>s.code===code);
+const lockGoods = (code, goodsId) => (lockStation(code)?.goods||[]).find(g=>g.goodsId===goodsId) || null;
+
+const LOCK_MODE = {LOCK:'锁站', PRICE:'锁站锁价'};
+const LOCK_STATUS = {ON:'生效', OFF:'停用'};
+
+/* 锁站规则
+   mode       ：锁站 / 锁站锁价
+   status     ：生效 / 停用
+   entities   ：适用网货主体 id 列表
+   owners     ：适用货主企业 id 列表；空数组 = 该网货主体下全部货主企业
+   stations   ：明细行，一行 = 一个「油站 + 油品」
+                reduce 仅在锁站锁价模式下有值，且一律为「减价金额」 */
+const LOCK_RULES = [
+  {id:'AS2026100001', name:'万联上海 · 沈阳天津锁站锁价', mode:'锁站锁价', status:'生效',
+   entities:['E1001'], owners:['SH0200001'],
+   remark:'上海分公司常跑沈阳、天津线，按线路锁定油站并让利',
+   createdBy:'张运营', createdAt:'2026-10-08 15:42', updatedBy:'张运营', updatedAt:'2026-10-08 15:42',
+   stations:[
+     {station:'ST0001', goods:'G01', reduce:0.10},
+     {station:'ST0007', goods:'G01', reduce:0.05},
+   ]},
+  {id:'AS2026100002', name:'万联天津 · 沈阳天津锁站锁价', mode:'锁站锁价', status:'生效',
+   entities:['E1001'], owners:['SH0200002'],
+   remark:'天津分公司同线路，减价幅度略低于上海',
+   createdBy:'张运营', createdAt:'2026-10-08 16:05', updatedBy:'张运营', updatedAt:'2026-10-08 16:05',
+   stations:[
+     {station:'ST0001', goods:'G01', reduce:0.06},
+     {station:'ST0002', goods:'G02', reduce:0.05},
+     {station:'ST0003', goods:'G01', reduce:0.04},
+   ]},
+  {id:'AS2026100003', name:'蒙晋通达本部 · 天津锁站', mode:'锁站', status:'生效',
+   entities:['E1002'], owners:['SH0100002'],
+   remark:'只锁站不减价，价格沿用企业级',
+   createdBy:'李运营', createdAt:'2026-10-08 17:20', updatedBy:'李运营', updatedAt:'2026-10-08 17:20',
+   stations:[
+     {station:'ST0002', goods:'G02', reduce:null},
+     {station:'ST0008', goods:'G03', reduce:null},
+   ]},
+  {id:'AS2026100004', name:'鲁通冷链×津冀联合 · 山东两站锁站锁价', mode:'锁站锁价', status:'停用',
+   entities:['E1003','E1004'], owners:['SH0100003','SH0200004'],
+   remark:'两个网货主体、两个货主共用一套站与价；暂时停用，等价格确认',
+   createdBy:'李运营', createdAt:'2026-10-08 18:02', updatedBy:'王运营', updatedAt:'2026-10-09 09:15',
+   stations:[
+     {station:'ST0004', goods:'G01', reduce:0.08},
+     {station:'ST0005', goods:'G02', reduce:0.12},
+   ]},
+  {id:'AS2026100005', name:'万联本部 · 全部货主统一锁站', mode:'锁站', status:'停用',
+   entities:['E1001'], owners:[],
+   remark:'覆盖万联易达下全部货主企业，暂未启用',
+   createdBy:'张运营', createdAt:'2026-10-09 10:02', updatedBy:'张运营', updatedAt:'2026-10-09 10:02',
+   stations:[
+     {station:'ST0001', goods:'G01', reduce:null},
+     {station:'ST0003', goods:'G01', reduce:null},
+     {station:'ST0007', goods:'G01', reduce:null},
+   ]},
+  {id:'AS2026100008', name:'华北区域 · 三主体统一锁站锁价', mode:'锁站锁价', status:'停用',
+   entities:['E1001','E1002','E1003'], owners:[],
+   remark:'一条规则同时挂多个网货主体（未指定货主＝全部货主企业），暂未启用',
+   createdBy:'张运营', createdAt:'2026-10-09 13:40', updatedBy:'张运营', updatedAt:'2026-10-09 13:40',
+   stations:[
+     {station:'ST0001', goods:'G01', reduce:0.06},
+     {station:'ST0006', goods:'G03', reduce:0.10},
+     {station:'ST0008', goods:'G03', reduce:0.08},
+   ]},
+];
+
+/* 大数据量演示数据：货主企业清单补齐到约 520 条，用于验证清单的搜索 / 筛选 / 分页 */
+(function seedFreightOwners(){
+  const prefix = ['万联易达','蒙晋通达','鲁通冷链','津冀联合','辽沈物流','渤海运输','中原货运','三晋供应链'];
+  const suffix = ['上海分公司','天津分公司','沈阳分公司','济南分公司','北京分公司','青岛分公司','郑州分公司',
+                  '太原分公司','石家庄分公司','唐山分公司','大连分公司','杭州分公司'];
+  const mid = ['第一','第二','第三','第四','第五','第六'];
+  const known = new Set(FREIGHT_OWNERS.map(o=>o.name));
+  const add = (name, n) => {
+    if(known.has(name) || FREIGHT_OWNERS.length >= 520) return false;
+    known.add(name);
+    FREIGHT_OWNERS.push({
+      id: 'SH1' + String(100000 + n).padStart(6,'0'),   /* 与样例数据的 SH0xxxxxx 段区分，避免撞号 */
+      name,
+      source: n % 2 === 0 ? 'EXCEL' : 'PASTE'
+    });
+    return true;
+  };
+  let n = 1;
+  for(const p0 of prefix) for(const s0 of suffix) add(p0 + s0, n++);
+  for(const p0 of prefix) for(const m0 of mid) for(const s0 of suffix) add(p0 + m0 + s0, n++);
+})();
+
+/* 大数据量演示规则：单条规则挂 500 个货主企业，
+   用于验证详情抽屉货主企业清单的搜索 / 分页 */
+(function seedOwnerHeavyRule(){
+  const owners = FREIGHT_OWNERS.map(o=>o.id).filter(Boolean).slice(0, 500);
+  LOCK_RULES.push({
+    id:'AS2026100006', name:'津冀联合 · 500 货主统一锁站锁价', mode:'锁站锁价', status:'停用',
+    entities:['E1004'], owners,
+    remark:'货主企业数量大，用于验证详情内的检索、分页',
+    createdBy:'张运营', createdAt:'2026-10-09 11:30', updatedBy:'张运营', updatedAt:'2026-10-09 11:30',
+    stations:[
+      {station:'ST0001', goods:'G01', reduce:0.05},
+      {station:'ST0002', goods:'G02', reduce:0.03},
+    ]});
+})();
+
+/* 大数据量演示规则：单条规则覆盖全部油站的油品明细（约 560 行），
+   用于验证明细区的搜索 / 能源筛选 /「只看有减价的行」/ 分页。
+   减价金额按行显式填写（0 表示可见但不减价），因此也覆盖「逐行必填」校验。 */
+(function seedStationHeavyRule(){
+  const rows = LOCK_STATIONS.flatMap(st=>st.goods.map(g=>({station:st.code, goods:g.goodsId})));
+  LOCK_RULES.push({
+    id:'AS2026100007', name:'全量油站明细 · 分页与筛选验证', mode:'锁站锁价', status:'停用',
+    entities:['E1002'], owners:[],
+    remark:'明细行数大，用于验证检索、筛选与分页',
+    createdBy:'张运营', createdAt:'2026-10-09 12:10', updatedBy:'张运营', updatedAt:'2026-10-09 12:10',
+    stations: rows.map((l,i)=>({...l, reduce: i%3===0 ? 0.05 : 0}))});
+})();
+
+const entityById = id => FREIGHT_ENTITIES.find(e=>e.id===id) || null;
+const ownerById  = id => FREIGHT_OWNERS.find(o=>o.id===id) || null;
+const entityName = id => entityById(id)?.name || id;
+const ownerName  = id => ownerById(id)?.name || id;
+
+/* 适用范围展开：一行 = 一个「网货主体 + 货主企业」
+   仅用于规则唯一性冲突校验，页面不做组合维度的展示
+   owners 为空时展开成一行 owner=null，表示该主体下全部货主企业 */
+function ruleScopeRows(rule){
+  if(!rule.entities.length) return [];
+  if(!rule.owners.length) return rule.entities.map(e=>({entityId:e, ownerId:null}));
+  return rule.entities.flatMap(e=>rule.owners.map(o=>({entityId:e, ownerId:o})));
+}
+/* 冲突检测：同一「网货主体 + 货主企业」不允许两条生效规则
+   任一方 owners 为空（全部货主）时，视为与另一方的每个货主都冲突 */
+function lockConflicts(rule, ignoreId){
+  const mine = ruleScopeRows(rule);
+  const hits = [];
+  LOCK_RULES.forEach(other=>{
+    if(other.id===ignoreId) return;
+    if(other.status!==LOCK_STATUS.ON) return;
+    const theirs = ruleScopeRows(other);
+    mine.forEach(a=>theirs.forEach(b=>{
+      if(a.entityId!==b.entityId) return;
+      const ownerClash = !a.ownerId || !b.ownerId || a.ownerId===b.ownerId;
+      if(ownerClash){
+        hits.push({rule:other, entityId:a.entityId,
+          ownerText: (!a.ownerId||!b.ownerId) ? '全部货主企业' : ownerName(a.ownerId)});
+      }
+    }));
+  });
+  /* 同一规则内自身重复 */
+  const seen = new Set();
+  mine.forEach(a=>{
+    const k = a.entityId+'||'+(a.ownerId||'*');
+    if(seen.has(k)) hits.push({rule:rule, entityId:a.entityId, ownerText:(a.ownerId?ownerName(a.ownerId):'全部货主企业'), self:true});
+    seen.add(k);
+  });
+  return hits;
+}
+/* 批量停用等操作的兜底查找 */
+const LOCK_RULE_BY_ID = id => LOCK_RULES.find(r=>r.id===id) || null;
+
 
 /* ================= 控件工厂 =================
    t: text 文本 | code 编号（大写字母数字） | tel 手机号 | plate 车牌
@@ -1456,11 +1932,26 @@ function ctlHTML(o){
 }
 
 /* 查询区：label 在左 */
-function filterRow(items){
+function filterRow(items, nochrome){
   return items.map(i=>{
     const labelFor = i.id ? ` for="${i.t==='range'?i.id+'-start':i.id}"` : '';
-    return `<div class="f ${i.span?'span'+i.span:''}"><label class="${i.w2?'w2':''}"${labelFor}>${i.l}</label><div class="fc">${ctlHTML(i)}</div></div>`;
+    const body = nochrome ? plainCtlHTML(i) : ctlHTML(i);
+    return `<div class="f ${i.span?'span'+i.span:''}"><label class="${i.w2?'w2':''}"${labelFor}>${i.l}</label><div class="fc">${body}</div></div>`;
   }).join('');
+}
+/* 列表筛选用的轻量控件：由「搜索」按钮统一读取，不参与抽屉内的表单校验 */
+function plainCtlHTML(o){
+  const id = o.id ? ` id="${o.id}"` : '';
+  const cls = 'inp' + (o.mono?' mono':'');
+  const v = o.v ? ` value="${o.v}"` : '';
+  const req = o.req ? ' required' : '';
+  if(o.t==='sel'){
+    const cur = o.selv!==undefined ? o.selv : o.v;
+    return `<select class="${cls}${cur?'':' is-empty'}"${id}${req}><option value="">${o.p||'请选择'}</option>${(o.o||[]).map(x=>`<option${x===cur?' selected':''}>${x}</option>`).join('')}</select>`;
+  }
+  if(o.t==='date') return `<input class="${cls} mono" type="date"${id}${v}${req}>`;
+  if(o.t==='num'||o.t==='amt') return `<input class="${cls} mono" type="number"${id} placeholder="${o.p||''}"${v}${req}>`;
+  return `<input class="${cls}" type="text"${id} placeholder="${o.p||''}"${v}${req}>`;
 }
 /* 表单区：label 在上，带 hint */
 function ff(o){
@@ -1586,10 +2077,13 @@ function rowSelectable(id,o){
   if(id==='fee') return isServiceFeeInvoiceEligible(o);
   return true;
 }
-/* 统一渲染一张可配置列的表 */
-function dataTable(id, list, minWidth, empty){
+/* 统一渲染一张可配置列的表
+   noSelect: 配置类列表不出现勾选列（dataTable 默认带全选列） */
+function dataTable(id, list, minWidth, empty, noSelect){
   const cols = visibleCols(id);
-  const head = '<tr><th style="width:38px"><input type="checkbox" data-all="'+id+'" aria-label="全选本页"></th>' +
+  const selHead = noSelect ? '' : '<th style="width:38px"><input type="checkbox" data-all="'+id+'" aria-label="全选本页"></th>';
+  const span = cols.length + (noSelect?0:1);
+  const head = '<tr>' + selHead +
     cols.map((c,i)=>{
       const k = c.k==='ops' ? 'stickR' : '';
       const cls = k ? ' class="'+k+'"' : '';
@@ -1599,13 +2093,14 @@ function dataTable(id, list, minWidth, empty){
   const body = list.length
     ? list.map(o=>{
         const selectable = rowSelectable(id,o);
-        return '<tr><td><input type="checkbox" class="row-check" data-no="'+(o.no||o.id||'')+'" aria-label="'+(selectable?'选择本行':'当前记录不可开票')+'" '+(selectable?'':'disabled')+'></td>' +
+        const selTd = noSelect ? '' : '<td><input type="checkbox" class="row-check" data-no="'+(o.no||o.id||'')+'" aria-label="'+(selectable?'选择本行':'当前记录不可开票')+'" '+(selectable?'':'disabled')+'></td>';
+        return '<tr>' + selTd +
         cols.map((c,i)=>{
           const cls = [c.k==='ops'?'stickR':'', c.cls||''].filter(Boolean).join(' ');
           return `<td${cls?' class="'+cls+'"':''}>${c.td(o)}</td>`;
         }).join('') + '</tr>';
       }).join('')
-    : `<tr><td colspan="${cols.length+1}" class="empty">${empty||'暂无数据'}</td></tr>`;
+    : `<tr><td colspan="${span}" class="empty">${empty||'暂无数据'}</td></tr>`;
   return `<div class="tablewrap"><table style="min-width:${minWidth}"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
 }
 /* 列设置按钮 */
@@ -5855,6 +6350,7 @@ function cfFields(f){
 }
 function openConfirm(kind, key){
   const c = CONFIRMS[kind]; if(!c) return;
+  window._cfKey = key;
   const m = typeof c==='function' ? c(key) : c;
   const card = document.getElementById('modal').querySelector('.modal-card');
   card.classList.add('sm');
@@ -5870,9 +6366,46 @@ function openConfirm(kind, key){
     (m.warn ? `<div class="banner bad"><div><b>不可逆操作</b><span class="txt">${m.warn}</span></div></div>` : '');
   document.getElementById('modalFoot').innerHTML =
     (m.back ? `<button class="btn" data-modal="${m.back}">${m.backTxt||'返回'}</button>` : '')
-    + `<button class="btn" data-mclose="1">取消</button><button class="btn ${m.okClass||'primary'}">${m.ok}</button>`;
+    + `<button class="btn" data-mclose="1">取消</button><button class="btn ${m.okClass||'primary'}" data-cf-ok="${CONFIRM_ACTIONS[kind]?kind:''}">${m.ok}</button>`;
   modal.classList.add('on');
 }
+/* 二次确认的确认动作：只有登记在此的操作在确认后才产生数据变化 */
+const CONFIRM_ACTIONS = {
+  lockRuleDelete: key => {
+    const i = LOCK_RULES.findIndex(r=>r.id===key);
+    if(i>=0) LOCK_RULES.splice(i,1);
+    showToast('规则已删除'); paint();
+  },
+  lockRuleToggle: key => {
+    const r = LOCK_RULE_BY_ID(key); if(!r) return;
+    /* 启用时执行与保存一致的唯一性校验：与生效规则的「网货主体+货主企业」组合冲突则拦截，状态不变 */
+    if(r.status!==LOCK_STATUS.ON){
+      const conflicts = lockConflicts({entities:r.entities, owners:r.owners, status:LOCK_STATUS.ON}, r.id);
+      if(conflicts.length){
+        const c = conflicts[0];
+        showToast(`启用失败：适用范围与生效规则 ${c.rule.id} 冲突：${c.entityId?entityName(c.entityId):''} + ${c.ownerText}`);
+        return;
+      }
+    }
+    r.status = r.status===LOCK_STATUS.ON ? LOCK_STATUS.OFF : LOCK_STATUS.ON;
+    r.updatedAt = lockNow(); r.updatedBy = '当前登录人';
+    showToast(r.status===LOCK_STATUS.ON?'规则已启用':'规则已停用'); paint();
+  },
+  lockNegGross: () => {
+    const fn = window._lockPendingSave; window._lockPendingSave = null;
+    if(typeof fn === 'function') fn();
+  },
+  lockDiscard: () => {
+    const fn = window._lockPendingClose; window._lockPendingClose = null;
+    if(typeof fn === 'function') fn();
+  }
+};
+document.getElementById('modalFoot').addEventListener('click', e=>{
+  const btn = e.target.closest('[data-cf-ok]'); if(!btn) return;
+  const kind = btn.dataset.cfOk, key = window._cfKey;
+  modal.classList.remove('on');
+  if(kind && CONFIRM_ACTIONS[kind]) CONFIRM_ACTIONS[kind](key);
+});
 
 function openModal(kind){
   const m = MODALS[kind];
@@ -5937,9 +6470,13 @@ function showDrawer(on){
     drawerReturnFocus.focus({preventScroll:true});
   }
 }
-document.getElementById('drawerClose').onclick = ()=>showDrawer(false);
-document.getElementById('scrim').onclick = ()=>showDrawer(false);
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ showDrawer(false); modal.classList.remove('on'); } });
+document.getElementById('drawerClose').onclick = ()=>requestCloseDrawer();
+document.getElementById('scrim').onclick = ()=>requestCloseDrawer();
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape') return;
+  modal.classList.remove('on');
+  if(document.getElementById('drawer').classList.contains('on')) requestCloseDrawer();
+});
 
 function openOrder(no){
   drawerOrder = ORDERS.find(o=>o.no===no) || ORDERS[0];
@@ -7364,8 +7901,1048 @@ CONFIRMS.cRefundApply = key => {
   return {title:'申请退款',tone:'warn',lead:'退款流程与发票流程在本期相互独立。',amounts:[{l:'退款金额',v:money(o.real||o.est),c:'oil'}],kv:[['订单号',`<span class="mono">${o.no}</span>`],['当前发票状态',pill(o.inv)]],fields:[{l:'退款原因',t:'ta',p:'必填，请说明具体情况',max:200,req:1,span:3}],list:['退款成功后按退款流程处理资金与额度。','若订单已经开票，退款不回滚发票状态，也不触发红冲或重新开票。'],ok:'提交退款申请',okClass:'primary'};
 };
 
+/* =========================================================
+   商品中心 · 货主锁站锁价
+   数据与口径见同目录《货主锁站锁价-产品需求-页面说明.md》
+   规则唯一：同一「网货主体 + 货主企业」至多一条生效规则（保存与启用均校验）
+   价格口径：锁后价 = 现网企业价 − 减价金额（锁站模式不减价）
+   货主企业无主数据匹配，以导入的「名称+企业ID」为准
+   配置入口为右侧抽屉（非弹窗）
+   ========================================================= */
+let lockQuery = {};
+let lockEntityOpen = false;        /* 网货主体下拉是否展开 */
+/* 抽屉编辑态。
+   大数据量（油站 ≤300、货主企业 ≤500）下三个列表都走「搜索 + 分页」，
+   全部渲染状态集中在这里，重绘时保持用户当前页与筛选条件。
+   货主企业清单无「生效/未生效」状态：清单内每一行都进入适用范围，不需要的删除。 */
+let lockState = null;
+function lockNewState(o){
+  return Object.assign({
+    editId:null, name:'', mode:LOCK_MODE.LOCK, remark:'',
+    entities:[], owners:[], stations:[], ownerInput:'', ownerTab:'paste',
+    /* 货主企业清单：搜索 / 分页 */
+    ownerKw:'', ownerPage:1, ownerPageSize:20,
+    /* 油站与油品明细：搜索 / 能源筛选 / 只看已选 / 分页 */
+    lineKw:'', lineEnergy:'', lineOnlySel:false, linePage:1, linePageSize:20,
+    /* 油站选择器：搜索 / 能源筛选 / 只看已选 / 分页 */
+    pickKw:'', pickEnergy:'', pickOnlySel:false, pickPage:1, pickPageSize:20
+  }, o||{});
+}
+const LOCK_PAGE_SIZE = 20;
+let lockOwnerLines = [];           /* 粘贴/上传解析后的货主企业清单（含 sel 标记） */
+
+/* ---------- 列表分页原语（前端分页：中等量级够用，接口按后端分页预留） ----------
+   list：当前筛选后的完整数组；target：要跳转的页码 */
+function lockClampPage(page, total, size){
+  const pages = Math.max(1, Math.ceil(total/size));
+  return Math.min(Math.max(1, page|0), pages);
+}
+const lockSlice = (arr, page, size) => {
+  const cur = lockClampPage(page, arr.length, size);
+  return arr.slice((cur-1)*size, cur*size);
+};
+function lockPagerHTML(total, page, size, goFn, sizeFn){
+  const pages = Math.max(1, Math.ceil(total/size));
+  const cur = lockClampPage(page, total, size);
+  const from = Math.max(1, cur-2), to = Math.min(pages, from+4);
+  const btns = [];
+  const mk = (label, target, on, dis) =>
+    `<span class="${on?'on':''}${dis?' dis':''}"${dis?'':` onclick="${goFn}(${target})"`}>${label}</span>`;
+  btns.push(mk('‹', cur-1, false, cur<=1));
+  if(from > 1){ btns.push(mk('1',1,cur===1,false)); if(from>2) btns.push('<span class="dis">…</span>'); }
+  for(let i=from;i<=to;i++) btns.push(mk(String(i), i, i===cur, false));
+  if(to < pages){ if(to<pages-1) btns.push('<span class="dis">…</span>'); btns.push(mk(String(pages),pages,cur===pages,false)); }
+  btns.push(mk('›', cur+1, false, cur>=pages));
+  return `<div class="ck-pager">
+    <span class="ck-pager-info">共 <b>${total}</b> 条${pages>1?` · ${pages} 页`:''}</span>
+    ${pages>1?`<div class="pg">${btns.join('')}</div>`:'<span class="spacer"></span>'}
+    <select size="1" class="inp" style="width:96px;flex:none" onchange="${sizeFn}(this.value)">
+      ${[20,50,100].map(v=>`<option value="${v}"${v===size?' selected':''}>${v} 条/页</option>`).join('')}
+    </select>
+  </div>`;
+}
+
+/* ---------- 规则列表列定义 ---------- */
+const LOCK_COLS = regCols('freightLock', [
+  {k:'name',   t:'规则名称',   w:'240px',
+    td:r=>`<div class="t1">${r.name}</div>`},
+  {k:'status', t:'规则状态',   w:'90px',  td:r=>pill(r.status)},
+  {k:'mode',   t:'模式',       w:'110px', td:r=>lockModeTag(r.mode)},
+  {k:'entity', t:'适用网货主体', w:'120px',
+    td:r=>`<div class="t1">${r.entities.length} 个网货主体</div>`},
+  {k:'owner',  t:'适用货主企业', w:'120px',
+    td:r=>r.owners.length ? `<div class="t1">${r.owners.length} 个货主企业</div>`
+                          : '<div class="t1">全部货主企业</div>'},
+  {k:'station',t:'适用油站',   w:'100px', cls:'num',
+    td:r=>`<div class="t1">${new Set(r.stations.map(l=>l.station)).size} 个油站</div>`},
+  {k:'updated',t:'最近更新',   w:'150px',
+    td:r=>`<div class="t1">${r.updatedAt}</div><div class="t2">${r.updatedBy}</div>`},
+  {k:'ops',    t:'操作',       w:'210px', cls:'acts',
+    td:r=>`<span class="btn-group">
+      <button data-lockview="${r.id}">详情</button>
+      <button data-lockedit="${r.id}">修改</button>
+      <button data-locktoggle="${r.id}">${r.status===LOCK_STATUS.ON?'停用':'启用'}</button>
+      <button class="danger" data-confirm="lockRuleDelete" data-key="${r.id}">删除</button>
+    </span>`}
+]);
+const lockModeTag = m => m===LOCK_MODE.PRICE
+  ? '<span class="tag f">锁站锁价</span>'
+  : '<span class="tag b">锁站</span>';
+
+/* 列表列「适用网货主体 / 适用货主企业」只展示数量；
+   完整名单在详情抽屉中查看（网货主体名单表 / 货主企业清单，支持搜索与分页），
+   列表筛选区保留网货主体下拉与货主企业名称模糊搜索。 */
+const lockAttr = s => String(s==null?'':s)
+  .replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* ---------- 列表页 ---------- */
+VIEWS.freightLock = () => {
+  const q = lockQuery;
+  const list = LOCK_RULES.filter(r=>{
+    if(q.name && !r.name.includes(q.name)) return false;
+    if(q.status && r.status!==q.status) return false;
+    if(q.mode && r.mode!==q.mode) return false;
+    if(q.entity && !r.entities.includes(q.entity)) return false;
+    /* 货主企业按名称模糊匹配；未指定货主（全部货主企业）的规则也算命中 */
+    if(q.ownerText){
+      const kw = q.ownerText.toLowerCase();
+      const ownHit = r.owners.some(o=>ownerName(o).toLowerCase().includes(kw));
+      if(!ownHit && r.owners.length) return false;
+    }
+    if(q.updated && String(r.updatedAt).slice(0,10)!==q.updated) return false;
+    return true;
+  });
+
+  return `
+  <div class="card">
+    <div class="filters">
+      ${filterRow([
+        {l:'规则名称', t:'text', id:'lk-name', p:'输入规则名称关键词', v:q.name||''},
+        {l:'规则状态', t:'sel',  id:'lk-status', p:'请选择', o:['生效','停用'], v:q.status||''},
+        {l:'模式',     t:'sel',  id:'lk-mode',   p:'请选择', o:['锁站','锁站锁价'], v:q.mode||''},
+        {l:'网货主体', t:'sel',  id:'lk-entity', p:'请选择', o:FREIGHT_ENTITIES.map(e=>e.name), v:q.entity?entityName(q.entity):''},
+        {l:'货主企业', t:'text', id:'lk-owner',  p:'输入货主企业名称，支持模糊匹配', v:q.ownerText||''},
+        {l:'更新时间', t:'date', id:'lk-updated', v:q.updated||''}
+      ],true)}
+    </div>
+    <div class="filter-actions">
+      <button class="btn" type="button" onclick="resetLockFilters()">重置</button>
+      <button class="btn primary" type="button" onclick="applyLockFilters()">⌕&nbsp; 搜索</button>
+    </div>
+  </div>
+
+  <div class="card live-list-card live-list-freightLock">
+    <div class="card-h">
+      <h2>货主锁站规则</h2><span class="spacer"></span>
+      <button class="btn sm primary" type="button" onclick="openLockEditor()">新建规则</button>
+      <button class="btn sm" type="button" onclick="lockBatch('toggle')">批量停用</button>
+      <button class="btn sm" type="button" onclick="lockBatch('copy')">复制规则</button>
+      <button class="btn sm" type="button" onclick="lockExport()">导出</button>
+      ${colCfgBtn('freightLock')}
+    </div>
+    ${dataTable('freightLock', list, 1280, '暂无符合条件的锁站规则', false)}
+    ${pagerHTML(list.length)}
+  </div>
+  ${notes(
+    nb('页面用途', '<p>运营按「网货主体 × 货主企业」维度配置锁站 / 锁站锁价规则，收敛司机端可见的油站与价格；只做收敛不做放宽——现网「企业网点商品价格」未推送的油站，本模块无法使其可见。</p>') +
+    nb('关键规则',
+      '<p><b>适用范围</b>＝适用网货主体 × 适用货主企业（笛卡尔积）；货主企业清单内无生效状态——导入即生效、每一行都进入适用范围，不需要的删除；清单为空（未导入）＝该网货主体下全部货主企业。</p>' +
+      '<p style="margin-top:6px"><b>唯一性</b>：同一「网货主体+货主企业」组合至多一条生效规则；保存与启用均校验，冲突拦截并提示冲突规则编号；停用规则不参与校验。</p>' +
+      '<p style="margin-top:6px"><b>模式与价格</b>：锁站（价格沿用原企业价）／锁站锁价（逐行减价，至少一行减价 &gt; 0）；锁后价＝原企业价 − 减价金额，不得小于 0，低于成本价需二次确认负毛利。</p>' +
+      '<p style="margin-top:6px"><b>货主企业</b>：无主数据匹配，以导入的「名称+企业ID」为准，名称与 ID 均填才入清单。</p>' +
+      '<p style="margin-top:6px"><b>司机端判定</b>：先判断全部运单是否同属一个「网货主体+货主企业」组合——存在不同组合的运单即直接展示现网推送数据；同一组合再判断该组合是否有生效规则，有则只展示规则明细内的油站与油价（锁站沿用原企业价、锁站锁价按减价取价），没有则展示现网推送数据。停用/删除后回落现网推送结果；已产生订单不追溯。</p>') +
+    nb('校验口径', '<p>保存拦截：规则名称必填且 ≤50 字、网货主体 ≥1、明细 ≥1 行、减价金额逐行必填且 ≥0 最多两位小数、锁后价 ≥0、「主体+货主」组合冲突；锁后价低于成本价走二次确认后放行；启用拦截：组合冲突。</p>') +
+    nb('关键枚举', '<p>规则状态：生效、停用；模式：锁站、锁站锁价；能源类型：取油站目录实际值（演示数据：柴油、天然气）；分页：20/50/100 条每页。</p>')
+  )}`;
+};
+
+function applyLockFilters(){
+  const val = id => (document.getElementById(id)?.value||'').trim();
+  const entityVal = val('lk-entity');
+  lockQuery = {
+    name: val('lk-name'), status: val('lk-status'), mode: val('lk-mode'),
+    entity: FREIGHT_ENTITIES.find(e=>e.name===entityVal)?.id || '',
+    ownerText: val('lk-owner'),
+    updated: val('lk-updated')
+  };
+  paint();
+}
+function resetLockFilters(){ lockQuery = {}; paint(); }
+function lockExport(){ showToast('已按当前筛选条件提交导出任务，请在下载中心查看'); }
+function lockSelected(){
+  return [...document.querySelectorAll('#view .row-check:checked')].map(el=>el.dataset.no).filter(Boolean);
+}
+function lockBatch(action){
+  const ids = lockSelected();
+  if(!ids.length){ showToast('请先勾选需要处理的规则'); return; }
+  if(action==='toggle'){
+    LOCK_RULES.forEach(r=>{ if(ids.includes(r.id) && r.status===LOCK_STATUS.ON){ r.status=LOCK_STATUS.OFF; r.updatedAt=lockNow(); } });
+    showToast(`已停用 ${ids.length} 条规则`);
+  } else {
+    ids.forEach(id=>{
+      const i = LOCK_RULES.findIndex(x=>x.id===id); if(i<0) return;
+      const r = LOCK_RULES[i];
+      LOCK_RULES.splice(i+1, 0, {...r, id:nextLockId(), name:r.name+'（副本）',
+        status:LOCK_STATUS.OFF, createdBy:'当前登录人', createdAt:lockNow(), updatedBy:'当前登录人', updatedAt:lockNow(),
+        entities:r.entities.slice(), owners:r.owners.slice(), stations:r.stations.map(l=>({...l}))});
+    });
+    showToast(`已复制 ${ids.length} 条规则（状态为停用，修改确认后再启用）`);
+  }
+  paint();
+}
+function lockNow(){
+  const d = new Date(), p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function nextLockId(){
+  const n = LOCK_RULES.map(r=>Number(String(r.id).replace(/\D/g,''))||0);
+  return 'AS' + (Math.max(...n)+1);
+}
+
+/* =========================================================
+   配置抽屉
+   ========================================================= */
+const lockDrawerFoot = (okText) =>
+  `<button class="btn" type="button" onclick="closeLockEditor()">取消</button>
+   <button class="btn primary" type="button" onclick="saveLockRule()">${okText}</button>`;
+
+function openLockEditor(id, copyMode){
+  const src = id ? LOCK_RULE_BY_ID(id) : null;
+  /* 统一走 lockNewState()：分页/搜索等列表状态必须有默认值，否则分页取不到当前页 */
+  lockState = lockNewState(src
+    ? {editId: copyMode ? null : id, name: copyMode ? src.name+'（副本）' : src.name,
+       mode: src.mode, remark: src.remark||'',
+       entities: src.entities.slice(), owners: src.owners.slice(),
+       stations: src.stations.map(l=>({...l}))}
+    : {name:'', mode:LOCK_MODE.LOCK, remark:'', entities:[], owners:[], stations:[]});
+  lockEntityOpen = false;
+  /* 已保存的货主企业直接进清单（清单内无生效状态，均进入适用范围） */
+  lockOwnerLines = lockState.owners.map(o=>({id:o, name:ownerName(o)}));
+  /* 关闭保护的判定基准：打开抽屉时的配置快照 */
+  lockState.snapshot = lockSnapshot();
+  renderLockDrawer();
+  showDrawer(true);
+}
+/* 未保存改动的判定基准（PRD：存在未保存改动时关闭抽屉需二次确认） */
+function lockSnapshot(){
+  const s = lockState; if(!s) return '';
+  return JSON.stringify({
+    name:s.name, mode:s.mode, remark:s.remark||'',
+    entities:s.entities.slice(), owners:s.owners.slice(),
+    stations:s.stations.map(l=>({station:l.station, goods:l.goods,
+      reduce: s.mode===LOCK_MODE.PRICE ? (l.reduce==null||l.reduce===''?null:Number(l.reduce)) : null}))
+  });
+}
+function lockIsDirty(){ return !!lockState && lockSnapshot() !== lockState.snapshot; }
+/* 抽屉内所有关闭入口统一走这里：有未保存改动先二次确认 */
+function closeLockEditor(force){
+  const go = () => { lockState = null; lockEntityOpen = false; lockOwnerLines = []; resetDrawerFoot(); showDrawer(false); };
+  if(!force && lockIsDirty()){
+    window._lockPendingClose = go;
+    openConfirm('lockDiscard');
+    return;
+  }
+  window._lockPendingClose = null;
+  go();
+}
+/* ✕ / 遮罩 / Esc 三个通用关闭入口的守卫：只在锁站配置抽屉打开时生效 */
+function requestCloseDrawer(){
+  if(lockState){ closeLockEditor(); return; }
+  showDrawer(false);
+}
+/* 抽屉底部栏：内容按当前抽屉切换，容器始终保留（避免删掉后其他抽屉失去关闭按钮） */
+function setDrawerFoot(html){
+  const f = document.getElementById('drawerFoot'); if(f) f.innerHTML = html;
+  document.body.classList.add('drawer-foot-on');
+}
+function resetDrawerFoot(){
+  setDrawerFoot('<button type="button" class="btn" onclick="showDrawer(false)">关闭</button>');
+  document.body.classList.remove('drawer-foot-on');
+}
+
+function renderLockDrawer(){
+  const s = lockState; if(!s) return;
+  const drawer = document.getElementById('drawer');
+  drawer.dataset.kind = 'lockRuleEdit';
+  document.getElementById('drawerTitle').innerHTML =
+    (s.editId?'修改':'新建')+'货主锁站规则' + (s.editId?`<small>${s.editId}</small>`:'');
+  document.getElementById('drawerNav').innerHTML = '';
+  document.getElementById('drawerBody').classList.add('nonav');
+  document.getElementById('drawerMain').innerHTML = lockDrawerBody();
+  setDrawerFoot(lockDrawerFoot(s.editId?'保存修改':'保存并启用'));
+}
+function lockDrawerBody(){
+  const s = lockState;
+  return `
+  <div class="card"><div class="card-b">
+    <div class="sec-title">基本信息</div>
+    <div class="lock-form">
+      <div class="fi span2"><label>规则名称 <span class="req">*</span></label>
+        <div class="row"><input class="inp" id="lockName" value="${lockAttr(s.name)}" maxlength="50"
+          placeholder="例如：万联上海 · 沈阳天津锁站锁价" oninput="lockSetName(this.value)"></div></div>
+      <div class="fi span2"><label>模式 <span class="req">*</span></label>
+        <div class="row"><div class="seg ck-modes">
+          ${Object.values(LOCK_MODE).map(m=>`<label><input type="radio" name="lock-mode" value="${m}" ${s.mode===m?'checked':''} onchange="lockSetMode('${m}')">${m}${m===LOCK_MODE.PRICE?'（逐行减价）':'（价格沿用企业价）'}</label>`).join('')}
+        </div></div></div>
+      <div class="fi span2"><label>备注</label>
+        <div class="row"><textarea class="inp" id="lockRemark" rows="2" maxlength="200"
+          placeholder="选填，说明本规则的用途" oninput="lockSetRemark(this.value)">${lockAttr(s.remark||'')}</textarea></div></div>
+    </div>
+  </div></div>
+
+  <div class="card"><div class="card-b">
+    <div class="sec-title">适用范围</div>
+    <div class="lock-form">
+      <div class="fi span2"><label>适用网货主体 <span class="req">*</span></label>
+        <div class="row">
+
+          <div class="ck-picker" id="lockEntityPicker">
+            <button type="button" class="ck-picker-ctl" onclick="lockToggleEntity(event)">
+              ${s.entities.length? s.entities.map(e=>`<span class="ck-chip">${entityName(e)}<i onclick="lockRemoveEntity(event,'${e}')" title="移除">✕</i></span>`).join('')
+                : '<span class="ck-ph">搜索并选择网货主体，可多选</span>'}
+              <span class="ck-caret">${lockEntityOpen?'▴':'▾'}</span>
+            </button>
+            ${lockEntityOpen?`<div class="ck-picker-pop">
+              <input class="inp" id="lockEntitySearch" placeholder="输入名称或编码搜索" oninput="lockEntityFilter()">
+              <div class="ck-picker-list" id="lockEntityList">${lockEntityOptions()}</div>
+            </div>`:''}
+          </div>
+        </div></div>
+
+      <div class="fi span2"><label>适用货主企业</label>
+        <div class="row ck-owner-box">
+          <div class="ck-owner-tabs">
+            <button type="button" class="${s.ownerTab==='paste'?'on':''}" onclick="lockOwnerTab('paste')">粘贴清单</button>
+            <button type="button" class="${s.ownerTab==='excel'?'on':''}" onclick="lockOwnerTab('excel')">Excel 上传</button>
+          </div>
+          ${s.ownerTab==='paste' ? `
+            <textarea class="inp ck-paste" id="lockOwnerInput" placeholder="每行一个货主企业，格式：货主企业名称,货主企业ID&#10;例如：&#10;万联易达上海分公司,SH0200001&#10;万联易达天津分公司,SH0200002">${s.ownerInput||''}</textarea>
+            <div class="ck-owner-actions">
+              <button class="btn sm" type="button" onclick="lockParsePaste()">解析清单</button>
+              <span class="ck-hint">支持中英文逗号；一行一个「货主企业名称,货主企业ID」，名称与 ID 均填才入清单</span>
+            </div>`
+          : `
+            <div class="ck-upload">
+              <input type="file" id="lockOwnerFile" accept=".xlsx,.xls,.csv,.txt" onchange="lockParseExcel(this)">
+              <div class="ck-upload-hint">表头固定两列：<b>货主企业名称</b>、<b>货主企业ID</b>，不依赖列顺序</div>
+            </div>`}
+          ${lockOwnerLines.length ? `<div class="ck-list-tools">
+            <input class="inp" value="${lockAttr(s.ownerKw)}" placeholder="搜索货主企业名称或ID"
+              oninput="lockOwnerSetKw(this.value)">
+            <span class="ck-tools-right">
+              <button class="btn sm" type="button" onclick="lockOwnerClearAll()">清空</button>
+            </span>
+          </div>`:''}
+          <div class="ck-owner-box-inner" id="lockOwnerListBox">${lockOwnerListHTML()}</div>
+          <div class="ck-owner-sum" id="lockOwnerSum">${lockOwnerSumHTML()}</div>
+        </div></div>
+    </div>
+  </div></div>
+
+  <div class="card"><div class="card-b">
+    <div class="sec-title">油站与油品明细
+      <span class="ck-tip">${lockState.mode===LOCK_MODE.PRICE?'逐行填写减价金额，锁后价 = 原企业价 − 减价金额':'锁站模式不减价，价格沿用现网企业价'}</span>
+    </div>
+    <div class="ck-toolbar">
+      <button class="btn sm primary" type="button" onclick="lockOpenStationPicker()">选择油站</button>
+      <button class="btn sm" type="button" onclick="lockClearLines()">清空明细</button>
+      <span class="filter-note" id="lockLinesSumTop">${lockLinesSumHTML()}</span>
+    </div>
+    <div id="lockLinesBox">${lockLinesTable()}</div>
+  </div></div>`;
+}
+function lockEntityOptions(){
+  const sel = lockState.entities;
+  const kw = (document.getElementById('lockEntitySearch')?.value||'').trim().toLowerCase();
+  return FREIGHT_ENTITIES.filter(e=>!kw || e.name.toLowerCase().includes(kw) || e.id.toLowerCase().includes(kw))
+    .map(e=>`<label class="ck-picker-item">
+      <input type="checkbox" ${sel.includes(e.id)?'checked':''} onchange="lockToggleEntityItem('${e.id}',this.checked)">
+      <span>${e.name}</span><span class="mono ck-picker-id">${e.id}</span></label>`).join('')
+    || '<div class="ck-empty">无匹配的网货主体</div>';
+}
+function lockToggleEntity(e){ e.stopPropagation(); lockEntityOpen = !lockEntityOpen; lockRefresh(); }
+function lockEntityFilter(){ const l=document.getElementById('lockEntityList'); if(l) l.innerHTML = lockEntityOptions(); }
+function lockToggleEntityItem(id, on){
+  const s = lockState;
+  if(on){ if(!s.entities.includes(id)) s.entities.push(id); }
+  else s.entities = s.entities.filter(x=>x!==id);
+  lockRefresh();
+}
+function lockRemoveEntity(e, id){
+  e.stopPropagation();
+  lockState.entities = lockState.entities.filter(x=>x!==id);
+  lockRefresh();
+}
+function lockOwnerTab(t){ lockState.ownerTab = t; lockRefresh(); }
+/* 兼容旧入口：按锁主清单下标移除 */
+function lockRemoveOwnerLine(i){ lockOwnerRemove(i); }
+/* ---------- 货主企业清单：搜索 / 分页 ----------
+   清单内没有「生效/未生效」状态：导入即生效，每一行都进入适用范围，不需要的删除 */
+function lockOwnerFiltered(){
+  const s = lockState;
+  const kw = (s.ownerKw||'').trim().toLowerCase();
+  return lockOwnerLines.filter(o=>{
+    if(kw && !((o.name||'').toLowerCase().includes(kw) || (o.id||'').toLowerCase().includes(kw))) return false;
+    return true;
+  });
+}
+function lockOwnerPageGo(p){ lockState.ownerPage = p; lockRefreshOwnerList(); }
+function lockOwnerPageSize(v){ lockState.ownerPageSize = Number(v)||LOCK_PAGE_SIZE; lockState.ownerPage = 1; lockRefreshOwnerList(); }
+function lockOwnerSetKw(v){ lockState.ownerKw = v; lockState.ownerPage = 1; lockRefreshOwnerList(); }
+/* 只重绘清单区，避免整抽屉重绘导致输入框失焦 */
+function lockRefreshOwnerList(){
+  const box = document.getElementById('lockOwnerListBox');
+  if(box) box.innerHTML = lockOwnerListHTML();
+  const sum = document.getElementById('lockOwnerSum');
+  if(sum) sum.innerHTML = lockOwnerSumHTML();
+}
+function lockOwnerRemove(idx){ lockOwnerLines.splice(idx,1); lockSyncOwners(); lockRefreshOwnerList(); }
+/* 清空清单：回到「该网货主体下的全部货主企业」语义 */
+function lockOwnerClearAll(){
+  lockOwnerLines = [];
+  lockSyncOwners();
+  lockRefresh();
+  showToast('已清空货主企业清单：未导入任何货主时，规则适用于该网货主体下的全部货主企业');
+}
+/* 清单里每一行都进入适用范围；清单为空等于「全部货主企业」 */
+function lockSyncOwners(){
+  lockState.owners = lockOwnerLines.filter(o=>o.id).map(o=>o.id);
+}
+function lockOwnerSumHTML(){
+  return `已导入 <b>${lockOwnerLines.length}</b> 条货主企业`
+    + `<span class="ck-hint">清单为空表示适用该网货主体下的<b>全部货主企业</b></span>`;
+}
+function lockOwnerListHTML(){
+  const s = lockState;
+  if(!lockOwnerLines.length) return '<div class="ck-empty">尚未录入货主企业：未导入任何货主时，规则适用于该网货主体下的全部货主企业</div>';
+  const rows = lockOwnerFiltered();
+  if(!rows.length) return '<div class="ck-empty">没有符合当前筛选的货主企业</div>';
+  const page = lockSlice(rows, s.ownerPage, s.ownerPageSize);
+  return `<div class="ck-owner-list">${page.map(o=>{
+    const realIdx = lockOwnerLines.indexOf(o);
+    return `<div class="ck-owner-row">
+      <span class="ck-owner-name">${o.name}</span>
+      <span class="ck-owner-id mono">${o.id}</span>
+      <button type="button" class="ck-del" onclick="lockOwnerRemove(${realIdx})" title="删除">✕</button>
+    </div>`;
+  }).join('')}</div>
+  ${lockPagerHTML(rows.length, s.ownerPage, s.ownerPageSize, 'lockOwnerPageGo', 'lockOwnerPageSize')}`;
+}
+
+function lockParsePaste(){
+  const raw = document.getElementById('lockOwnerInput')?.value || '';
+  lockState.ownerInput = raw;
+  const {rows, skipped} = lockParseOwnerText(raw);
+  lockApplyOwnerRows(rows, skipped);
+}
+function lockParseOwnerText(text){
+  const rows = [], skipped = [];
+  text.split('\n').forEach(raw=>{
+    const line = raw.replace(/\r/g,'').trim();
+    if(!line) return;
+    const parts = line.split(/[,，\t]/).map(x=>x.trim());
+    const name = parts[0]||'', id = parts[1]||'';
+    /* 货主企业以导入的名称+ID 为准：名称或 ID 缺失的行不进入清单，计入跳过 */
+    if(!name || !id){ skipped.push(line); return; }
+    rows.push({name, id});
+  });
+  return {rows, skipped};
+}
+/* 同一货主企业只保留一条：优先按企业ID判定，其次按名称；以首次导入为准，重复计入去重 */
+function lockApplyOwnerRows(rows, skipped){
+  let added = 0, dup = 0;
+  rows.forEach(r=>{
+    const exist = lockOwnerLines.find(o=>(r.id && o.id===r.id) || (r.name && o.name===r.name));
+    if(exist){ dup++; return; }
+    /* 导入即生效：直接进清单，需要排除时删除该行 */
+    lockOwnerLines.push({name:r.name, id:r.id});
+    added++;
+  });
+  lockSyncOwners();
+  showToast(`解析完成：新增 ${added} 条${dup?`，去重 ${dup} 条`:''}${skipped&&skipped.length?`，跳过 ${skipped.length} 行`:''}`);
+  lockRefresh();
+}
+function lockParseExcel(input){
+  const file = input.files && input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const text = String(reader.result||'');
+    const lines = text.split('\n').map(l=>l.replace(/\r/g,'')).filter(l=>l.trim());
+    if(!lines.length){ showToast('表格数据为空'); return; }
+    const head = lines[0].split(/[,，\t]/).map(x=>x.trim().toLowerCase());
+    /* 先认 ID 列再认名称列：否则「货主企业名称」会被当成名称列，
+       而「货主企业ID」同时含「货主」，两列会被识别到同一列 */
+    const ii = head.findIndex(h=>h.includes('id')||h.includes('编号')||h.includes('编码'));
+    const ni = head.findIndex((h,i)=>i!==ii && (h.includes('名称')||h.includes('货主')));
+    /* PRD：缺少任一必需表头即拦截上传，且不改变现有清单 */
+    if(ni<0 || ii<0){
+      const miss = [ni<0?'货主企业名称':null, ii<0?'货主企业ID':null].filter(Boolean).join(' / ');
+      input.value = '';
+      showToast(`缺少必需表头：${miss}，上传已取消`);
+      return;
+    }
+    const rows = [], skipped = [];
+    lines.slice(1).forEach(l=>{
+      const c = l.split(/[,，\t]/).map(x=>x.trim());
+      const name = ni>=0 ? (c[ni]||'') : '', id = ii>=0 ? (c[ii]||'') : '';
+      /* 与粘贴一致：名称或 ID 缺失的行跳过，不进入清单 */
+      if(!name || !id){ skipped.push(l); return; }
+      rows.push({name, id});
+    });
+    if(!rows.length){ showToast('表格数据为空'); return; }
+    lockApplyOwnerRows(rows, skipped);
+    showToast(`表格解析成功：${rows.length} 条数据${skipped.length?`，跳过 ${skipped.length} 行`:''}`);
+  };
+  reader.onerror = () => showToast('文件读取失败');
+  reader.readAsText(file, 'utf-8');
+}
+/* 名称 / 备注的输入同步：只写 state，不重绘抽屉，避免输入框失焦 */
+function lockSetName(v){ if(lockState) lockState.name = v; }
+function lockSetRemark(v){ if(lockState) lockState.remark = v; }
+function lockSetMode(m){
+  const s = lockState;
+  /* PRD：切换为锁站时明细减价列禁用并清空减价 */
+  if(m!==LOCK_MODE.PRICE) s.stations.forEach(l=>{ l.reduce = null; });
+  s.mode = m;
+  lockRefresh();
+}
+/* 打开选择器即复位筛选状态：搜索词 / 能源分段 / 只看已选 / 页码不跨弹窗开关残留，
+   保证每次打开都默认「全部能源」下的完整油站目录 */
+function lockOpenStationPicker(){
+  Object.assign(lockState, {pickKw:'', pickEnergy:'', pickOnlySel:false, pickPage:1, pickPageSize:LOCK_PAGE_SIZE});
+  openModal('lockStationPicker');
+}
+function lockClearLines(){ lockState.stations = []; lockRefresh(); }
+function lockRemoveLine(i){ lockState.stations.splice(i,1); lockRefresh(); }
+/* 加入明细：只接受该油站真实存在的油品，避免出现「油站 + 油品」脏组合 */
+function lockAddGoods(stationCode, goodsId){
+  const s = lockState;
+  if(!lockGoods(stationCode, goodsId)) return false;
+  if(s.stations.some(l=>l.station===stationCode && l.goods===goodsId)) return false;
+  /* 新加入的明细行减价金额留空：锁站锁价模式下要求逐行显式填写（填 0 表示可见但不减价） */
+  s.stations.push({station:stationCode, goods:goodsId, reduce:null});
+  lockRefresh();
+  return true;
+}
+/* 明细行校验：油站与油品必须能在系统目录中对上，且该油品属于该油站 */
+function lockBadLines(){
+  return lockState.stations.filter(l=>!lockStation(l.station) || !lockGoods(l.station, l.goods));
+}
+/* 锁站锁价模式下「未填写减价金额」的明细行：逐行必填，填 0 也算已填，留空才算未填 */
+function lockIsReduceBlank(l){
+  const g = lockGoods(l.station, l.goods);
+  if(!g || !(g.entPrice>0)) return false;
+  return l.reduce===null || l.reduce===undefined || l.reduce==='';
+}
+function lockBlankReduceLines(){
+  const s = lockState;
+  if(s.mode!==LOCK_MODE.PRICE) return [];
+  return s.stations.filter(lockIsReduceBlank);
+}
+function lockDelGoods(stationCode, goodsId){
+  lockState.stations = lockState.stations.filter(l=>!(l.station===stationCode && l.goods===goodsId));
+  lockRefresh();
+}
+function lockHasGoods(stationCode, goodsId){
+  return lockState.stations.some(l=>l.station===stationCode && l.goods===goodsId);
+}
+/* ---------- 油站与油品明细：搜索 / 能源筛选 / 只看已选 / 分页 ---------- */
+function lockLineFiltered(){
+  const s = lockState;
+  const kw = (s.lineKw||'').trim().toLowerCase();
+  return s.stations.map((l,idx)=>({l, idx})).filter(({l})=>{
+    const st = lockStation(l.station), g = lockGoods(l.station, l.goods);
+    if(!st || !g) return false;
+    if(s.lineEnergy && st.energy!==s.lineEnergy) return false;
+    if(kw && !((st.name+st.code+st.co+g.goodsName).toLowerCase().includes(kw))) return false;
+    return true;
+  });
+}
+function lockLinePageGo(p){ lockState.linePage = p; lockRefreshLineTable(); }
+function lockLinePageSize(v){ lockState.linePageSize = Number(v)||LOCK_PAGE_SIZE; lockState.linePage = 1; lockRefreshLineTable(); }
+function lockLineSetKw(v){ lockState.lineKw = v; lockState.linePage = 1; lockRefreshLineTable(); }
+function lockLineSetEnergy(v){ lockState.lineEnergy = v; lockState.linePage = 1; lockRefreshLineTable(); }
+function lockLineToggleOnlySel(){ lockState.lineOnlySel = !lockState.lineOnlySel; lockState.linePage = 1; lockRefreshLineTable(); }
+function lockLineClearKw(){ lockState.lineKw = ''; lockState.linePage = 1; lockRefreshLineTable(); }
+/* 只重绘明细表区，避免整抽屉重绘导致搜索框失焦 */
+function lockRefreshLineTable(){
+  /* PRD：检索、翻页、勾选只重绘列表区，不重绘整个抽屉，保证输入框不失焦 */
+  const box = document.getElementById('lockLinesTableBox');
+  if(box) box.innerHTML = lockLinesTableHTML();
+  ['lockLinesSum','lockLinesSumTop'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.innerHTML = lockLinesSumHTML();
+  });
+  const seg = document.getElementById('lockLineEnergySeg');
+  if(seg) seg.innerHTML = lockLineEnergySegHTML();
+  const btn = document.getElementById('lockLineOnlySelBtn');
+  if(btn) btn.className = 'btn sm' + (lockState.lineOnlySel?' primary':'');
+}
+function lockLinesSumHTML(){
+  const s = lockState, rows = lockLineFiltered();
+  const stCount = new Set(s.stations.map(l=>l.station)).size;
+  const cutCount = s.stations.filter(l=>Number(l.reduce)>0).length;
+  return `共 <b>${s.stations.length}</b> 行 · 覆盖 <b>${stCount}</b> 个油站`
+    + (s.mode===LOCK_MODE.PRICE?` · 有减价 <b>${cutCount}</b> 行`:'')
+    + (rows.length!==s.stations.length?` · 当前筛选 <b>${rows.length}</b> 行`:'');
+}
+
+/* 明细表：一行 = 一个「油站 + 油品」 */
+function lockLinesTable(){
+  const s = lockState;
+  if(!s.stations.length) return '<div class="ck-empty ck-empty-lg">尚未选择油站，点击「选择油站」从系统已有油站中添加；勾选油站即带出该站全部油品行，可在此逐行填写减价或删除不需要的油品</div>';
+  /* 工具条独立于列表区，翻页/筛选只重绘 #lockLinesTableBox，搜索框不失焦 */
+  const energies = [...new Set(s.stations.map(l=>lockStation(l.station)?.energy).filter(Boolean))];
+  return `<div class="ck-list-tools">
+      <input class="inp" id="lockLineKw" value="${lockAttr(s.lineKw)}" placeholder="搜索油站名称、编码、油站公司或油品"
+        oninput="lockLineSetKw(this.value)">
+      <div class="ck-seg ck-seg-sm" id="lockLineEnergySeg">${lockLineEnergySegHTML()}</div>
+      ${s.mode===LOCK_MODE.PRICE?`<button class="btn sm${s.lineOnlySel?' primary':''}" type="button" id="lockLineOnlySelBtn" onclick="lockLineToggleOnlySel()">只看有减价的行</button>`:''}
+    </div>
+    <div id="lockLinesTableBox">${lockLinesTableHTML()}</div>`;
+}
+function lockLineEnergySegHTML(){
+  const s = lockState;
+  const energies = [...new Set(s.stations.map(l=>lockStation(l.station)?.energy).filter(Boolean))];
+  return `<button type="button" class="${s.lineEnergy===''?'on':''}" onclick="lockLineSetEnergy('')">全部能源</button>`
+    + energies.map(e=>`<button type="button" class="${s.lineEnergy===e?'on':''}" onclick="lockLineSetEnergy('${e}')">${e}</button>`).join('');
+}
+function lockLinesTableHTML(){
+  const s = lockState;
+  const bad = lockBadLines();
+  const badTip = bad.length
+    ? `<div class="ck-warn">有 <b>${bad.length}</b> 行的油站或油品已不在系统目录中（${bad.slice(0,3).map(l=>l.station+'/'+l.goods).join('、')}${bad.length>3?' 等':''}），请删除后重新选择，否则无法保存。</div>`
+    : '';
+  const all = lockLineFiltered();
+  const rows = s.lineOnlySel ? all.filter(({l})=>Number(l.reduce)>0 || s.mode!==LOCK_MODE.PRICE) : all;
+  if(!rows.length) return badTip + '<div class="ck-empty">没有符合当前筛选的油站油品</div>';
+  const pageRows = lockSlice(rows, s.linePage, s.linePageSize);
+  const body = pageRows.map(({l, idx})=>{
+    const i = idx;
+    const st = lockStation(l.station), g = lockGoods(l.station, l.goods);
+    if(!st || !g) return '';
+    const cut = Number(l.reduce)||0;
+    const final = s.mode===LOCK_MODE.PRICE ? Math.max(g.entPrice-cut,0) : g.entPrice;
+    const over = final < g.cost;
+    const noBase = !(g.entPrice>0);
+    /* 逐行必填：未填写的行标红提示，保存时同样会被拦截 */
+    const blank = lockIsReduceBlank(l);
+    return `<tr>
+      <td class="mono">${st.code}</td>
+      <td><div class="t1">${st.name}</div><div class="t2">${st.co}</div></td>
+      <td>${g.goodsName}<div class="t2">${st.energy}</div></td>
+      <td class="num">${noBase?'<span class="tag f">无企业价</span>':`¥${money(g.entPrice)}`}</td>
+      <td class="num">¥${money(g.cost)}</td>
+      <td class="num">${s.mode!==LOCK_MODE.PRICE?'<span class="dash">—</span>'
+        : noBase?'<span class="dash">—</span>'
+        : `<input class="inp mono${blank?' lk-req':''}" type="text" inputmode="decimal" value="${l.reduce==null?'':l.reduce}"
+             title="${blank?'请填写减价金额，填 0 表示可见但不减价':''}"
+             placeholder="必填"
+             oninput="lockSetReduce(${i},this.value)" style="width:104px;text-align:right">`}</td>
+      <td class="num" id="lockFinal-${i}">
+        ${noBase?'<span class="dash">—</span>'
+          : `<span class="num ${over?'over':''}" title="${over?'低于成本价，保存前需确认负毛利':''}">¥${money(final)}</span>`}
+      </td>
+      <td><button class="ck-del" type="button" onclick="lockRemoveLine(${i})">删除</button></td>
+    </tr>`;
+  }).join('');
+  return badTip + `<div class="tablewrap ck-tablewrap"><table class="lock-pool">
+    <thead><tr>
+      <th>油站编码</th><th>油站 / 油站公司</th><th>油品</th>
+      <th class="num">原企业价</th><th class="num">成本价</th>
+      <th class="num">减价金额</th><th class="num">锁后价</th><th>操作</th>
+    </tr></thead><tbody>${body}</tbody></table></div>
+    ${lockPagerHTML(rows.length, s.linePage, s.linePageSize, 'lockLinePageGo', 'lockLinePageSize')}`;
+}
+/* 减价金额输入清洗：全角句号/逗号视为小数点，过滤其余非法字符；
+   不用 type=number——中文输入法组合输入、滚轮与非法中间态会让浏览器悄悄改写或清空 value（输入 0.3 变 0 的根因） */
+function lockParseReduce(v){
+  const clean = String(v).replace(/[。，．]/g,'.').replace(/[^\d.]/g,'').replace(/(\..*)\./g,'$1');
+  if(!clean) return {clean:'', num:null};
+  const n = Number(clean);
+  return {clean, num: isNaN(n)?null:n};
+}
+function lockSetReduce(i, v){
+  const s = lockState, l = s.stations[i]; if(!l) return;
+  const {clean, num} = lockParseReduce(v);
+  /* 输入含非法字符时把清洗结果写回输入框（正常输入不回写，避免打断光标） */
+  if(clean !== String(v)){
+    const inp = document.querySelectorAll('#lockLinesTableBox tbody input[type=text]')[i];
+    if(inp && inp.value !== clean) inp.value = clean;
+  }
+  l.reduce = num;
+  const g = lockGoods(l.station, l.goods);
+  const cell = document.getElementById('lockFinal-'+i);
+  if(cell && g){
+    const final = Math.max(g.entPrice-(Number(l.reduce)||0),0);
+    const over = final < g.cost;
+    cell.innerHTML = `<span class="num ${over?'over':''}" title="${over?'低于成本价，保存前需确认负毛利':''}">¥${money(final)}</span>`;
+  }
+  /* 该行填上减价后去掉「必填」标红，不重绘整表（避免输入框失焦） */
+  if(cell){
+    const input = cell.parentElement?.querySelector('input.lk-req, input[placeholder="必填"]');
+    if(input) input.classList.toggle('lk-req', lockIsReduceBlank(l));
+  }
+  /* 汇总行的「有减价 N 行」随输入联动 */
+  ['lockLinesSum','lockLinesSumTop'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.innerHTML = lockLinesSumHTML();
+  });
+}
+/* 抽屉整体重绘（保持滚动位置与输入内容） */
+function lockRefresh(){
+  const main = document.getElementById('drawerMain'); if(!main || !lockState) return;
+  const top = main.scrollTop;
+  const paste = document.getElementById('lockOwnerInput');
+  if(paste) lockState.ownerInput = paste.value;
+  main.innerHTML = lockDrawerBody();
+  main.scrollTop = top;
+}
+
+/* ---------- 油站选择器（以油站为粒度：勾选即带出该站全部油品行，油品在明细区精修） ---------- */
+MODALS.lockStationPicker = {
+  title:'选择油站',
+  foot:`<button class="btn" type="button" data-mclose="1">完成</button>`,
+  body: () => {
+    const s = lockState;
+    const sts = lockPickFiltered();
+    const rows = lockSlice(sts, s.pickPage, s.pickPageSize);
+    return `
+      <div class="ck-list-tools ck-pick-tools">
+        <input class="inp" value="${lockAttr(s.pickKw)}" placeholder="搜索油站名称、编码或油站公司"
+          oninput="lockPickSetKw(this.value)">
+        <div class="ck-seg ck-seg-sm" id="lockPickEnergySeg">${lockPickEnergySegHTML()}</div>
+        <button class="btn sm" type="button" id="lockPickOnlySelBtn" onclick="lockPickToggleOnlySel()">只看已选</button>
+        <button class="btn sm" type="button" onclick="lockPickClearSel()">清空已选</button>
+        <span class="ck-tools-right" id="lockPickCount">已选 <b>${new Set(s.stations.map(l=>l.station)).size}</b> 个油站</span>
+      </div>
+      <div class="ck-pick-list" id="lockPickList">
+        ${rows.map(st=>lockPickStationHTML(st)).join('') || lockPickEmptyHTML()}
+      </div>
+      <div id="lockPickPager">${lockPagerHTML(sts.length, s.pickPage, s.pickPageSize, 'lockPickPageGo', 'lockPickPageSize')}</div>`;
+  }
+};
+/* 油站选择器：搜索 / 能源筛选 / 只看已选 / 分页
+   全部状态放在 lockState 上，重绘后保持当前条件与页码 */
+function lockPickFiltered(){
+  const s = lockState;
+  const kw = (s.pickKw||'').trim().toLowerCase();
+  return LOCK_STATIONS.filter(st=>{
+    if(s.pickEnergy && st.energy!==s.pickEnergy) return false;
+    if(kw && !((st.name+st.code+st.co+st.city).toLowerCase().includes(kw))) return false;
+    if(s.pickOnlySel && !st.goods.some(g=>lockHasGoods(st.code,g.goodsId))) return false;
+    return true;
+  });
+}
+/* 空态区分三种原因：只看已选但还没勾选任何站 / 已勾选的站与当前搜索、能源筛选无交集 / 搜索无命中 */
+function lockPickEmptyHTML(){
+  const s = lockState;
+  if(s.pickOnlySel && !s.stations.length)
+    return '<div class="ck-empty">还没有已选的油站：在下方勾选油站后，可在此查看已勾选的油站</div>';
+  if(s.pickOnlySel)
+    return '<div class="ck-empty">已勾选的油站不在当前搜索与能源范围内</div>';
+  return '<div class="ck-empty">没有符合当前筛选的油站</div>';
+}
+/* 只重绘选择器列表区，避免搜索框失焦 */
+function lockPickRefreshList(){
+  const box = document.getElementById('lockPickList');
+  if(box){
+    const rows = lockSlice(lockPickFiltered(), lockState.pickPage, lockState.pickPageSize);
+    box.innerHTML = rows.map(st=>lockPickStationHTML(st)).join('')
+      || lockPickEmptyHTML();
+  }
+  const wrap = document.getElementById('lockPickPager');
+  if(wrap) wrap.outerHTML = `<div id="lockPickPager">${lockPagerHTML(lockPickFiltered().length, lockState.pickPage, lockState.pickPageSize, 'lockPickPageGo', 'lockPickPageSize')}</div>`;
+  const cnt = document.getElementById('lockPickCount');
+  if(cnt) cnt.innerHTML = `已选 <b>${new Set(lockState.stations.map(l=>l.station)).size}</b> 个油站`;
+  /* 能源筛选与「只看已选」的选中态跟着联动 */
+  const seg = document.getElementById('lockPickEnergySeg');
+  if(seg) seg.innerHTML = lockPickEnergySegHTML();
+  const btn = document.getElementById('lockPickOnlySelBtn');
+  if(btn) btn.className = 'btn sm' + (lockState.pickOnlySel?' primary':'');
+}
+/* 油站选择器的能源类型分段筛选 */
+function lockPickEnergySegHTML(){
+  const s = lockState;
+  return `<button type="button" class="${s.pickEnergy===''?'on':''}" onclick="lockPickSetEnergy('')">全部能源</button>`
+    + [...new Set(LOCK_STATIONS.map(x=>x.energy))].map(e=>
+        `<button type="button" class="${s.pickEnergy===e?'on':''}" onclick="lockPickSetEnergy('${e}')">${e}</button>`).join('');
+}
+/* 一行一站：勾选 = 该站全部油品行进明细；已勾选的站带「已选择」标识 */
+function lockPickStationHTML(st){
+  const on = st.goods.some(g=>lockHasGoods(st.code,g.goodsId));
+  return `<div class="ck-pick-station${on?' on':''}">
+    <label class="ck-pick-row">
+      <input type="checkbox" ${on?'checked':''} onchange="lockPickToggleStation('${st.code}',this.checked)"
+        aria-label="选择油站 ${st.name}">
+      <span class="ck-pick-main"><b>${st.name}</b><span class="t2">${st.co} · ${st.energy} · ${st.city}</span></span>
+      <span class="ck-pick-code mono">${st.code}</span>
+      ${on?'<span class="ck-pick-sel">已选择</span>':''}
+    </label>
+  </div>`;
+}
+function lockPickSetKw(v){ lockState.pickKw = v; lockState.pickPage = 1; lockPickRefreshList(); }
+function lockPickSetEnergy(v){ lockState.pickEnergy = v; lockState.pickPage = 1; lockPickRefreshList(); }
+function lockPickToggleOnlySel(){ lockState.pickOnlySel = !lockState.pickOnlySel; lockState.pickPage = 1; openModal('lockStationPicker'); }
+function lockPickPageGo(p){ lockState.pickPage = p; lockPickRefreshList(); }
+function lockPickPageSize(v){ lockState.pickPageSize = Number(v)||LOCK_PAGE_SIZE; lockState.pickPage = 1; lockPickRefreshList(); }
+function lockPickClearSel(){
+  lockState.stations = [];
+  lockPickRefreshList();
+  lockRefreshLineTable();
+}
+/* 站粒度勾选：勾选带出该站全部油品行（减价留空待逐行填写），取消移除该站全部明细行 */
+function lockPickToggleStation(stationCode, on){
+  const st = lockStation(stationCode); if(!st) return;
+  if(on) st.goods.forEach(g=>lockAddGoods(stationCode,g.goodsId));
+  else lockState.stations = lockState.stations.filter(l=>l.station!==stationCode);
+  lockPickRefreshList();
+  lockRefreshLineTable();
+}
+
+/* ---------- 保存与校验 ---------- */
+function lockValidate(){
+  const s = lockState;
+  const errs = [];
+  if(!s.name.trim()) errs.push('请填写规则名称');
+  else if(s.name.trim().length > 50) errs.push('规则名称不超过 50 个字');
+  if((s.remark||'').length > 200) errs.push('备注不超过 200 个字');
+  if(!s.entities.length) errs.push('请至少选择一个适用网货主体');
+  if(!s.stations.length) errs.push('请至少选择一个「油站 + 油品」');
+  const bad = lockBadLines();
+  if(bad.length) errs.push(`有 ${bad.length} 行的油站或油品已不在系统目录中，请删除后重新选择`);
+  const validLines = s.stations.filter(l=>{ const g=lockGoods(l.station,l.goods); return g && g.entPrice>0; });
+  if(s.stations.length && !validLines.length) errs.push('所选油站油品均无企业价，无法配置');
+  if(s.mode===LOCK_MODE.PRICE){
+    /* PRD：锁站锁价模式下减价金额逐行必填（填 0 表示可见但不减价，但必须显式填写） */
+    const blank = lockBlankReduceLines();
+    if(blank.length) errs.push(`有 ${blank.length} 行未填写减价金额`);
+    const neg = s.stations.filter(l=>Number(l.reduce)<0);
+    if(neg.length) errs.push('减价金额不能为负数');
+    /* PRD：减价金额最多两位小数 */
+    const dec = s.stations.filter(l=>l.reduce!=null && l.reduce!=='' && /\.\d{3,}$/.test(String(l.reduce)));
+    if(dec.length) errs.push(`有 ${dec.length} 行的减价金额超过两位小数`);
+    const cut = s.stations.filter(l=>Number(l.reduce)>0);
+    if(s.stations.length && !cut.length) errs.push('锁站锁价模式下请至少为一行填写大于 0 的减价金额，否则请改用「锁站」模式');
+    const zero = s.stations.filter(l=>{ const g=lockGoods(l.station,l.goods); return g && g.entPrice - (Number(l.reduce)||0) < 0; });
+    if(zero.length) errs.push(`有 ${zero.length} 行锁后价小于 0，请减小减价金额`);
+  }
+  /* 规则唯一性：同「网货主体 + 货主企业」不允许两条生效规则 */
+  const conflicts = lockConflicts({entities:s.entities, owners:s.owners, status:LOCK_STATUS.ON}, s.editId);
+  if(conflicts.length){
+    const c = conflicts[0];
+    errs.push(`适用范围与生效规则 ${c.self?'（本规则内重复）':c.rule.id} 冲突：${c.entityId?entityName(c.entityId):''} + ${c.ownerText}`);
+  }
+  return errs;
+}
+function lockNegativeGross(){
+  const s = lockState;
+  return s.stations.filter(l=>{
+    const g = lockGoods(l.station,l.goods); if(!g) return false;
+    const final = s.mode===LOCK_MODE.PRICE ? g.entPrice-(Number(l.reduce)||0) : g.entPrice;
+    return final < g.cost;
+  });
+}
+function saveLockRule(){
+  const errs = lockValidate();
+  if(errs.length){ showToast('保存失败：'+errs[0]); return; }
+  const s = lockState;
+  const neg = lockNegativeGross();
+  const doSave = () => {
+    /* 新建规则默认生效；修改规则保持原有状态，不因保存而把停用规则静默启用 */
+    const target = s.editId ? LOCK_RULE_BY_ID(s.editId) : null;
+    const payload = {
+      name:s.name.trim(), mode:s.mode, remark:(s.remark||'').trim(),
+      status: target ? target.status : LOCK_STATUS.ON,
+      entities:s.entities.slice(), owners:s.owners.slice(),
+      stations:s.stations.map(l=>({station:l.station, goods:l.goods,
+        reduce: s.mode===LOCK_MODE.PRICE ? (Number(l.reduce)||0) : null})),
+      updatedBy:'当前登录人', updatedAt:lockNow()
+    };
+    if(target){
+      Object.assign(target, payload);
+      showToast('规则已更新' + (target.status===LOCK_STATUS.OFF?'（保持停用状态）':''));
+    } else {
+      LOCK_RULES.unshift({id:nextLockId(), createdBy:'当前登录人', createdAt:lockNow(), ...payload});
+      showToast('规则已保存并启用');
+    }
+    closeLockEditor(true);
+    paint();
+  };
+  if(neg.length){
+    window._lockPendingSave = doSave;
+    openConfirm('lockNegGross', neg.length);
+    return;
+  }
+  doSave();
+}
+CONFIRMS.lockNegGross = n => ({
+  title:'确认负毛利推送', tone:'warn',
+  lead:`有 <b>${n}</b> 行的锁后价低于成本价。`,
+  list:['负毛利推送需与现网「允许负毛利推送」开关口径一致。','确认后规则保存并立即生效；已产生订单的价格不追溯。'],
+  ok:'确认保存', okClass:'primary'
+});
+CONFIRMS.lockDiscard = () => ({
+  title:'放弃未保存的改动', tone:'warn',
+  lead:'当前抽屉里有尚未保存的修改。',
+  list:['关闭后本次填写或调整的内容不会保留。','已经保存过的规则不受影响。'],
+  ok:'放弃修改', okClass:'danger'
+});
+
+/* ---------- 规则详情抽屉 ---------- */
+function openLockRuleView(id){
+  const r = LOCK_RULE_BY_ID(id); if(!r) return;
+  /* 详情里的货主企业清单：每条规则重新打开都回到「第 1 页」 */
+  lockViewRuleId = id;
+  lockViewState = {ownerKw:'', ownerPage:1, ownerPageSize:20};
+  const drawer = document.getElementById('drawer');
+  drawer.dataset.kind = 'lockRule';
+  document.getElementById('drawerTitle').textContent = '锁站规则详情';
+  document.getElementById('drawerBody').classList.add('nonav');
+  document.getElementById('drawerNav').innerHTML = '';
+  setDrawerFoot(`<button class="btn" type="button" onclick="closeLockEditor()">关闭</button>
+    <button class="btn" type="button" onclick="closeLockEditor();openLockEditor('${r.id}')">修改</button>`);
+  document.getElementById('drawerMain').innerHTML = `
+    <div class="sumhead">
+      <div class="no mono">${r.id}</div>
+      <div class="sec">${r.name}</div>
+      <div class="pills">${pill(r.status)}${lockModeTag(r.mode)}<span class="tag">${r.stations.length} 行明细</span></div>
+      <div class="money">
+        <div class="oilv"><div class="l">适用网货主体</div><div class="v num">${r.entities.length}</div></div>
+        <div><div class="l">适用货主企业</div><div class="v num">${r.owners.length||'全部'}</div></div>
+        <div><div class="l">可见油站</div><div class="v num">${new Set(r.stations.map(l=>l.station)).size}</div></div>
+        <div><div class="l">有减价行</div><div class="v num">${r.stations.filter(l=>Number(l.reduce)>0).length}</div></div>
+      </div>
+    </div>
+    <div class="card"><div class="card-b"><div class="sec-title">基本信息</div>
+      <dl class="kv oms-live-kv">
+        <div class="oms-live-field"><dt>规则编号</dt><dd class="mono">${r.id}</dd></div>
+        <div class="oms-live-field"><dt>规则状态</dt><dd>${pill(r.status)}</dd></div>
+        <div class="oms-live-field"><dt>模式</dt><dd>${lockModeTag(r.mode)}</dd></div>
+        <div class="oms-live-field"><dt>创建</dt><dd>${r.createdAt} · ${r.createdBy}</dd></div>
+        <div class="oms-live-field"><dt>最近修改</dt><dd>${r.updatedAt} · ${r.updatedBy}</dd></div>
+        <div class="oms-live-field"><dt>备注</dt><dd>${r.remark||'—'}</dd></div>
+      </dl>
+    </div></div>
+    <div class="card"><div class="card-b"><div class="sec-title">适用网货主体</div>
+      <div class="tablewrap"><table class="lock-pool">
+        <thead><tr><th>网货主体名称</th><th>网货主体ID</th></tr></thead>
+        <tbody>${r.entities.map(e=>`<tr>
+          <td>${entityName(e)}</td><td class="mono">${e}</td></tr>`).join('')}</tbody>
+      </table></div>
+    </div></div>
+    <div class="card"><div class="card-b"><div class="sec-title">适用货主企业</div>
+      ${r.owners.length ? lockViewOwnerCardHTML(r)
+      : '<div class="ck-empty">未指定货主企业，适用于上述网货主体下的全部货主企业</div>'}
+    </div></div>
+    <div class="card"><div class="card-b"><div class="sec-title">油站与油品明细</div>
+      <div class="tablewrap"><table class="lock-pool">
+        <thead><tr><th>油站编码</th><th>油站 / 油站公司</th><th>油品</th>
+          <th class="num">原企业价</th><th class="num">成本价</th><th class="num">减价金额</th><th class="num">锁后价</th></tr></thead>
+        <tbody>${r.stations.map(l=>{
+          const st=lockStation(l.station), g=lockGoods(l.station,l.goods); if(!st||!g) return '';
+          const cut = r.mode===LOCK_MODE.PRICE ? (Number(l.reduce)||0) : 0;
+          const final = Math.max(g.entPrice-cut,0);
+          return `<tr>
+            <td class="mono">${st.code}</td>
+            <td><div class="t1">${st.name}</div><div class="t2">${st.co}</div></td>
+            <td>${g.goodsName}</td>
+            <td class="num">¥${money(g.entPrice)}</td>
+            <td class="num">¥${money(g.cost)}</td>
+            <td class="num">${r.mode!==LOCK_MODE.PRICE?'<span class="dash">—</span>':`<span style="color:var(--fee);font-weight:600">-${money(cut)}</span>`}</td>
+            <td class="num"><span class="num ${final<g.cost?'over':''}">¥${money(final)}</span></td></tr>`;
+        }).join('')}</tbody>
+      </table></div>
+    </div></div>`;
+  showDrawer(true);
+  document.getElementById('drawerMain').scrollTop = 0;
+}
+
+/* ---------- 详情抽屉：货主企业清单 ----------
+   少量货主直接铺一张表；超过 LOCK_VIEW_TOOLS_MIN 个才启用
+   「搜索 / 分页」，翻页或检索时只重绘清单区，输入框不失焦。 */
+const LOCK_VIEW_TOOLS_MIN = 20;
+let lockViewRuleId = null;
+let lockViewState = {ownerKw:'', ownerPage:1, ownerPageSize:20};
+function lockViewOwners(){
+  const r = LOCK_RULE_BY_ID(lockViewRuleId); if(!r) return [];
+  return r.owners.map(id=>({id, name:ownerName(id)}));
+}
+function lockViewOwnerFiltered(){
+  const s = lockViewState, kw = (s.ownerKw||'').trim().toLowerCase();
+  return lockViewOwners().filter(o=>{
+    if(kw && !(o.name.toLowerCase().includes(kw) || o.id.toLowerCase().includes(kw))) return false;
+    return true;
+  });
+}
+function lockViewOwnerCardHTML(r){
+  const all = lockViewOwners();
+  /* 少：整份名单直接铺开，不打扰 */
+  if(all.length <= LOCK_VIEW_TOOLS_MIN){
+    return `<div class="lk-view-lead">共 <b>${all.length}</b> 个货主企业</div>
+      ${lockViewOwnerTableHTML(all)}`;
+  }
+  /* 多：搜索 + 分页 */
+  return `<div class="lk-view-lead">整份名单共 <b>${all.length}</b> 个货主企业，支持搜索与分页</div>
+    <div class="lk-view-tools">
+      <input class="inp" value="${lockAttr(lockViewState.ownerKw)}" placeholder="搜索货主企业名称或ID"
+        oninput="lockViewOwnerSetKw(this.value)">
+    </div>
+    <div id="lockViewOwnerBox">${lockViewOwnerListHTML()}</div>
+    <div class="lk-view-sum" id="lockViewOwnerSum">${lockViewOwnerSumHTML()}</div>`;
+}
+function lockViewOwnerTableHTML(rows){
+  if(!rows.length) return '<div class="ck-empty">没有符合当前筛选的货主企业</div>';
+  return `<div class="tablewrap"><table class="lock-pool">
+      <thead><tr><th>货主企业名称</th><th>货主企业ID</th></tr></thead>
+      <tbody>${rows.map(o=>`<tr>
+        <td>${o.name}</td><td class="mono">${o.id}</td></tr>`).join('')}</tbody>
+    </table></div>`;
+}
+function lockViewOwnerListHTML(){
+  const s = lockViewState;
+  const rows = lockViewOwnerFiltered();
+  return lockViewOwnerTableHTML(lockSlice(rows, s.ownerPage, s.ownerPageSize))
+    + lockPagerHTML(rows.length, s.ownerPage, s.ownerPageSize, 'lockViewOwnerPageGo', 'lockViewOwnerPageSize');
+}
+function lockViewOwnerSumHTML(){
+  const all = lockViewOwners();
+  const shown = lockViewOwnerFiltered().length;
+  return `当前筛选 <b>${shown}</b> / 共 <b>${all.length}</b> 个货主企业`;
+}
+function lockViewOwnerRefresh(){
+  const box = document.getElementById('lockViewOwnerBox');
+  if(box) box.innerHTML = lockViewOwnerListHTML();
+  const sum = document.getElementById('lockViewOwnerSum');
+  if(sum) sum.innerHTML = lockViewOwnerSumHTML();
+}
+function lockViewOwnerSetKw(v){ lockViewState.ownerKw = v; lockViewState.ownerPage = 1; lockViewOwnerRefresh(); }
+function lockViewOwnerPageGo(p){ lockViewState.ownerPage = p; lockViewOwnerRefresh(); }
+function lockViewOwnerPageSize(v){ lockViewState.ownerPageSize = Number(v)||20; lockViewState.ownerPage = 1; lockViewOwnerRefresh(); }
+
+/* ---------- 二次确认 ---------- */
+CONFIRMS.lockRuleDelete = key => {
+  const r = LOCK_RULE_BY_ID(key) || LOCK_RULES[0];
+  return {title:'删除锁站规则', tone:'bad',
+    lead:`将删除规则 <b>${r.name}</b>（${r.id}）。`,
+    kv:[['规则状态',pill(r.status)],['网货主体',`${r.entities.length} 个`],['货主企业',r.owners.length?`${r.owners.length} 个`:'全部货主企业']],
+    list:['删除后相关货主回落现网「企业网点商品价格」的推送结果。','已下发的历史配置不追溯，已产生订单的价格不变。'],
+    ok:'确认删除', okClass:'danger'};
+};
+CONFIRMS.lockRuleToggle = key => {
+  const r = LOCK_RULE_BY_ID(key) || LOCK_RULES[0];
+  const off = r.status===LOCK_STATUS.ON;
+  return {title:off?'停用锁站规则':'启用锁站规则', tone:off?'warn':'primary',
+    lead:`将${off?'停用':'启用'}规则 <b>${r.name}</b>（${r.id}）。`,
+    kv:[['当前状态',pill(r.status)],['网货主体',`${r.entities.length} 个`],['货主企业',r.owners.length?`${r.owners.length} 个`:'全部货主企业']],
+    list:off
+      ? ['停用后相关货主不再受本规则限制，回落现网企业价。','停用后该「网货主体+货主企业」组合可被新规则占用。','已产生订单的价格不追溯。']
+      : ['启用前会校验是否与该组合下已有的生效规则冲突，冲突时无法启用。','启用后立即按本规则收敛可见油站与价格。'],
+    ok:off?'确认停用':'确认启用', okClass:off?'danger':'primary'};
+};
+
+
 /* ================= 启动 ================= */
-go('orders');
+const initialPage = location.hash.slice(1);
+go(PAGES.some(p=>p.id===initialPage) ? initialPage : 'orders');
 </script>
 <script src="./live-alignment.js"></script>
 

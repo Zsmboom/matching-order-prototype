@@ -120,6 +120,13 @@ body.live-surface .oms-children{margin:0 0 5px;padding:0}
 body.live-surface .nav .oms-entry{display:flex;align-items:center;gap:8px;width:100%;min-height:45px;margin:1px 0;padding:7px 12px 7px 54px;border-radius:10px;font-size:14px;color:#778299}
 body.live-surface .nav .oms-entry .oms-entry-icon{display:none}
 body.live-surface .nav .oms-entry.on{background:#245ab6;color:#fff;font-weight:600;min-height:56px}
+body.live-surface .oms-group>.oms-group-title{cursor:pointer}
+body.live-surface .oms-group>.oms-group-title:hover{color:#245ab6}
+body.live-surface .oms-group:not(.expanded)>.oms-children{display:none}
+body.live-surface .oms-group:not(.expanded) .oms-chevron{transform:rotate(-90deg)}
+body.live-surface .site-switch{margin:0 42px 14px;padding:4px;border-radius:20px;background:#f3f5f9;border:0}
+body.live-surface .site-switch button{padding:7px 4px;border-radius:16px;font-size:13px;color:#7d879e}
+body.live-surface .site-switch button.on{background:#245ab6;color:#fff;box-shadow:none}
 body.live-surface .head{position:relative;box-shadow:none;border:0}
 body.live-surface .head .row1{height:63px;min-height:63px;padding:0 34px}
 body.live-surface .head h1{font-size:25px;font-weight:600;display:flex;align-items:center;gap:13px}
@@ -268,6 +275,8 @@ body:not(.live-surface) .oms-drawer-footer{display:none}
   body.live-surface .nav{display:flex;flex-direction:row;align-items:center;padding:0 12px;white-space:nowrap}
   body.live-surface .nav .oms-group-title{height:54px;font-size:13px}
   body.live-surface .nav .oms-children,body.live-surface .nav .oms-static{display:none}
+  body.live-surface .site-switch{flex:none;align-self:center;margin:0 8px}
+  body.live-surface .site-switch button{padding:6px 12px}
   body.live-surface .body>.card>.filters{width:100%}
   body.live-surface:is([data-live-page="energyInvApply"],[data-live-page="feeInvApply"],[data-live-page="serviceFee"],[data-live-page="withdrawRecord"]) .body>.card>.filter-actions{position:static;margin-top:16px;justify-content:flex-end}
 }
@@ -280,3 +289,4 @@ body:not(.live-surface) .oms-drawer-footer{display:none}
   body.live-surface .body>.card>.filters>.f{width:100%}
   body.live-surface .live-list-card .card-h{flex-wrap:wrap}
 }
+

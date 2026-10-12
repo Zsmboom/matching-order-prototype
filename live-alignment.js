@@ -98,7 +98,11 @@ function liveRows(page){
   }));
 }
 function liveTable(headers,rows,width='1500px'){
-  return '<div class="tablewrap"><table style="min-width:'+width+'"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+ (rows.length?rows.join(''):'<tr><td class="empty" colspan="'+headers.length+'">暂无符合条件的数据</td></tr>')+'</tbody></table></div>';
+  /* 末列为操作列：表体统一用 class="acts" 冻结在右，表头必须同样冻结，
+     否则横向滚动后表头与表体会错开一列（表头不冻结、表体冻结）。 */
+  const head = headers.map((h,i)=>
+    i===headers.length-1 ? '<th class="acts">'+h+'</th>' : '<th>'+h+'</th>').join('');
+  return '<div class="tablewrap"><table style="min-width:'+width+'"><thead><tr>'+head+'</tr></thead><tbody>'+ (rows.length?rows.join(''):'<tr><td class="empty" colspan="'+headers.length+'">暂无符合条件的数据</td></tr>')+'</tbody></table></div>';
 }
 const liveMoney = n=>'¥'+money(n);
 const liveAct=(kind,key,label='详情')=>'<button type="button" onclick="liveDrawer(\''+kind+'\',\''+key+'\')">'+label+'</button>';
@@ -430,5 +434,5 @@ function liveFinish(kind,key,requireField){
   showToast('原型演示：'+(kind.includes('Download')?'下载任务已提交':'操作已确认'));
 }
 
-/* 覆盖已渲染的旧版默认首页。旧版企业端日/月账单继续使用原有实现。 */
-go('orders');
+/* 用覆盖后的页面重新渲染当前页。旧版企业端日/月账单继续使用原有实现。 */
+go(current);
