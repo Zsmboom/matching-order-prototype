@@ -1570,7 +1570,6 @@ document.addEventListener('click', e=>{
   const lv = e.target.closest('[data-lockview]');   if(lv){ openLockRuleView(lv.dataset.lockview); return; }
   const le = e.target.closest('[data-lockedit]');   if(le){ openLockEditor(le.dataset.lockedit); return; }
   const lt = e.target.closest('[data-locktoggle]'); if(lt){ openConfirm('lockRuleToggle', lt.dataset.locktoggle); return; }
-  const lc = e.target.closest('[data-lockcopy]');   if(lc){ openLockEditor(lc.dataset.lockcopy, true); return; }
   /* 点空白处收起网货主体下拉 */
   if(lockEntityOpen && !e.target.closest('#lockEntityPicker')){ lockEntityOpen = false; lockRefresh(); }
 });
@@ -8036,7 +8035,6 @@ VIEWS.freightLock = () => {
       <h2>货主锁站规则</h2><span class="spacer"></span>
       <button class="btn sm primary" type="button" onclick="openLockEditor()">新建规则</button>
       <button class="btn sm" type="button" onclick="lockBatch('toggle')">批量停用</button>
-      <button class="btn sm" type="button" onclick="lockBatch('copy')">复制规则</button>
       <button class="btn sm" type="button" onclick="lockExport()">导出</button>
       ${colCfgBtn('freightLock')}
     </div>
@@ -8078,15 +8076,6 @@ function lockBatch(action){
   if(action==='toggle'){
     LOCK_RULES.forEach(r=>{ if(ids.includes(r.id) && r.status===LOCK_STATUS.ON){ r.status=LOCK_STATUS.OFF; r.updatedAt=lockNow(); } });
     showToast(`已停用 ${ids.length} 条规则`);
-  } else {
-    ids.forEach(id=>{
-      const i = LOCK_RULES.findIndex(x=>x.id===id); if(i<0) return;
-      const r = LOCK_RULES[i];
-      LOCK_RULES.splice(i+1, 0, {...r, id:nextLockId(), name:r.name+'（副本）',
-        status:LOCK_STATUS.OFF, createdBy:'当前登录人', createdAt:lockNow(), updatedBy:'当前登录人', updatedAt:lockNow(),
-        entities:r.entities.slice(), owners:r.owners.slice(), stations:r.stations.map(l=>({...l}))});
-    });
-    showToast(`已复制 ${ids.length} 条规则（状态为停用，修改确认后再启用）`);
   }
   paint();
 }
@@ -8106,11 +8095,11 @@ const lockDrawerFoot = (okText) =>
   `<button class="btn" type="button" onclick="closeLockEditor()">取消</button>
    <button class="btn primary" type="button" onclick="saveLockRule()">${okText}</button>`;
 
-function openLockEditor(id, copyMode){
+function openLockEditor(id){
   const src = id ? LOCK_RULE_BY_ID(id) : null;
   /* 统一走 lockNewState()：分页/搜索等列表状态必须有默认值，否则分页取不到当前页 */
   lockState = lockNewState(src
-    ? {editId: copyMode ? null : id, name: copyMode ? src.name+'（副本）' : src.name,
+    ? {editId: id, name: src.name,
        mode: src.mode, remark: src.remark||'',
        entities: src.entities.slice(), owners: src.owners.slice(),
        stations: src.stations.map(l=>({...l}))}
