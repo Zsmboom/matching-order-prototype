@@ -496,30 +496,20 @@ body.drawer-foot-on:not(.live-surface) .oms-drawer-footer .btn{min-width:92px;ju
 .ck-picker-item input{accent-color:var(--brand);flex:none}
 .ck-picker-item span:first-of-type{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ck-picker-id{color:var(--muted);font-size:11px}
+/* 网货货主·业务负责人单元格：可点击修改 */
+.lk-editable{cursor:pointer;border-bottom:1px dashed var(--line);padding-bottom:1px}
+.lk-editable:hover{color:var(--brand-ink);border-bottom-color:var(--brand)}
 
-/* 货主企业：粘贴 / 上传 + 解析清单 */
-.ck-owner-box{flex-direction:column;align-items:stretch!important;gap:8px!important;width:100%}
-.ck-owner-tabs{display:flex;gap:6px}
-.ck-owner-tabs button{border:1px solid var(--line);background:var(--surface-2);border-radius:7px;
-  padding:5px 12px;font-size:12px;color:var(--ink-2);cursor:pointer}
-.ck-owner-tabs button.on{background:var(--brand-soft);border-color:color-mix(in srgb,var(--brand) 40%,transparent);
-  color:var(--brand-ink);font-weight:600}
-.ck-paste{width:100%;height:96px;padding:8px 10px;line-height:1.6;resize:vertical;font-family:inherit}
-.ck-owner-actions{display:flex;align-items:center;gap:10px}
+/* 导入弹层：文件上传框 */
 .ck-upload{display:flex;flex-direction:column;gap:6px;padding:12px;border:1px dashed var(--line);
   border-radius:8px;background:var(--surface-2)}
 .ck-upload-hint{font-size:11.5px;color:var(--muted)}
-.ck-owner-list{display:flex;flex-direction:column;gap:4px;max-height:300px;overflow:auto}
-/* 货主企业清单无生效状态：清单内每一行都进入适用范围，不需要的删除 */
-.ck-owner-row{display:grid;grid-template-columns:minmax(0,1fr) 130px 22px;align-items:center;gap:8px;
-  padding:6px 8px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface-2);font-size:12px}
 /* 列表工具条：搜索 + 状态分段 + 批量操作 */
 .ck-list-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .ck-list-tools .inp{flex:1;min-width:180px}
 .ck-list-tools .ck-tools-right{margin-left:auto;display:flex;gap:6px}
 .ck-seg-sm{height:28px;flex:none}
 .ck-seg-sm button{padding:0 10px;font-size:11.5px}
-.ck-owner-box-inner{display:block}
 
 /* 详情抽屉：只读货主企业清单（搜索 / 匹配状态筛选 / 分页） */
 .lk-view-lead{font-size:11.5px;color:var(--muted);margin-bottom:8px}
@@ -543,11 +533,6 @@ body.drawer-foot-on:not(.live-surface) .oms-drawer-footer .btn{min-width:92px;ju
 .ck-pager .pg span.dis{opacity:.4;cursor:not-allowed}
 .ck-pager .spacer{flex:1}
 
-.ck-owner-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ck-owner-id{color:var(--muted);font-size:11.5px}
-.ck-owner-sum{font-size:11.5px;color:var(--ink-2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.ck-owner-sum b{color:var(--brand-ink)}
-.ck-owner-sum b.bad{color:var(--warn)}
 .ck-del{all:unset;cursor:pointer;color:var(--bad);font-size:11.5px;padding:0 4px;border-radius:4px}
 .ck-del:hover{background:var(--bad-soft)}
 .ck-empty{padding:10px;color:var(--muted);font-size:12px;text-align:center}
@@ -618,12 +603,11 @@ body.drawer-foot-on:not(.live-surface) .oms-drawer-footer .btn{min-width:92px;ju
 .lock-pool .t1{font-weight:600}
 .lock-pool .t2{color:var(--muted);font-size:11px;margin-top:2px}
 .lock-pool .num.over{color:var(--bad);font-weight:600}
-/* 锁站锁价模式下「减价金额未填写」的行：标红提示，保存时同样会被拦截 */
+/* 锁站锁价模式下「价格调整金额未填写」的行：标红提示，保存时同样会被拦截 */
 .lock-pool input.lk-req{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 6%,transparent)}
 .lock-pool input.lk-req::placeholder{color:var(--bad);opacity:.75}
 /* 抽屉「基本信息」里的备注：多行文本 */
 .lock-form textarea#lockRemark{height:auto;min-height:56px;padding:8px 10px;line-height:1.6;resize:vertical;font-family:inherit}
-.ck-hint{margin:9px 0 0;color:var(--muted);font-size:11.5px;line-height:1.7}
 
 .ck-seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;height:28px}
 .ck-seg button{border:0;background:var(--surface-2);padding:0 11px;font-size:12px;color:var(--ink-2);cursor:pointer;white-space:nowrap}
@@ -1425,6 +1409,9 @@ const PAGES = [
   /* ---- 企业端 · 发票管理 ---- */
   {id:'cApply',   name:'发票列表', sub:'按油站公司拆单 · 开票进度与发票下载', side:'企业端', grp:'发票管理'},
 
+  /* ---- 运营平台 · 客户中心 ---- */
+  {id:'oilWangHuoCustomerInfo', name:'网货货主', sub:'网货货主主数据 · 导入 / 导出 · 业务负责人', side:'运营平台', grp:'客户中心'},
+
   /* ---- 运营平台 · 商品中心 ---- */
   {id:'freightLock', name:'货主锁站锁价', sub:'网货主体 + 货主 维度限制可见油站 · 锁站 / 锁价 / 共享规则', side:'运营平台', grp:'商品中心'},
 
@@ -1438,11 +1425,12 @@ const PAGES = [
 
 
 const LIVE_PAGES = ['orders','fee','refund','energyInvApply','feeInvApply','serviceFee','withdrawRecord'];
-/* 商品中心在 OMS 现网为既有模块（路由 goodsCenter），货主锁站锁价挂在该模块下；
+/* 客户中心（网货货主，路由 oilWangHuoCustomerInfo）与商品中心（货主锁站锁价）均为 OMS 现网既有模块；
    页面 UI 与其余运营页统一走 live-surface 对齐层皮肤，菜单分组同为 OMS 结构。 */
-const PHASE2_PAGES = ['freightLock'];
+const PHASE2_PAGES = ['oilWangHuoCustomerInfo','freightLock'];
 /* 运营平台按 OMS 现网菜单展示；只保留有页面的分组 */
 const LIVE_NAV = [
+  ['客户中心','❖',['oilWangHuoCustomerInfo']],
   ['撮合订单','♧',['orders','fee','refund']],
   ['开票中心','▣',['energyInvApply','feeInvApply']],
   ['财务中心','◩',['serviceFee','withdrawRecord']],
@@ -1627,16 +1615,18 @@ const OPT = {
 };
 
 /* ================= 货主锁站锁价（商品中心） =================
-   规则口径（2026-10-09 确认）：
+   规则口径（2026-10-09 确认；2026-10-12 增补价格联动 / 油站范围 / 合同校验）：
      · 网货主体即现网客户企业，单独配置、搜索下拉获取
-     · 货主企业由运营录入（粘贴清单 / Excel 上传「名称 + 企业ID」），不预置组合
-     · 油站从系统已有油站选择，按「油站 + 油品」逐行配置
-     · 价格 = 现网企业价 − 减价金额（减多少钱），不是绝对定价
-     · 模式只有两类：锁站（不减价）/ 锁站锁价（逐行减价）
+     · 货主企业为主数据（客户中心 → 网货货主维护），配置时搜索选择，不选＝全部
+     · 油站从网点管理全部油站中选择（含客户商品管理未推送的油站），
+       按「油站 + 油品」逐行配置；添加油站时校验签约合同（见 lockAddGoods）
+     · 价格 = 网点商品管理维护的企业价 − 价格调整金额（正数=减价、负数=涨价），不是绝对定价；
+       锁后价同步驱动上游结算价与下游企业价，上下游订单单价 / 金额 / 总金额保持一致
+     · 模式只有两类：锁站（不调价）/ 锁站锁价（逐行填写价格调整金额）
      · 状态只有两个：生效 / 停用
      · 同一「网货主体 + 货主企业」不允许存在两条生效规则
-   优先级：命中「网货主体 + 货主企业」的生效规则 > 回落现网「企业网点商品价格」
-   本层只做收敛：现网未推送的油站，货主规则无法让其可见 */
+   优先级：命中「网货主体 + 货主企业」的生效规则（明细内油站全部可见可加注） >
+           回落客户商品管理按网货主体的推送数据 */
 
 /* 网货主体：现网客户企业主数据，页面用搜索下拉读取 */
 const FREIGHT_ENTITIES = [
@@ -1646,19 +1636,22 @@ const FREIGHT_ENTITIES = [
   {id:'E1004', name:'津冀联合运输有限公司',     short:'津冀联合', status:'启用'},
 ];
 
-/* 货主企业清单：由运营粘贴 / Excel 上传录入，以导入的「名称+企业ID」为准，不做主数据匹配 */
+/* 网货货主主数据：由「客户中心 → 网货货主」页面维护（导入进入），
+   货主锁站锁价的「适用货主企业」选择器取自本清单；
+   orders/paid/last/mgr 为页面展示的统计与负责人字段（系统统计，不可手工改） */
 const FREIGHT_OWNERS = [
-  {id:'SH0200001', name:'万联易达上海分公司', source:'EXCEL'},
-  {id:'SH0200002', name:'万联易达天津分公司', source:'EXCEL'},
-  {id:'SH0100001', name:'万联易达物流科技有限公司', source:'PASTE'},
-  {id:'SH0200003', name:'蒙晋通达天津分公司', source:'EXCEL'},
-  {id:'SH0100002', name:'蒙晋通达运输有限公司', source:'PASTE'},
-  {id:'SH0200004', name:'鲁通冷链济南分公司', source:'EXCEL'},
-  {id:'SH0100003', name:'鲁通冷链物流有限公司', source:'PASTE'},
-  {id:'SH0900001', name:'唐山曹妃甸物流有限公司', source:'PASTE'},
+  {id:'SH0200001', name:'万联易达上海分公司',       orders:126, paid:52318.40, last:'2026-10-11 09:24:15', mgr:'张运营', createdAt:'2026-06-04 17:06:50'},
+  {id:'SH0200002', name:'万联易达天津分公司',       orders: 89, paid:30127.66, last:'2026-10-11 18:02:41', mgr:'张运营', createdAt:'2026-06-04 17:08:12'},
+  {id:'SH0100001', name:'万联易达物流科技有限公司', orders:342, paid:187422.05, last:'2026-10-12 10:15:33', mgr:'李运营', createdAt:'2026-06-04 17:10:00'},
+  {id:'SH0200003', name:'蒙晋通达天津分公司',       orders: 57, paid:19640.20, last:'2026-10-09 16:44:08', mgr:'王运营', createdAt:'2026-06-05 09:31:27'},
+  {id:'SH0100002', name:'蒙晋通达运输有限公司',     orders:210, paid:96877.90, last:'2026-10-10 14:23:03', mgr:'王运营', createdAt:'2026-06-05 09:33:45'},
+  {id:'SH0200004', name:'鲁通冷链济南分公司',       orders: 41, paid:13206.75, last:'2026-10-08 11:52:19', mgr:'',      createdAt:'2026-06-06 15:20:58'},
+  {id:'SH0100003', name:'鲁通冷链物流有限公司',     orders:173, paid:80554.30, last:'2026-10-11 07:40:56', mgr:'李运营', createdAt:'2026-06-06 15:22:31'},
+  {id:'SH0900001', name:'唐山曹妃甸物流有限公司',   orders: 23, paid:7189.60, last:'2026-09-30 19:05:44',  mgr:'',      createdAt:'2026-06-08 10:02:17'},
 ];
 
-/* 油站目录：来源于现网「企业网点商品价格」已推送的「油站 × 油品」及企业价、成本价
+/* 油站目录：网点管理全部油站；价格（企业价、成本价）在「网点商品管理」维护，
+   与客户商品管理的按主体推送无关（未推送的油站同样可选可配置）
    entPrice 即减价基准；本层不新建油站与油品 */
 const LOCK_STATIONS = [
   {code:'ST0001', name:'沈阳浑南加油站',   co:'中石化辽宁石油分公司', energy:'柴油',   city:'沈阳', goods:[
@@ -1678,10 +1671,13 @@ const LOCK_STATIONS = [
     {goodsId:'G01', goodsName:'0# 轻柴油', entPrice:6.70, cost:6.15}]},
   {code:'ST0008', name:'天津滨海新区站',   co:'中石油天津销售分公司', energy:'天然气', city:'天津', goods:[
     {goodsId:'G03', goodsName:'LNG', entPrice:5.86, cost:5.35}]},
+  /* 合同校验演示站：与网货主体及万油通主体均无签约合同，添加到规则明细时拦截（见 lockAddGoods） */
+  {code:'ST0009', name:'锦州凌海物流站',   co:'凌海物流有限公司',     energy:'柴油',   city:'锦州', noContract:true, goods:[
+    {goodsId:'G01', goodsName:'0# 轻柴油', entPrice:6.72, cost:6.18}]},
 ];
-/* 大数据量演示数据：油站目录在既有 8 个样例基础上补齐到约 300 个，
+/* 大数据量演示数据：油站目录在既有样例基础上补齐到约 300 个，
    用于验证抽屉里油站选择器与「油站 + 油品」明细的搜索 / 筛选 / 分页。
-   实际项目里这份目录来自现网「企业网点商品价格」已推送的油站与油品。 */
+   实际项目里这份目录来自网点管理的全部油站，价格由网点商品管理维护。 */
 (function seedLockStations(){
   const cos = ['中石化辽宁石油分公司','中石油天津销售分公司','高灯能源科技有限公司',
                '中交兴路能源有限公司','畅油网络科技有限公司','中化石油华北有限公司'];
@@ -1726,7 +1722,7 @@ const LOCK_STATUS = {ON:'生效', OFF:'停用'};
    entities   ：适用网货主体 id 列表
    owners     ：适用货主企业 id 列表；空数组 = 该网货主体下全部货主企业
    stations   ：明细行，一行 = 一个「油站 + 油品」
-                reduce 仅在锁站锁价模式下有值，且一律为「减价金额」 */
+                reduce 仅在锁站锁价模式下有值，为「价格调整金额」：正数=减价、负数=涨价 */
 const LOCK_RULES = [
   {id:'AS2026100001', name:'万联上海 · 沈阳天津锁站锁价', mode:'锁站锁价', status:'生效',
    entities:['E1001'], owners:['SH0200001'],
@@ -1738,16 +1734,16 @@ const LOCK_RULES = [
    ]},
   {id:'AS2026100002', name:'万联天津 · 沈阳天津锁站锁价', mode:'锁站锁价', status:'生效',
    entities:['E1001'], owners:['SH0200002'],
-   remark:'天津分公司同线路，减价幅度略低于上海',
+   remark:'天津分公司同线路，个别油站按涨幅回调（负数=涨价）',
    createdBy:'张运营', createdAt:'2026-10-08 16:05', updatedBy:'张运营', updatedAt:'2026-10-08 16:05',
    stations:[
      {station:'ST0001', goods:'G01', reduce:0.06},
-     {station:'ST0002', goods:'G02', reduce:0.05},
+     {station:'ST0002', goods:'G02', reduce:-0.20},
      {station:'ST0003', goods:'G01', reduce:0.04},
    ]},
   {id:'AS2026100003', name:'蒙晋通达本部 · 天津锁站', mode:'锁站', status:'生效',
    entities:['E1002'], owners:['SH0100002'],
-   remark:'只锁站不减价，价格沿用企业级',
+   remark:'只锁站不调价，价格沿用企业级',
    createdBy:'李运营', createdAt:'2026-10-08 17:20', updatedBy:'李运营', updatedAt:'2026-10-08 17:20',
    stations:[
      {station:'ST0002', goods:'G02', reduce:null},
@@ -1788,13 +1784,24 @@ const LOCK_RULES = [
                   '太原分公司','石家庄分公司','唐山分公司','大连分公司','杭州分公司'];
   const mid = ['第一','第二','第三','第四','第五','第六'];
   const known = new Set(FREIGHT_OWNERS.map(o=>o.name));
+  const pad = x=>String(x).padStart(2,'0');
+  const fmt = d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  const base = new Date('2026-06-01T09:00:00');
+  const now  = new Date('2026-10-12T10:00:00');
   const add = (name, n) => {
     if(known.has(name) || FREIGHT_OWNERS.length >= 520) return false;
     known.add(name);
+    const created = new Date(base.getTime() - (n%180)*86400000);
+    const last = new Date(now.getTime() - (n%45)*86400000 - (n%24)*3600000);
+    const orders = 3 + (n*7)%240;
+    const paid = +(orders * (28 + (n*13)%95 + ((n*37)%100)/100)).toFixed(2);
     FREIGHT_OWNERS.push({
       id: 'SH1' + String(100000 + n).padStart(6,'0'),   /* 与样例数据的 SH0xxxxxx 段区分，避免撞号 */
       name,
-      source: n % 2 === 0 ? 'EXCEL' : 'PASTE'
+      orders, paid,
+      last: fmt(last),
+      mgr: ['张运营','李运营','王运营',''][n%4],
+      createdAt: fmt(created)
     });
     return true;
   };
@@ -1819,8 +1826,8 @@ const LOCK_RULES = [
 })();
 
 /* 大数据量演示规则：单条规则覆盖全部油站的油品明细（约 560 行），
-   用于验证明细区的搜索 / 能源筛选 /「只看有减价的行」/ 分页。
-   减价金额按行显式填写（0 表示可见但不减价），因此也覆盖「逐行必填」校验。 */
+   用于验证明细区的搜索 / 能源筛选 /「只看有调整的行」/ 分页。
+   价格调整金额按行显式填写（0 表示可见但不调价），因此也覆盖「逐行必填」校验。 */
 (function seedStationHeavyRule(){
   const rows = LOCK_STATIONS.flatMap(st=>st.goods.map(g=>({station:st.code, goods:g.goodsId})));
   LOCK_RULES.push({
@@ -7904,8 +7911,9 @@ CONFIRMS.cRefundApply = key => {
    商品中心 · 货主锁站锁价
    数据与口径见同目录《货主锁站锁价-产品需求-页面说明.md》
    规则唯一：同一「网货主体 + 货主企业」至多一条生效规则（保存与启用均校验）
-   价格口径：锁后价 = 现网企业价 − 减价金额（锁站模式不减价）
-   货主企业无主数据匹配，以导入的「名称+企业ID」为准
+   价格口径：锁后价 = 企业价（网点商品管理维护）− 价格调整金额（正数=减价、负数=涨价；锁站模式不调价）；
+   锁后价同步驱动上游结算价与下游企业价，上下游订单单价 / 金额 / 总金额一致
+   货主企业取自主数据（客户中心 → 网货货主），配置时搜索选择，不选＝全部货主企业
    配置入口为右侧抽屉（非弹窗）
    ========================================================= */
 let lockQuery = {};
@@ -7918,9 +7926,7 @@ let lockState = null;
 function lockNewState(o){
   return Object.assign({
     editId:null, name:'', mode:LOCK_MODE.LOCK, remark:'',
-    entities:[], owners:[], stations:[], ownerInput:'', ownerTab:'paste',
-    /* 货主企业清单：搜索 / 分页 */
-    ownerKw:'', ownerPage:1, ownerPageSize:20,
+    entities:[], owners:[], stations:[],
     /* 油站与油品明细：搜索 / 能源筛选 / 只看已选 / 分页 */
     lineKw:'', lineEnergy:'', lineOnlySel:false, linePage:1, linePageSize:20,
     /* 油站选择器：搜索 / 能源筛选 / 只看已选 / 分页 */
@@ -7928,7 +7934,6 @@ function lockNewState(o){
   }, o||{});
 }
 const LOCK_PAGE_SIZE = 20;
-let lockOwnerLines = [];           /* 粘贴/上传解析后的货主企业清单（含 sel 标记） */
 
 /* ---------- 列表分页原语（前端分页：中等量级够用，接口按后端分页预留） ----------
    list：当前筛选后的完整数组；target：要跳转的页码 */
@@ -7940,7 +7945,7 @@ const lockSlice = (arr, page, size) => {
   const cur = lockClampPage(page, arr.length, size);
   return arr.slice((cur-1)*size, cur*size);
 };
-function lockPagerHTML(total, page, size, goFn, sizeFn){
+function lockPagerHTML(total, page, size, goFn, sizeFn, sizes){
   const pages = Math.max(1, Math.ceil(total/size));
   const cur = lockClampPage(page, total, size);
   const from = Math.max(1, cur-2), to = Math.min(pages, from+4);
@@ -7956,7 +7961,7 @@ function lockPagerHTML(total, page, size, goFn, sizeFn){
     <span class="ck-pager-info">共 <b>${total}</b> 条${pages>1?` · ${pages} 页`:''}</span>
     ${pages>1?`<div class="pg">${btns.join('')}</div>`:'<span class="spacer"></span>'}
     <select size="1" class="inp" style="width:96px;flex:none" onchange="${sizeFn}(this.value)">
-      ${[20,50,100].map(v=>`<option value="${v}"${v===size?' selected':''}>${v} 条/页</option>`).join('')}
+      ${(sizes||[20,50,100]).map(v=>`<option value="${v}"${v===size?' selected':''}>${v} 条/页</option>`).join('')}
     </select>
   </div>`;
 }
@@ -7967,13 +7972,13 @@ const LOCK_COLS = regCols('freightLock', [
     td:r=>`<div class="t1">${r.name}</div>`},
   {k:'status', t:'规则状态',   w:'90px',  td:r=>pill(r.status)},
   {k:'mode',   t:'模式',       w:'110px', td:r=>lockModeTag(r.mode)},
-  {k:'entity', t:'适用网货主体', w:'120px',
-    td:r=>`<div class="t1">${r.entities.length} 个网货主体</div>`},
-  {k:'owner',  t:'适用货主企业', w:'120px',
-    td:r=>r.owners.length ? `<div class="t1">${r.owners.length} 个货主企业</div>`
-                          : '<div class="t1">全部货主企业</div>'},
-  {k:'station',t:'适用油站',   w:'100px', cls:'num',
-    td:r=>`<div class="t1">${new Set(r.stations.map(l=>l.station)).size} 个油站</div>`},
+  {k:'entity', t:'适用网货主体', w:'90px', cls:'num',
+    td:r=>`<div class="t1">${r.entities.length}</div>`},
+  {k:'owner',  t:'适用货主企业', w:'90px', cls:'num',
+    td:r=>r.owners.length ? `<div class="t1">${r.owners.length}</div>`
+                          : '<div class="t1">全部</div>'},
+  {k:'station',t:'适用油站',   w:'70px', cls:'num',
+    td:r=>`<div class="t1">${new Set(r.stations.map(l=>l.station)).size}</div>`},
   {k:'updated',t:'最近更新',   w:'150px',
     td:r=>`<div class="t1">${r.updatedAt}</div><div class="t2">${r.updatedBy}</div>`},
   {k:'ops',    t:'操作',       w:'210px', cls:'acts',
@@ -7988,7 +7993,8 @@ const lockModeTag = m => m===LOCK_MODE.PRICE
   ? '<span class="tag f">锁站锁价</span>'
   : '<span class="tag b">锁站</span>';
 
-/* 列表列「适用网货主体 / 适用货主企业」只展示数量；
+/* 列表列「适用网货主体 / 适用货主企业 / 适用油站」只保留数字（右对齐）；
+   货主企业未导入（清单为空＝全部货主企业）时显示「全部」；
    完整名单在详情抽屉中查看（网货主体名单表 / 货主企业清单，支持搜索与分页），
    列表筛选区保留网货主体下拉与货主企业名称模糊搜索。 */
 const lockAttr = s => String(s==null?'':s)
@@ -8042,14 +8048,35 @@ VIEWS.freightLock = () => {
     ${pagerHTML(list.length)}
   </div>
   ${notes(
-    nb('页面用途', '<p>运营按「网货主体 × 货主企业」维度配置锁站 / 锁站锁价规则，收敛司机端可见的油站与价格；只做收敛不做放宽——现网「企业网点商品价格」未推送的油站，本模块无法使其可见。</p>') +
+    nb('页面用途', '<p>运营按「网货主体 × 货主企业」维度配置锁站 / 锁站锁价规则，确定司机端可见的油站与价格。规则生效期间，明细内油站全部展示并可加注；锁站不生效时，回落客户商品管理按网货主体的推送数据。</p>') +
     nb('关键规则',
-      '<p><b>适用范围</b>＝适用网货主体 × 适用货主企业（笛卡尔积）；货主企业清单内无生效状态——导入即生效、每一行都进入适用范围，不需要的删除；清单为空（未导入）＝该网货主体下全部货主企业。</p>' +
+      '<p><b>适用范围</b>＝适用网货主体 × 适用货主企业（笛卡尔积）；适用货主企业从主数据搜索选择、无生效状态——每选一家都进入适用范围，可逐个移除；未选择＝该网货主体下全部货主企业。</p>' +
       '<p style="margin-top:6px"><b>唯一性</b>：同一「网货主体+货主企业」组合至多一条生效规则；保存与启用均校验，冲突拦截并提示冲突规则编号；停用规则不参与校验。</p>' +
-      '<p style="margin-top:6px"><b>模式与价格</b>：锁站（价格沿用原企业价）／锁站锁价（逐行减价，至少一行减价 &gt; 0）；锁后价＝原企业价 − 减价金额，不得小于 0，低于成本价需二次确认负毛利。</p>' +
-      '<p style="margin-top:6px"><b>货主企业</b>：无主数据匹配，以导入的「名称+企业ID」为准，名称与 ID 均填才入清单。</p>' +
-      '<p style="margin-top:6px"><b>司机端判定</b>：先判断全部运单是否同属一个「网货主体+货主企业」组合——存在不同组合的运单即直接展示现网推送数据；同一组合再判断该组合是否有生效规则，有则只展示规则明细内的油站与油价（锁站沿用原企业价、锁站锁价按减价取价），没有则展示现网推送数据。停用/删除后回落现网推送结果；已产生订单不追溯。</p>') +
-    nb('校验口径', '<p>保存拦截：规则名称必填且 ≤50 字、网货主体 ≥1、明细 ≥1 行、减价金额逐行必填且 ≥0 最多两位小数、锁后价 ≥0、「主体+货主」组合冲突；锁后价低于成本价走二次确认后放行；启用拦截：组合冲突。</p>') +
+      '<p style="margin-top:6px"><b>模式与价格</b>：锁站（价格沿用原企业价）／锁站锁价（逐行填写价格调整金额：正数＝减价、负数＝涨价，涨价不设上限，至少一行调整金额 ≠ 0）；锁后价＝原企业价 − 价格调整金额（正减负加），不得小于 0，低于成本价需二次确认负毛利。</p>' +
+      '<p style="margin-top:6px"><b>油站范围与可见性</b>：规则可选油站为网点管理全部油站（价格在「网点商品管理」维护）；未随客户商品管理推送的油站，只要被「网货主体+货主企业」的生效规则配置，司机端同样展示并可加注；锁站不生效（无生效规则 / 停用 / 删除）时回落客户商品管理按网货主体的推送数据。</p>' +
+      '<p style="margin-top:6px"><b>合同校验</b>：添加油站时校验「油站×网货主体 有合同，或 油站×万油通主体 有签约合同」，无合同的油站拦截、不可添加；订单生成时后端同样校验。</p>' +
+      '<p style="margin-top:6px"><b>价格联动</b>：价格调整金额同步驱动上游结算价与下游企业价，锁价生效期间生成的订单，上下游单价、金额、总金额同步变动且保持一致（测试重点，见 PRD）。</p>' +
+      '<p style="margin-top:6px"><b>列表展示</b>：适用网货主体 / 适用货主企业 / 适用油站三列只保留数字；货主企业未选择（＝全部）时显示「全部」，完整名单在详情抽屉查看。</p>' +
+      '<p style="margin-top:6px"><b>货主企业</b>：主数据由「客户中心 → 网货货主」页面维护（页面导入），配置规则时从主数据搜索选择，按名称或 ID 模糊匹配。</p>' +
+      '<p style="margin-top:6px"><b>司机端判定</b>：先判断全部运单是否同属一个「网货主体+货主企业」组合——存在不同组合的运单即直接展示客户商品管理推送数据；同一组合再判断该组合是否有生效规则，有则展示规则明细内的油站与油价（锁站沿用原企业价、锁站锁价按调整金额取价；明细内油站不受推送范围限制），没有则展示客户商品管理按网货主体的推送数据。停用/删除后回落推送结果；已产生订单不追溯。</p>') +
+    nb('校验口径', '<p>保存拦截：规则名称必填且 ≤50 字、网货主体 ≥1、明细 ≥1 行、价格调整金额逐行必填且最多两位小数（正数=减价、负数=涨价，填 0 表示可见但不调价）、至少一行调整金额 ≠ 0、锁后价 ≥0、「主体+货主」组合冲突；锁后价低于成本价走二次确认后放行（涨价行不会触发）；启用拦截：组合冲突。</p>') +
+    nb('导出说明（详情抽屉）',
+      '<p>详情抽屉底部「导出」按钮导出本规则全量名单，不受抽屉内搜索与翻页影响，不限规则状态；导出为 1 个 Excel 文件、3 个 sheet，文件名「规则编号_规则名称.xlsx」（如 AS2026100001_万联上海 · 沈阳天津锁站锁价.xlsx）。</p>' +
+      '<p style="margin-top:8px"><b>Sheet1 适用网货主体</b>（一行 = 一个主体）：</p>' +
+      '<div class="tablewrap"><table class="lock-pool" style="min-width:0"><thead><tr><th>网货主体名称</th><th>网货主体ID</th></tr></thead><tbody>' +
+      '<tr><td>万联易达（沈阳）供应链管理有限公司</td><td class="mono">WL0001</td></tr>' +
+      '<tr><td>万联易达（天津）供应链管理有限公司</td><td class="mono">WL0002</td></tr>' +
+      '</tbody></table></div>' +
+      '<p style="margin-top:8px"><b>Sheet2 适用货主企业</b>（一行 = 一个货主；清单为空即「全部货主企业」时，本 sheet 仅一行说明：未指定货主企业，适用于所选网货主体下全部货主企业）：</p>' +
+      '<div class="tablewrap"><table class="lock-pool" style="min-width:0"><thead><tr><th>货主企业名称</th><th>货主企业ID</th></tr></thead><tbody>' +
+      '<tr><td>沈阳××贸易有限公司</td><td class="mono">SH0200001</td></tr>' +
+      '<tr><td>天津××物流有限公司</td><td class="mono">SH0200002</td></tr>' +
+      '</tbody></table></div>' +
+      '<p style="margin-top:8px"><b>Sheet3 油站油品明细</b>（一行 = 一个「油站+油品」；锁站模式价格调整金额列为「—」、锁后价＝原企业价）：</p>' +
+      '<div class="tablewrap"><table class="lock-pool" style="min-width:0"><thead><tr><th>油站编码</th><th>油站名称</th><th>油站公司</th><th>油品</th><th class="num">原企业价(元)</th><th class="num">成本价(元)</th><th class="num">价格调整金额(元)</th><th class="num">锁后价(元)</th></tr></thead><tbody>' +
+      '<tr><td class="mono">ST0001</td><td>××加油站</td><td>××石油</td><td>0#柴油</td><td class="num">6.85</td><td class="num">6.20</td><td class="num">0.50</td><td class="num">6.35</td></tr>' +
+      '<tr><td class="mono">ST0007</td><td>××油气站</td><td>××能源</td><td>0#柴油</td><td class="num">7.10</td><td class="num">6.40</td><td class="num">-0.30</td><td class="num">7.40</td></tr>' +
+      '</tbody></table></div>') +
     nb('关键枚举', '<p>规则状态：生效、停用；模式：锁站、锁站锁价；能源类型：取油站目录实际值（演示数据：柴油、天然气）；分页：20/50/100 条每页。</p>')
   )}`;
 };
@@ -8105,8 +8132,7 @@ function openLockEditor(id){
        stations: src.stations.map(l=>({...l}))}
     : {name:'', mode:LOCK_MODE.LOCK, remark:'', entities:[], owners:[], stations:[]});
   lockEntityOpen = false;
-  /* 已保存的货主企业直接进清单（清单内无生效状态，均进入适用范围） */
-  lockOwnerLines = lockState.owners.map(o=>({id:o, name:ownerName(o)}));
+  lockOwnerOpen = false;
   /* 关闭保护的判定基准：打开抽屉时的配置快照 */
   lockState.snapshot = lockSnapshot();
   renderLockDrawer();
@@ -8125,7 +8151,7 @@ function lockSnapshot(){
 function lockIsDirty(){ return !!lockState && lockSnapshot() !== lockState.snapshot; }
 /* 抽屉内所有关闭入口统一走这里：有未保存改动先二次确认 */
 function closeLockEditor(force){
-  const go = () => { lockState = null; lockEntityOpen = false; lockOwnerLines = []; resetDrawerFoot(); showDrawer(false); };
+  const go = () => { lockState = null; lockEntityOpen = false; lockOwnerOpen = false; resetDrawerFoot(); showDrawer(false); };
   if(!force && lockIsDirty()){
     window._lockPendingClose = go;
     openConfirm('lockDiscard');
@@ -8171,7 +8197,7 @@ function lockDrawerBody(){
           placeholder="例如：万联上海 · 沈阳天津锁站锁价" oninput="lockSetName(this.value)"></div></div>
       <div class="fi span2"><label>模式 <span class="req">*</span></label>
         <div class="row"><div class="seg ck-modes">
-          ${Object.values(LOCK_MODE).map(m=>`<label><input type="radio" name="lock-mode" value="${m}" ${s.mode===m?'checked':''} onchange="lockSetMode('${m}')">${m}${m===LOCK_MODE.PRICE?'（逐行减价）':'（价格沿用企业价）'}</label>`).join('')}
+          ${Object.values(LOCK_MODE).map(m=>`<label><input type="radio" name="lock-mode" value="${m}" ${s.mode===m?'checked':''} onchange="lockSetMode('${m}')">${m}${m===LOCK_MODE.PRICE?'（逐行调整价格）':'（价格沿用原企业价）'}</label>`).join('')}
         </div></div></div>
       <div class="fi span2"><label>备注</label>
         <div class="row"><textarea class="inp" id="lockRemark" rows="2" maxlength="200"
@@ -8199,38 +8225,25 @@ function lockDrawerBody(){
         </div></div>
 
       <div class="fi span2"><label>适用货主企业</label>
-        <div class="row ck-owner-box">
-          <div class="ck-owner-tabs">
-            <button type="button" class="${s.ownerTab==='paste'?'on':''}" onclick="lockOwnerTab('paste')">粘贴清单</button>
-            <button type="button" class="${s.ownerTab==='excel'?'on':''}" onclick="lockOwnerTab('excel')">Excel 上传</button>
+        <div class="row">
+          <div class="ck-picker" id="lockOwnerPicker">
+            <button type="button" class="ck-picker-ctl" onclick="lockToggleOwnerPicker(event)">
+              ${s.owners.length? s.owners.map(o=>`<span class="ck-chip">${ownerName(o)}<i onclick="lockRemoveOwner(event,'${o}')" title="移除">✕</i></span>`).join('')
+                : '<span class="ck-ph">搜索并选择货主企业，可多选；不选＝全部货主企业</span>'}
+              <span class="ck-caret">${lockOwnerOpen?'▴':'▾'}</span>
+            </button>
+            ${lockOwnerOpen?`<div class="ck-picker-pop">
+              <input class="inp" id="lockOwnerSearch" placeholder="输入货主企业名称或ID搜索" oninput="lockOwnerFilter()">
+              <div class="ck-picker-list" id="lockOwnerList">${lockOwnerOptions()}</div>
+            </div>`:''}
           </div>
-          ${s.ownerTab==='paste' ? `
-            <textarea class="inp ck-paste" id="lockOwnerInput" placeholder="每行一个货主企业，格式：货主企业名称,货主企业ID&#10;例如：&#10;万联易达上海分公司,SH0200001&#10;万联易达天津分公司,SH0200002">${s.ownerInput||''}</textarea>
-            <div class="ck-owner-actions">
-              <button class="btn sm" type="button" onclick="lockParsePaste()">解析清单</button>
-              <span class="ck-hint">支持中英文逗号；一行一个「货主企业名称,货主企业ID」，名称与 ID 均填才入清单</span>
-            </div>`
-          : `
-            <div class="ck-upload">
-              <input type="file" id="lockOwnerFile" accept=".xlsx,.xls,.csv,.txt" onchange="lockParseExcel(this)">
-              <div class="ck-upload-hint">表头固定两列：<b>货主企业名称</b>、<b>货主企业ID</b>，不依赖列顺序</div>
-            </div>`}
-          ${lockOwnerLines.length ? `<div class="ck-list-tools">
-            <input class="inp" value="${lockAttr(s.ownerKw)}" placeholder="搜索货主企业名称或ID"
-              oninput="lockOwnerSetKw(this.value)">
-            <span class="ck-tools-right">
-              <button class="btn sm" type="button" onclick="lockOwnerClearAll()">清空</button>
-            </span>
-          </div>`:''}
-          <div class="ck-owner-box-inner" id="lockOwnerListBox">${lockOwnerListHTML()}</div>
-          <div class="ck-owner-sum" id="lockOwnerSum">${lockOwnerSumHTML()}</div>
         </div></div>
     </div>
   </div></div>
 
   <div class="card"><div class="card-b">
     <div class="sec-title">油站与油品明细
-      <span class="ck-tip">${lockState.mode===LOCK_MODE.PRICE?'逐行填写减价金额，锁后价 = 原企业价 − 减价金额':'锁站模式不减价，价格沿用现网企业价'}</span>
+      <span class="ck-tip">${lockState.mode===LOCK_MODE.PRICE?'逐行填写价格调整金额（正数=减价、负数=涨价），锁后价 = 原企业价 − 调整金额':'锁站模式不调价，价格沿用原企业价'}</span>
     </div>
     <div class="ck-toolbar">
       <button class="btn sm primary" type="button" onclick="lockOpenStationPicker()">选择油站</button>
@@ -8262,128 +8275,30 @@ function lockRemoveEntity(e, id){
   lockState.entities = lockState.entities.filter(x=>x!==id);
   lockRefresh();
 }
-function lockOwnerTab(t){ lockState.ownerTab = t; lockRefresh(); }
-/* 兼容旧入口：按锁主清单下标移除 */
-function lockRemoveOwnerLine(i){ lockOwnerRemove(i); }
-/* ---------- 货主企业清单：搜索 / 分页 ----------
-   清单内没有「生效/未生效」状态：导入即生效，每一行都进入适用范围，不需要的删除 */
-function lockOwnerFiltered(){
-  const s = lockState;
-  const kw = (s.ownerKw||'').trim().toLowerCase();
-  return lockOwnerLines.filter(o=>{
-    if(kw && !((o.name||'').toLowerCase().includes(kw) || (o.id||'').toLowerCase().includes(kw))) return false;
-    return true;
-  });
-}
-function lockOwnerPageGo(p){ lockState.ownerPage = p; lockRefreshOwnerList(); }
-function lockOwnerPageSize(v){ lockState.ownerPageSize = Number(v)||LOCK_PAGE_SIZE; lockState.ownerPage = 1; lockRefreshOwnerList(); }
-function lockOwnerSetKw(v){ lockState.ownerKw = v; lockState.ownerPage = 1; lockRefreshOwnerList(); }
-/* 只重绘清单区，避免整抽屉重绘导致输入框失焦 */
-function lockRefreshOwnerList(){
-  const box = document.getElementById('lockOwnerListBox');
-  if(box) box.innerHTML = lockOwnerListHTML();
-  const sum = document.getElementById('lockOwnerSum');
-  if(sum) sum.innerHTML = lockOwnerSumHTML();
-}
-function lockOwnerRemove(idx){ lockOwnerLines.splice(idx,1); lockSyncOwners(); lockRefreshOwnerList(); }
-/* 清空清单：回到「该网货主体下的全部货主企业」语义 */
-function lockOwnerClearAll(){
-  lockOwnerLines = [];
-  lockSyncOwners();
-  lockRefresh();
-  showToast('已清空货主企业清单：未导入任何货主时，规则适用于该网货主体下的全部货主企业');
-}
-/* 清单里每一行都进入适用范围；清单为空等于「全部货主企业」 */
-function lockSyncOwners(){
-  lockState.owners = lockOwnerLines.filter(o=>o.id).map(o=>o.id);
-}
-function lockOwnerSumHTML(){
-  return `已导入 <b>${lockOwnerLines.length}</b> 条货主企业`
-    + `<span class="ck-hint">清单为空表示适用该网货主体下的<b>全部货主企业</b></span>`;
-}
-function lockOwnerListHTML(){
-  const s = lockState;
-  if(!lockOwnerLines.length) return '<div class="ck-empty">尚未录入货主企业：未导入任何货主时，规则适用于该网货主体下的全部货主企业</div>';
-  const rows = lockOwnerFiltered();
-  if(!rows.length) return '<div class="ck-empty">没有符合当前筛选的货主企业</div>';
-  const page = lockSlice(rows, s.ownerPage, s.ownerPageSize);
-  return `<div class="ck-owner-list">${page.map(o=>{
-    const realIdx = lockOwnerLines.indexOf(o);
-    return `<div class="ck-owner-row">
-      <span class="ck-owner-name">${o.name}</span>
-      <span class="ck-owner-id mono">${o.id}</span>
-      <button type="button" class="ck-del" onclick="lockOwnerRemove(${realIdx})" title="删除">✕</button>
-    </div>`;
-  }).join('')}</div>
-  ${lockPagerHTML(rows.length, s.ownerPage, s.ownerPageSize, 'lockOwnerPageGo', 'lockOwnerPageSize')}`;
-}
 
-function lockParsePaste(){
-  const raw = document.getElementById('lockOwnerInput')?.value || '';
-  lockState.ownerInput = raw;
-  const {rows, skipped} = lockParseOwnerText(raw);
-  lockApplyOwnerRows(rows, skipped);
+/* ---------- 适用货主企业：搜索多选（主数据来自「客户中心 → 网货货主」，平铺全部搜索） ---------- */
+let lockOwnerOpen = false;
+function lockOwnerOptions(){
+  const sel = lockState.owners;
+  const kw = (document.getElementById('lockOwnerSearch')?.value||'').trim().toLowerCase();
+  return FREIGHT_OWNERS.filter(o=>!kw || o.name.toLowerCase().includes(kw) || o.id.toLowerCase().includes(kw))
+    .map(o=>`<label class="ck-picker-item">
+      <input type="checkbox" ${sel.includes(o.id)?'checked':''} onchange="lockToggleOwnerItem('${o.id}',this.checked)">
+      <span>${o.name}</span><span class="mono ck-picker-id">${o.id}</span></label>`).join('')
+    || '<div class="ck-empty">无匹配的货主企业</div>';
 }
-function lockParseOwnerText(text){
-  const rows = [], skipped = [];
-  text.split('\n').forEach(raw=>{
-    const line = raw.replace(/\r/g,'').trim();
-    if(!line) return;
-    const parts = line.split(/[,，\t]/).map(x=>x.trim());
-    const name = parts[0]||'', id = parts[1]||'';
-    /* 货主企业以导入的名称+ID 为准：名称或 ID 缺失的行不进入清单，计入跳过 */
-    if(!name || !id){ skipped.push(line); return; }
-    rows.push({name, id});
-  });
-  return {rows, skipped};
-}
-/* 同一货主企业只保留一条：优先按企业ID判定，其次按名称；以首次导入为准，重复计入去重 */
-function lockApplyOwnerRows(rows, skipped){
-  let added = 0, dup = 0;
-  rows.forEach(r=>{
-    const exist = lockOwnerLines.find(o=>(r.id && o.id===r.id) || (r.name && o.name===r.name));
-    if(exist){ dup++; return; }
-    /* 导入即生效：直接进清单，需要排除时删除该行 */
-    lockOwnerLines.push({name:r.name, id:r.id});
-    added++;
-  });
-  lockSyncOwners();
-  showToast(`解析完成：新增 ${added} 条${dup?`，去重 ${dup} 条`:''}${skipped&&skipped.length?`，跳过 ${skipped.length} 行`:''}`);
+function lockToggleOwnerPicker(e){ e.stopPropagation(); lockOwnerOpen = !lockOwnerOpen; lockRefresh(); }
+function lockOwnerFilter(){ const l=document.getElementById('lockOwnerList'); if(l) l.innerHTML = lockOwnerOptions(); }
+function lockToggleOwnerItem(id, on){
+  const s = lockState;
+  if(on){ if(!s.owners.includes(id)) s.owners.push(id); }
+  else s.owners = s.owners.filter(x=>x!==id);
   lockRefresh();
 }
-function lockParseExcel(input){
-  const file = input.files && input.files[0]; if(!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    const text = String(reader.result||'');
-    const lines = text.split('\n').map(l=>l.replace(/\r/g,'')).filter(l=>l.trim());
-    if(!lines.length){ showToast('表格数据为空'); return; }
-    const head = lines[0].split(/[,，\t]/).map(x=>x.trim().toLowerCase());
-    /* 先认 ID 列再认名称列：否则「货主企业名称」会被当成名称列，
-       而「货主企业ID」同时含「货主」，两列会被识别到同一列 */
-    const ii = head.findIndex(h=>h.includes('id')||h.includes('编号')||h.includes('编码'));
-    const ni = head.findIndex((h,i)=>i!==ii && (h.includes('名称')||h.includes('货主')));
-    /* PRD：缺少任一必需表头即拦截上传，且不改变现有清单 */
-    if(ni<0 || ii<0){
-      const miss = [ni<0?'货主企业名称':null, ii<0?'货主企业ID':null].filter(Boolean).join(' / ');
-      input.value = '';
-      showToast(`缺少必需表头：${miss}，上传已取消`);
-      return;
-    }
-    const rows = [], skipped = [];
-    lines.slice(1).forEach(l=>{
-      const c = l.split(/[,，\t]/).map(x=>x.trim());
-      const name = ni>=0 ? (c[ni]||'') : '', id = ii>=0 ? (c[ii]||'') : '';
-      /* 与粘贴一致：名称或 ID 缺失的行跳过，不进入清单 */
-      if(!name || !id){ skipped.push(l); return; }
-      rows.push({name, id});
-    });
-    if(!rows.length){ showToast('表格数据为空'); return; }
-    lockApplyOwnerRows(rows, skipped);
-    showToast(`表格解析成功：${rows.length} 条数据${skipped.length?`，跳过 ${skipped.length} 行`:''}`);
-  };
-  reader.onerror = () => showToast('文件读取失败');
-  reader.readAsText(file, 'utf-8');
+function lockRemoveOwner(e, id){
+  e.stopPropagation();
+  lockState.owners = lockState.owners.filter(x=>x!==id);
+  lockRefresh();
 }
 /* 名称 / 备注的输入同步：只写 state，不重绘抽屉，避免输入框失焦 */
 function lockSetName(v){ if(lockState) lockState.name = v; }
@@ -8403,12 +8318,19 @@ function lockOpenStationPicker(){
 }
 function lockClearLines(){ lockState.stations = []; lockRefresh(); }
 function lockRemoveLine(i){ lockState.stations.splice(i,1); lockRefresh(); }
-/* 加入明细：只接受该油站真实存在的油品，避免出现「油站 + 油品」脏组合 */
+/* 加入明细：只接受该油站真实存在的油品，避免出现「油站 + 油品」脏组合；
+   合同校验：油站与网货主体有合同、或油站与万油通主体有签约合同才允许进入规则明细
+   （订单生成时后端再做同样校验，此处为配置时前置拦截） */
 function lockAddGoods(stationCode, goodsId){
   const s = lockState;
   if(!lockGoods(stationCode, goodsId)) return false;
+  const st = lockStation(stationCode);
+  if(st && st.noContract){
+    showToast('添加失败：该油站与网货主体及万油通主体均无签约合同，无法添加');
+    return false;
+  }
   if(s.stations.some(l=>l.station===stationCode && l.goods===goodsId)) return false;
-  /* 新加入的明细行减价金额留空：锁站锁价模式下要求逐行显式填写（填 0 表示可见但不减价） */
+  /* 新加入的明细行价格调整金额留空：锁站锁价模式下要求逐行显式填写（填 0 表示可见但不调价） */
   s.stations.push({station:stationCode, goods:goodsId, reduce:null});
   lockRefresh();
   return true;
@@ -8417,7 +8339,7 @@ function lockAddGoods(stationCode, goodsId){
 function lockBadLines(){
   return lockState.stations.filter(l=>!lockStation(l.station) || !lockGoods(l.station, l.goods));
 }
-/* 锁站锁价模式下「未填写减价金额」的明细行：逐行必填，填 0 也算已填，留空才算未填 */
+/* 锁站锁价模式下「未填写价格调整金额」的明细行：逐行必填，填 0 也算已填，留空才算未填 */
 function lockIsReduceBlank(l){
   const g = lockGoods(l.station, l.goods);
   if(!g || !(g.entPrice>0)) return false;
@@ -8469,9 +8391,9 @@ function lockRefreshLineTable(){
 function lockLinesSumHTML(){
   const s = lockState, rows = lockLineFiltered();
   const stCount = new Set(s.stations.map(l=>l.station)).size;
-  const cutCount = s.stations.filter(l=>Number(l.reduce)>0).length;
+  const adjCount = s.stations.filter(l=>Number(l.reduce)!==0).length;
   return `共 <b>${s.stations.length}</b> 行 · 覆盖 <b>${stCount}</b> 个油站`
-    + (s.mode===LOCK_MODE.PRICE?` · 有减价 <b>${cutCount}</b> 行`:'')
+    + (s.mode===LOCK_MODE.PRICE?` · 有调整 <b>${adjCount}</b> 行`:'')
     + (rows.length!==s.stations.length?` · 当前筛选 <b>${rows.length}</b> 行`:'');
 }
 
@@ -8485,7 +8407,7 @@ function lockLinesTable(){
       <input class="inp" id="lockLineKw" value="${lockAttr(s.lineKw)}" placeholder="搜索油站名称、编码、油站公司或油品"
         oninput="lockLineSetKw(this.value)">
       <div class="ck-seg ck-seg-sm" id="lockLineEnergySeg">${lockLineEnergySegHTML()}</div>
-      ${s.mode===LOCK_MODE.PRICE?`<button class="btn sm${s.lineOnlySel?' primary':''}" type="button" id="lockLineOnlySelBtn" onclick="lockLineToggleOnlySel()">只看有减价的行</button>`:''}
+      ${s.mode===LOCK_MODE.PRICE?`<button class="btn sm${s.lineOnlySel?' primary':''}" type="button" id="lockLineOnlySelBtn" onclick="lockLineToggleOnlySel()">只看有调整的行</button>`:''}
     </div>
     <div id="lockLinesTableBox">${lockLinesTableHTML()}</div>`;
 }
@@ -8502,7 +8424,7 @@ function lockLinesTableHTML(){
     ? `<div class="ck-warn">有 <b>${bad.length}</b> 行的油站或油品已不在系统目录中（${bad.slice(0,3).map(l=>l.station+'/'+l.goods).join('、')}${bad.length>3?' 等':''}），请删除后重新选择，否则无法保存。</div>`
     : '';
   const all = lockLineFiltered();
-  const rows = s.lineOnlySel ? all.filter(({l})=>Number(l.reduce)>0 || s.mode!==LOCK_MODE.PRICE) : all;
+  const rows = s.lineOnlySel ? all.filter(({l})=>Number(l.reduce)!==0 || s.mode!==LOCK_MODE.PRICE) : all;
   if(!rows.length) return badTip + '<div class="ck-empty">没有符合当前筛选的油站油品</div>';
   const pageRows = lockSlice(rows, s.linePage, s.linePageSize);
   const body = pageRows.map(({l, idx})=>{
@@ -8524,7 +8446,7 @@ function lockLinesTableHTML(){
       <td class="num">${s.mode!==LOCK_MODE.PRICE?'<span class="dash">—</span>'
         : noBase?'<span class="dash">—</span>'
         : `<input class="inp mono${blank?' lk-req':''}" type="text" inputmode="decimal" value="${l.reduce==null?'':l.reduce}"
-             title="${blank?'请填写减价金额，填 0 表示可见但不减价':''}"
+             title="${blank?'请填写价格调整金额：正数=减价、负数=涨价，填 0 表示可见但不调价':''}"
              placeholder="必填"
              oninput="lockSetReduce(${i},this.value)" style="width:104px;text-align:right">`}</td>
       <td class="num" id="lockFinal-${i}">
@@ -8538,15 +8460,19 @@ function lockLinesTableHTML(){
     <thead><tr>
       <th>油站编码</th><th>油站 / 油站公司</th><th>油品</th>
       <th class="num">原企业价</th><th class="num">成本价</th>
-      <th class="num">减价金额</th><th class="num">锁后价</th><th>操作</th>
+      <th class="num">价格调整金额</th><th class="num">锁后价</th><th>操作</th>
     </tr></thead><tbody>${body}</tbody></table></div>
     ${lockPagerHTML(rows.length, s.linePage, s.linePageSize, 'lockLinePageGo', 'lockLinePageSize')}`;
 }
-/* 减价金额输入清洗：全角句号/逗号视为小数点，过滤其余非法字符；
+/* 价格调整金额输入清洗：全角句号/逗号视为小数点，过滤其余非法字符；
+   负号仅允许出现在首位（正数=减价、负数=涨价）；
    不用 type=number——中文输入法组合输入、滚轮与非法中间态会让浏览器悄悄改写或清空 value（输入 0.3 变 0 的根因） */
 function lockParseReduce(v){
-  const clean = String(v).replace(/[。，．]/g,'.').replace(/[^\d.]/g,'').replace(/(\..*)\./g,'$1');
-  if(!clean) return {clean:'', num:null};
+  const raw = String(v).replace(/－/g,'-');   /* 全角负号归一化 */
+  const neg = raw.trim().startsWith('-');
+  let clean = raw.replace(/[^\d.]/g,'').replace(/(\..*)\./g,'$1');
+  if(neg && (clean || raw.trim()==='-')) clean = '-'+clean;
+  if(!clean || clean==='-') return {clean, num:null};
   const n = Number(clean);
   return {clean, num: isNaN(n)?null:n};
 }
@@ -8566,12 +8492,12 @@ function lockSetReduce(i, v){
     const over = final < g.cost;
     cell.innerHTML = `<span class="num ${over?'over':''}" title="${over?'低于成本价，保存前需确认负毛利':''}">¥${money(final)}</span>`;
   }
-  /* 该行填上减价后去掉「必填」标红，不重绘整表（避免输入框失焦） */
+  /* 该行填上调整金额后去掉「必填」标红，不重绘整表（避免输入框失焦） */
   if(cell){
     const input = cell.parentElement?.querySelector('input.lk-req, input[placeholder="必填"]');
     if(input) input.classList.toggle('lk-req', lockIsReduceBlank(l));
   }
-  /* 汇总行的「有减价 N 行」随输入联动 */
+  /* 汇总行的「有调整 N 行」随输入联动 */
   ['lockLinesSum','lockLinesSumTop'].forEach(id=>{
     const el = document.getElementById(id); if(el) el.innerHTML = lockLinesSumHTML();
   });
@@ -8580,8 +8506,6 @@ function lockSetReduce(i, v){
 function lockRefresh(){
   const main = document.getElementById('drawerMain'); if(!main || !lockState) return;
   const top = main.scrollTop;
-  const paste = document.getElementById('lockOwnerInput');
-  if(paste) lockState.ownerInput = paste.value;
   main.innerHTML = lockDrawerBody();
   main.scrollTop = top;
 }
@@ -8701,18 +8625,17 @@ function lockValidate(){
   const validLines = s.stations.filter(l=>{ const g=lockGoods(l.station,l.goods); return g && g.entPrice>0; });
   if(s.stations.length && !validLines.length) errs.push('所选油站油品均无企业价，无法配置');
   if(s.mode===LOCK_MODE.PRICE){
-    /* PRD：锁站锁价模式下减价金额逐行必填（填 0 表示可见但不减价，但必须显式填写） */
+    /* PRD：锁站锁价模式下价格调整金额逐行必填（填 0 表示可见但不调价，但必须显式填写）；
+       正数=减价、负数=涨价，涨价不设上限 */
     const blank = lockBlankReduceLines();
-    if(blank.length) errs.push(`有 ${blank.length} 行未填写减价金额`);
-    const neg = s.stations.filter(l=>Number(l.reduce)<0);
-    if(neg.length) errs.push('减价金额不能为负数');
-    /* PRD：减价金额最多两位小数 */
+    if(blank.length) errs.push(`有 ${blank.length} 行未填写价格调整金额`);
+    /* PRD：价格调整金额最多两位小数 */
     const dec = s.stations.filter(l=>l.reduce!=null && l.reduce!=='' && /\.\d{3,}$/.test(String(l.reduce)));
-    if(dec.length) errs.push(`有 ${dec.length} 行的减价金额超过两位小数`);
-    const cut = s.stations.filter(l=>Number(l.reduce)>0);
-    if(s.stations.length && !cut.length) errs.push('锁站锁价模式下请至少为一行填写大于 0 的减价金额，否则请改用「锁站」模式');
+    if(dec.length) errs.push(`有 ${dec.length} 行的价格调整金额超过两位小数`);
+    const adj = s.stations.filter(l=>l.reduce!=null && l.reduce!=='' && Number(l.reduce)!==0);
+    if(s.stations.length && !adj.length) errs.push('锁站锁价模式下请至少为一行填写非 0 的价格调整金额（正数=减价、负数=涨价），否则请改用「锁站」模式');
     const zero = s.stations.filter(l=>{ const g=lockGoods(l.station,l.goods); return g && g.entPrice - (Number(l.reduce)||0) < 0; });
-    if(zero.length) errs.push(`有 ${zero.length} 行锁后价小于 0，请减小减价金额`);
+    if(zero.length) errs.push(`有 ${zero.length} 行锁后价小于 0，请减小价格调整金额`);
   }
   /* 规则唯一性：同「网货主体 + 货主企业」不允许两条生效规则 */
   const conflicts = lockConflicts({entities:s.entities, owners:s.owners, status:LOCK_STATUS.ON}, s.editId);
@@ -8787,7 +8710,8 @@ function openLockRuleView(id){
   document.getElementById('drawerTitle').textContent = '锁站规则详情';
   document.getElementById('drawerBody').classList.add('nonav');
   document.getElementById('drawerNav').innerHTML = '';
-  setDrawerFoot(`<button class="btn" type="button" onclick="closeLockEditor()">关闭</button>
+  setDrawerFoot(`<button class="btn" type="button" onclick="lockViewExport('${r.id}')">导出</button>
+    <button class="btn" type="button" onclick="closeLockEditor()">关闭</button>
     <button class="btn" type="button" onclick="closeLockEditor();openLockEditor('${r.id}')">修改</button>`);
   document.getElementById('drawerMain').innerHTML = `
     <div class="sumhead">
@@ -8798,7 +8722,7 @@ function openLockRuleView(id){
         <div class="oilv"><div class="l">适用网货主体</div><div class="v num">${r.entities.length}</div></div>
         <div><div class="l">适用货主企业</div><div class="v num">${r.owners.length||'全部'}</div></div>
         <div><div class="l">可见油站</div><div class="v num">${new Set(r.stations.map(l=>l.station)).size}</div></div>
-        <div><div class="l">有减价行</div><div class="v num">${r.stations.filter(l=>Number(l.reduce)>0).length}</div></div>
+        <div><div class="l">有调整行</div><div class="v num">${r.stations.filter(l=>Number(l.reduce)!==0).length}</div></div>
       </div>
     </div>
     <div class="card"><div class="card-b"><div class="sec-title">基本信息</div>
@@ -8825,24 +8749,38 @@ function openLockRuleView(id){
     <div class="card"><div class="card-b"><div class="sec-title">油站与油品明细</div>
       <div class="tablewrap"><table class="lock-pool">
         <thead><tr><th>油站编码</th><th>油站 / 油站公司</th><th>油品</th>
-          <th class="num">原企业价</th><th class="num">成本价</th><th class="num">减价金额</th><th class="num">锁后价</th></tr></thead>
+          <th class="num">原企业价</th><th class="num">成本价</th><th class="num">价格调整金额</th><th class="num">锁后价</th></tr></thead>
         <tbody>${r.stations.map(l=>{
           const st=lockStation(l.station), g=lockGoods(l.station,l.goods); if(!st||!g) return '';
           const cut = r.mode===LOCK_MODE.PRICE ? (Number(l.reduce)||0) : 0;
           const final = Math.max(g.entPrice-cut,0);
+          const adjCell = r.mode!==LOCK_MODE.PRICE ? '<span class="dash">—</span>'
+            : cut>0 ? `<span style="color:var(--fee);font-weight:600" title="减价 ${money(cut)} 元">-${money(cut)}</span>`
+            : cut<0 ? `<span style="color:var(--ok);font-weight:600" title="涨价 ${money(-cut)} 元">+${money(-cut)}</span>`
+            : '<span class="dash">0.00</span>';
           return `<tr>
             <td class="mono">${st.code}</td>
             <td><div class="t1">${st.name}</div><div class="t2">${st.co}</div></td>
             <td>${g.goodsName}</td>
             <td class="num">¥${money(g.entPrice)}</td>
             <td class="num">¥${money(g.cost)}</td>
-            <td class="num">${r.mode!==LOCK_MODE.PRICE?'<span class="dash">—</span>':`<span style="color:var(--fee);font-weight:600">-${money(cut)}</span>`}</td>
+            <td class="num">${adjCell}</td>
             <td class="num"><span class="num ${final<g.cost?'over':''}">¥${money(final)}</span></td></tr>`;
         }).join('')}</tbody>
       </table></div>
     </div></div>`;
   showDrawer(true);
   document.getElementById('drawerMain').scrollTop = 0;
+}
+
+/* ---------- 详情抽屉：导出适用范围数据 ----------
+   导出本规则全量名单（不受抽屉内搜索与翻页影响），1 个 Excel 文件 3 个 sheet：
+   适用网货主体 / 适用货主企业 / 油站油品明细，文件名「规则编号_规则名称.xlsx」。
+   示例表见页面底部「规则说明与设计口径 → 导出说明」，与 PRD 同源。
+   原型为静态演示：不真实生成文件，toast 提示导出结果。 */
+function lockViewExport(id){
+  const r = LOCK_RULE_BY_ID(id); if(!r) return;
+  showToast(`已导出「${r.id}_${r.name}.xlsx」（3 个 sheet：适用网货主体 ${r.entities.length} 行 · 适用货主企业 ${r.owners.length||'全部'} · 油站油品明细 ${r.stations.length} 行）`);
 }
 
 /* ---------- 详情抽屉：货主企业清单 ----------
@@ -8913,7 +8851,7 @@ CONFIRMS.lockRuleDelete = key => {
   return {title:'删除锁站规则', tone:'bad',
     lead:`将删除规则 <b>${r.name}</b>（${r.id}）。`,
     kv:[['规则状态',pill(r.status)],['网货主体',`${r.entities.length} 个`],['货主企业',r.owners.length?`${r.owners.length} 个`:'全部货主企业']],
-    list:['删除后相关货主回落现网「企业网点商品价格」的推送结果。','已下发的历史配置不追溯，已产生订单的价格不变。'],
+    list:['删除后相关货主回落客户商品管理按网货主体的推送结果。','已下发的历史配置不追溯，已产生订单的价格不变。'],
     ok:'确认删除', okClass:'danger'};
 };
 CONFIRMS.lockRuleToggle = key => {
@@ -8923,10 +8861,205 @@ CONFIRMS.lockRuleToggle = key => {
     lead:`将${off?'停用':'启用'}规则 <b>${r.name}</b>（${r.id}）。`,
     kv:[['当前状态',pill(r.status)],['网货主体',`${r.entities.length} 个`],['货主企业',r.owners.length?`${r.owners.length} 个`:'全部货主企业']],
     list:off
-      ? ['停用后相关货主不再受本规则限制，回落现网企业价。','停用后该「网货主体+货主企业」组合可被新规则占用。','已产生订单的价格不追溯。']
-      : ['启用前会校验是否与该组合下已有的生效规则冲突，冲突时无法启用。','启用后立即按本规则收敛可见油站与价格。'],
+      ? ['停用后相关货主不再受本规则限制，回落客户商品管理按网货主体的推送结果。','停用后该「网货主体+货主企业」组合可被新规则占用。','已产生订单的价格不追溯。']
+      : ['启用前会校验是否与该组合下已有的生效规则冲突，冲突时无法启用。','启用后立即按本规则确定可见油站与价格。'],
     ok:off?'确认停用':'确认启用', okClass:off?'danger':'primary'};
 };
+
+
+/* ================= 客户中心 · 网货货主 =================
+   现网 OMS：客户中心 → 网货货主（路由 oilWangHuoCustomerInfo）
+   货主企业主数据维护页：筛选（货主ID / 货主名称）+ 列表 + 导入 / 导出 + 业务负责人。
+   本次新增「导入 / 导出」两个页头操作；锁站锁价配置抽屉的
+   「适用货主企业」搜索选择器即取自本页主数据（FREIGHT_OWNERS）。 */
+let whQuery = {};
+let whState = {page:1, pageSize:10};
+let whOrdersOwnerId = null;   /* 「查看主体订单」当前货主 */
+let whMgrOwnerId = null;      /* 「修改业务负责人」当前货主 */
+
+const WH_COLS = regCols('oilWangHuoCustomerInfo', [
+  {k:'no',   t:'序号',          w:'56px',
+    td:r=>`<div class="t1">${r._no}</div>`},
+  {k:'id',   t:'货主ID',        w:'150px',
+    td:r=>`<div class="t1 mono">${r.id}</div>`},
+  {k:'name', t:'货主名称',      w:'230px',
+    td:r=>`<div class="t1">${r.name}</div>`},
+  {k:'orders', t:'下单次数',    w:'90px', cls:'num',
+    td:r=>`<div class="t1">${r.orders}</div>`},
+  {k:'paid', t:'累计实付',      w:'110px', cls:'num',
+    td:r=>`<div class="t1">¥${money(r.paid)}</div>`},
+  {k:'last', t:'最近下单时间',  w:'160px',
+    td:r=>`<div class="t1">${r.last}</div>`},
+  {k:'mgr',  t:'业务负责人',    w:'110px',
+    td:r=>`<span class="lk-editable" title="点击修改业务负责人" onclick="openWhOwnerMgr('${r.id}')">${r.mgr||'----'}</span>`},
+  {k:'createdAt', t:'创建时间', w:'160px',
+    td:r=>`<div class="t1">${r.createdAt}</div>`},
+  {k:'ops',  t:'操作',          w:'120px', cls:'acts',
+    td:r=>`<button onclick="openWhOrders('${r.id}')">查看主体订单</button>`}
+]);
+
+VIEWS.oilWangHuoCustomerInfo = () => {
+  const q = whQuery;
+  const list = FREIGHT_OWNERS.filter(o=>{
+    if(q.id && !o.id.toLowerCase().includes(q.id.toLowerCase())) return false;
+    if(q.name && !o.name.includes(q.name)) return false;
+    return true;
+  });
+  const pages = Math.max(1, Math.ceil(list.length/whState.pageSize));
+  if(whState.page > pages) whState.page = pages;
+  const pageRows = list.slice((whState.page-1)*whState.pageSize, whState.page*whState.pageSize)
+    .map((o,i)=>({...o, _no:(whState.page-1)*whState.pageSize + i + 1}));
+  return `
+  <div class="card">
+    <div class="filters">
+      ${filterRow([
+        {l:'货主ID',   t:'text', id:'wh-id',   p:'请输入货主ID',   v:q.id||''},
+        {l:'货主名称', t:'text', id:'wh-name', p:'请输入货主名称', v:q.name||''}
+      ],true)}
+    </div>
+    <div class="filter-actions">
+      <button class="btn" type="button" onclick="resetWhFilters()">重置</button>
+      <button class="btn primary" type="button" onclick="applyWhFilters()">⌕&nbsp; 搜索</button>
+    </div>
+  </div>
+
+  <div class="card live-list-card live-list-oilWangHuoCustomerInfo">
+    <div class="card-h">
+      <h2>网货货主</h2><span class="spacer"></span>
+      <button class="btn sm primary" type="button" onclick="openModal('whOwnerImport')">导入</button>
+      <button class="btn sm" type="button" onclick="whExport()">导出</button>
+    </div>
+    ${dataTable('oilWangHuoCustomerInfo', pageRows, 1200, '暂无符合条件的网货货主', true)}
+    ${lockPagerHTML(list.length, whState.page, whState.pageSize, 'whPageGo', 'whPageSize', [10,20,30,50,100,200,500])}
+  </div>
+  ${notes(
+    nb('页面用途', '<p>维护网货货主主数据：查询货主及其下单概况、导入新增货主、修改业务负责人；货主锁站锁价的「适用货主企业」选择器取自本页主数据。</p>') +
+    nb('本次调整', '<p>本页为<b>现网已有页面</b>（列表、筛选、导出、修改业务负责人、查看主体订单均为既有能力），本次仅<b>新增「导入」功能</b>；导入新增的货主即时进入「货主锁站锁价 · 适用货主企业」选择器可选列表。</p>') +
+    nb('关键规则',
+      '<p><b>货主ID</b>：系统生成的唯一标识，导入时作为查重键。</p>' +
+      '<p style="margin-top:6px"><b>业务负责人</b>：点击单元格修改，为空显示 ----。</p>' +
+      '<p style="margin-top:6px"><b>下单次数 / 累计实付 / 最近下单时间</b>：系统按订单自动统计，不可手工修改。</p>') +
+    nb('校验口径', '<p>导入（同步）：模板表头固定三列「货主ID / 货主名称 / 业务负责人(选填)」，货主ID 与货主名称必填，缺失计入失败；货主ID 与已有数据或本批内重复计入失败；合法行入库，失败行逐条提示原因。</p>') +
+    nb('导出口径', '<p>按当前筛选结果提交下载中心异步任务，与列表筛选条件一致。</p>') +
+    nb('关键枚举', '<p>主体订单支付状态：已支付、待支付、已退款；分页：10/20/30/50/100/200/500 条每页。</p>')
+  )}`;
+};
+
+function applyWhFilters(){
+  const val = id => (document.getElementById(id)?.value||'').trim();
+  whQuery = {id: val('wh-id'), name: val('wh-name')};
+  whState.page = 1;
+  paint();
+}
+function resetWhFilters(){ whQuery = {}; whState.page = 1; paint(); }
+function whPageGo(p){ whState.page = p; paint(); }
+function whPageSize(v){ whState.pageSize = Number(v)||10; whState.page = 1; paint(); }
+function whExport(){ showToast('已按当前筛选条件提交导出任务，请在下载中心查看'); }
+
+/* ---------- 查看主体订单 ---------- */
+function whOwnerDemoOrders(o){
+  if(!o || !o.orders) return [];
+  return [
+    {no:'OM20261011-000318', wb:'YD20261010-0904', comp:`${o.name} · 万联易达`, drv:'王师傅 138****6621', st:'沈阳浑南加油站', pay:'已支付'},
+    {no:'OM20261010-001256', wb:'YD20261009-2210', comp:`${o.name} · 万联易达`, drv:'刘师傅 186****3304', st:'天津武清京津站', pay:'已支付'},
+    {no:'OM20261009-000847', wb:'YD20261008-1137', comp:`${o.name} · 万联易达`, drv:'赵师傅 150****7789', st:'津南万顺站',     pay:'待支付'},
+    {no:'OM20261008-000512', wb:'YD20261007-0863', comp:`${o.name} · 万联易达`, drv:'孙师傅 139****2450', st:'济南历下高新站', pay:'已退款'}
+  ];
+}
+function openWhOrders(id){
+  whOrdersOwnerId = id;
+  openModal('whOwnerOrders');
+}
+MODALS.whOwnerOrders = {
+  title:'查看主体订单',
+  foot:`<button class="btn" type="button" data-mclose="1">关闭</button>`,
+  body: () => {
+    const o = FREIGHT_OWNERS.find(x=>x.id===whOrdersOwnerId);
+    const rows = whOwnerDemoOrders(o);
+    return `
+      <div class="lk-view-lead">货主：<b>${o?o.name:'—'}</b>（${o?o.id:'—'}）</div>
+      ${rows.length ? `<div class="tablewrap"><table class="lock-pool" style="min-width:0">
+        <thead><tr><th>订单流水号</th><th>运单号</th><th>公司信息</th><th>司机信息</th><th>油站信息</th><th>支付状态</th></tr></thead>
+        <tbody>${rows.map(r=>`<tr>
+          <td class="mono">${r.no}</td><td class="mono">${r.wb}</td>
+          <td>${r.comp}</td><td>${r.drv}</td><td>${r.st}</td>
+          <td>${pill(r.pay)}</td></tr>`).join('')}</tbody></table></div>`
+      : '<div class="ck-empty">暂无数据</div>'}`;
+  }
+};
+
+/* ---------- 修改业务负责人 ---------- */
+function openWhOwnerMgr(id){
+  whMgrOwnerId = id;
+  openModal('whOwnerMgr');
+}
+MODALS.whOwnerMgr = {
+  title:'修改业务负责人',
+  foot:`<button class="btn" type="button" data-mclose="1">取消</button>
+        <button class="btn primary" type="button" onclick="whMgrSave()">确认保存</button>`,
+  body: () => {
+    const o = FREIGHT_OWNERS.find(x=>x.id===whMgrOwnerId);
+    return `
+      <div class="lk-view-lead">货主：<b>${o?o.name:'—'}</b>（${o?o.id:'—'}）</div>
+      <div class="fi span2"><label>业务负责人</label>
+        <div class="row"><input class="inp" id="whMgrInput" value="${o?o.mgr||'':''}" maxlength="20"
+          placeholder="请输入业务负责人姓名，留空表示清除"></div></div>`;
+  }
+};
+function whMgrSave(){
+  const o = FREIGHT_OWNERS.find(x=>x.id===whMgrOwnerId); if(!o) return;
+  const v = (document.getElementById('whMgrInput')?.value||'').trim();
+  o.mgr = v;
+  modal.classList.remove('on');
+  showToast('业务负责人已更新');
+  paint();
+}
+
+/* ---------- 导入（同步）：模板 3 列，逐行校验，合法行入库 ---------- */
+let whImportRows = [], whImportFails = [];
+MODALS.whOwnerImport = {
+  title:'导入货主',
+  foot:`<button class="btn" type="button" data-mclose="1">取消</button>
+        <button class="btn primary" type="button" id="whImportOk" style="display:none" onclick="whImportConfirm()">确认导入</button>`,
+  body: () => `
+    <div class="ck-upload">
+      <input type="file" id="whImportFile" accept=".xlsx,.xls,.csv" onchange="whImportPick(this)">
+      <div class="ck-upload-hint">表头固定三列：<b>货主ID</b>、<b>货主名称</b>、<b>业务负责人</b>（选填），不依赖列顺序</div>
+    </div>
+    <div id="whImportResult"></div>`
+};
+/* 原型为静态演示：不解析真实 Excel，选择文件后展示固定示例的校验结果 */
+function whImportPick(input){
+  if(!input.files || !input.files[0]) return;
+  whImportRows = [
+    {id:'SH1088801', name:'青岛港联供应链有限公司', mgr:'张运营'},
+    {id:'SH1088802', name:'日照临港物流有限公司',   mgr:''}
+  ];
+  whImportFails = [
+    {id:'SH0200001', name:'万联易达上海分公司', reason:'货主ID 与已有数据重复'}
+  ];
+  const box = document.getElementById('whImportResult');
+  if(box) box.innerHTML = `
+    <div class="ck-warn" style="margin-top:10px">解析完成：成功 <b>${whImportRows.length}</b> 行，失败 <b>${whImportFails.length}</b> 行。</div>
+    <div class="tablewrap" style="margin-top:8px"><table class="lock-pool" style="min-width:0">
+      <thead><tr><th>货主ID</th><th>货主名称</th><th>业务负责人</th><th>校验结果</th></tr></thead>
+      <tbody>
+        ${whImportRows.map(r=>`<tr><td class="mono">${r.id}</td><td>${r.name}</td><td>${r.mgr||'----'}</td><td>通过</td></tr>`).join('')}
+        ${whImportFails.map(r=>`<tr><td class="mono">${r.id}</td><td>${r.name}</td><td>---- </td><td style="color:var(--bad)">失败：${r.reason}</td></tr>`).join('')}
+      </tbody></table></div>`;
+  const ok = document.getElementById('whImportOk'); if(ok) ok.style.display='';
+}
+function whImportConfirm(){
+  whImportRows.forEach(r=>{
+    FREIGHT_OWNERS.unshift({id:r.id, name:r.name, orders:0, paid:0, last:'----', mgr:r.mgr||'', createdAt:lockNow()});
+  });
+  const okN = whImportRows.length, badN = whImportFails.length;
+  whImportRows = []; whImportFails = [];
+  modal.classList.remove('on');
+  showToast(`导入完成：成功 ${okN} 条${badN?`，失败 ${badN} 条（详见校验结果）`:''}`);
+  whState.page = 1;
+  paint();
+}
 
 
 /* ================= 启动 ================= */
