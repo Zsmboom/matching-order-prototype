@@ -882,6 +882,18 @@ const MONTHLY = [
    recharge:0, refund:0, opening:0, closing:27672.10, inv:'已开票', invoiced:2781.60, invoicing:0}
 ];
 
+/* 账单明细演示司机池：姓名/手机号/车牌三要素复用原型既有演示人物（企业端订单列表、油站端运单、账户资金流水同源） */
+const BILL_DRIVERS = [
+  {name:'田玲玲', phone:'15701078321', plate:'辽AEK808'},
+  {name:'周慧敏', phone:'13905312277', plate:'津BQ7712'},
+  {name:'陈志刚', phone:'13611209876', plate:'沪AF2901'},
+  {name:'王海涛', phone:'15922308841', plate:'津AL0066'},
+  {name:'孙倩',   phone:'15022003311', plate:'蒙A2288L'},
+  {name:'王志刚', phone:'13905311234', plate:'鲁F1234Q'},
+  {name:'李强',   phone:'17864653289', plate:'京A1234Q'},
+  {name:'宿红',   phone:'18300000002', plate:'蒙T9U81U'}
+];
+
 /* 交易明细 */
 const TXNS = [
   {no:'CHY20260827093412006', flowNo:'ZJLS20260827000001', t:'2026-08-27 09:34', driver:'田玲玲', plate:'辽AEK808', phone:'13942003311',
@@ -4362,10 +4374,13 @@ function makeBillOrderRows({date,energy,count,qtyCents,oilCents,issuedCount,issu
     oilParts = billParts(oilCents,count);
   }
   const qtyParts = billParts(qtyCents,count);
+  const daySeed = [...(typeof date==='function' ? date(0) : date)].reduce((sum,ch)=>sum+ch.charCodeAt(0),0);
   return qtyParts.map((qty,i)=>{
     const day = typeof date==='function' ? date(i) : date;
     const no = `CHY${day.replaceAll('-','')}${energy==='柴油'?'D':'G'}${String(i+1).padStart(4,'0')}`;
+    const drv = BILL_DRIVERS[(i+daySeed)%BILL_DRIVERS.length];
     return {no,time:`${day} 08:${String(i*7%60).padStart(2,'0')}:00`,station:`演示油站 ${i%stationCount+1}`,
+      driver:drv.name,phone:drv.phone,plate:drv.plate,
       goods:energy==='柴油'?'柴油':'天然气',energy,qty,oil:oilParts[i],
       total:oilParts[i],inv:i<issuedCount?'已开票':'未开票'};
   });
@@ -4399,9 +4414,9 @@ function billOrdersBodyHTML(){
   const rows = orders.slice((page-1)*size,page*size);
   const pageQty = rows.reduce((s,o)=>s+o.qty,0);
   const pageOil = rows.reduce((s,o)=>s+o.oil,0);
-  return `<div class="tablewrap"><table style="min-width:1000px"><thead><tr><th scope="col">订单号</th><th scope="col">加油时间</th><th scope="col">油站</th><th scope="col">商品</th><th scope="col">数量(L/kg)</th><th scope="col">加油金额(元)</th><th scope="col">开票状态</th></tr></thead>
-    <tbody>${rows.map(o=>`<tr><td class="mono">${o.no}</td><td class="mono">${o.time}</td><td>${o.station}</td><td>${o.goods}</td><td class="num">${(o.qty/100).toFixed(2)}</td><td class="num">${money(o.oil/100)}</td><td>${pill(o.inv)}</td></tr>`).join('')}</tbody>
-    <tfoot><tr><th scope="row" colspan="4">本页合计 · ${rows.length} 笔</th><td class="num">${(pageQty/100).toFixed(2)}</td><td class="num">${money(pageOil/100)}</td><td></td></tr></tfoot>
+  return `<div class="tablewrap"><table style="min-width:1240px"><thead><tr><th scope="col">订单号</th><th scope="col">加油时间</th><th scope="col">司机姓名</th><th scope="col">司机手机号</th><th scope="col">车牌号</th><th scope="col">油站</th><th scope="col">商品</th><th scope="col">数量(L/kg)</th><th scope="col">加油金额(元)</th><th scope="col">开票状态</th></tr></thead>
+    <tbody>${rows.map(o=>`<tr><td class="mono">${o.no}</td><td class="mono">${o.time}</td><td>${o.driver}</td><td class="mono">${o.phone}</td><td class="mono">${o.plate}</td><td>${o.station}</td><td>${o.goods}</td><td class="num">${(o.qty/100).toFixed(2)}</td><td class="num">${money(o.oil/100)}</td><td>${pill(o.inv)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><th scope="row" colspan="7">本页合计 · ${rows.length} 笔</th><td class="num">${(pageQty/100).toFixed(2)}</td><td class="num">${money(pageOil/100)}</td><td></td></tr></tfoot>
   </table></div>
   ${lockPagerHTML(orders.length,page,size,'billPageGo','billPageSize',[10,20,50])}`;
 }
@@ -4409,12 +4424,21 @@ function renderBillOrdersBody(){
   const box = document.getElementById('billOrdersBody');
   if(box && billDrawer) box.innerHTML = billOrdersBodyHTML();
 }
+/* 账单明细导出：导出当前账单行全部订单明细（不受抽屉翻页与页大小影响），字段与明细列一致、不加合计行。
+   文件名「日/月账单_期间_能源类型.xlsx」；原型为静态演示：模拟异步任务 toast，不真实生成文件。 */
+function billOrdersExport(){
+  if(!billDrawer) return;
+  const {period,bill,orders} = billDrawer;
+  const label = period==='day' ? bill.date : bill.month;
+  const fileName = `${period==='day'?'日账单':'月账单'}_${label}_${bill.energy}.xlsx`;
+  showToast(`已提交「${fileName}」导出任务（共 ${orders.length} 条订单明细），请到下载中心查看`);
+  setTimeout(()=>showToast('导出任务已完成，系统已推送下载提醒'),1200);
+}
 function openBillOrderDrawer(period,index){
   const bill = period==='day' ? DAILY[index] : period==='month' ? MONTHLY[index] : null;
   if(!bill) return;
   const label = period==='day' ? bill.date : bill.month;
   const orders = period==='day' ? dailyBillOrders(bill) : monthlyBillOrders(bill);
-  const issued = orders.filter(o=>o.inv==='已开票');
   billDrawer = {period,bill,orders,page:1,pageSize:10};
   document.getElementById('drawerTitle').textContent = `${period==='day'?'日账单':'月账单'}能源订单 · ${label} · ${bill.energy}`;
   document.getElementById('drawerBody').classList.add('nonav');
@@ -4426,9 +4450,8 @@ function openBillOrderDrawer(period,index){
   main.removeAttribute('role');
   main.removeAttribute('aria-labelledby');
   main.innerHTML = `
-    <div class="banner"><div><b>账单交易 ${bill.txCount} 笔 · 加油量 ${bill.qty.toFixed(2)}(L/kg) · 加油金额 ¥${money(bill.oilAmt)}${period==='month'?` · 已开票金额 ¥${money(bill.invoiced)}`:''}</b>
-      <span class="txt">顶部为当前账单行汇总值；明细按该汇总值生成演示能源订单，与能源订单列表样例不关联，正式数据应读取账单关联订单。</span></div></div>
-    <div class="card"><div class="card-h"><h2>能源订单明细</h2></div><div id="billOrdersBody"></div></div>${period==='month'?`<p class="note">账单已开票金额：${money(bill.invoiced)} 元 · 明细已开票合计：${money(issued.reduce((total,o)=>total+o.total,0)/100)} 元</p>`:''}`;
+    <div class="banner"><div><b>账单交易 ${bill.txCount} 笔 · 加油量 ${bill.qty.toFixed(2)}(L/kg) · 加油金额 ¥${money(bill.oilAmt)}${period==='month'?` · 已开票金额 ¥${money(bill.invoiced)}`:''}</b></div></div>
+    <div class="card"><div class="card-h"><h2>能源订单明细</h2><span class="spacer"></span><button class="btn sm" type="button" onclick="billOrdersExport()">导出</button></div><div id="billOrdersBody"></div></div>`;
   renderBillOrdersBody();
   showDrawer(true);
 }
@@ -4500,10 +4523,12 @@ VIEWS.daily = () => {
     nb('业务规则',
       '\u003cp\u003e\u003cb\u003e日账单生成规则：\u003c/b\u003e按「日期 + 能源类型」维度汇总，每天同能源类型的交易合并一行。柴油和天然气分开统计。T+0实时更新，当天可查看当天数据。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e金额口径：\u003c/b\u003e日账单只统计能源订单油款；消费合计等于加油金额，查看订单抽屉按同一口径核对。\u003c/p\u003e' +
-      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e页头统计口径：\u003c/b\u003e「共 N 天」按自然日去重统计（同日柴油、天然气两行计 1 天）；消费合计为当前筛选结果范围内全部账单行的消费合计之和。\u003c/p\u003e') +
+      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e页头统计口径：\u003c/b\u003e「共 N 天」按自然日去重统计（同日柴油、天然气两行计 1 天）；消费合计为当前筛选结果范围内全部账单行的消费合计之和。\u003c/p\u003e' +
+      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e司机与车辆口径：\u003c/b\u003e账单列表为汇总行，不含司机与车辆信息；司机姓名、司机手机号、车牌号在「查看订单」抽屉按逐笔订单展示。\u003c/p\u003e') +
     nb('操作说明',
       tbl(['操作','触发条件','执行逻辑/影响范围'],[
-        ['查看订单','点击账单行','右侧抽屉查看本行对应的能源订单：顶部横幅锚定账单行汇总值（交易笔数、加油量、加油金额），明细分页默认 10 条/页，合计行展示当前页笔数、数量、加油金额合计，翻页随页重算；演示订单按账单行汇总值生成，正式系统应按账单与订单关联关系取数'],
+        ['查看订单','点击账单行','右侧抽屉查看本行对应的能源订单：顶部横幅锚定账单行汇总值（交易笔数、加油量、加油金额），明细列为订单号/加油时间/司机姓名/司机手机号/车牌号/油站/商品/数量/加油金额/开票状态，明细分页默认 10 条/页，合计行展示当前页笔数、数量、加油金额合计（司机与车辆为非数值列不合计），翻页随页重算；演示订单按账单行汇总值生成，司机与车辆复用演示司机池，正式系统应按账单与订单关联关系取数'],
+        ['导出明细','点击抽屉内「能源订单明细」卡头「导出」','模拟提交当前账单行全部订单明细的导出任务：字段与明细列一致，导出范围不受抽屉翻页与页大小影响，不加合计行，文件名「日账单_期间_能源类型.xlsx」；原型不真实生成文件，正式系统生成 Excel 文件并推送下载中心'],
         ['导出','任何时候','导出日账单列表数据']
       ])) +
     nb('边界情况',
@@ -4583,11 +4608,12 @@ VIEWS.monthly = () => {
     nb('业务规则',
       '\u003cp\u003e\u003cb\u003e数据来源：\u003c/b\u003e月账单按月份和能源类型汇总能源订单油款；已展示的日账单订单在月账单明细中复用，账单金额与查看订单抽屉保持一致。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e金额口径：\u003c/b\u003e月账单只统计能源订单油款，消费合计等于加油金额；已开票金额仅对应能源订单。\u003c/p\u003e' +
-      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e已开票金额对照：\u003c/b\u003e抽屉底部展示「账单已开票金额」与「明细已开票合计」，明细已开票合计＝抽屉内开票状态为「已开票」的订单加油金额之和，与账单行已开票金额一致；各开票状态下均展示。\u003c/p\u003e' +
+      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e司机与车辆口径：\u003c/b\u003e账单列表为汇总行，不含司机与车辆信息；司机姓名、司机手机号、车牌号在「查看订单」抽屉按逐笔订单展示，月明细复用日账单订单的司机信息，其余日期补足差额订单同样随单生成。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e导出：\u003c/b\u003e支持导出月账单列表数据。\u003c/p\u003e') +
     nb('操作说明',
       tbl(['操作','触发条件','执行逻辑/影响范围'],[
-        ['查看订单','点击账单行','右侧抽屉查看本行对应的能源订单：分页与合计口径与日账单一致，顶部横幅另锚定已开票金额；已展示的日账单订单在月明细中复用，其余日期补足差额，正式系统应按账单与订单关联关系取数'],
+        ['查看订单','点击账单行','右侧抽屉查看本行对应的能源订单：明细列与合计口径与日账单一致（含司机姓名/司机手机号/车牌号），顶部横幅另锚定已开票金额；已展示的日账单订单在月明细中复用，其余日期补足差额，正式系统应按账单与订单关联关系取数'],
+        ['导出明细','点击抽屉内「能源订单明细」卡头「导出」','模拟提交当前账单行全部订单明细的导出任务：字段与明细列一致（含司机姓名/司机手机号/车牌号），导出范围不受抽屉翻页与页大小影响，不加合计行，文件名「月账单_期间_能源类型.xlsx」；原型不真实生成文件，正式系统生成 Excel 文件并推送下载中心'],
         ['导出','任何时候','导出月账单列表数据']
       ])) +
     nb('边界情况',
