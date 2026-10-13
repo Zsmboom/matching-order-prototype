@@ -689,22 +689,22 @@ const CORDERS = [
    custSub:'万联易达天津分公司', driver:'周慧敏', phone:'13905312277', plate:'津BQ7712',
    waybill:'UD2026082700000098', stationCo:'中石油天津销售分公司', station:'天津武清京津站', channel:'平台自营站',
    goods:'-10# 柴油', energy:'柴油', unit:6.85, qty:0, type:'实时订单',
-   est:600.00, real:0, st:'待确认', pay:'待支付', inv:'待开票'},
+   est:600.00, real:0, st:'待确认', pay:'待支付', inv:'未开票'},
   {no:'CHY20260827071233188', date:'2026-08-27', clock:'07:12:33', group:'', isGroup:false, subs:0,
    custSub:'万联易达上海分公司', driver:'陈志刚', phone:'13611209876', plate:'沪AF2901',
    waybill:'UD2026082700000071', stationCo:'畅油网络科技有限公司', station:'北京大兴机场西站', channel:'三方站 · 畅油',
    goods:'LNG', energy:'天然气', unit:6.10, qty:412.60, type:'实时订单',
-   est:2600.00, real:2516.86, st:'已完成', pay:'已支付', inv:'待开票'},
+   est:2600.00, real:2516.86, st:'已完成', pay:'已支付', inv:'未开票'},
   {no:'CHY20260826194422507', date:'2026-08-26', clock:'19:44:22', group:'', isGroup:false, subs:0,
    custSub:'万联易达天津分公司', driver:'王海涛', phone:'15922308841', plate:'津AL0066',
    waybill:'UD2026082600000233', stationCo:'高灯能源科技有限公司', station:'津南万顺站', channel:'三方站 · 高灯',
    goods:'0# 轻柴油', energy:'柴油', unit:6.58, qty:86.20, type:'实时订单',
-   est:580.00, real:567.20, st:'已完成', pay:'支付中', inv:'待开票'},
+   est:580.00, real:567.20, st:'已完成', pay:'支付中', inv:'未开票'},
   {no:'CHY20260826160955341', date:'2026-08-26', clock:'16:09:55', group:'', isGroup:false, subs:0,
    custSub:'万联易达上海分公司', driver:'田玲玲', phone:'15701078321', plate:'辽AEK808',
    waybill:'UD2026082600000188', stationCo:'中交兴路能源有限公司', station:'济南章丘服务区站', channel:'三方站 · 中交',
    goods:'0# 轻柴油', energy:'柴油', unit:6.61, qty:142.50, type:'实时订单',
-   est:960.00, real:941.93, st:'待确认', pay:'待支付', inv:'待开票'},
+   est:960.00, real:941.93, st:'待确认', pay:'待支付', inv:'未开票'},
   {no:'CHY20260825112807664', date:'2026-08-25', clock:'11:28:07', group:'', isGroup:false, subs:0,
    custSub:'万联易达天津分公司', driver:'周慧敏', phone:'13905312277', plate:'津BQ7712',
    waybill:'UD2026082500000042', stationCo:'中石化辽宁石油分公司', station:'沈阳浑南加油站', channel:'平台自营站',
@@ -772,7 +772,7 @@ const CAPPLIES = [
   {no:'KP20260827000021', t:'2026-08-27 10:02', station:'中石化辽宁石油分公司',
    energy:'柴油', rate:'13', orders:1, amt:795.02, invoiced:795.02, vol:'118.30 L', split:1, st:'已开票'},
   {no:'KP20260827000022', t:'2026-08-27 10:02', station:'畅油网络科技有限公司',
-   energy:'天然气', rate:'9', orders:2, amt:3913.39, invoiced:0, vol:'649.30 kg', split:2, st:'待开票'},
+   energy:'天然气', rate:'9', orders:2, amt:3913.39, invoiced:0, vol:'649.30 kg', split:2, st:'开票中'},
   {no:'KP20260826000014', t:'2026-08-26 18:20', station:'高灯能源科技有限公司',
    energy:'柴油', rate:'13', orders:1, amt:567.20, invoiced:0, vol:'86.20 L', split:1, st:'已撤销'}
 ];
@@ -790,22 +790,22 @@ const FEES = [
    energy:'柴油', oilAmt:795.02, rate:1.20, amt:9.54, pay:'已支付', inv:'已开票', bill:'FZD202608-001'},
   {no:'FW20260827000002', order:'CHY20260827091107021', date:'2026-08-27', clock:'09:13:40',
    payer:'油站', payerName:'高灯能源科技有限公司', cust:'蒙晋通达运输有限公司', station:'津南万顺站',
-   energy:'柴油', oilAmt:567.20, rate:1.20, amt:6.81, orderSt:'已完成', pay:'支付中', inv:'待开票', bill:'—'},
+   energy:'柴油', oilAmt:567.20, rate:1.20, amt:6.81, orderSt:'已完成', pay:'支付中', inv:'未开票', bill:'—'},
   {no:'FW20260827000003', order:'CHY20260827084533112', date:'2026-08-27', clock:'08:47:12',
    payer:'客户', payerName:'鲁通冷链物流有限公司', cust:'鲁通冷链物流有限公司', station:'济南章丘服务区站',
-   energy:'天然气', oilAmt:836.28, rate:1.20, amt:10.04, orderSt:'已完成', pay:'支付失败', inv:'待开票', bill:'—'},
+   energy:'天然气', oilAmt:836.28, rate:1.20, amt:10.04, orderSt:'已完成', pay:'支付失败', inv:'未开票', bill:'—'},
   {no:'FW20260826000004', order:'CHY20260826212244890', date:'2026-08-26', clock:'21:25:03',
    payer:'油站', payerName:'中石化辽宁石油分公司', cust:'蒙晋通达运输有限公司', station:'沈阳浑南加油站',
    energy:'柴油', oilAmt:362.88, rate:1.20, amt:4.35, orderSt:'已退款', pay:'已退款', inv:'已开票', bill:'FZD202608-001'},
   {no:'FW20260826000005', order:'CHY20260826204118762', date:'2026-08-26', clock:'—',
    payer:'油站', payerName:'高灯能源科技有限公司', cust:'鲁通冷链物流有限公司', station:'济南历下高新站',
-   energy:'柴油', oilAmt:1766.07, rate:1.20, amt:21.19, orderSt:'待确认', pay:'待支付', inv:'待开票', bill:'—'},
+   energy:'柴油', oilAmt:1766.07, rate:1.20, amt:21.19, orderSt:'待确认', pay:'待支付', inv:'未开票', bill:'—'},
   {no:'FW20260824000009', order:'CHY20260824161512007', date:'2026-08-24', clock:'16:20:00',
    payer:'客户', payerName:'鲁通冷链物流有限公司', cust:'鲁通冷链物流有限公司', station:'济南章丘服务区站',
-   energy:'柴油', oilAmt:696.67, rate:1.20, amt:8.36, orderSt:'已完成', pay:'已支付', inv:'待开票', bill:'FZD202608-002'},
+   energy:'柴油', oilAmt:696.67, rate:1.20, amt:8.36, orderSt:'已完成', pay:'已支付', inv:'开票中', bill:'FZD202608-002'},
   {no:'FW20260826000006', order:'CHY20260826183001902', date:'2026-08-26', clock:'18:32:20',
    payer:'客户', payerName:'测试客户2', cust:'测试客户2', station:'北京大兴机场西站',
-   energy:'天然气', oilAmt:3960.00, rate:1.20, amt:47.52, orderSt:'已完成', pay:'已支付', inv:'待开票', bill:'FZD202608-003'},
+   energy:'天然气', oilAmt:3960.00, rate:1.20, amt:47.52, orderSt:'已完成', pay:'已支付', inv:'已撤销', bill:'FZD202608-003'},
   {no:'FW20260731000007', order:'CHY20260731154012007', date:'2026-07-31', clock:'15:42:18',
    payer:'油站', payerName:'中石化辽宁石油分公司', cust:'万联易达物流科技有限公司', station:'沈阳浑南加油站',
    energy:'柴油', oilAmt:21400.00, rate:1.20, amt:256.80, pay:'已支付', inv:'已开票', bill:'FZD202607-001'},
@@ -814,7 +814,7 @@ const FEES = [
    energy:'柴油', oilAmt:6033.33, rate:1.20, amt:72.40, orderSt:'已完成', pay:'已支付', inv:'已开票', bill:'FZD202607-002'},
   {no:'FW20260823000010', order:'CHY20260823135512010', date:'2026-08-23', clock:'13:57:42',
    payer:'油站', payerName:'中石化辽宁石油分公司', cust:'万联易达物流科技有限公司', station:'沈阳浑南加油站',
-   energy:'柴油', oilAmt:1250.00, rate:1.20, amt:15.00, orderSt:'已完成', pay:'已支付', inv:'待开票', bill:'—'}
+   energy:'柴油', oilAmt:1250.00, rate:1.20, amt:15.00, orderSt:'已完成', pay:'已支付', inv:'未开票', bill:'—'}
 ];
 
 /* 演示值沿用原型既有“已完成 + 已支付”口径；生产实现应读取此前已确认的可开票值配置。 */
@@ -822,8 +822,9 @@ const INVOICEABLE_ORDER_STATES = new Set(['已完成']);
 const INVOICEABLE_PAYMENT_STATES = new Set(['已支付']);
 /* 不可开票订单由订单主状态、支付状态的排除集合取并集；能源发票额外要求分账处理完成。 */
 const isBaseInvoiceEligible = o => INVOICEABLE_ORDER_STATES.has(o.st) && INVOICEABLE_PAYMENT_STATES.has(o.pay);
-const isEnergyInvoiceEligible = o => isBaseInvoiceEligible(o) && o.settlement==='分账处理完成' && o.inv!=='已开票';
-const isServiceFeeInvoiceEligible = f => f.orderSt==='已完成' && f.pay==='已支付' && f.inv!=='已开票';
+/* 开票状态口径：未开票/已撤销可申请开票；开票中为申请已提交，锁定不可重复申请；已开票不可再开。 */
+const isEnergyInvoiceEligible = o => isBaseInvoiceEligible(o) && o.settlement==='分账处理完成' && (o.inv==='未开票'||o.inv==='已撤销');
+const isServiceFeeInvoiceEligible = f => f.orderSt==='已完成' && f.pay==='已支付' && (f.inv==='未开票'||f.inv==='已撤销');
 /* 申请单详情中的关联记录只用于展示，不参与服务费资格判定。 */
 /* 申请单与服务费流水逐笔关联，不能仅凭支付方名称推断。 */
 const FEE_APPLY_ORDER_NOS = {
@@ -1038,28 +1039,28 @@ const ORDERS = [
    driver:'宿红', phone:'18300000002', plate:'蒙T9U81U', waybill:'UD2026082700000151',
    stationCo:'高灯能源科技有限公司', station:'津南万顺站', channel:'三方站 · 高灯',
    goods:'0# 轻柴油', energy:'柴油', unit:6.58, qty:86.20, type:'实时订单',
-   est:570.00, real:567.20, fee:6.81, st:'已完成', pay:'支付中', recon:'未对账', inv:'待开票'},
+   est:570.00, real:567.20, fee:6.81, st:'已完成', pay:'支付中', recon:'未对账', inv:'未开票'},
 
   {no:'CHY20260827084533112', date:'2026-08-27', clock:'08:45:33', group:'', isGroup:false, subs:0,
    custType:'网货', cust:'鲁通冷链物流有限公司', custSub:'鲁通冷链济南分公司',
    driver:'王志刚', phone:'13905311234', plate:'鲁F1234Q', waybill:'UD2026082700000133',
    stationCo:'中交兴路能源有限公司', station:'济南章丘服务区站', channel:'三方站 · 中交',
    goods:'LNG', energy:'天然气', unit:5.86, qty:142.71, type:'实时订单',
-   est:840.00, real:836.28, fee:10.04, st:'已完成', pay:'支付失败', recon:'对账差异', inv:'待开票'},
+   est:840.00, real:836.28, fee:10.04, st:'已完成', pay:'支付失败', recon:'对账差异', inv:'未开票'},
 
   {no:'CHY20260827081902337', date:'2026-08-27', clock:'08:19:02', group:'', isGroup:false, subs:0,
    custType:'车队', cust:'测试客户2', custSub:'',
    driver:'李强', phone:'17864653289', plate:'京A1234Q', waybill:'UD2026082700000127',
    stationCo:'畅油网络科技有限公司', station:'北京大兴机场西站', channel:'三方站 · 畅油',
    goods:'LNG', energy:'天然气', unit:6.10, qty:0, type:'实时订单',
-   est:900.00, real:0, fee:0, st:'待确认', pay:'待支付', recon:'未对账', inv:'待开票'},
+   est:900.00, real:0, fee:0, st:'待确认', pay:'待支付', recon:'未对账', inv:'未开票'},
 
   {no:'CHY20260827080114455', date:'2026-08-27', clock:'08:01:14', group:'', isGroup:false, subs:0,
    custType:'物流企业', cust:'万联易达物流科技有限公司', custSub:'万联易达天津分公司',
    driver:'赵德明', phone:'13512340098', plate:'津B7788Z', waybill:'UD2026082700000119',
    stationCo:'中石油天津销售分公司', station:'天津武清京津站', channel:'平台自营站',
    goods:'0# 轻柴油', energy:'柴油', unit:6.66, qty:0, type:'实时订单',
-   est:660.00, real:0, fee:0, st:'待确认', pay:'待支付', recon:'未对账', inv:'待开票'},
+   est:660.00, real:0, fee:0, st:'待确认', pay:'待支付', recon:'未对账', inv:'未开票'},
 
   {no:'CHY20260826212244890', date:'2026-08-26', clock:'21:22:44', group:'', isGroup:false, subs:0,
    custType:'网货', cust:'蒙晋通达运输有限公司', custSub:'蒙晋通达天津分公司',
@@ -1073,14 +1074,28 @@ const ORDERS = [
    driver:'王志刚', phone:'13905311234', plate:'鲁F1234Q', waybill:'UD2026082600000077',
    stationCo:'高灯能源科技有限公司', station:'济南历下高新站', channel:'三方站 · 高灯',
    goods:'0# 轻柴油', energy:'柴油', unit:6.58, qty:268.40, type:'实时订单',
-   est:1780.00, real:1766.07, fee:21.19, st:'待确认', pay:'待支付', recon:'未对账', inv:'待开票'},
+   est:1780.00, real:1766.07, fee:21.19, st:'待确认', pay:'待支付', recon:'未对账', inv:'未开票'},
 
   {no:'CHY20260826183001902', date:'2026-08-26', clock:'18:30:01', group:'', isGroup:false, subs:0,
    custType:'车队', cust:'测试客户2', custSub:'',
    driver:'李强', phone:'17864653289', plate:'京A1234Q', waybill:'UD2026082600000061',
    stationCo:'畅油网络科技有限公司', station:'北京大兴机场西站', channel:'三方站 · 畅油',
    goods:'LNG', energy:'天然气', unit:6.10, qty:649.18, type:'补录订单',
-   est:3960.00, real:3960.00, fee:47.52, st:'已完成', pay:'已支付', recon:'已对账', inv:'已开票'}
+   est:3960.00, real:3960.00, fee:47.52, st:'已完成', pay:'已支付', recon:'已对账', inv:'已开票'},
+
+  {no:'CHY20260825164218012', date:'2026-08-25', clock:'16:42:18', group:'', isGroup:false, subs:0,
+   custType:'物流企业', cust:'万联易达物流科技有限公司', custSub:'万联易达上海分公司',
+   driver:'田玲玲', phone:'15701078321', plate:'辽AEK808', waybill:'UD2026082500000093',
+   stationCo:'中石化辽宁石油分公司', station:'沈阳浑南加油站', channel:'平台自营站',
+   goods:'0# 轻柴油', energy:'柴油', unit:6.72, qty:96.40, type:'实时订单',
+   est:647.81, real:647.81, fee:7.77, st:'已完成', pay:'已支付', recon:'已对账', inv:'开票中'},
+
+  {no:'CHY20260826110833013', date:'2026-08-26', clock:'11:08:33', group:'', isGroup:false, subs:0,
+   custType:'网货', cust:'鲁通冷链物流有限公司', custSub:'鲁通冷链济南分公司',
+   driver:'王志刚', phone:'13905311234', plate:'鲁F1234Q', waybill:'UD2026082600000102',
+   stationCo:'中交兴路能源有限公司', station:'济南章丘服务区站', channel:'三方站 · 中交',
+   goods:'LNG', energy:'天然气', unit:5.86, qty:118.55, type:'实时订单',
+   est:694.70, real:694.70, fee:8.34, st:'已完成', pay:'已支付', recon:'已对账', inv:'已撤销'}
 ];
 /* 兼容：详情等处仍用 o.time 拼接展示 */
 ORDERS.forEach((o,i)=>{
@@ -1212,7 +1227,7 @@ const LOGS = [
 const APPLIES = [
   {no:'KP20260827000021', cust:'万联易达物流科技有限公司', station:'中石化辽宁石油分公司', energy:'柴油',
    orders:12, amt:9860.42, vol:'1,468.20 L', invoiced:0, split:2, mode:'按票额拆分',
-   st:'待开票', t:'2026-08-27 09:50', ch:'客户勾选订单'},
+   st:'开票中', t:'2026-08-27 09:50', ch:'客户勾选订单'},
   {no:'KP20260827000019', cust:'鲁通冷链物流有限公司', station:'中交兴路能源有限公司', energy:'天然气',
    orders:15, amt:12480.00, vol:'2,130.00 kg', invoiced:0, split:3, mode:'按票额拆分',
    st:'已撤销', t:'2026-08-27 09:41', ch:'客户勾选订单'},
@@ -1229,7 +1244,7 @@ const FEE_INV_APPLIES = [
   {no:'FZK20260827000001', bill:'FZD202608-001', payer:'油站', payerName:'中石化辽宁石油分公司', period:'2026-08',
    orders:1, amt:9.54, invoiced:9.54, st:'已开票', t:'2026-08-27 10:00', invNo:'04412026082700002001'},
   {no:'FZK20260827000002', bill:'FZD202608-002', payer:'客户', payerName:'鲁通冷链物流有限公司', period:'2026-08',
-   orders:1, amt:8.36, invoiced:0, st:'待开票', t:'2026-08-27 10:05', invNo:'—'},
+   orders:1, amt:8.36, invoiced:0, st:'开票中', t:'2026-08-27 10:05', invNo:'—'},
   {no:'FZK20260827000003', bill:'FZD202608-003', payer:'客户', payerName:'测试客户2', period:'2026-08',
    orders:1, amt:47.52, invoiced:0, st:'已撤销', t:'2026-08-27 10:10', invNo:'—'},
   {no:'FZK20260826000001', bill:'FZD202607-001', payer:'油站', payerName:'中石化辽宁石油分公司', period:'2026-07',
@@ -1322,7 +1337,7 @@ const TONE = {
   '已完成':'ok','已核销':'ok','已支付':'ok','调拨成功':'ok','已到账':'ok','已对账':'ok','已开票':'ok','退回成功':'ok','已释放':'ok','已生效':'ok','通过':'ok','正常':'ok','已确认':'ok',
   '已退款':'info','资金结算中':'info','调拨中':'info','划转中':'info','对账中':'info','加油中':'info','已接单':'info','审核中':'info',
   '待核销':'warn','待接单':'warn','待支付':'warn','待调拨':'warn','待划转':'warn','冻结中':'warn','待审核':'warn','待油站审核':'warn','待油站确认':'warn','待开票':'warn','待生成发票':'warn',
-  '未对账':'mut','已撤销':'mut',
+  '未开票':'warn','开票中':'info','未对账':'mut','已撤销':'mut',
   '异常（补偿中）':'bad','支付失败':'bad','调拨失败':'bad','对账差异':'bad','冲正':'bad','退回':'bad'
 };
 TONE['支付中'] = 'info'; TONE['待核销'] = 'warn'; TONE['退款中'] = 'warn'; TONE['网货客户']='mut'; TONE['签约客户']='mut';
@@ -1573,7 +1588,7 @@ const OPT = {
   custType:['网货','车队','物流企业'],
   feePayer:['油站','客户'],
   feePaySt:['待支付','支付中','已支付','支付失败','已退款'],
-  feeInvSt:['待开票','已开票','已撤销'],
+  feeInvSt:['未开票','开票中','已开票','已撤销'],
   orderSt:['待确认','已完成','已取消','退款中','已退款'],
   paySt2:['待支付','支付中','已支付','支付失败','已退款'],
   goods:['0# 轻柴油','-10# 柴油','-20# 柴油','LNG','CNG'],
@@ -1587,7 +1602,7 @@ const OPT = {
   transSt:['待调拨','调拨中','调拨成功','调拨失败'],
   moveSt:['待划转','划转中','已到账','冲正','退回'],
   reconSt:['未对账','对账中','已对账','对账差异'],
-  invFlowSt:['待开票','已开票','已撤销'],
+  invFlowSt:['未开票','开票中','已开票','已撤销'],
   orderType:['实时订单','补录订单'],
   quotaAct:['冻结','扣减','解冻差额','回补'],
   quotaSt:['冻结中','已生效','已释放'],
@@ -1599,7 +1614,7 @@ const OPT = {
   auditSt:['待确认','已确认'],
   api:['资金调拨','订单退款'],
   voucherSt:['调拨中','调拨成功','调拨失败','退回成功'],
-  applySt:['待开票','已开票','已撤销'],
+  applySt:['开票中','已开票','已撤销'],
   invKind:['油品票','服务费票'],
   invStatus:['正常'],
   invSrc:['油站上传','平台开具','代理对账开票'],
@@ -1617,7 +1632,7 @@ const OPT = {
 /* ================= 货主锁站锁价（商品中心） =================
    规则口径（2026-10-09 确认；2026-10-12 增补价格联动 / 油站范围 / 合同校验）：
      · 网货主体即现网客户企业，单独配置、搜索下拉获取
-     · 货主企业为主数据（客户中心 → 网货货主维护），配置时搜索选择，不选＝全部
+     · 货主企业为主数据（客户中心 → 网货货主维护），配置时搜索选择，必选、至少一家
      · 油站从网点管理全部油站中选择（含客户商品管理未推送的油站），
        按「油站 + 油品」逐行配置；添加油站时校验签约合同（见 lockAddGoods）
      · 价格 = 网点商品管理维护的企业价 − 价格调整金额（正数=减价、负数=涨价），不是绝对定价；
@@ -1720,7 +1735,7 @@ const LOCK_STATUS = {ON:'生效', OFF:'停用'};
    mode       ：锁站 / 锁站锁价
    status     ：生效 / 停用
    entities   ：适用网货主体 id 列表
-   owners     ：适用货主企业 id 列表；空数组 = 该网货主体下全部货主企业
+   owners     ：适用货主企业 id 列表；必填、至少 1 家（取消「不选＝全部货主企业」，该场景由客户商品管理按网货主体的推送覆盖）
    stations   ：明细行，一行 = 一个「油站 + 油品」
                 reduce 仅在锁站锁价模式下有值，为「价格调整金额」：正数=减价、负数=涨价 */
 const LOCK_RULES = [
@@ -1757,9 +1772,9 @@ const LOCK_RULES = [
      {station:'ST0004', goods:'G01', reduce:0.08},
      {station:'ST0005', goods:'G02', reduce:0.12},
    ]},
-  {id:'AS2026100005', name:'万联本部 · 全部货主统一锁站', mode:'锁站', status:'停用',
-   entities:['E1001'], owners:[],
-   remark:'覆盖万联易达下全部货主企业，暂未启用',
+  {id:'AS2026100005', name:'万联本部 · 试点货主统一锁站', mode:'锁站', status:'停用',
+   entities:['E1001'], owners:['SH0200001','SH0200002'],
+   remark:'覆盖万联易达两家试点货主企业，暂未启用',
    createdBy:'张运营', createdAt:'2026-10-09 10:02', updatedBy:'张运营', updatedAt:'2026-10-09 10:02',
    stations:[
      {station:'ST0001', goods:'G01', reduce:null},
@@ -1767,8 +1782,8 @@ const LOCK_RULES = [
      {station:'ST0007', goods:'G01', reduce:null},
    ]},
   {id:'AS2026100008', name:'华北区域 · 三主体统一锁站锁价', mode:'锁站锁价', status:'停用',
-   entities:['E1001','E1002','E1003'], owners:[],
-   remark:'一条规则同时挂多个网货主体（未指定货主＝全部货主企业），暂未启用',
+   entities:['E1001','E1002','E1003'], owners:['SH0100001','SH0100002','SH0100003'],
+   remark:'一条规则同时挂多个网货主体（3 主体 × 3 货主企业），暂未启用',
    createdBy:'张运营', createdAt:'2026-10-09 13:40', updatedBy:'张运营', updatedAt:'2026-10-09 13:40',
    stations:[
      {station:'ST0001', goods:'G01', reduce:0.06},
@@ -1832,7 +1847,7 @@ const LOCK_RULES = [
   const rows = LOCK_STATIONS.flatMap(st=>st.goods.map(g=>({station:st.code, goods:g.goodsId})));
   LOCK_RULES.push({
     id:'AS2026100007', name:'全量油站明细 · 分页与筛选验证', mode:'锁站锁价', status:'停用',
-    entities:['E1002'], owners:[],
+    entities:['E1002'], owners:['SH0100002','SH0200003'],
     remark:'明细行数大，用于验证检索、筛选与分页',
     createdBy:'张运营', createdAt:'2026-10-09 12:10', updatedBy:'张运营', updatedAt:'2026-10-09 12:10',
     stations: rows.map((l,i)=>({...l, reduce: i%3===0 ? 0.05 : 0}))});
@@ -1845,14 +1860,12 @@ const ownerName  = id => ownerById(id)?.name || id;
 
 /* 适用范围展开：一行 = 一个「网货主体 + 货主企业」
    仅用于规则唯一性冲突校验，页面不做组合维度的展示
-   owners 为空时展开成一行 owner=null，表示该主体下全部货主企业 */
+   适用货主企业必选（至少 1 家）：owners 为空说明尚在编辑中，返回空集、不参与冲突比较 */
 function ruleScopeRows(rule){
-  if(!rule.entities.length) return [];
-  if(!rule.owners.length) return rule.entities.map(e=>({entityId:e, ownerId:null}));
+  if(!rule.entities.length || !rule.owners.length) return [];
   return rule.entities.flatMap(e=>rule.owners.map(o=>({entityId:e, ownerId:o})));
 }
-/* 冲突检测：同一「网货主体 + 货主企业」不允许两条生效规则
-   任一方 owners 为空（全部货主）时，视为与另一方的每个货主都冲突 */
+/* 冲突检测：同一「网货主体 + 货主企业」不允许两条生效规则 */
 function lockConflicts(rule, ignoreId){
   const mine = ruleScopeRows(rule);
   const hits = [];
@@ -1862,18 +1875,16 @@ function lockConflicts(rule, ignoreId){
     const theirs = ruleScopeRows(other);
     mine.forEach(a=>theirs.forEach(b=>{
       if(a.entityId!==b.entityId) return;
-      const ownerClash = !a.ownerId || !b.ownerId || a.ownerId===b.ownerId;
-      if(ownerClash){
-        hits.push({rule:other, entityId:a.entityId,
-          ownerText: (!a.ownerId||!b.ownerId) ? '全部货主企业' : ownerName(a.ownerId)});
+      if(a.ownerId===b.ownerId){
+        hits.push({rule:other, entityId:a.entityId, ownerText:ownerName(a.ownerId)});
       }
     }));
   });
   /* 同一规则内自身重复 */
   const seen = new Set();
   mine.forEach(a=>{
-    const k = a.entityId+'||'+(a.ownerId||'*');
-    if(seen.has(k)) hits.push({rule:rule, entityId:a.entityId, ownerText:(a.ownerId?ownerName(a.ownerId):'全部货主企业'), self:true});
+    const k = a.entityId+'||'+a.ownerId;
+    if(seen.has(k)) hits.push({rule:rule, entityId:a.entityId, ownerText:ownerName(a.ownerId), self:true});
     seen.add(k);
   });
   return hits;
@@ -2299,7 +2310,7 @@ VIEWS.orders = () => {
         ['加油金额','金额','客户实际支付给油站的油款：核销前=下单预估金额，核销后=实际金额'],
         ['订单状态','待确认 / 已完成 / 已取消 / 退款中 / 已退款','管业务进度'],
         ['支付状态','待支付 / 支付中 / 已支付 / 支付失败 / 已退款','管资金到账，与订单状态互不阻塞'],
-        ['开票状态','待开票 / 已开票 / 已撤销','本期能源发票统一状态'],
+        ['开票状态','未开票 / 开票中 / 已开票 / 已撤销','本期能源发票统一状态'],
 
       ])) +
     nb('业务规则',
@@ -2312,7 +2323,7 @@ VIEWS.orders = () => {
         ['详情','任何时候','打开抽屉，展示订单信息 / 资金流水 / 支付凭证三个页签'],
         ['退款','支付状态为"已支付"','发起整单退款申请，进入退款审核流程'],
         ['订单补录','任何时候','补录线下已发生交易，不冻结额度，提交后状态直接为"已完成"，正常发起两笔调拨'],
-        ['批量申请开票','订单主状态、支付状态满足可开票值，且分账处理完成','按开票方+受票方+能源类型拆分申请单；提交前按申请单展示对应订单，每组超过5笔可独立翻页；提交后状态为待开票'],
+        ['批量申请开票','订单主状态、支付状态满足可开票值，且分账处理完成','按开票方+受票方+能源类型拆分申请单；提交前按申请单展示对应订单，每组超过5笔可独立翻页；提交后申请单与订单开票状态均为"开票中"'],
         ['导出','任何时候','导出当前筛选（或已勾选）结果，字段与列表列一一对应']
       ])) +
     nb('边界情况',
@@ -3071,8 +3082,8 @@ const FEE_CHIPS = [
   {k:'客户承担', f:f=>f.payer==='客户'},
   {k:'待支付',  f:f=>f.pay==='待支付'||f.pay==='支付中'},
   {k:'支付失败', f:f=>f.pay==='支付失败'},
-  {k:'待开票',  f:isServiceFeeInvoiceEligible},
-  {k:'能源已开票·服务费待开票', f:f=>energyInvoiceForFee(f).status==='已开票' && isServiceFeeInvoiceEligible(f)}
+  {k:'可开票',  f:isServiceFeeInvoiceEligible},
+  {k:'能源已开票·服务费可开票', f:f=>energyInvoiceForFee(f).status==='已开票' && isServiceFeeInvoiceEligible(f)}
 ];
 let feeSearch = {no:'',order:'',orderSt:'',pay:'',inv:'',payer:'',energyApplyNo:'',energyInvStatus:''};
 function matchesFeeSearch(f){
@@ -3819,7 +3830,7 @@ VIEWS.cOrders = () => {
         ['加油金额','金额','客户实际支付油款：核销前=预估，核销后=实际'],
         ['订单状态','待确认 / 已完成 / 已取消 / 退款中 / 已退款','业务进度状态'],
         ['支付状态','待支付 / 支付中 / 已支付 / 支付失败 / 已退款','资金到账状态'],
-        ['开票状态','待开票 / 已开票 / 已撤销','本期油款发票状态']
+        ['开票状态','未开票 / 开票中 / 已开票 / 已撤销','本期油款发票状态']
       ])) +
     nb('业务规则',
       '\u003cp\u003e\u003cb\u003e服务费可见性规则：\u003c/b\u003e服务费始终作为独立订单和独立资金记录，不改写本页的油款字段。\u003c/p\u003e' +
@@ -4356,7 +4367,7 @@ function makeBillOrderRows({date,energy,count,qtyCents,oilCents,issuedCount,issu
     const no = `CHY${day.replaceAll('-','')}${energy==='柴油'?'D':'G'}${String(i+1).padStart(4,'0')}`;
     return {no,time:`${day} 08:${String(i*7%60).padStart(2,'0')}:00`,station:`演示油站 ${i%stationCount+1}`,
       goods:energy==='柴油'?'柴油':'天然气',energy,qty,oil:oilParts[i],
-      total:oilParts[i],inv:i<issuedCount?'已开票':'待开票'};
+      total:oilParts[i],inv:i<issuedCount?'已开票':'未开票'};
   });
 }
 function dailyBillOrders(bill){
@@ -4376,13 +4387,35 @@ function monthlyBillOrders(bill){
     energy:bill.energy,count,qtyCents,oilCents,issuedCount,issuedTotalCents});
   return [...dailyRows,...remaining].sort((a,b)=>b.time.localeCompare(a.time));
 }
+let billDrawer = null;   /* {period,bill,orders,page,pageSize} 翻页只重绘明细区，横幅与对照行不动 */
+function billPageGo(p){ if(!billDrawer) return; billDrawer.page = p; renderBillOrdersBody(); }
+function billPageSize(v){ if(!billDrawer) return; billDrawer.pageSize = Number(v)||10; billDrawer.page = 1; renderBillOrdersBody(); }
+function billOrdersBodyHTML(){
+  const {orders} = billDrawer;
+  const size = billDrawer.pageSize||10;
+  const pages = Math.max(1,Math.ceil(orders.length/size));
+  const page = Math.min(Math.max(1,billDrawer.page||1),pages);
+  billDrawer.page = page;
+  const rows = orders.slice((page-1)*size,page*size);
+  const pageQty = rows.reduce((s,o)=>s+o.qty,0);
+  const pageOil = rows.reduce((s,o)=>s+o.oil,0);
+  return `<div class="tablewrap"><table style="min-width:1000px"><thead><tr><th scope="col">订单号</th><th scope="col">加油时间</th><th scope="col">油站</th><th scope="col">商品</th><th scope="col">数量(L/kg)</th><th scope="col">加油金额(元)</th><th scope="col">开票状态</th></tr></thead>
+    <tbody>${rows.map(o=>`<tr><td class="mono">${o.no}</td><td class="mono">${o.time}</td><td>${o.station}</td><td>${o.goods}</td><td class="num">${(o.qty/100).toFixed(2)}</td><td class="num">${money(o.oil/100)}</td><td>${pill(o.inv)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><th scope="row" colspan="4">本页合计 · ${rows.length} 笔</th><td class="num">${(pageQty/100).toFixed(2)}</td><td class="num">${money(pageOil/100)}</td><td></td></tr></tfoot>
+  </table></div>
+  ${lockPagerHTML(orders.length,page,size,'billPageGo','billPageSize',[10,20,50])}`;
+}
+function renderBillOrdersBody(){
+  const box = document.getElementById('billOrdersBody');
+  if(box && billDrawer) box.innerHTML = billOrdersBodyHTML();
+}
 function openBillOrderDrawer(period,index){
   const bill = period==='day' ? DAILY[index] : period==='month' ? MONTHLY[index] : null;
   if(!bill) return;
   const label = period==='day' ? bill.date : bill.month;
   const orders = period==='day' ? dailyBillOrders(bill) : monthlyBillOrders(bill);
-  const sum = key => orders.reduce((total,o)=>total+o[key],0);
   const issued = orders.filter(o=>o.inv==='已开票');
+  billDrawer = {period,bill,orders,page:1,pageSize:10};
   document.getElementById('drawerTitle').textContent = `${period==='day'?'日账单':'月账单'}能源订单 · ${label} · ${bill.energy}`;
   document.getElementById('drawerBody').classList.add('nonav');
   const nav = document.getElementById('drawerNav');
@@ -4393,17 +4426,16 @@ function openBillOrderDrawer(period,index){
   main.removeAttribute('role');
   main.removeAttribute('aria-labelledby');
   main.innerHTML = `
-    <div class="banner"><div><b>账单交易 ${bill.txCount} 笔 · 明细 ${orders.length} 笔 · 已开票 ${issued.length} 笔</b>
-      <span class="txt">按当前账单行汇总值生成演示能源订单；与能源订单列表样例不关联，正式数据应读取账单关联订单。</span></div></div>
-    <div class="card"><div class="card-h"><h2>能源订单明细</h2></div><div class="tablewrap"><table style="min-width:1100px"><thead><tr><th scope="col">订单号</th><th scope="col">加油时间</th><th scope="col">油站</th><th scope="col">商品</th><th scope="col">数量(L/kg)</th><th scope="col">加油金额(元)</th><th scope="col">消费合计(元)</th><th scope="col">开票状态</th></tr></thead>
-      <tbody>${orders.map(o=>`<tr><td class="mono">${o.no}</td><td class="mono">${o.time}</td><td>${o.station}</td><td>${o.goods}</td><td class="num">${(o.qty/100).toFixed(2)}</td><td class="num">${money(o.oil/100)}</td><td class="num">${money(o.total/100)}</td><td>${pill(o.inv)}</td></tr>`).join('')}</tbody>
-      <tfoot><tr><th scope="row" colspan="4">合计 · ${orders.length} 笔</th><td class="num">${(sum('qty')/100).toFixed(2)}</td><td class="num">${money(sum('oil')/100)}</td><td class="num">${money(sum('total')/100)}</td><td>${pill(bill.inv)}</td></tr></tfoot>
-    </table></div></div>${period==='month'?`<p class="note">账单已开票金额：${money(bill.invoiced)} 元 · 明细已开票合计：${money(issued.reduce((total,o)=>total+o.total,0)/100)} 元</p>`:''}`;
+    <div class="banner"><div><b>账单交易 ${bill.txCount} 笔 · 加油量 ${bill.qty.toFixed(2)}(L/kg) · 加油金额 ¥${money(bill.oilAmt)}${period==='month'?` · 已开票金额 ¥${money(bill.invoiced)}`:''}</b>
+      <span class="txt">顶部为当前账单行汇总值；明细按该汇总值生成演示能源订单，与能源订单列表样例不关联，正式数据应读取账单关联订单。</span></div></div>
+    <div class="card"><div class="card-h"><h2>能源订单明细</h2></div><div id="billOrdersBody"></div></div>${period==='month'?`<p class="note">账单已开票金额：${money(bill.invoiced)} 元 · 明细已开票合计：${money(issued.reduce((total,o)=>total+o.total,0)/100)} 元</p>`:''}`;
+  renderBillOrdersBody();
   showDrawer(true);
 }
 /* ---- 日账单 ---- */
 VIEWS.daily = () => {
   const dailyTotal = DAILY.reduce((s,d)=>s+d.total,0);
+  const dailyDays = new Set(DAILY.map(d=>d.date)).size;
   const rows = DAILY.map((d,i)=>`
     <tr>
       <td class="mono">${d.date}<div class="t2">${d.wday}</div></td>
@@ -4433,7 +4465,7 @@ VIEWS.daily = () => {
   </div>
 
   <div class="card">
-    <div class="card-h"><h2>日账单 <span class="title-stat">消费合计 <b class="num-ok">¥${money(dailyTotal)}</b> · 共 <b>${DAILY.length}</b> 天</span></h2><span class="spacer"></span><button class="btn sm">导出</button></div>
+    <div class="card-h"><h2>日账单 <span class="title-stat">共 <b>${dailyDays}</b> 天 · 消费合计 <b class="num-ok">¥${money(dailyTotal)}</b></span></h2><span class="spacer"></span><button class="btn sm">导出</button></div>
     <div class="tablewrap">
       <table style="min-width:1100px">
         <thead><tr><th>日期</th><th>能源类型</th><th>交易笔数</th><th>加油量(L/kg)</th><th>加油金额(元)</th><th>消费合计(元)</th><th>涉及油站</th><th>开票状态</th><th>操作</th></tr></thead>
@@ -4467,10 +4499,11 @@ VIEWS.daily = () => {
       ])) +
     nb('业务规则',
       '\u003cp\u003e\u003cb\u003e日账单生成规则：\u003c/b\u003e按「日期 + 能源类型」维度汇总，每天同能源类型的交易合并一行。柴油和天然气分开统计。T+0实时更新，当天可查看当天数据。\u003c/p\u003e' +
-      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e金额口径：\u003c/b\u003e日账单只统计能源订单油款；消费合计等于加油金额，查看订单抽屉按同一口径核对。\u003c/p\u003e') +
+      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e金额口径：\u003c/b\u003e日账单只统计能源订单油款；消费合计等于加油金额，查看订单抽屉按同一口径核对。\u003c/p\u003e' +
+      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e页头统计口径：\u003c/b\u003e「共 N 天」按自然日去重统计（同日柴油、天然气两行计 1 天）；消费合计为当前筛选结果范围内全部账单行的消费合计之和。\u003c/p\u003e') +
     nb('操作说明',
       tbl(['操作','触发条件','执行逻辑/影响范围'],[
-        ['查看订单','点击账单行','右侧抽屉查看按本行交易笔数、数量、加油金额和开票状态生成的演示能源订单；正式系统应按账单与订单关联关系取数'],
+        ['查看订单','点击账单行','右侧抽屉查看本行对应的能源订单：顶部横幅锚定账单行汇总值（交易笔数、加油量、加油金额），明细分页默认 10 条/页，合计行展示当前页笔数、数量、加油金额合计，翻页随页重算；演示订单按账单行汇总值生成，正式系统应按账单与订单关联关系取数'],
         ['导出','任何时候','导出日账单列表数据']
       ])) +
     nb('边界情况',
@@ -4550,10 +4583,11 @@ VIEWS.monthly = () => {
     nb('业务规则',
       '\u003cp\u003e\u003cb\u003e数据来源：\u003c/b\u003e月账单按月份和能源类型汇总能源订单油款；已展示的日账单订单在月账单明细中复用，账单金额与查看订单抽屉保持一致。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e金额口径：\u003c/b\u003e月账单只统计能源订单油款，消费合计等于加油金额；已开票金额仅对应能源订单。\u003c/p\u003e' +
+      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e已开票金额对照：\u003c/b\u003e抽屉底部展示「账单已开票金额」与「明细已开票合计」，明细已开票合计＝抽屉内开票状态为「已开票」的订单加油金额之和，与账单行已开票金额一致；各开票状态下均展示。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e导出：\u003c/b\u003e支持导出月账单列表数据。\u003c/p\u003e') +
     nb('操作说明',
       tbl(['操作','触发条件','执行逻辑/影响范围'],[
-        ['查看订单','点击账单行','右侧抽屉查看按本行汇总值生成的演示能源订单；已展示的日账单订单在月明细中复用，其余日期补足差额，正式系统应按账单与订单关联关系取数'],
+        ['查看订单','点击账单行','右侧抽屉查看本行对应的能源订单：分页与合计口径与日账单一致，顶部横幅另锚定已开票金额；已展示的日账单订单在月明细中复用，其余日期补足差额，正式系统应按账单与订单关联关系取数'],
         ['导出','任何时候','导出月账单列表数据']
       ])) +
     nb('边界情况',
@@ -5773,7 +5807,7 @@ const CONFIRMS = {
   feeInvoiceApply: key => {
     const f = key ? FEES.find(x=>x.no===key) : null;
     const one = !!f;
-    const pool = FEES.filter(x=>x.pay==='已支付' && x.inv==='未开票');
+    const pool = FEES.filter(x=>x.pay==='已支付' && (x.inv==='未开票'||x.inv==='已撤销'));
     const list = one ? [f] : pool;
     const sum  = list.reduce((t,x)=>t+x.amt,0);
     const byStation = list.filter(x=>x.payer==='油站'), byCust = list.filter(x=>x.payer==='客户');
@@ -5853,7 +5887,7 @@ const CONFIRMS = {
   /* --- 批量申请开票（勾选） --- */
   feeBatchInvoice: key => {
     const nos = key ? key.split(',') : [];
-    const list = FEES.filter(f=>nos.includes(f.no) && f.pay==='已支付' && f.inv==='未开票');
+    const list = FEES.filter(f=>nos.includes(f.no) && f.pay==='已支付' && (f.inv==='未开票'||f.inv==='已撤销'));
     const sum  = list.reduce((t,x)=>t+x.amt,0);
     // 按支付方 + 账期分组（每组=一张服务费发票）
     const groups = {};
@@ -5949,7 +5983,7 @@ const CONFIRMS = {
       amounts:[{l:'申请金额',v:money(a.amt),c:'fee'}],
       kv:[['申请单号',`<span class="mono">${a.no}</span>`],['所属账单',`<span class="mono">${a.bill}</span>`],['支付方',a.payerName]],
       fields:[{l:'撤销原因',t:'ta',p:'必填，说明撤销原因',max:200,req:1,span:3}],
-      list:['只有<b>待开票</b>状态的申请单可以撤销。','撤销后账单作废，关联服务费订单退回可开票状态。','已开票的申请单不能撤销，需走红冲流程。'],
+      list:['只有<b>开票中</b>状态的申请单可以撤销。','撤销后申请单变为已撤销，关联服务费订单开票状态显示为「已撤销」、可重新申请。','已开票的申请单不能撤销，需走红冲流程。'],
       ok:'确认撤销', okClass:'danger'
     };
   },
@@ -6850,7 +6884,7 @@ CINVTAB.cInvInfo = a => {
       '<p>一个申请单里包含多笔订单，油站不一定能一次性全部开完。已开出来的发票可以先下载使用，未开的部分继续等待，已开和未开在「订单明细」页签逐笔标注。</p>' +
       '<p style="margin-top:6px">已开票金额 ≤ 申请金额是正常现象，等全部开完两者相等。</p>') +
     nb('能不能撤销申请',
-      '<p>申请提交后、油站全部开票前，可以申请撤销。撤销后订单恢复为「未开票」状态，可重新提交。</p>' +
+      '<p>申请提交后、油站全部开票前，可以申请撤销。撤销后订单开票状态显示为「已撤销」，可重新提交开票申请。</p>' +
       '<p style="margin-top:6px">已经部分开票的申请单，只能撤销<b>未开票部分</b>，已开出的发票不受影响。</p>')
   )}`;
 };
@@ -7080,10 +7114,10 @@ function applicationFileCard(a,isEnergy,kind=''){
   const issued = a.st==='已开票';
   const inv = INVOICES.find(i=>i.apply===a.no);
   const fileName = inv?.file || `${isEnergy?'能源':'服务费'}发票_${a.no}.pdf`;
-  const canUpload = isEnergy && current!=='cApply' && a.st==='待开票';
-  const canCancel = a.st==='待开票' && kind!=='stationFeeInv';
+  const canUpload = isEnergy && current!=='cApply' && a.st==='开票中';
+  const canCancel = a.st==='开票中' && kind!=='stationFeeInv';
   return `<div class="card"><div class="card-b"><div class="sec-title">发票文件</div>
-    ${issued?`<div class="tablewrap" style="margin-top:10px"><table><thead><tr><th>文件名</th><th>格式</th><th>开票日期</th><th>操作</th></tr></thead><tbody><tr><td>${fileName}</td><td>PDF</td><td>2026-08-28</td><td class="acts"><button data-download="invoice" data-key="${a.no}">本地下载</button></td></tr></tbody></table></div>`:'<div class="empty" style="padding:34px 0">待开票，暂无发票文件</div>'}
+    ${issued?`<div class="tablewrap" style="margin-top:10px"><table><thead><tr><th>文件名</th><th>格式</th><th>开票日期</th><th>操作</th></tr></thead><tbody><tr><td>${fileName}</td><td>PDF</td><td>2026-08-28</td><td class="acts"><button data-download="invoice" data-key="${a.no}">本地下载</button></td></tr></tbody></table></div>`:'<div class="empty" style="padding:34px 0">开票中，暂无发票文件</div>'}
     <div style="margin-top:10px;display:flex;gap:8px">${canUpload?`<button class="btn primary" data-confirm="energyInvUpload" data-key="${a.no}">上传发票</button>`:''}${canCancel?`<button class="btn danger" data-confirm="energyInvCancel" data-key="${a.no}">撤销申请</button>`:''}</div>
     <p class="note" style="margin-top:10px">仅支持图片、PDF 格式；本期不支持 OFD。${isEnergy?'上传弹窗不要求填写其他必填字段。':'服务费发票本期不提供上传入口。'}</p>
   </div></div>`;
@@ -7549,11 +7583,11 @@ function openSimple(kind,key){
       <div class="card"><div class="card-b">
         <div class="sec-title">可用操作</div>
         <div style="margin-top:10px;display:flex;gap:8px">
-          <button class="btn ${a.st==='待开票'?'primary':'off'}" data-confirm="feeInvUpload" data-key="${a.no}">上传发票</button>
+          <button class="btn ${a.st==='开票中'?'primary':'off'}" data-confirm="feeInvUpload" data-key="${a.no}">上传发票</button>
           <button class="btn ${a.st==='已开票'?'':'off'}" data-download="feeInv" data-key="${a.no}">下载发票</button>
-          <button class="btn ${a.st==='待开票'?'danger':'off'}">撤销申请</button>
+          <button class="btn ${a.st==='开票中'?'danger':'off'}">撤销申请</button>
         </div>
-        <p class="note" style="margin-top:10px">「上传发票」只在<b>待开票</b>状态可用，上传后状态变为已开票，金额回写。「撤销申请」只在待开票状态可用，撤销后订单可重新申请。</p>
+        <p class="note" style="margin-top:10px">「上传发票」只在<b>开票中</b>状态可用，上传后状态变为已开票，金额回写。「撤销申请」只在开票中状态可用，撤销后订单显示「已撤销」、可重新申请。</p>
       </div></div>`;
     },
     stationFeeInv:()=>{
@@ -7727,8 +7761,8 @@ function invoiceListNotes(kind){
   const energy = kind==='energy';
   return notes(
     nb('本期业务口径', energy
-      ? '<p>能源发票申请提交后直接进入<b>待开票</b>，完成后进入<b>已开票</b>，待开票申请可手动撤销为<b>已撤销</b>。本期不支持部分开票。</p>'
-      : '<p>服务费发票与能源发票使用同一状态口径：<b>待开票 / 已开票 / 已撤销</b>。申请提交成功即为待开票，不设置未开票、开票中。</p>') +
+      ? '<p>能源发票申请提交后进入<b>开票中</b>，完成后进入<b>已开票</b>，开票中申请可手动撤销为<b>已撤销</b>。本期不支持部分开票。</p>'
+      : '<p>服务费发票与能源发票使用同一状态口径：<b>开票中 / 已开票 / 已撤销</b>。申请提交成功即为开票中，不设置未开票。</p>') +
     nb('拆单与资格', energy
       ? '<p><b>拆单：</b>按开票方、受票方、能源类型三项共同分组；提交前逐个展示申请单及其关联订单，每组超过5笔可独立翻页。</p><p style="margin-top:6px"><b>资格：</b>订单主状态或支付状态任一不满足可开票值即排除，并以分账处理完成为前置条件。</p>'
       : '<p><b>拆单：</b>仅按支付方分组，不使用账期或能源类型；提交前逐个展示申请单及其关联订单，每组超过5笔可独立翻页。<b>资格：</b>只判断订单主状态和支付状态，不以服务费账单是否确认为条件。</p>') +
@@ -7767,7 +7801,7 @@ function renderServiceInvoiceList(scope){
   <div class="card"><div class="filters">${serviceInvoiceFilters()}</div>
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div></div>
   <div class="card" style="border:0;background:none;box-shadow:none"><div class="chips" style="padding:0;justify-content:flex-start">
-    ${['全部','待开票','已开票','已撤销'].map(s=>`<button class="${filter===s?'on':''}" ${scope==='station'?`data-station-feeinvchip="${s}"`:`data-feeinvchip="${s}"`}>${s} <b>${s==='全部'?all.length:all.filter(a=>a.st===s).length}</b></button>`).join('')}
+    ${['全部','开票中','已开票','已撤销'].map(s=>`<button class="${filter===s?'on':''}" ${scope==='station'?`data-station-feeinvchip="${s}"`:`data-feeinvchip="${s}"`}>${s} <b>${s==='全部'?all.length:all.filter(a=>a.st===s).length}</b></button>`).join('')}
   </div></div>
   <div class="card"><div class="card-h"><h2>服务费发票管理<span class="title-stat">共 <b>${all.length}</b> 笔</span></h2><span class="spacer"></span>
     ${scope==='station'?'':'<button class="btn sm primary" data-go="fee">去订单列表申请开票</button>'}
@@ -7805,9 +7839,9 @@ VIEWS.fee = () => {
     ${dataTable('fee',list,'2400px','暂无服务费订单')}${pagerHTML(list.length)}
   </div>
   ${notes(
-    nb('关联字段说明','<p>能源订单开票状态读取关联能源订单；能源发票申请单号通过该订单与当前有效能源申请单的明确关系读取。没有可靠关联时显示“—”；已撤销申请保留历史，但不作为当前申请单。服务费开票状态独立展示。</p>')+
+    nb('关联字段说明','<p>能源订单开票状态读取关联能源订单；能源发票申请单号通过该订单与当前有效能源申请单的明确关系读取。没有可靠关联时显示“—”；已撤销申请保留历史，但不作为当前申请单。服务费开票状态独立展示，枚举只有四个值：未开票 / 开票中 / 已开票 / 已撤销；开票中为已提交开票申请、尚未完成，已撤销为申请撤销后的状态、可重新申请。</p>')+
     nb('可开票资格','<p>服务费订单仅依据<b>订单主状态</b>和<b>支付状态</b>判定资格；任一项不满足可开票值即排除。是否确认服务费账单不参与判定。</p>')+
-    nb('申请与拆单','<p>“能源已开票·服务费待开票”用于人工优先处理，不改变服务费申请资格。勾选可开票订单后，按<b>支付方</b>拆分申请单；提交前逐个展示申请单及其关联订单，每组超过5笔可独立翻页。提交后直接进入<b>待开票</b>，不关联账期和能源类型；本期不提供自动开票。</p>')+
+    nb('申请与拆单','<p>“能源已开票·服务费可开票”用于人工优先处理，不改变服务费申请资格。勾选可开票订单后，按<b>支付方</b>拆分申请单；提交前逐个展示申请单及其关联订单，每组超过5笔可独立翻页。提交后申请单与服务费订单开票状态均为<b>开票中</b>，不关联账期和能源类型；本期不提供自动开票。</p>')+
     RULE_COMMON
   )}`;
 };
@@ -7896,11 +7930,11 @@ CONFIRMS.feeBatchInvoice = key => {
 CONFIRMS.feeInvoiceApply = key => serviceFeeConfirm(FEES.filter(f=>(!key||f.no===key)&&isServiceFeeInvoiceEligible(f)));
 CONFIRMS.energyInvUpload = key => {
   const a=APPLIES.find(x=>x.no===key)||CAPPLIES.find(x=>x.no===key)||APPLIES[0];
-  return {title:'上传能源发票',tone:'ok',lead:`为待开票申请单 <b>${a.no}</b> 上传正式发票文件。`,kv:[['开票方',a.station],['受票方',a.cust||CUST_ME],['申请金额',`${money(a.amt)} 元`],['支持格式','图片、PDF']],fields:[{l:'发票文件',t:'file',p:'选择图片或 PDF 文件，单个不超过 10MB',accept:'image/*,application/pdf',req:1,span:3}],list:['上传弹窗无其他必填字段。','上传完成后申请状态更新为已开票。'],ok:'确认上传',okClass:'primary'};
+  return {title:'上传能源发票',tone:'ok',lead:`为开票中申请单 <b>${a.no}</b> 上传正式发票文件。`,kv:[['开票方',a.station],['受票方',a.cust||CUST_ME],['申请金额',`${money(a.amt)} 元`],['支持格式','图片、PDF']],fields:[{l:'发票文件',t:'file',p:'选择图片或 PDF 文件，单个不超过 10MB',accept:'image/*,application/pdf',req:1,span:3}],list:['上传弹窗无其他必填字段。','上传完成后申请状态更新为已开票。'],ok:'确认上传',okClass:'primary'};
 };
 CONFIRMS.energyInvCancel = key => {
   const a=APPLIES.find(x=>x.no===key)||CAPPLIES.find(x=>x.no===key)||APPLIES[0];
-  return {title:'撤销发票申请',tone:'bad',lead:`将撤销待开票申请单 <b>${a.no}</b>。`,kv:[['申请状态',pill(a.st)],['申请金额',`${money(a.amt)} 元`]],fields:[{l:'撤销原因',t:'ta',p:'必填，请说明撤销原因',max:200,req:1,span:3}],list:['仅待开票申请单可撤销。','撤销后状态变为已撤销，关联订单可重新申请。','已开票申请单不可撤销；退款不触发发票状态回滚。'],ok:'确认撤销',okClass:'danger'};
+  return {title:'撤销发票申请',tone:'bad',lead:`将撤销开票中申请单 <b>${a.no}</b>。`,kv:[['申请状态',pill(a.st)],['申请金额',`${money(a.amt)} 元`]],fields:[{l:'撤销原因',t:'ta',p:'必填，请说明撤销原因',max:200,req:1,span:3}],list:['仅开票中申请单可撤销。','撤销后状态变为已撤销，关联订单开票状态显示为「已撤销」、可重新申请。','已开票申请单不可撤销；退款不触发发票状态回滚。'],ok:'确认撤销',okClass:'danger'};
 };
 CONFIRMS.cRefundApply = key => {
   const o=CORDERS.find(x=>x.no===key)||CORDERS[0];
@@ -7913,7 +7947,7 @@ CONFIRMS.cRefundApply = key => {
    规则唯一：同一「网货主体 + 货主企业」至多一条生效规则（保存与启用均校验）
    价格口径：锁后价 = 企业价（网点商品管理维护）− 价格调整金额（正数=减价、负数=涨价；锁站模式不调价）；
    锁后价同步驱动上游结算价与下游企业价，上下游订单单价 / 金额 / 总金额一致
-   货主企业取自主数据（客户中心 → 网货货主），配置时搜索选择，不选＝全部货主企业
+   货主企业取自主数据（客户中心 → 网货货主），配置时搜索选择，必选、至少一家
    配置入口为右侧抽屉（非弹窗）
    ========================================================= */
 let lockQuery = {};
@@ -7975,8 +8009,7 @@ const LOCK_COLS = regCols('freightLock', [
   {k:'entity', t:'适用网货主体', w:'90px', cls:'num',
     td:r=>`<div class="t1">${r.entities.length}</div>`},
   {k:'owner',  t:'适用货主企业', w:'90px', cls:'num',
-    td:r=>r.owners.length ? `<div class="t1">${r.owners.length}</div>`
-                          : '<div class="t1">全部</div>'},
+    td:r=>`<div class="t1">${r.owners.length}</div>`},
   {k:'station',t:'适用油站',   w:'70px', cls:'num',
     td:r=>`<div class="t1">${new Set(r.stations.map(l=>l.station)).size}</div>`},
   {k:'updated',t:'最近更新',   w:'150px',
@@ -7994,7 +8027,7 @@ const lockModeTag = m => m===LOCK_MODE.PRICE
   : '<span class="tag b">锁站</span>';
 
 /* 列表列「适用网货主体 / 适用货主企业 / 适用油站」只保留数字（右对齐）；
-   货主企业未导入（清单为空＝全部货主企业）时显示「全部」；
+   适用货主企业必选（至少 1 家），列表恒显示数量；
    完整名单在详情抽屉中查看（网货主体名单表 / 货主企业清单，支持搜索与分页），
    列表筛选区保留网货主体下拉与货主企业名称模糊搜索。 */
 const lockAttr = s => String(s==null?'':s)
@@ -8008,11 +8041,10 @@ VIEWS.freightLock = () => {
     if(q.status && r.status!==q.status) return false;
     if(q.mode && r.mode!==q.mode) return false;
     if(q.entity && !r.entities.includes(q.entity)) return false;
-    /* 货主企业按名称模糊匹配；未指定货主（全部货主企业）的规则也算命中 */
+    /* 货主企业按名称模糊匹配 */
     if(q.ownerText){
       const kw = q.ownerText.toLowerCase();
-      const ownHit = r.owners.some(o=>ownerName(o).toLowerCase().includes(kw));
-      if(!ownHit && r.owners.length) return false;
+      if(!r.owners.some(o=>ownerName(o).toLowerCase().includes(kw))) return false;
     }
     if(q.updated && String(r.updatedAt).slice(0,10)!==q.updated) return false;
     return true;
@@ -8050,16 +8082,16 @@ VIEWS.freightLock = () => {
   ${notes(
     nb('页面用途', '<p>运营按「网货主体 × 货主企业」维度配置锁站 / 锁站锁价规则，确定司机端可见的油站与价格。规则生效期间，明细内油站全部展示并可加注；锁站不生效时，回落客户商品管理按网货主体的推送数据。</p>') +
     nb('关键规则',
-      '<p><b>适用范围</b>＝适用网货主体 × 适用货主企业（笛卡尔积）；适用货主企业从主数据搜索选择、无生效状态——每选一家都进入适用范围，可逐个移除；未选择＝该网货主体下全部货主企业。</p>' +
+      '<p><b>适用范围</b>＝适用网货主体 × 适用货主企业（笛卡尔积）；适用货主企业从主数据搜索选择、无生效状态——每选一家都进入适用范围，可逐个移除；适用货主企业必选、至少选择一家（新建与编辑保存时均校验），「全部货主企业」场景由客户商品管理按网货主体的推送覆盖、不通过本规则表达。</p>' +
       '<p style="margin-top:6px"><b>唯一性</b>：同一「网货主体+货主企业」组合至多一条生效规则；保存与启用均校验，冲突拦截并提示冲突规则编号；停用规则不参与校验。</p>' +
       '<p style="margin-top:6px"><b>模式与价格</b>：锁站（价格沿用原企业价）／锁站锁价（逐行填写价格调整金额：正数＝减价、负数＝涨价，涨价不设上限，至少一行调整金额 ≠ 0）；锁后价＝原企业价 − 价格调整金额（正减负加），不得小于 0，低于成本价需二次确认负毛利。</p>' +
       '<p style="margin-top:6px"><b>油站范围与可见性</b>：规则可选油站为网点管理全部油站（价格在「网点商品管理」维护）；未随客户商品管理推送的油站，只要被「网货主体+货主企业」的生效规则配置，司机端同样展示并可加注；锁站不生效（无生效规则 / 停用 / 删除）时回落客户商品管理按网货主体的推送数据。</p>' +
       '<p style="margin-top:6px"><b>合同校验</b>：添加油站时校验「油站×网货主体 有合同，或 油站×万油通主体 有签约合同」，无合同的油站拦截、不可添加；订单生成时后端同样校验。</p>' +
       '<p style="margin-top:6px"><b>价格联动</b>：价格调整金额同步驱动上游结算价与下游企业价，锁价生效期间生成的订单，上下游单价、金额、总金额同步变动且保持一致（测试重点，见 PRD）。</p>' +
-      '<p style="margin-top:6px"><b>列表展示</b>：适用网货主体 / 适用货主企业 / 适用油站三列只保留数字；货主企业未选择（＝全部）时显示「全部」，完整名单在详情抽屉查看。</p>' +
+      '<p style="margin-top:6px"><b>列表展示</b>：适用网货主体 / 适用货主企业 / 适用油站三列只保留数字，完整名单在详情抽屉查看。</p>' +
       '<p style="margin-top:6px"><b>货主企业</b>：主数据由「客户中心 → 网货货主」页面维护（页面导入），配置规则时从主数据搜索选择，按名称或 ID 模糊匹配。</p>' +
       '<p style="margin-top:6px"><b>司机端判定</b>：先判断全部运单是否同属一个「网货主体+货主企业」组合——存在不同组合的运单即直接展示客户商品管理推送数据；同一组合再判断该组合是否有生效规则，有则展示规则明细内的油站与油价（锁站沿用原企业价、锁站锁价按调整金额取价；明细内油站不受推送范围限制），没有则展示客户商品管理按网货主体的推送数据。停用/删除后回落推送结果；已产生订单不追溯。</p>') +
-    nb('校验口径', '<p>保存拦截：规则名称必填且 ≤50 字、网货主体 ≥1、明细 ≥1 行、价格调整金额逐行必填且最多两位小数（正数=减价、负数=涨价，填 0 表示可见但不调价）、至少一行调整金额 ≠ 0、锁后价 ≥0、「主体+货主」组合冲突；锁后价低于成本价走二次确认后放行（涨价行不会触发）；启用拦截：组合冲突。</p>') +
+    nb('校验口径', '<p>保存拦截：规则名称必填且 ≤50 字、网货主体 ≥1、货主企业 ≥1、明细 ≥1 行、价格调整金额逐行必填且最多两位小数（正数=减价、负数=涨价，填 0 表示可见但不调价）、至少一行调整金额 ≠ 0、锁后价 ≥0、「主体+货主」组合冲突；锁后价低于成本价走二次确认后放行（涨价行不会触发）；启用拦截：组合冲突。</p>') +
     nb('导出说明（详情抽屉）',
       '<p>详情抽屉底部「导出」按钮导出本规则全量名单，不受抽屉内搜索与翻页影响，不限规则状态；导出为 1 个 Excel 文件、3 个 sheet，文件名「规则编号_规则名称.xlsx」（如 AS2026100001_万联上海 · 沈阳天津锁站锁价.xlsx）。</p>' +
       '<p style="margin-top:8px"><b>Sheet1 适用网货主体</b>（一行 = 一个主体）：</p>' +
@@ -8067,7 +8099,7 @@ VIEWS.freightLock = () => {
       '<tr><td>万联易达（沈阳）供应链管理有限公司</td><td class="mono">WL0001</td></tr>' +
       '<tr><td>万联易达（天津）供应链管理有限公司</td><td class="mono">WL0002</td></tr>' +
       '</tbody></table></div>' +
-      '<p style="margin-top:8px"><b>Sheet2 适用货主企业</b>（一行 = 一个货主；清单为空即「全部货主企业」时，本 sheet 仅一行说明：未指定货主企业，适用于所选网货主体下全部货主企业）：</p>' +
+      '<p style="margin-top:8px"><b>Sheet2 适用货主企业</b>（一行 = 一个货主）：</p>' +
       '<div class="tablewrap"><table class="lock-pool" style="min-width:0"><thead><tr><th>货主企业名称</th><th>货主企业ID</th></tr></thead><tbody>' +
       '<tr><td>沈阳××贸易有限公司</td><td class="mono">SH0200001</td></tr>' +
       '<tr><td>天津××物流有限公司</td><td class="mono">SH0200002</td></tr>' +
@@ -8224,12 +8256,12 @@ function lockDrawerBody(){
           </div>
         </div></div>
 
-      <div class="fi span2"><label>适用货主企业</label>
+      <div class="fi span2"><label>适用货主企业 <span class="req">*</span></label>
         <div class="row">
           <div class="ck-picker" id="lockOwnerPicker">
             <button type="button" class="ck-picker-ctl" onclick="lockToggleOwnerPicker(event)">
               ${s.owners.length? s.owners.map(o=>`<span class="ck-chip">${ownerName(o)}<i onclick="lockRemoveOwner(event,'${o}')" title="移除">✕</i></span>`).join('')
-                : '<span class="ck-ph">搜索并选择货主企业，可多选；不选＝全部货主企业</span>'}
+                : '<span class="ck-ph">搜索并选择货主企业，可多选，至少选择一家</span>'}
               <span class="ck-caret">${lockOwnerOpen?'▴':'▾'}</span>
             </button>
             ${lockOwnerOpen?`<div class="ck-picker-pop">
@@ -8619,6 +8651,7 @@ function lockValidate(){
   else if(s.name.trim().length > 50) errs.push('规则名称不超过 50 个字');
   if((s.remark||'').length > 200) errs.push('备注不超过 200 个字');
   if(!s.entities.length) errs.push('请至少选择一个适用网货主体');
+  if(!s.owners.length) errs.push('请至少选择一个适用货主企业');
   if(!s.stations.length) errs.push('请至少选择一个「油站 + 油品」');
   const bad = lockBadLines();
   if(bad.length) errs.push(`有 ${bad.length} 行的油站或油品已不在系统目录中，请删除后重新选择`);
@@ -8720,7 +8753,7 @@ function openLockRuleView(id){
       <div class="pills">${pill(r.status)}${lockModeTag(r.mode)}<span class="tag">${r.stations.length} 行明细</span></div>
       <div class="money">
         <div class="oilv"><div class="l">适用网货主体</div><div class="v num">${r.entities.length}</div></div>
-        <div><div class="l">适用货主企业</div><div class="v num">${r.owners.length||'全部'}</div></div>
+        <div><div class="l">适用货主企业</div><div class="v num">${r.owners.length}</div></div>
         <div><div class="l">可见油站</div><div class="v num">${new Set(r.stations.map(l=>l.station)).size}</div></div>
         <div><div class="l">有调整行</div><div class="v num">${r.stations.filter(l=>Number(l.reduce)!==0).length}</div></div>
       </div>
@@ -8743,8 +8776,7 @@ function openLockRuleView(id){
       </table></div>
     </div></div>
     <div class="card"><div class="card-b"><div class="sec-title">适用货主企业</div>
-      ${r.owners.length ? lockViewOwnerCardHTML(r)
-      : '<div class="ck-empty">未指定货主企业，适用于上述网货主体下的全部货主企业</div>'}
+      ${lockViewOwnerCardHTML(r)}
     </div></div>
     <div class="card"><div class="card-b"><div class="sec-title">油站与油品明细</div>
       <div class="tablewrap"><table class="lock-pool">
@@ -8780,7 +8812,7 @@ function openLockRuleView(id){
    原型为静态演示：不真实生成文件，toast 提示导出结果。 */
 function lockViewExport(id){
   const r = LOCK_RULE_BY_ID(id); if(!r) return;
-  showToast(`已导出「${r.id}_${r.name}.xlsx」（3 个 sheet：适用网货主体 ${r.entities.length} 行 · 适用货主企业 ${r.owners.length||'全部'} · 油站油品明细 ${r.stations.length} 行）`);
+  showToast(`已导出「${r.id}_${r.name}.xlsx」（3 个 sheet：适用网货主体 ${r.entities.length} 行 · 适用货主企业 ${r.owners.length} 行 · 油站油品明细 ${r.stations.length} 行）`);
 }
 
 /* ---------- 详情抽屉：货主企业清单 ----------
@@ -8850,7 +8882,7 @@ CONFIRMS.lockRuleDelete = key => {
   const r = LOCK_RULE_BY_ID(key) || LOCK_RULES[0];
   return {title:'删除锁站规则', tone:'bad',
     lead:`将删除规则 <b>${r.name}</b>（${r.id}）。`,
-    kv:[['规则状态',pill(r.status)],['网货主体',`${r.entities.length} 个`],['货主企业',r.owners.length?`${r.owners.length} 个`:'全部货主企业']],
+    kv:[['规则状态',pill(r.status)],['网货主体',`${r.entities.length} 个`],['货主企业',`${r.owners.length} 个`]],
     list:['删除后相关货主回落客户商品管理按网货主体的推送结果。','已下发的历史配置不追溯，已产生订单的价格不变。'],
     ok:'确认删除', okClass:'danger'};
 };
@@ -8859,7 +8891,7 @@ CONFIRMS.lockRuleToggle = key => {
   const off = r.status===LOCK_STATUS.ON;
   return {title:off?'停用锁站规则':'启用锁站规则', tone:off?'warn':'primary',
     lead:`将${off?'停用':'启用'}规则 <b>${r.name}</b>（${r.id}）。`,
-    kv:[['当前状态',pill(r.status)],['网货主体',`${r.entities.length} 个`],['货主企业',r.owners.length?`${r.owners.length} 个`:'全部货主企业']],
+    kv:[['当前状态',pill(r.status)],['网货主体',`${r.entities.length} 个`],['货主企业',`${r.owners.length} 个`]],
     list:off
       ? ['停用后相关货主不再受本规则限制，回落客户商品管理按网货主体的推送结果。','停用后该「网货主体+货主企业」组合可被新规则占用。','已产生订单的价格不追溯。']
       : ['启用前会校验是否与该组合下已有的生效规则冲突，冲突时无法启用。','启用后立即按本规则确定可见油站与价格。'],
