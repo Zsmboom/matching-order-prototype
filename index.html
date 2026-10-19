@@ -1164,7 +1164,7 @@ const ORDERS = [
    driver:'田玲玲', phone:'15701078321', plate:'辽AEK808', waybill:'UD2026082700000176',
    stationCo:'中石化辽宁石油分公司', station:'沈阳浑南加油站', channel:'平台自营站',
    goods:'0# 轻柴油', energy:'柴油', unit:6.72, qty:52.10, type:'实时订单',
-   est:350.11, real:350.11, fee:4.20, st:'已完成', pay:'已支付', recon:'已对账', inv:'待开票', invCh:'乐企'}
+   est:350.11, real:350.11, fee:4.20, st:'已完成', pay:'已支付', recon:'已对账', inv:'未开票', invCh:'乐企'}
 ];
 /* 兼容：详情等处仍用 o.time 拼接展示 */
 ORDERS.forEach((o,i)=>{
@@ -1250,7 +1250,7 @@ const REFUNDS = [
    audit:'待确认', auditBy:'—', auditAt:'—', st:'待审核',
    done:'—', inv:'未开票'},
 
-  /* ---- 乐企开票订单的退款演示单：redResult 预置本次演示的红冲结果（红冲均由退款发起） ---- */
+  /* ---- 乐企开票订单的退款演示单：redResult 预置本次演示的红冲结果（红冲触发=退款审核通过先红冲后退款） ---- */
   {id:'TK20260827000058', order:'MH20260827094500000001', by:'运营平台', byName:'张世民（运营中台）', cust:'万联易达物流科技有限公司',
    station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司', driver:'田玲玲', plate:'辽AEK808',
    reason:'司机加错油品，整单退款', amt:795.02, fee:9.54, apply:'2026-08-27 10:12',
@@ -1271,7 +1271,7 @@ const REFUNDS = [
 /* ================= 乐企开票演示数据 =================
    口径（docs/requirements/20261019-易宝乐企开票-规划.md）：
      · 开票渠道枚举=乐企/线下；乐企渠道订单开票状态 7 值（渠道分治）
-     · 支付成功即触发开票（解耦）；失败自动重试每分钟 1 次×3 次；手动开票可用状态=待开票/开票失败/已红冲，已红冲可再次手动开票重开蓝票
+     · 支付成功即触发开票（解耦）；失败自动重试每分钟 1 次×3 次；手动开票可用状态=未开票/开票失败/已红冲，已红冲可再次手动开票重开蓝票
      · 红冲两条触发：退款红冲（退款审核通过，失败→退款单终止为「退款失败」）＋手动红冲（开票成功/红冲失败可发起，原因必填 5–200 字，成功→已红冲）
      · 每次开票（蓝/红、手动/自动）记录及结果入库 → LEQI_LOGS；发票逐张入库 → LEQI_INV */
 const LEQI_INV = [
@@ -1357,7 +1357,7 @@ const SELFORDES = [
   {no:'ZY20260912092807551', time:'2026-09-12 09:28:07', co:'万联易达物流科技有限公司', coType:'自签物流公司',
    driver:'赵德明', plate:'津B7788Z', station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司',
    goods:'0# 轻柴油', energy:'柴油', qty:52.10, amt:350.11,
-   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'待开票', invCh:'乐企'},
+   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'未开票', invCh:'乐企'},
   {no:'ZY20260911184206742', time:'2026-09-11 18:42:06', co:'万联易达物流科技有限公司', coType:'自签物流公司',
    driver:'周慧敏', plate:'津BQ7712', station:'天津武清京津站', stationCo:'中石油天津销售分公司',
    goods:'-10# 柴油', energy:'柴油', qty:86.20, amt:590.46,
@@ -1608,14 +1608,14 @@ const FEEBILLS = [
   {no:'FZD202608-S200289', station:'高灯能源科技有限公司', period:'2026-08-01 ～ 2026-08-26',
    orders:94, fee:812.44, rate:'1.20%', confirm:'待油站确认', st:'待生成发票', inv:'—', t:'2026-08-27 08:00'},
   {no:'FZD202608-S200342', station:'中交兴路能源有限公司', period:'2026-08-01 ～ 2026-08-26',
-   orders:63, fee:596.10, rate:'1.20%', confirm:'已确认', st:'待开票', inv:'—', t:'2026-08-27 08:00'}
+   orders:63, fee:596.10, rate:'1.20%', confirm:'已确认', st:'未开票', inv:'—', t:'2026-08-27 08:00'}
 ];
 
 /* ================= 状态色 ================= */
 const TONE = {
   '已完成':'ok','已核销':'ok','已支付':'ok','调拨成功':'ok','已到账':'ok','已对账':'ok','已开票':'ok','退回成功':'ok','已释放':'ok','已生效':'ok','通过':'ok','正常':'ok','已确认':'ok',
   '已退款':'info','资金结算中':'info','调拨中':'info','划转中':'info','对账中':'info','加油中':'info','已接单':'info','审核中':'info',
-  '待核销':'warn','待接单':'warn','待支付':'warn','待调拨':'warn','待划转':'warn','冻结中':'warn','待审核':'warn','待油站审核':'warn','待油站确认':'warn','待开票':'warn','待生成发票':'warn',
+  '待核销':'warn','待接单':'warn','待支付':'warn','待调拨':'warn','待划转':'warn','冻结中':'warn','待审核':'warn','待油站审核':'warn','待油站确认':'warn','未开票':'warn','待生成发票':'warn',
   '未开票':'warn','开票中':'info','未对账':'mut','已撤销':'mut',
   '异常（补偿中）':'bad','支付失败':'bad','调拨失败':'bad','对账差异':'bad','冲正':'bad','退回':'bad'
 };
@@ -1916,7 +1916,7 @@ const OPT = {
   invFlowSt:['未开票','开票中','已开票','已撤销'],
   /* 乐企开票：开票渠道枚举=乐企、线下；乐企渠道订单用 7 值状态集（渠道分治，同列显示） */
   invChannel:['乐企','线下'],
-  leqiInvSt:['待开票','开票中','开票失败','开票成功','红冲中','红冲失败','已红冲'],
+  leqiInvSt:['未开票','开票中','开票失败','开票成功','红冲中','红冲失败','已红冲'],
   orderType:['实时订单','补录订单'],
   quotaAct:['冻结','扣减','解冻差额','回补'],
   quotaSt:['冻结中','已生效','已释放'],
@@ -1944,7 +1944,7 @@ const OPT = {
   drawer:['中石化辽宁石油分公司','高灯能源科技有限公司','中交兴路能源有限公司','畅油网络科技有限公司','万联易达科技有限公司（平台）'],
   payee:['万联易达物流科技有限公司','蒙晋通达运输有限公司','鲁通冷链物流有限公司','测试客户2','中石化辽宁石油分公司'],
   confirmSt:['待油站确认','已确认'],
-  feeBillSt:['待生成发票','待开票','已开票'],
+  feeBillSt:['待生成发票','未开票','已开票'],
   period:['2026-08','2026-07','2026-06'],
   backfillType:['当日补录','历史补录'],
   splitMode:['按票额拆分','不拆分'],
@@ -2564,14 +2564,16 @@ const ORDER_COLS = regCols('orders', [
                         <button class="${leqiCanInvoice(o)?'':'off'}" data-confirm="leqiInvoice" data-key="${o.no}">手动开票</button>
                         <button class="${leqiCanRed(o)?'danger':'off'}" data-confirm="leqiRed" data-key="${o.no}" title="对当前开票成功的蓝票发起冲红">手动红冲</button>
                         <button class="${((o.invCh||'线下')==='乐企'&&(o.inv==='开票成功'||o.inv==='已红冲')&&leqiLatestInv(o.no))?'':'off'}" data-leqiinv="${o.no}" title="该订单全部蓝/红票查看与下载">发票查看下载</button>
-                        <button class="${o.pay==='已支付'?'danger':'off'}" data-confirm="refundApply" data-key="${o.no}">退款</button></span>`}
+                        <button class="${o.pay==='已支付'&&!leqiRefundBlocked(o)?'danger':'off'}" data-confirm="refundApply" data-key="${o.no}" title="${leqiRefundBlocked(o)?'开票/红冲进行中，暂不可申请退款':''}">退款</button></span>`}
 ]);
 const qtyUnit = o => o.energy==='天然气' ? 'kg' : 'L';
 
 /* ---- 乐企开票通用小工具（撮合订单 / 自营订单共用） ---- */
-/* 手动开票可用状态：待开票 / 开票失败 / 已红冲；手动红冲可用状态：开票成功 / 红冲失败（重发），红冲完可再开票 */
-const leqiCanInvoice = o => o.invCh==='乐企' && ['待开票','开票失败','已红冲'].includes(o.inv);
+/* 手动开票可用状态：未开票 / 开票失败 / 已红冲；手动红冲可用状态：开票成功 / 红冲失败（重发），红冲完可再开票 */
+const leqiCanInvoice = o => o.invCh==='乐企' && ['未开票','开票失败','已红冲'].includes(o.inv);
 const leqiCanRed = o => o.invCh==='乐企' && ['开票成功','红冲失败'].includes(o.inv);
+/* 退款与开票联动：开票中/红冲中为进行中状态，不允许申请退款；未开票/开票失败/开票成功/红冲失败/已红冲（终态）可申请 */
+const leqiRefundBlocked = o => ['开票中','红冲中'].includes(o.inv);
 const invChTag = o => o.invCh==='乐企' ? '<span class="tag f">乐企</span>' : '<span class="tag">线下</span>';
 /* 订单详情·开票信息区：渠道状态 + 全部蓝红票（逐张下载） + 开票记录 */
 function leqiOrderInvHTML(o){
@@ -2589,19 +2591,19 @@ function leqiOrderInvHTML(o){
       <dl class="kv">
         <dt>销方（油站企业）</dt><dd>${o.stationCo}</dd>
         <dt>购方</dt><dd>${o.cust}</dd>
-        <dt>开票规则</dt><dd>易宝支付成功即自动开票，一单一票；红冲均由退款发起</dd>
+        <dt>开票规则</dt><dd>易宝支付成功即自动开票，一单一票；红冲触发=退款审核通过（先红冲后退款）或运营手动红冲</dd>
       </dl>
     </div>
     <div class="tablewrap" style="margin-top:10px">
       <table style="min-width:680px">
-        <thead><tr><th>发票类型</th><th>发票号码</th><th>金额（元）</th><th>开票时间</th><th>触发方式</th><th>状态</th><th>关联发票</th><th style="width:90px">附件</th></tr></thead>
+        <thead><tr><th>发票类型</th><th>发票号码</th><th>金额（元）</th><th>开票时间</th><th>触发方式</th><th>状态</th><th style="width:90px">附件</th></tr></thead>
         <tbody>${invs.length?invs.map(i=>`<tr>
           <td>${pill(i.type)}</td><td class="mono">${i.no}</td>
           <td class="num" style="color:${i.amt<0?'var(--bad)':'var(--oil)'}">${money(i.amt)}</td>
           <td class="mono">${i.t}</td><td>${i.trigger}</td>
-          <td>${pill(leqiInvStatusOf(i))}</td><td class="mono">${i.rel}</td>
+          <td>${pill(leqiInvStatusOf(i))}</td>
           <td class="acts"><button data-download="invoice" data-key="${i.no}">下载</button></td>
-        </tr>`).join(''):'<tr><td colspan="8" class="empty">暂无发票；开票成功 / 已红冲后此处可见全部蓝红票</td></tr>'}</tbody>
+        </tr>`).join(''):'<tr><td colspan="7" class="empty">暂无发票；开票成功 / 已红冲后此处可见全部蓝红票</td></tr>'}</tbody>
       </table>
     </div>
     <div class="tablewrap" style="margin-top:10px">
@@ -2618,7 +2620,7 @@ function leqiOrderInvHTML(o){
   </div>`;
 }
 
-/* 退款处理进度：乐企订单在「运营确认」与「资金退回」之间插入红冲节点（红冲均由退款发起） */
+/* 退款处理进度：乐企订单在「运营确认」与「资金退回」之间插入红冲节点（退款审核通过触发先红冲后退款） */
 function leqiRedNode(o,r,step,done,failed){
   const redFail  = o.inv==='红冲失败' || (r.redResult==='红冲失败' && failed);
   const redDone  = o.inv==='已红冲';
@@ -2709,7 +2711,7 @@ VIEWS.orders = () => {
         ['订单状态','待确认 / 已完成 / 已取消 / 退款中 / 已退款','管业务进度'],
         ['支付状态','待支付 / 支付中 / 已支付 / 支付失败 / 已退款','管资金到账，与订单状态互不阻塞'],
         ['开票渠道','乐企 / 线下','乐企=易宝支付+平台自营站柴油订单（支付成功即自动开票）；其余订单为线下渠道（客户申请+油站上传）'],
-        ['开票状态（渠道分治）','乐企渠道：待开票/开票中/开票失败/开票成功/红冲中/红冲失败/已红冲；线下渠道：未开票/开票中/已开票/已撤销','同一列按订单开票渠道显示对应值集；展示最新一次开票（蓝票+红票）的结果'],
+        ['开票状态（渠道分治）','乐企渠道：未开票/开票中/开票失败/开票成功/红冲中/红冲失败/已红冲；线下渠道：未开票/开票中/已开票/已撤销','同一列按订单开票渠道显示对应值集；展示最新一次开票（蓝票+红票）的结果'],
         ['失败原因','开票失败 / 红冲失败时展示','乐企接口返回的失败原因；开票失败自动重试每分钟 1 次×3 次，仍失败转人工'],
 
       ])) +
@@ -2717,11 +2719,12 @@ VIEWS.orders = () => {
       '<p><b>开票渠道=乐企</b>的订单（易宝支付 + 平台自营站柴油），支付成功后系统实时调用乐企自动开票，交易与开票解耦：开票失败不影响订单交易完成。</p>' +
       tbl(['场景','口径'],[
         ['开票触发','易宝支付成功即触发（乐企发票开具），不再校验分账处理完成；一单一票，票面无折扣行'],
-        ['开票状态','乐企渠道 7 值：待开票/开票中/开票失败/开票成功/红冲中/红冲失败/已红冲；线下渠道订单沿用 4 值不变，同列分治展示'],
+        ['开票状态','乐企渠道 7 值：未开票/开票中/开票失败/开票成功/红冲中/红冲失败/已红冲；线下渠道订单沿用 4 值不变，同列分治展示'],
         ['开票失败','自动重试每分钟 1 次×3 次（重试开具），仍失败停留「开票失败」并展示失败原因，转人工手动开票或技术排查'],
-        ['手动开票','可用状态=待开票/开票失败/已红冲；已红冲重开蓝票用于「换开」等需要再次开票的场景（红冲完成后即可发起）'],
+        ['手动开票','可用状态=未开票/开票失败/已红冲；已红冲重开蓝票用于「换开」等需要再次开票的场景（红冲完成后即可发起）'],
         ['红冲','退款红冲：退款审核通过触发，红冲失败→退款单终止为「退款失败」，线下抵扣处理完成后重新发起退款申请；手动红冲：可用状态=开票成功/红冲失败（重发），必填红冲原因（5–200 字，写入开票记录），成功→已红冲（原蓝票冲销），失败→红冲失败＋乐企原因可重发；红冲中拦截退款审核'],
         ['红冲后再开票','已红冲订单可再次手动开票重开蓝票；发票序列按发生顺序展示（蓝票→红票→新蓝票），各票独立关联'],
+        ['退款与开票联动','开票中/红冲中（进行中）不允许申请退款，操作列退款按钮置灰；未开票/开票失败/开票成功/红冲失败/已红冲（终态）可申请退款；红冲中同时拦截退款审核'],
         ['发票附件','详情抽屉展示全部蓝红票+开票记录；操作列「发票查看下载」仅开票成功/已红冲可见（弹窗展示该订单全部蓝/红票，逐张查看/下载，不限格式 url/pdf/ofd）']
       ])) +
     nb('业务规则',
@@ -2734,8 +2737,8 @@ VIEWS.orders = () => {
         ['详情','任何时候','打开抽屉，展示订单信息 / 资金流水 / 支付凭证三个页签'],
         ['退款','支付状态为"已支付"','发起整单退款申请，进入退款审核流程'],
         ['订单补录','任何时候','补录线下已发生交易，不冻结额度，提交后状态直接为"已完成"，正常发起两笔调拨'],
-        ['手动开票','开票渠道=乐企，且开票状态为「待开票/开票失败/已红冲」时亮','确认后调乐企发票开具，订单开票状态置为「开票中」并写入开票记录；已红冲订单重开蓝票（换开场景）'],
-        ['手动红冲','开票渠道=乐企，且开票状态为「开票成功/红冲失败」时亮（开票中/红冲中/已红冲/开票失败/待开票置灰）','弹窗核对原蓝票信息并必填红冲原因（5–200 字）；确认后调乐企发票冲红，状态置「红冲中」；成功→已红冲（原蓝票冲销），失败→红冲失败展示原因可重发；红冲完成后可再次手动开票重开蓝票'],
+        ['手动开票','开票渠道=乐企，且开票状态为「未开票/开票失败/已红冲」时亮','确认后调乐企发票开具，订单开票状态置为「开票中」并写入开票记录；已红冲订单重开蓝票（换开场景）'],
+        ['手动红冲','开票渠道=乐企，且开票状态为「开票成功/红冲失败」时亮（开票中/红冲中/已红冲/开票失败/未开票置灰）','弹窗核对原蓝票信息并必填红冲原因（5–200 字）；确认后调乐企发票冲红，状态置「红冲中」；成功→已红冲（原蓝票冲销），失败→红冲失败展示原因可重发；红冲完成后可再次手动开票重开蓝票'],
         ['批量下载发票','勾选行中存在「开票成功/已红冲」订单（乐企渠道）','仅下载各订单最新 1 次发票，支持单选/多选格式；非该状态的订单自动跳过，任务完成后在下载中心获取'],
         ['批量申请开票','订单主状态、支付状态满足可开票值，且分账处理完成（乐企渠道订单自动开票，不进入本入口）','按开票方+受票方+能源类型拆分申请单；提交前按申请单展示对应订单，每组超过5笔可独立翻页；提交后申请单与订单开票状态均为"开票中"'],
         ['导出','任何时候','导出当前筛选（或已勾选）结果，字段与列表列一一对应']
@@ -3234,11 +3237,13 @@ function selfOrderOps(o){
     ${leqiCanInvoice(o)?`<button data-confirm="leqiInvoice" data-key="${o.no}">手动开票</button>`:''}
     ${leqiCanRed(o)?`<button class="danger" data-confirm="leqiRed" data-key="${o.no}" title="对当前开票成功的蓝票发起冲红">手动红冲</button>`:''}
     ${hasInv?`<button data-leqiinv="${o.no}" title="该订单全部蓝/红票查看与下载">发票查看下载</button>`:''}
-    <button data-selfmenu="${o.no}">操作 ▾</button></span>`;
+    <button class="${leqiRefundBlocked(o)?'off':''}" data-selfmenu="${o.no}" title="${leqiRefundBlocked(o)?'开票/红冲进行中，暂不可申请退款':''}">操作 ▾</button></span>`;
 }
 /* 全局唯一操作菜单：body 级 fixed 定位，避免被表格冻结列/后续行的层叠上下文遮盖 */
 function toggleSelfMenu(no, btn){
   const m = document.getElementById('selfMenuGlobal'); if(!m||!btn) return;
+  const _so = SELFORDES.find(x=>x.no===no);
+  if(_so && leqiRefundBlocked(_so)){ showToast('开票/红冲进行中，暂不可申请退款'); return; }
   const wasHidden = m.hidden;
   closeSelfMenus();
   if(wasHidden){
@@ -3257,6 +3262,7 @@ function handleSelfAction(act, no){
   const o = SELFORDES.find(x=>x.no===no); if(!o) return;
   closeSelfMenus();
   if(act==='整体退款'||act==='客户退款'||act==='油站退款'){
+    if(leqiRefundBlocked(o)){ showToast('开票/红冲进行中，暂不可申请退款'); return; }
     const mk = (type,suf)=>({
       id:'ZRTK'+Date.now()+suf, order:o.no, time:leqiNow().slice(0,16), type,
       driver:o.driver, plate:o.plate, goods:`${o.goods} · ${o.qty.toFixed(2)} ${qtyUnit(o)}`, amt:o.amt,
@@ -3308,11 +3314,12 @@ VIEWS.selfOrders = () => {
     nb('关键规则',
       tbl(['列 / 操作','口径'],[
         ['开票渠道','乐企 / 线下。乐企=易宝支付+平台自营站柴油订单；天然气订单不接乐企、不可乐企手动开票，按线下渠道口径处理'],
-        ['开票状态','按渠道分治：乐企=待开票/开票中/开票失败/开票成功/红冲中/红冲失败/已红冲；线下=未开票/开票中/已开票/已撤销。同列显示，展示最新一次开票（蓝票+红票）的结果'],
+        ['开票状态','按渠道分治：乐企=未开票/开票中/开票失败/开票成功/红冲中/红冲失败/已红冲；线下=未开票/开票中/已开票/已撤销。同列显示，展示最新一次开票（蓝票+红票）的结果'],
         ['失败原因','乐企「开票失败/红冲失败」时展示接口原因；开票失败自动重试每分钟 1 次×3 次'],
-        ['手动开票','乐企渠道且状态为 待开票/开票失败/已红冲 时亮；已红冲可重开蓝票（换开场景）'],
+        ['手动开票','乐企渠道且状态为 未开票/开票失败/已红冲 时亮；已红冲可重开蓝票（换开场景）'],
         ['手动红冲','乐企渠道且状态为 开票成功/红冲失败（重发）时亮；必填红冲原因 5–200 字写入开票记录；成功→已红冲（原蓝票冲销）可再次手动开票，失败→红冲失败展示乐企原因；红冲中拦截退款审核'],
-        ['操作下拉','整体退款=同时生成客户退款+油站退款两张退款单（同一次退款的资金两侧）；客户退款/油站退款单发其一；网点支付、修改结算信息为现网既有能力'],
+        ['操作下拉','整体退款=同时生成客户退款+油站退款两张退款单（同一次退款的资金两侧）；客户退款/油站退款单发其一；网点支付、修改结算信息为现网既有能力；开票中/红冲中不可发起退款（菜单置灰拦截）'],
+        ['退款与开票联动','开票中/红冲中（进行中）不允许申请退款；未开票/开票失败/开票成功/红冲失败/已红冲（终态）可申请退款'],
         ['批量下载发票','勾选「开票成功/已红冲」订单，仅下载各单最新 1 次发票，异步任务到下载中心获取']
       ])) +
     nb('校验与提示',
@@ -4011,9 +4018,9 @@ const APPLY_COLS = regCols('energyInvApply', [
   {k:'vol',     t:'合计数量',   w:'110px', cls:'num', td:a=>a.vol},
   {k:'ops',     t:'操作',       w:'200px', cls:'acts',
                 td:a=>`<span class="btn-group"><button data-drawer="apply" data-key="${a.no}">详情</button>
-                       <button class="${a.st==='待开票'?'':'off'}" data-confirm="energyInvUpload" data-key="${a.no}">上传发票</button>
+                       <button class="${a.st==='未开票'?'':'off'}" data-confirm="energyInvUpload" data-key="${a.no}">上传发票</button>
                        <button class="${a.st==='已开票'?'':'off'}" data-download="energyInv" data-key="${a.no}">下载发票</button>
-                       <button class="${a.st==='待开票'?'danger':'off'}" data-confirm="energyInvCancel" data-key="${a.no}">撤销申请</button></span>`}
+                       <button class="${a.st==='未开票'?'danger':'off'}" data-confirm="energyInvCancel" data-key="${a.no}">撤销申请</button></span>`}
 ]);
 const FEE_INV_COLS = regCols('feeInvApply', [
   {k:'no',      t:'申请单号',   w:'180px', cls:'mono', td:a=>a.no},
@@ -4028,7 +4035,7 @@ const FEE_INV_COLS = regCols('feeInvApply', [
   {k:'ops',     t:'操作',       w:'180px', cls:'acts',
                  td:a=>`<span class="btn-group"><button data-drawer="feeInvApply" data-key="${a.no}">详情</button>
                         <button class="${a.st==='已开票'?'':'off'}" data-download="feeInv" data-key="${a.no}">下载发票</button>
-                        <button class="${a.st==='待开票'?'danger':'off'}" data-confirm="feeInvCancel" data-key="${a.no}">撤销申请</button></span>`}
+                        <button class="${a.st==='未开票'?'danger':'off'}" data-confirm="feeInvCancel" data-key="${a.no}">撤销申请</button></span>`}
 ]);
 
 /* ---- 油站端服务费发票列定义：平台开具，油站仅查看与下载 ---- */
@@ -4055,13 +4062,13 @@ const STATION_INV_COLS = regCols('stationInv', [
   {k:'orders',  t:'关联订单数', w:'100px', cls:'num', td:a=>a.orders},
   {k:'amt',     t:'申请金额',   w:'116px', cls:'num', td:a=>`<b>${money(a.amt)}</b>`},
   {k:'invoiced',t:'已开票金额', w:'116px', cls:'num', td:a=>`<span style="color:var(--ok)">${money(a.invoiced)}</span>`},
-  {k:'left',    t:'待开票金额', w:'116px', cls:'num', get:a=>a.amt-a.invoiced,
+  {k:'left',    t:'未开票金额', w:'116px', cls:'num', get:a=>a.amt-a.invoiced,
                 td:a=>`<span style="color:${a.amt-a.invoiced>0?'var(--warn)':'var(--muted)'}">${money(a.amt-a.invoiced)}</span>`},
   {k:'st',      t:'申请状态',   w:'104px', td:a=>pill(a.st)},
   {k:'vol',     t:'合计数量',   w:'110px', cls:'num', td:a=>a.vol},
   {k:'ops',     t:'操作',       w:'200px', cls:'acts',
                 td:a=>`<span class="btn-group"><button data-drawer="apply" data-key="${a.no}">详情</button>
-                       <button class="${a.st==='待开票'?'':'off'}" data-confirm="energyInvUpload" data-key="${a.no}">上传发票</button>
+                       <button class="${a.st==='未开票'?'':'off'}" data-confirm="energyInvUpload" data-key="${a.no}">上传发票</button>
                        <button class="${a.st==='已开票'?'':'off'}" data-download="energyInv" data-key="${a.no}">下载发票</button></span>`}
 ]);
 
@@ -4169,7 +4176,7 @@ VIEWS._legacyFeeInvApply = () => {
       ${filterRow([
         {l:'申请单号',t:'code',p:'FZK 开头，字母数字',max:32},
         {l:'申请时间',t:'range',v1:'2026-08-01',v2:'2026-08-27',w2:1},
-        {l:'申请状态',t:'sel',o:['全部','待开票','开票中','已开票','已红冲'],w2:1},
+        {l:'申请状态',t:'sel',o:['全部','未开票','开票中','已开票','已红冲'],w2:1},
         {l:'所属账单',t:'code',p:'FZD 开头，字母数字',max:32},
         {l:'支付方',t:'sel',o:['全部','油站','客户']},
         {l:'账期',t:'text',p:'如 2026-08',max:10,w2:1},
@@ -4183,7 +4190,7 @@ VIEWS._legacyFeeInvApply = () => {
   <div class="card" style="border:0;background:none;box-shadow:none">
     <div class="chips" style="padding:0;justify-content:flex-start">
       <button class="${feeInvFilter==='全部'?'on':''}" data-feeinvchip="全部">全部 <b>${eligibleApplies.length}</b></button>
-      <button class="${feeInvFilter==='待开票'?'on':''} ${eligibleApplies.filter(a=>a.st==='待开票').length>0?'alert':''}" data-feeinvchip="待开票">待开票 <b>(${eligibleApplies.filter(a=>a.st==='待开票').length})</b></button>
+      <button class="${feeInvFilter==='未开票'?'on':''} ${eligibleApplies.filter(a=>a.st==='未开票').length>0?'alert':''}" data-feeinvchip="未开票">未开票 <b>(${eligibleApplies.filter(a=>a.st==='未开票').length})</b></button>
       <button class="${feeInvFilter==='已开票'?'on':''}" data-feeinvchip="已开票">已开票 <b>${eligibleApplies.filter(a=>a.st==='已开票').length}</b></button>
     </div>
   </div>
@@ -4199,7 +4206,7 @@ VIEWS._legacyFeeInvApply = () => {
     ${notes(
     nb('页面定位',
       '\u003cp\u003e服务费发票的申请与管理页面，供\u003cb\u003e运营中台\u003c/b\u003e使用。服务费发票由平台开具（或代理开具），开票方为平台公司，开给服务费的支付方（油站公司或客户企业）。' +
-      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e页签筛选：\u003c/b\u003e页面顶部提供「全部 / 待开票 / 已开票」三个 Chip 页签，点击即可快速筛选对应状态的申请单，默认展示全部。页签筛选可与下方搜索条件叠加使用。\u003c/p\u003e' +
+      '\u003cp style="margin-top:6px"\u003e\u003cb\u003e页签筛选：\u003c/b\u003e页面顶部提供「全部 / 未开票 / 已开票」三个 Chip 页签，点击即可快速筛选对应状态的申请单，默认展示全部。页签筛选可与下方搜索条件叠加使用。\u003c/p\u003e' +
       '\u003cp style="margin-top:6px"\u003e\u003cb\u003e去订单列表：\u003c/b\u003e页签右侧「去订单列表」按钮，一键跳转至服务费订单页面，便于追溯具体服务费订单明细。\u003c/p\u003e') +
     nb('核心数据来源',
       tbl(['数据项','来源表/变量','说明'],[
@@ -4208,7 +4215,7 @@ VIEWS._legacyFeeInvApply = () => {
         ['支付方','FEE_INV_APPLIES.payer + payerName','油站 / 客户，即受票方'],
         ['账期','FEE_INV_APPLIES.period','按月出账'],
         ['金额字段','FEE_INV_APPLIES.amt / invoiced','申请金额 / 已开票金额'],
-        ['申请状态','FEE_INV_APPLIES.st','待开票 / 开票中 / 已开票 / 已红冲'],
+        ['申请状态','FEE_INV_APPLIES.st','未开票 / 开票中 / 已开票 / 已红冲'],
         ['关联订单','服务费账单明细表（pay=已支付）','仅统计服务费支付成功且未退款的订单']
       ])) +
     nb('字段定义说明',
@@ -4221,7 +4228,7 @@ VIEWS._legacyFeeInvApply = () => {
         ['关联订单数','大于 0 的整数','本申请单包含的支付成功服务费订单笔数'],
         ['申请金额','金额','申请开票的总金额'],
         ['已开票金额','金额','已开出的金额'],
-        ['申请状态','待开票 / 开票中 / 已开票 / 已红冲','从申请提交到归档或红冲的开票进度'],
+        ['申请状态','未开票 / 开票中 / 已开票 / 已红冲','从申请提交到归档或红冲的开票进度'],
         ['申请时间','-','申请提交时间']
       ])) +
     nb('业务规则',
@@ -4233,9 +4240,9 @@ VIEWS._legacyFeeInvApply = () => {
       tbl(['操作','触发条件','执行逻辑/影响范围'],[
         ['详情','任何时候','查看申请单详情、所属账单明细'],
         ['去订单列表勾选开票','任何时候','跳转到服务费订单页面，勾选已支付订单后申请开票'],
-        ['上传发票','状态为“待开票”','录入发票号码、开票日期并上传 PDF/OFD，完成后回写申请单和服务费订单状态'],
+        ['上传发票','状态为“未开票”','录入发票号码、开票日期并上传 PDF/OFD，完成后回写申请单和服务费订单状态'],
         ['下载发票','状态为"已开票"','下载服务费发票文件'],
-        ['撤销申请','状态为“待开票”','二次确认后撤销，关联服务费订单退回可申请状态'],
+        ['撤销申请','状态为“未开票”','二次确认后撤销，关联服务费订单退回可申请状态'],
         ['批量下载','勾选已开票申请单','发票文件打包下载']
       ])) +
     nb('边界情况',
@@ -4262,7 +4269,7 @@ VIEWS._legacyStationFeeInv = () => {
       ${filterRow([
         {l:'申请单号',t:'code',p:'FZK 开头，字母数字',max:32},
         {l:'申请时间',t:'range',v1:'2026-08-01',v2:'2026-08-27',w2:1},
-        {l:'申请状态',t:'sel',o:['全部','待开票','开票中','已开票','已红冲'],w2:1},
+        {l:'申请状态',t:'sel',o:['全部','未开票','开票中','已开票','已红冲'],w2:1},
         {l:'所属账单',t:'code',p:'FZD 开头，字母数字',max:32},
         {l:'账期',t:'text',p:'如 2026-08',max:10,w2:1},
         {l:'申请金额',t:'numrange',p1:'最小',p2:'最大',unit:'元',w2:1}
@@ -4274,7 +4281,7 @@ VIEWS._legacyStationFeeInv = () => {
   <div class="card" style="border:0;background:none;box-shadow:none">
     <div class="chips" style="padding:0;justify-content:flex-start">
       <button class="${stationFeeInvFilter==='全部'?'on':''}" data-station-feeinvchip="全部">全部 <b>${stationAll.length}</b></button>
-      <button class="${stationFeeInvFilter==='待开票'?'on':''}" data-station-feeinvchip="待开票">待开票 <b>${stationAll.filter(a=>a.st==='待开票').length}</b></button>
+      <button class="${stationFeeInvFilter==='未开票'?'on':''}" data-station-feeinvchip="未开票">未开票 <b>${stationAll.filter(a=>a.st==='未开票').length}</b></button>
       <button class="${stationFeeInvFilter==='已开票'?'on':''}" data-station-feeinvchip="已开票">已开票 <b>${issued.length}</b></button>
     </div>
   </div>
@@ -4309,7 +4316,7 @@ VIEWS._legacyStationFeeInv = () => {
         ['账期','YYYY-MM','账单所属月份'],
         ['关联订单数','大于 0 的整数','账单包含的支付成功服务费订单笔数'],
         ['申请金额/已开票金额','金额','平台申请开票总额 / 已完成开票金额'],
-        ['申请状态','待开票 / 开票中 / 已开票 / 已红冲','平台侧开票进度'],
+        ['申请状态','未开票 / 开票中 / 已开票 / 已红冲','平台侧开票进度'],
         ['申请时间','-','平台发起申请的时间']
       ])) +
     nb('业务规则',
@@ -4393,7 +4400,7 @@ VIEWS._legacyStationInv = () => {
         ['关联订单数','整数','本申请包含的订单数'],
         ['申请金额','金额','申请开票总金额'],
         ['已开票金额','金额','已开出的金额'],
-        ['待开票金额','计算字段 = 申请金额 - 已开票金额','尚未开票的金额'],
+        ['未开票金额','计算字段 = 申请金额 - 已开票金额','尚未开票的金额'],
         ['申请状态','开票中 / 部分开票 / 已开票 / 已撤销','开票进度'],
         ['合计数量','-','总加油量'],
         ['发票张数','整数','拆票张数'],
@@ -4435,7 +4442,7 @@ VIEWS.invFee = () => {
       <td>${pill(f.confirm)}</td>
       <td>${pill(f.st)}</td>
       <td class="mono">${f.inv}</td>
-      <td class="acts"><button data-drawer="feebill" data-key="${f.no}">账单明细</button><button class="${f.st==='待开票'?'':'off'}">开票上传</button></td>
+      <td class="acts"><button data-drawer="feebill" data-key="${f.no}">账单明细</button><button class="${f.st==='未开票'?'':'off'}">开票上传</button></td>
     </tr>`).join('');
   return `
   <div class="card">
@@ -4474,7 +4481,7 @@ VIEWS.invFee = () => {
       tbl(['步骤','谁做','做什么','时限','超时怎么办'],[
         ['生成账单','系统','把这个账期内该收的服务费按油站公司汇总，并统计关联订单数','账期结束后次日自动跑','—'],
         ['油站确认','油站公司','核对订单笔数和服务费合计对不对','3 个工作日','超时视为默认确认，列表上标注「超时默认确认」'],
-        ['开票','平台','开具服务费发票并归档','确认后 3 个工作日内','标记超时，保持待开票']
+        ['开票','平台','开具服务费发票并归档','确认后 3 个工作日内','标记超时，保持未开票']
       ])) +
     nb('确认环节不是付款前提',
       '<p>这一点实现时最容易做错：<b>服务费的钱在订单完成时就已经从油站账户转走了</b>，账单确认只是开票前的核对动作。</p>' +
@@ -4512,7 +4519,7 @@ VIEWS.invFee = () => {
         ['文件命名','服务费票_发票号码.pdf'],
         ['随包清单','账单与发票对照表.xlsx——账单号、账期、受票方、关联订单数、服务费、税额、票号'],
         ['单包上限','500 张或 200MB，超出自动分卷'],
-        ['排除项','<b>待确认、待开票</b>的账单没有发票文件，不打包；<b>已红冲</b>的票也不打包，对照表里单独列出'],
+        ['排除项','<b>待确认、未开票</b>的账单没有发票文件，不打包；<b>已红冲</b>的票也不打包，对照表里单独列出'],
         ['留痕','每次下载记录操作人与时间']
       ]) +
       '<p style="margin-top:10px">和「能源发票」页的批量下载是<b>同一套规则、两个入口</b>：那边打包油站开给客户的票，这边打包平台开给支付方的票。两类票的受票方和开票方正好相反，所以分文件夹的维度也不同。</p>') +
@@ -4835,7 +4842,7 @@ const CAPPLY_COLS = regCols('cApply', [
   {k:'ops',     t:'操作',       w:'200px', cls:'acts',
                 td:a=>`<span class="btn-group"><button data-capply-detail="${a.no}">详情</button>
                        <button class="${a.st==='已开票'?'':'off'}" data-download="cInv" data-key="${a.no}">下载发票</button>
-                       <button class="${a.st==='待开票'?'danger':'off'}" data-confirm="energyInvCancel" data-key="${a.no}">撤销申请</button></span>`}
+                       <button class="${a.st==='未开票'?'danger':'off'}" data-confirm="energyInvCancel" data-key="${a.no}">撤销申请</button></span>`}
 ]);
 const CREFUND_COLS = regCols('cRefund', [
   {k:'id',    t:'退款单号', w:'180px', cls:'mono', td:r=>r.id},
@@ -6020,7 +6027,7 @@ const MODALS = {
           </div>
 
           <div id="autoInvNextTime" style="margin-top:16px;padding:10px 12px;background-color:#fff8e6;border:1px solid #ffe0a0;border-radius:4px;font-size:12px;color:#8a6d00;${nextStyle}">
-            <b>下次自动开票时间：</b>2026-09-01（预计处理 8 月账单，约 12 笔待开票订单）
+            <b>下次自动开票时间：</b>2026-09-01（预计处理 8 月账单，约 12 笔未开票订单）
           </div>
         </div>
 
@@ -6616,7 +6623,7 @@ const CONFIRMS = {
       kv:[['订单号',`<span class="mono">${o.no}</span>`],['开票渠道','<span class="tag f">乐企</span>'],['当前开票状态',pill(o.inv)],
           ...(o.invFail?[['失败原因',`<span style="color:var(--bad)">${o.invFail}</span>`]]:[]),
           ['销方（油站企业）',o.stationCo],['购方',o.cust||o.co],['金额',money(o.real||o.est||o.amt)]],
-      list:['可用状态：待开票 / 开票失败 / 已红冲。',
+      list:['可用状态：未开票 / 开票失败 / 已红冲。',
             '已红冲订单重开蓝票：用于换开等需要再次开票的场景，红冲完成后即可发起。'],
       ok:'确认开票', okClass:'primary'
     };
@@ -7013,7 +7020,7 @@ const CONFIRMS = {
       title:'上传能源发票',
       tone:'ok',
       lead:'为申请单 <b>'+a.no+'</b> 上传发票，开票方：<b>'+a.station+'</b>',
-      amounts:[{l:'申请金额',v:money(a.amt),c:'oil'},{l:'已开票金额',v:money(a.invoiced),c:''},{l:'待开票金额',v:money(a.amt-a.invoiced),c:'warn'}],
+      amounts:[{l:'申请金额',v:money(a.amt),c:'oil'},{l:'已开票金额',v:money(a.invoiced),c:''},{l:'未开票金额',v:money(a.amt-a.invoiced),c:'warn'}],
       fields:[
         {l:'发票号码',t:'text',p:'8-12位数字',max:20,req:1,mono:1},
         {l:'发票代码',t:'text',p:'10-12位数字',max:20,req:1,mono:1},
@@ -7074,7 +7081,7 @@ const CONFIRMS = {
     const list = FEEBILLS.filter(f=>f.st==='已开票');
     return {
       title:'批量下载服务费发票', tone:'warn',
-      lead:`将打包下载勾选中<b>已开票</b>的 <b>${list.length}</b> 期服务费账单对应的发票文件。待开票、待确认的账单不在包内。`,
+      lead:`将打包下载勾选中<b>已开票</b>的 <b>${list.length}</b> 期服务费账单对应的发票文件。未开票、待确认的账单不在包内。`,
       amounts:[{l:'账单期数',v:String(list.length),c:''},{l:'服务费合计',v:money(list.reduce((t,f)=>t+f.fee,0)),c:'fee'}],
       kv:[['开票方','万联易达科技有限公司（平台）'],
           ['打包方式','ZIP，按<b>受票方 / 账期</b>分文件夹'],
@@ -7390,7 +7397,7 @@ const CONFIRM_ACTIONS = {
       paint();
     }, 900);
   },
-  /* --- 确认退款：乐企开票订单先红冲后退款（红冲均由退款发起，唯一触发点） ---
+  /* --- 确认退款：乐企开票订单先红冲后退款（退款审核通过触发红冲；手动红冲为独立换开入口） ---
      红冲成功 → 继续退款；红冲失败 → 退款单终止为「退款失败」，重新发起退款申请再走审核；
      红冲进行中 → 拦截，不允许确认 */
   refundConfirm: key => {
@@ -7853,7 +7860,7 @@ CINVTAB.cInvInfo = a => {
       <dl class="kv">
         <dt>申请金额（含税）</dt><dd><b class="num" style="color:var(--oil);font-size:16px">${money(a.amt)} 元</b></dd>
         <dt>已开票金额</dt><dd><b class="num" style="color:var(--ok);font-size:15px">${money(a.invoiced)} 元</b></dd>
-        <dt>待开票金额</dt><dd><b class="num" style="color:${a.invoiced===a.amt?'var(--muted)':'var(--warn)'};font-size:15px">${money(a.amt - a.invoiced)} 元</b></dd>
+        <dt>未开票金额</dt><dd><b class="num" style="color:${a.invoiced===a.amt?'var(--muted)':'var(--warn)'};font-size:15px">${money(a.amt - a.invoiced)} 元</b></dd>
         <dt>关联订单数</dt><dd class="num">${a.orders} 笔</dd>
       </dl>
     </div>
@@ -7976,7 +7983,7 @@ CINVTAB.cInvFiles = a => {
       <div class="it"><div class="dot"></div><div><div class="h">平台受理</div><div class="m">${a.t} · 系统自动 · 拆分为 ${a.split} 张申请单</div></div></div>
       ${a.st==='开票中' ? '<div class="it"><div class="dot now"></div><div><div class="h">油站开票处理中</div><div class="m">申请已转递至油站</div></div></div>' :
         a.st==='部分开票' ? `<div class="it"><div class="dot"></div><div><div class="h">部分开票完成</div><div class="m">2026-08-28 14:20 · 已开票 ${money(a.invoiced)}</div></div></div>
-          <div class="it"><div class="dot now"></div><div><div class="h">剩余订单开票中</div><div class="m">待开票 ${money(a.amt - a.invoiced)}</div></div></div>` :
+          <div class="it"><div class="dot now"></div><div><div class="h">剩余订单开票中</div><div class="m">未开票 ${money(a.amt - a.invoiced)}</div></div></div>` :
         `<div class="it"><div class="dot"></div><div><div class="h">开票完成</div><div class="m">2026-08-28 16:00 · 全部 ${a.orders} 笔开票完成</div></div></div>
           <div class="it"><div class="dot done"></div><div><div class="h">发票归档</div><div class="m">2026-08-28 16:05 · ${invCount} 张发票已归档</div></div></div>`}
     </div>
