@@ -622,6 +622,12 @@ body.drawer-foot-on:not(.live-surface) .oms-drawer-footer .btn{min-width:92px;ju
   .ck-toolbar{flex-wrap:wrap}
   .ck-modes{flex-direction:column}
 }
+/* 乐企开票配套：自营订单行内操作下拉 */
+.self-ops{position:relative;display:inline-flex}
+.self-menu{position:fixed;background:var(--surface,#fff);border:1px solid var(--line,#e5e7eb);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:6px;z-index:999;display:flex;flex-direction:column;min-width:140px}
+.self-menu button{border:0;background:none;text-align:left;padding:7px 10px;border-radius:6px;font-size:12px;cursor:pointer;color:var(--ink,#111);white-space:nowrap}
+.self-menu button:hover{background:var(--bg2,#f3f4f6)}
+.self-menu[hidden]{display:none}
 </style>
 <link rel="stylesheet" href="live-alignment.css">
 
@@ -1107,7 +1113,58 @@ const ORDERS = [
    driver:'王志刚', phone:'13905311234', plate:'鲁F1234Q', waybill:'UD2026082600000102',
    stationCo:'中交兴路能源有限公司', station:'济南章丘服务区站', channel:'三方站 · 中交',
    goods:'LNG', energy:'天然气', unit:5.86, qty:118.55, type:'实时订单',
-   est:694.70, real:694.70, fee:8.34, st:'已完成', pay:'已支付', recon:'已对账', inv:'已撤销'}
+   est:694.70, real:694.70, fee:8.34, st:'已完成', pay:'已支付', recon:'已对账', inv:'已撤销'},
+
+  /* ---- 乐企开票演示订单：开票渠道=乐企（易宝支付 + 平台自营站柴油，支付成功即触发开票） ---- */
+  {no:'MH20260827094500000001', date:'2026-08-27', clock:'09:45:18', group:'', isGroup:false, subs:0,
+   custType:'物流企业', cust:'万联易达物流科技有限公司', custSub:'万联易达上海分公司',
+   driver:'田玲玲', phone:'15701078321', plate:'辽AEK808', waybill:'UD2026082700000171',
+   stationCo:'中石化辽宁石油分公司', station:'沈阳浑南加油站', channel:'平台自营站',
+   goods:'0# 轻柴油', energy:'柴油', unit:6.72, qty:118.30, type:'实时订单',
+   est:795.02, real:795.02, fee:9.54, st:'已完成', pay:'已支付', recon:'已对账', inv:'开票成功', invCh:'乐企'},
+
+  {no:'MH20260827093200000002', date:'2026-08-27', clock:'09:32:10', group:'', isGroup:false, subs:0,
+   custType:'网货', cust:'蒙晋通达运输有限公司', custSub:'蒙晋通达天津分公司',
+   driver:'宿红', phone:'18300000002', plate:'蒙T9U81U', waybill:'UD2026082700000168',
+   stationCo:'中石化辽宁石油分公司', station:'沈阳浑南加油站', channel:'平台自营站',
+   goods:'-10# 柴油', energy:'柴油', unit:6.85, qty:86.20, type:'实时订单',
+   est:590.46, real:590.46, fee:7.09, st:'已完成', pay:'已支付', recon:'已对账', inv:'开票中', invCh:'乐企'},
+
+  {no:'MH20260827091800000003', date:'2026-08-27', clock:'09:18:44', group:'', isGroup:false, subs:0,
+   custType:'车队', cust:'测试客户2', custSub:'',
+   driver:'李强', phone:'17864653289', plate:'京A1234Q', waybill:'UD2026082700000162',
+   stationCo:'中石油天津销售分公司', station:'天津武清京津站', channel:'平台自营站',
+   goods:'0# 轻柴油', energy:'柴油', unit:6.66, qty:96.50, type:'实时订单',
+   est:642.69, real:642.69, fee:7.71, st:'已完成', pay:'已支付', recon:'已对账', inv:'开票失败', invCh:'乐企',
+   invFail:'购方税号与客户认证信息不一致'},
+
+  {no:'MH20260826175200000004', date:'2026-08-26', clock:'17:52:30', group:'', isGroup:false, subs:0,
+   custType:'车队', cust:'测试客户2', custSub:'',
+   driver:'李强', phone:'17864653289', plate:'京A1234Q', waybill:'UD2026082600000091',
+   stationCo:'中石化辽宁石油分公司', station:'沈阳浑南加油站', channel:'平台自营站',
+   goods:'0# 轻柴油', energy:'柴油', unit:6.72, qty:183.04, type:'实时订单',
+   est:1230.00, real:1230.00, fee:14.76, st:'已完成', pay:'已支付', recon:'已对账', inv:'红冲中', invCh:'乐企'},
+
+  {no:'MH20260826164000000005', date:'2026-08-26', clock:'16:40:01', group:'', isGroup:false, subs:0,
+   custType:'网货', cust:'蒙晋通达运输有限公司', custSub:'蒙晋通达天津分公司',
+   driver:'孙倩', phone:'15022003311', plate:'蒙A2288L', waybill:'UD2026082600000087',
+   stationCo:'中石油天津销售分公司', station:'天津武清京津站', channel:'平台自营站',
+   goods:'-10# 柴油', energy:'柴油', unit:6.85, qty:210.50, type:'实时订单',
+   est:1441.93, real:1441.93, fee:17.30, st:'已完成', pay:'已支付', recon:'已对账', inv:'已红冲', invCh:'乐企'},
+
+  {no:'MH20260826150800000006', date:'2026-08-26', clock:'15:08:26', group:'', isGroup:false, subs:0,
+   custType:'物流企业', cust:'万联易达物流科技有限公司', custSub:'万联易达天津分公司',
+   driver:'赵德明', phone:'13512340098', plate:'津B7788Z', waybill:'UD2026082600000082',
+   stationCo:'中石油天津销售分公司', station:'天津武清京津站', channel:'平台自营站',
+   goods:'0# 轻柴油', energy:'柴油', unit:6.66, qty:96.50, type:'实时订单',
+   est:642.69, real:642.69, fee:7.71, st:'已完成', pay:'已支付', recon:'已对账', inv:'开票成功', invCh:'乐企'},
+
+  {no:'MH20260827102200000007', date:'2026-08-27', clock:'10:22:09', group:'', isGroup:false, subs:0,
+   custType:'物流企业', cust:'万联易达物流科技有限公司', custSub:'万联易达上海分公司',
+   driver:'田玲玲', phone:'15701078321', plate:'辽AEK808', waybill:'UD2026082700000176',
+   stationCo:'中石化辽宁石油分公司', station:'沈阳浑南加油站', channel:'平台自营站',
+   goods:'0# 轻柴油', energy:'柴油', unit:6.72, qty:52.10, type:'实时订单',
+   est:350.11, real:350.11, fee:4.20, st:'已完成', pay:'已支付', recon:'已对账', inv:'待开票', invCh:'乐企'}
 ];
 /* 兼容：详情等处仍用 o.time 拼接展示 */
 ORDERS.forEach((o,i)=>{
@@ -1191,7 +1248,217 @@ const REFUNDS = [
    station:'津南万顺站', stationCo:'高灯能源科技有限公司', driver:'宿红', plate:'蒙T9U81U',
    reason:'重复下单', amt:567.20, fee:6.81, apply:'2026-08-27 09:30',
    audit:'待确认', auditBy:'—', auditAt:'—', st:'待审核',
-   done:'—', inv:'未开票'}
+   done:'—', inv:'未开票'},
+
+  /* ---- 乐企开票订单的退款演示单：redResult 预置本次演示的红冲结果（红冲均由退款发起） ---- */
+  {id:'TK20260827000058', order:'MH20260827094500000001', by:'运营平台', byName:'张世民（运营中台）', cust:'万联易达物流科技有限公司',
+   station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司', driver:'田玲玲', plate:'辽AEK808',
+   reason:'司机加错油品，整单退款', amt:795.02, fee:9.54, apply:'2026-08-27 10:12',
+   audit:'待确认', auditBy:'—', auditAt:'—', st:'待审核', done:'—', inv:'开票成功 · 未红冲', redResult:'红冲成功'},
+
+  {id:'TK20260827000061', order:'MH20260826150800000006', by:'油站', byName:'天津武清京津站', cust:'万联易达物流科技有限公司',
+   station:'天津武清京津站', stationCo:'中石油天津销售分公司', driver:'赵德明', plate:'津B7788Z',
+   reason:'油品质量争议，客户要求退款', amt:642.69, fee:7.71, apply:'2026-08-27 10:40',
+   audit:'待确认', auditBy:'—', auditAt:'—', st:'待审核', done:'—', inv:'开票成功 · 未红冲', redResult:'红冲失败',
+   redFail:'乐企红冲接口返回：购方已认证抵扣，需线下沟通抵扣处理完成后重新发起退款申请'},
+
+  {id:'TK20260827000063', order:'MH20260826175200000004', by:'运营平台', byName:'张世民（运营中台）', cust:'测试客户2',
+   station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司', driver:'李强', plate:'京A1234Q',
+   reason:'重复支付', amt:1230.00, fee:14.76, apply:'2026-08-27 11:02',
+   audit:'待确认', auditBy:'—', auditAt:'—', st:'审核中', done:'—', inv:'红冲中'}
+];
+
+/* ================= 乐企开票演示数据 =================
+   口径（docs/requirements/20261019-易宝乐企开票-规划.md）：
+     · 开票渠道枚举=乐企/线下；乐企渠道订单开票状态 7 值（渠道分治）
+     · 支付成功即触发开票（解耦）；失败自动重试每分钟 1 次×3 次；手动开票可用状态=待开票/开票失败/已红冲
+     · 红冲均由退款发起（无手动红冲）；红冲失败→退款单终止为「退款失败」
+     · 每次开票（蓝/红、手动/自动）记录及结果入库 → LEQI_LOGS；发票逐张入库 → LEQI_INV */
+const LEQI_INV = [
+  {no:'04412026082700001201', order:'MH20260827094500000001', biz:'撮合', type:'蓝票', rel:'—',
+   drawer:'中石化辽宁石油分公司', buyer:'万联易达物流科技有限公司', amt:795.02, t:'2026-08-27 09:46:20',
+   trigger:'自动-支付成功', file:'乐企发票_04412026082700001201.pdf'},
+  {no:'04412026082600001164', order:'MH20260826175200000004', biz:'撮合', type:'蓝票', rel:'—',
+   drawer:'中石化辽宁石油分公司', buyer:'测试客户2', amt:1230.00, t:'2026-08-26 17:53:31',
+   trigger:'自动-支付成功', file:'乐企发票_04412026082600001164.pdf'},
+  {no:'04412026082600001158', order:'MH20260826164000000005', biz:'撮合', type:'蓝票', rel:'—',
+   drawer:'中石油天津销售分公司', buyer:'蒙晋通达运输有限公司', amt:1441.93, t:'2026-08-26 16:41:12',
+   trigger:'自动-支付成功', file:'乐企发票_04412026082600001158.pdf'},
+  {no:'04412026082700001218', order:'MH20260826164000000005', biz:'撮合', type:'红票', rel:'04412026082600001158',
+   drawer:'中石油天津销售分公司', buyer:'蒙晋通达运输有限公司', amt:-1441.93, t:'2026-08-27 09:20:44',
+   trigger:'退款红冲', file:'乐企发票_04412026082700001218.pdf'},
+  {no:'04412026082600001149', order:'MH20260826150800000006', biz:'撮合', type:'蓝票', rel:'—',
+   drawer:'中石油天津销售分公司', buyer:'万联易达物流科技有限公司', amt:642.69, t:'2026-08-26 15:09:38',
+   trigger:'自动-支付成功', file:'乐企发票_04412026082600001149.pdf'},
+  {no:'04412026091200001301', order:'ZY20260912093102201', biz:'自营', type:'蓝票', rel:'—',
+   drawer:'中石化辽宁石油分公司', buyer:'万联易达物流科技有限公司', amt:1286.40, t:'2026-09-12 09:32:18',
+   trigger:'自动-支付成功', file:'乐企发票_04412026091200001301.pdf'},
+  {no:'04412026091100001288', order:'ZY20260911184206742', biz:'自营', type:'蓝票', rel:'—',
+   drawer:'中石油天津销售分公司', buyer:'万联易达物流科技有限公司', amt:590.46, t:'2026-09-11 18:43:07',
+   trigger:'自动-支付成功', file:'乐企发票_04412026091100001288.pdf'},
+  {no:'04412026091200001315', order:'ZY20260911184206742', biz:'自营', type:'红票', rel:'04412026091100001288',
+   drawer:'中石油天津销售分公司', buyer:'万联易达物流科技有限公司', amt:-590.46, t:'2026-09-12 10:02:51',
+   trigger:'退款红冲', file:'乐企发票_04412026091200001315.pdf'},
+  {no:'04412026091100001264', order:'ZY20260911102209308', biz:'自营', type:'蓝票', rel:'—',
+   drawer:'中石化辽宁石油分公司', buyer:'万联易达物流科技有限公司', amt:812.30, t:'2026-09-11 10:23:40',
+   trigger:'自动-支付成功', file:'乐企发票_04412026091100001264.pdf'},
+  {no:'04412026091000001242', order:'ZY20260910173004233', biz:'自营', type:'蓝票', rel:'—',
+   drawer:'中石化辽宁石油分公司', buyer:'万联易达物流科技有限公司', amt:350.11, t:'2026-09-10 17:31:22',
+   trigger:'自动-支付成功', file:'乐企发票_04412026091000001242.pdf'},
+  {no:'04412026091000001255', order:'ZY20260910173004233', biz:'自营', type:'红票', rel:'04412026091000001242',
+   drawer:'中石化辽宁石油分公司', buyer:'万联易达物流科技有限公司', amt:-350.11, t:'2026-09-11 09:18:03',
+   trigger:'退款红冲', file:'乐企发票_04412026091000001255.pdf'},
+  {no:'04412026091200001327', order:'ZY20260910173004233', biz:'自营', type:'蓝票', rel:'04412026091000001255',
+   drawer:'中石化辽宁石油分公司', buyer:'万联易达物流科技有限公司', amt:350.11, t:'2026-09-12 11:05:36',
+   trigger:'手动开票', file:'乐企发票_04412026091200001327.pdf'}
+];
+/* 发票状态由订单开票状态与票类型推导：蓝票=开票成功；蓝票所在订单已红冲→已红冲；红票=已红冲 */
+function leqiInvOfOrder(no){ return LEQI_INV.filter(i=>i.order===no); }
+function leqiLatestInv(no){ const l=leqiInvOfOrder(no); return l.length?l[l.length-1]:null; }
+function leqiInvStatusOf(i){
+  if(i.type==='红票') return '已红冲';
+  return '开票成功';
+}
+
+/* 开票记录：每次手动/自动触发开票（蓝票+红票）的请求与结果 */
+const LEQI_LOGS = [
+  {order:'MH20260827094500000001', t:'2026-08-27 09:45:19', way:'自动-支付成功', act:'发票开具', result:'成功', note:'开具结果查询成功，发票文件已回传'},
+  {order:'MH20260827093200000002', t:'2026-08-27 09:32:11', way:'自动-支付成功', act:'发票开具', result:'处理中', note:'已提交乐企，开具结果查询中'},
+  {order:'MH20260827091800000003', t:'2026-08-27 09:18:45', way:'自动-支付成功', act:'发票开具', result:'失败', note:'购方税号与客户认证信息不一致'},
+  {order:'MH20260827091800000003', t:'2026-08-27 09:19:45', way:'自动重试', act:'重试开具', result:'失败', note:'第 1/3 次，失败原因同上'},
+  {order:'MH20260827091800000003', t:'2026-08-27 09:20:45', way:'自动重试', act:'重试开具', result:'失败', note:'第 2/3 次，失败原因同上'},
+  {order:'MH20260827091800000003', t:'2026-08-27 09:21:45', way:'自动重试', act:'重试开具', result:'失败', note:'第 3/3 次，仍失败转人工：运营手动开票或找技术排查'},
+  {order:'MH20260826175200000004', t:'2026-08-26 17:53:31', way:'自动-支付成功', act:'发票开具', result:'成功', note:'开票成功'},
+  {order:'MH20260826175200000004', t:'2026-08-27 11:05:02', way:'退款红冲', act:'发票冲红', result:'处理中', note:'退款审核通过触发红冲，红冲结果查询中'},
+  {order:'MH20260826164000000005', t:'2026-08-26 16:41:12', way:'自动-支付成功', act:'发票开具', result:'成功', note:'开票成功'},
+  {order:'MH20260826164000000005', t:'2026-08-27 09:20:44', way:'退款红冲', act:'发票冲红', result:'成功', note:'红冲成功，原蓝票已冲销'},
+  {order:'MH20260826150800000006', t:'2026-08-26 15:09:38', way:'自动-支付成功', act:'发票开具', result:'成功', note:'开票成功'},
+  {order:'MH20260826150800000006', t:'2026-08-27 10:41:12', way:'退款红冲', act:'发票冲红', result:'失败', note:'购方已认证抵扣，需线下沟通抵扣处理'},
+  {order:'MH20260827102200000007', t:'2026-08-27 10:22:10', way:'自动-支付成功', act:'发票开具', result:'成功', note:'开票成功'},
+  {order:'ZY20260912093102201', t:'2026-09-12 09:32:18', way:'自动-支付成功', act:'发票开具', result:'成功', note:'开票成功'},
+  {order:'ZY20260911184206742', t:'2026-09-11 18:43:07', way:'自动-支付成功', act:'发票开具', result:'成功', note:'开票成功'},
+  {order:'ZY20260911184206742', t:'2026-09-12 10:02:51', way:'退款红冲', act:'发票冲红', result:'成功', note:'红冲成功，原蓝票已冲销'},
+  {order:'ZY20260911102209308', t:'2026-09-11 10:23:40', way:'自动-支付成功', act:'发票开具', result:'成功', note:'开票成功'},
+  {order:'ZY20260911102209308', t:'2026-09-12 09:41:25', way:'退款红冲', act:'发票冲红', result:'处理中', note:'退款审核通过触发红冲，红冲结果查询中'},
+  {order:'ZY20260910173004233', t:'2026-09-10 17:31:22', way:'自动-支付成功', act:'发票开具', result:'成功', note:'开票成功'},
+  {order:'ZY20260910173004233', t:'2026-09-11 09:18:03', way:'退款红冲', act:'发票冲红', result:'成功', note:'红冲成功（后客户取消退款）'},
+  {order:'ZY20260910173004233', t:'2026-09-12 11:05:36', way:'手动开票', act:'发票开具', result:'成功', note:'退款取消，重新开具蓝票'}
+];
+function leqiLogsOfOrder(no){ return LEQI_LOGS.filter(l=>l.order===no); }
+function leqiNow(){ const d=new Date(),p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; }
+
+/* ================= 自营订单中心演示数据（对应现网订单中心：自营订单管理 / 自营订单退款） ================= */
+const SELFORDES = [
+  {no:'ZY20260912093102201', time:'2026-09-12 09:31:02', co:'万联易达物流科技有限公司', coType:'自签物流公司',
+   driver:'田玲玲', plate:'辽AEK808', station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司',
+   goods:'0# 轻柴油', energy:'柴油', qty:191.43, amt:1286.40,
+   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'开票成功', invCh:'乐企'},
+  {no:'ZY20260912092807551', time:'2026-09-12 09:28:07', co:'万联易达物流科技有限公司', coType:'自签物流公司',
+   driver:'赵德明', plate:'津B7788Z', station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司',
+   goods:'0# 轻柴油', energy:'柴油', qty:52.10, amt:350.11,
+   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'待开票', invCh:'乐企'},
+  {no:'ZY20260911184206742', time:'2026-09-11 18:42:06', co:'万联易达物流科技有限公司', coType:'自签物流公司',
+   driver:'周慧敏', plate:'津BQ7712', station:'天津武清京津站', stationCo:'中石油天津销售分公司',
+   goods:'-10# 柴油', energy:'柴油', qty:86.20, amt:590.46,
+   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'已红冲', invCh:'乐企'},
+  {no:'ZY20260911102209308', time:'2026-09-11 10:22:09', co:'蒙晋通达运输有限公司', coType:'网货主体',
+   driver:'宿红', plate:'蒙T9U81U', station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司',
+   goods:'0# 轻柴油', energy:'柴油', qty:120.82, amt:812.30,
+   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'红冲中', invCh:'乐企'},
+  {no:'ZY20260911100817226', time:'2026-09-11 10:08:17', co:'蒙晋通达运输有限公司', coType:'网货主体',
+   driver:'孙倩', plate:'蒙A2288L', station:'天津武清京津站', stationCo:'中石油天津销售分公司',
+   goods:'0# 轻柴油', energy:'柴油', qty:96.50, amt:642.69,
+   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'开票失败', invCh:'乐企',
+   invFail:'购方税号与客户认证信息不一致'},
+  {no:'ZY20260910173004233', time:'2026-09-10 17:30:04', co:'万联易达物流科技有限公司', coType:'自签物流公司',
+   driver:'田玲玲', plate:'辽AEK808', station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司',
+   goods:'0# 轻柴油', energy:'柴油', qty:52.10, amt:350.11,
+   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'开票成功', invCh:'乐企'},
+  {no:'ZY20260910164001933', time:'2026-09-10 16:40:01', co:'鲁通冷链物流有限公司', coType:'网货主体',
+   driver:'王志刚', plate:'鲁F1234Q', station:'济南章丘服务区站', stationCo:'中交兴路能源有限公司',
+   goods:'LNG', energy:'天然气', qty:118.55, amt:694.70,
+   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'已开票', invCh:'线下'},
+  {no:'ZY20260910091222518', time:'2026-09-10 09:12:22', co:'测试客户2', coType:'自签物流公司',
+   driver:'李强', plate:'京A1234Q', station:'北京大兴机场西站', stationCo:'畅油网络科技有限公司',
+   goods:'CNG', energy:'天然气', qty:236.70, amt:1420.00,
+   paySt:'待支付', deductSt:'待扣款', verifySt:'待核销', inv:'未开票', invCh:'线下'},
+  {no:'ZY20260909154409907', time:'2026-09-09 15:44:09', co:'万联易达物流科技有限公司', coType:'自签物流公司',
+   driver:'赵德明', plate:'津B7788Z', station:'天津武清京津站', stationCo:'中石油天津销售分公司',
+   goods:'-20# 柴油', energy:'柴油', qty:142.71, amt:977.59,
+   paySt:'已支付', deductSt:'扣款失败', verifySt:'已核销', inv:'未开票', invCh:'线下'}
+];
+
+/* 自营订单退款：客户退款/油站退款为同一次退款的资金两侧；审核状态=待审核/审核通过/审核驳回/退款失败 */
+const SELF_REFUNDS = [
+  {id:'ZRTK20260912000012', order:'ZY20260911184206742', time:'2026-09-12 09:30:11', type:'客户退款',
+   driver:'周慧敏', plate:'津BQ7712', goods:'-10# 柴油 · 86.20 L', amt:590.46,
+   reason:'实际未加注，油枪跳枪异常', audit:'退款失败',
+   redResult:'红冲成功',
+   redNote:'红冲成功后执行退款；本次演示单为历史留样',
+   auditBy:'张世民（运营中台）', auditAt:'2026-09-12 09:41',
+   failNote:'红冲接口超时，退款单终止；线下抵扣处理完成后重新发起退款申请',
+   subs:[{no:'ZY20260911184206742001', waybill:'UD2026091100000301', driver:'周慧敏 / 津BQ7712', amt:590.46}]},
+  {id:'ZRTK20260912000013', order:'ZY20260911184206742', time:'2026-09-12 09:30:11', type:'油站退款',
+   driver:'周慧敏', plate:'津BQ7712', goods:'-10# 柴油 · 86.20 L', amt:590.46,
+   reason:'实际未加注，油枪跳枪异常', audit:'退款失败',
+   redResult:'红冲成功', redNote:'红冲成功后执行退款；本次演示单为历史留样',
+   auditBy:'张世民（运营中台）', auditAt:'2026-09-12 09:41',
+   failNote:'红冲接口超时，退款单终止；线下抵扣处理完成后重新发起退款申请',
+   subs:[{no:'ZY20260911184206742001', waybill:'UD2026091100000301', driver:'周慧敏 / 津BQ7712', amt:590.46}]},
+  {id:'ZRTK20260912000018', order:'ZY20260912093102201', time:'2026-09-12 11:20:36', type:'客户退款',
+   driver:'田玲玲', plate:'辽AEK808', goods:'0# 轻柴油 · 191.43 L', amt:1286.40,
+   reason:'司机加错油品，整单退款', audit:'待审核',
+   redResult:'红冲成功', auditBy:'—', auditAt:'—',
+   subs:[{no:'ZY20260912093102201001', waybill:'UD2026091200000315', driver:'田玲玲 / 辽AEK808', amt:1286.40}]},
+  {id:'ZRTK20260912000019', order:'ZY20260912093102201', time:'2026-09-12 11:20:36', type:'油站退款',
+   driver:'田玲玲', plate:'辽AEK808', goods:'0# 轻柴油 · 191.43 L', amt:1286.40,
+   reason:'司机加错油品，整单退款', audit:'待审核',
+   redResult:'红冲成功', auditBy:'—', auditAt:'—',
+   subs:[{no:'ZY20260912093102201001', waybill:'UD2026091200000315', driver:'田玲玲 / 辽AEK808', amt:1286.40}]},
+  {id:'ZRTK20260912000021', order:'ZY20260911102209308', time:'2026-09-12 13:05:47', type:'客户退款',
+   driver:'宿红', plate:'蒙T9U81U', goods:'0# 轻柴油 · 120.82 L', amt:812.30,
+   reason:'重复支付', audit:'审核通过',
+   auditBy:'张世民（运营中台）', auditAt:'2026-09-12 13:20',
+   redNote:'审核通过触发红冲（乐企蓝票），红冲进行中，退款待红冲成功后执行',
+   subs:[{no:'ZY20260911102209308001', waybill:'UD2026091100000288', driver:'宿红 / 蒙T9U81U', amt:812.30}]},
+  {id:'ZRTK20260912000024', order:'ZY20260910091222518', time:'2026-09-12 15:42:19', type:'客户退款',
+   driver:'李强', plate:'京A1234Q', goods:'CNG · 236.70 kg', amt:1420.00,
+   reason:'重复下单', audit:'审核驳回',
+   auditBy:'张世民（运营中台）', auditAt:'2026-09-12 16:01',
+   subs:[{no:'ZY20260910091222518001', waybill:'UD2026091000000241', driver:'李强 / 京A1234Q', amt:1420.00}]}
+];
+
+/* ================= 网点公司管理演示数据（自动下线配置口径见页面说明） ================= */
+const SITE_COS = [
+  {id:'WD1001', name:'中石化辽宁石油分公司', level:'铂金', yb:'已开通', enable:'启用', line:'n=1',
+   created:'李彬企业员工-18800000009 2026-10-09 14:03:34',
+   logs:[
+     {t:'2026-09-10 09:00:00', act:'开票配置', note:'开启「线上开票失败 n 笔自动下线」，n=1'},
+     {t:'2026-09-12 10:12:00', act:'启用', note:'运营手动启用（此前开票失败计数已清零）'}
+   ]},
+  {id:'WD1002', name:'高灯能源科技有限公司', level:'黄金', yb:'已开通', enable:'启用', line:'n=2',
+   created:'测试-17864653289 2026-10-09 11:14:38',
+   logs:[
+     {t:'2026-09-08 15:00:00', act:'开票配置', note:'开启「线上开票失败 n 笔自动下线」，n=2'},
+     {t:'2026-09-20 09:41:00', act:'自动下线', note:'线上开票失败累计 2 笔，达到阈值 n=2，自动下线（启用状态→停用）'},
+     {t:'2026-09-21 10:05:00', act:'启用', note:'运营手动启用，开票失败计数从 0 重新累计'}
+   ]},
+  {id:'WD1003', name:'中石油天津销售分公司', level:'黄金', yb:'已开通', enable:'停用', line:'n=1',
+   created:'测试-17864653289 2026-10-08 16:18:47',
+   logs:[
+     {t:'2026-09-19 18:00:00', act:'开票配置', note:'开启「线上开票失败 n 笔自动下线」，n=1'},
+     {t:'2026-09-25 09:12:00', act:'自动下线', note:'线上开票失败累计 1 笔，达到阈值 n=1，自动下线（启用状态→停用）'}
+   ]},
+  {id:'WD1004', name:'畅油网络科技有限公司', level:'普通', yb:'未开通', enable:'启用', line:'未开启',
+   created:'测试-17864653289 2026-10-08 09:55:46',
+   logs:[
+     {t:'2026-09-01 11:00:00', act:'开票配置', note:'尝试开启自动下线配置：未开通易宝账户，系统拦截'}
+   ]},
+  {id:'WD1005', name:'中交兴路能源有限公司', level:'普通', yb:'已开通', enable:'启用', line:'未开启',
+   created:'魏巍-18945119748 2026-09-29 10:36:33', logs:[]},
+  {id:'WD1006', name:'万联易达（辽宁）供应链有限公司', level:'铂金', yb:'已开通', enable:'启用', line:'未开启',
+   created:'小李-18800000008 2026-09-28 15:47:38', logs:[]}
 ];
 
 const VOUCHERS = [
@@ -1366,6 +1633,12 @@ TONE['支付处理中'] = TONE['调拨中'] || 'info';
 TONE['支付成功'] = 'ok'; TONE['退款成功'] = 'ok'; TONE['处理中'] = 'info';
 /* 货主锁站锁价：规则状态只有「生效 / 停用」 */
 TONE['生效']='ok'; TONE['停用']='mut';
+/* 乐企开票（渠道分治）：乐企渠道 7 值状态 + 线下渠道沿用旧 4 值 */
+TONE['开票成功']='ok'; TONE['开票失败']='bad'; TONE['红冲中']='info'; TONE['红冲失败']='bad'; TONE['已红冲']='ok';
+/* 退款红冲前置：退款单终止态；自营退款审核驳回 */
+TONE['退款失败']='bad'; TONE['审核驳回']='mut';
+/* 订单发票管理：蓝票 / 红票 */
+TONE['蓝票']='ok'; TONE['红票']='bad';
 const tone = s => TONE[s] || 'mut';
 const pill = s => `<span class="pill ${tone(s)}">${s}</span>`;
 function custTypeTag(t){
@@ -1410,12 +1683,18 @@ const PAGES = [
   {id:'fee',     name:'服务费订单管理', sub:'服务费流水 / 开票申请 / 能源发票关联', side:'运营平台', grp:'撮合订单'},
   {id:'refund',  name:'退款申请管理', sub:'整单全额退款 / 审核 / 进度', side:'运营平台', grp:'撮合订单'},
 
+  /* ---- 运营平台 · 订单中心（自营）· 网点中心：乐企开票配套 ---- */
+  {id:'selfOrders',  name:'自营订单管理', sub:'自营站订单 / 司机支付与油站扣款 / 乐企开票渠道分治', side:'运营平台', grp:'订单中心'},
+  {id:'selfRefund',  name:'自营订单退款', sub:'客户退款 / 油站退款 / 审核（乐企红冲前置）', side:'运营平台', grp:'订单中心'},
+  {id:'siteCompany', name:'网点公司管理', sub:'网点公司档案 / 易宝账户 / 开票失败自动下线配置', side:'运营平台', grp:'网点中心'},
+
   /* ---- 运营平台 · 财务中心 ---- */
   {id:'flow',    name:'资金交易流水明细', sub:'客户 / 油站 / 平台三侧全账户流水', side:'运营平台', grp:'财务中心', subgrp:'资金流水管理'},
 
   /* ---- 运营平台 · 发票中心 ---- */
   {id:'energyInvApply', name:'能源发票管理', sub:'油品票 / 天然气票申请 · 油站开票上传 · 批量下载', side:'运营平台', grp:'发票中心'},
   {id:'feeInvApply',    name:'服务费发票管理', sub:'服务费账单开票申请 · 平台开票 · 批量下载', side:'运营平台', grp:'发票中心'},
+  {id:'orderInvoices',  name:'订单发票管理', sub:'乐企订单发票 · 蓝 / 红票逐张 · 开票 / 红冲 / 再次开票', side:'运营平台', grp:'发票中心'},
 
   /* ---- 油站端 · 发票中心 ---- */
   {id:'stationInv', name:'发票管理', sub:'接收客户开票申请 · 开票上传 · 发票下载', side:'油站端', grp:'发票中心'},
@@ -1454,12 +1733,14 @@ const PAGES = [
 const LIVE_PAGES = ['orders','fee','refund','energyInvApply','feeInvApply','serviceFee','withdrawRecord'];
 /* 客户中心（网货货主，路由 oilWangHuoCustomerInfo）与商品中心（货主锁站锁价）均为 OMS 现网既有模块；
    页面 UI 与其余运营页统一走 live-surface 对齐层皮肤，菜单分组同为 OMS 结构。 */
-const PHASE2_PAGES = ['oilWangHuoCustomerInfo','freightLock'];
+const PHASE2_PAGES = ['oilWangHuoCustomerInfo','freightLock','selfOrders','selfRefund','siteCompany','orderInvoices'];
 /* 运营平台按 OMS 现网菜单展示；只保留有页面的分组 */
 const LIVE_NAV = [
   ['客户中心','❖',['oilWangHuoCustomerInfo']],
   ['撮合订单','♧',['orders','fee','refund']],
-  ['开票中心','▣',['energyInvApply','feeInvApply']],
+  ['订单中心','◈',['selfOrders','selfRefund']],
+  ['网点中心','◉',['siteCompany']],
+  ['开票中心','▣',['energyInvApply','feeInvApply','orderInvoices']],
   ['财务中心','◩',['serviceFee','withdrawRecord']],
   ['商品中心','◇',['freightLock']],
 ];
@@ -1574,6 +1855,8 @@ document.addEventListener('click', e=>{
                                                         openConfirm(cf.dataset.confirm, cf.dataset.key); return; }
   const dl = e.target.closest('[data-download]'); if(dl){ if(dl.classList.contains('off')) return;
                                                         showToast('单张发票已开始本地下载'); return; }
+  const lq = e.target.closest('[data-leqiinv]'); if(lq){ if(lq.classList.contains('off')) return;
+                                                        window._leqiInvKey = lq.dataset.leqiinv; openModal('leqiInvs'); return; }
   const ex = e.target.closest('[data-export-async]'); if(ex){ startAsyncExport(ex.dataset.exportAsync); return; }
   const mx = e.target.closest('[data-mclose]');  if(mx){ modal.classList.remove('on'); return; }
   const c = e.target.closest('[data-chip]');     if(c){ orderFilter = c.dataset.chip; paint(); return; }
@@ -1585,9 +1868,25 @@ document.addEventListener('click', e=>{
   const lv = e.target.closest('[data-lockview]');   if(lv){ openLockRuleView(lv.dataset.lockview); return; }
   const le = e.target.closest('[data-lockedit]');   if(le){ openLockEditor(le.dataset.lockedit); return; }
   const lt = e.target.closest('[data-locktoggle]'); if(lt){ openConfirm('lockRuleToggle', lt.dataset.locktoggle); return; }
+  /* 自营订单 / 自营退款 / 网点公司（乐企开票配套页） */
+  const sm = e.target.closest('[data-selfmenu]'); if(sm){ toggleSelfMenu(sm.dataset.selfmenu, sm); return; }
+  const sa = e.target.closest('[data-selfact]'); if(sa){ handleSelfAction(sa.dataset.selfact, sa.dataset.no); return; }
+  const sd = e.target.closest('[data-sdetail]'); if(sd){ openSimple('selfOrder', sd.dataset.sdetail); return; }
+  const sr = e.target.closest('[data-srefdetail]'); if(sr){ openSimple('selfRefund', sr.dataset.srefdetail); return; }
+  const sau = e.target.closest('[data-selfaudit]'); if(sau){ window._selfAuditKey = sau.dataset.selfaudit; openModal('selfRefundAudit'); return; }
+  const sao = e.target.closest('[data-selfaudit-ok]'); if(sao){ processSelfRefundAudit(sao.dataset.selfauditOk); return; }
+  const slc = e.target.closest('[data-siteline]'); if(slc){ window._siteLineKey = slc.dataset.siteline; openModal('siteLineConf'); return; }
+  const sls = e.target.closest('[data-siteline-save]'); if(sls){ saveSiteLineConf(); return; }
+  const sen = e.target.closest('[data-site-enable]'); if(sen){ enableSiteCo(sen.dataset.siteEnable); return; }
+  const sdt = e.target.closest('[data-siteco-detail]'); if(sdt){ openSimple('siteCo', sdt.dataset.sitecoDetail); return; }
+  if(!e.target.closest('.self-menu') && !e.target.closest('[data-selfmenu]')) closeSelfMenus();
   /* 点空白处收起网货主体下拉 */
   if(lockEntityOpen && !e.target.closest('#lockEntityPicker')){ lockEntityOpen = false; lockRefresh(); }
 });
+
+/* 全局操作菜单：滚动/缩放时收起（只注册一次） */
+window.addEventListener('scroll', closeSelfMenus, true);
+window.addEventListener('resize', closeSelfMenus);
 
 /* ================= 下拉选项字典 ================= */
 const OPT = {
@@ -1615,6 +1914,9 @@ const OPT = {
   moveSt:['待划转','划转中','已到账','冲正','退回'],
   reconSt:['未对账','对账中','已对账','对账差异'],
   invFlowSt:['未开票','开票中','已开票','已撤销'],
+  /* 乐企开票：开票渠道枚举=乐企、线下；乐企渠道订单用 7 值状态集（渠道分治，同列显示） */
+  invChannel:['乐企','线下'],
+  leqiInvSt:['待开票','开票中','开票失败','开票成功','红冲中','红冲失败','已红冲'],
   orderType:['实时订单','补录订单'],
   quotaAct:['冻结','扣减','解冻差额','回补'],
   quotaSt:['冻结中','已生效','已释放'],
@@ -1622,8 +1924,17 @@ const OPT = {
   acctName:['万联易达物流科技有限公司','蒙晋通达运输有限公司','鲁通冷链物流有限公司','中石化辽宁石油分公司','高灯能源科技有限公司','中交兴路能源有限公司','万联易达科技有限公司'],
   fundEvent:['客户资金调拨','服务费调拨','退款（资金退回）','冲正','差额调拨','差额退回'],
   refundBy:['运营平台','油站'],
-  refundSt:['待审核','审核中','已退款'],
+  refundSt:['待审核','审核中','已退款','退款失败'],
   auditSt:['待确认','已确认'],
+  /* 自营订单中心 / 网点公司管理（乐企开票配套演示页） */
+  selfPaySt:['待支付','已支付','支付失败'],
+  selfDeductSt:['待扣款','已扣款','扣款失败'],
+  selfVerifySt:['待核销','已核销'],
+  selfRefType:['客户退款','油站退款'],
+  selfAuditSt:['待审核','审核通过','审核驳回','退款失败'],
+  siteLevel:['普通','黄金','铂金'],
+  siteYbAcct:['已开通','未开通'],
+  siteEnable:['启用','停用'],
   api:['资金调拨','订单退款'],
   voucherSt:['调拨中','调拨成功','调拨失败','退回成功'],
   applySt:['开票中','已开票','已撤销'],
@@ -1647,12 +1958,12 @@ const OPT = {
      · 货主企业为主数据（客户中心 → 网货货主维护），配置时搜索选择，必选、至少一家
      · 油站从网点管理全部油站中选择（含客户商品管理未推送的油站），
        按「油站 + 油品」逐行配置；添加油站时校验签约合同（见 lockAddGoods）
-     · 价格 = 网点商品管理维护的企业价 − 价格调整金额（正数=减价、负数=涨价），不是绝对定价；
+     · 价格 = 网点商品管理维护的企业价 + 价格调整金额（正数=涨价、负数=降价），不是绝对定价；
        锁后价同步驱动上游结算价与下游企业价，上下游订单单价 / 金额 / 总金额保持一致
      · 模式只有两类：锁站（不调价）/ 锁站锁价（逐行填写价格调整金额）
      · 状态只有两个：生效 / 停用
      · 同一「网货主体 + 货主企业」不允许存在两条生效规则
-   优先级：命中「网货主体 + 货主企业」的生效规则（明细内油站全部可见可加注） >
+   优先级：命中「网货主体 + 货主企业」的生效规则（按明细保留的「油站+油品」展示并可加注） >
            回落客户商品管理按网货主体的推送数据 */
 
 /* 网货主体：现网客户企业主数据，页面用搜索下拉读取 */
@@ -1679,7 +1990,7 @@ const FREIGHT_OWNERS = [
 
 /* 油站目录：网点管理全部油站；价格（企业价、成本价）在「网点商品管理」维护，
    与客户商品管理的按主体推送无关（未推送的油站同样可选可配置）
-   entPrice 即减价基准；本层不新建油站与油品 */
+   entPrice 即调价基准；本层不新建油站与油品 */
 const LOCK_STATIONS = [
   {code:'ST0001', name:'沈阳浑南加油站',   co:'中石化辽宁石油分公司', energy:'柴油',   city:'沈阳', goods:[
     {goodsId:'G01', goodsName:'0# 轻柴油', entPrice:6.68, cost:6.12},
@@ -1749,24 +2060,24 @@ const LOCK_STATUS = {ON:'生效', OFF:'停用'};
    entities   ：适用网货主体 id 列表
    owners     ：适用货主企业 id 列表；必填、至少 1 家（取消「不选＝全部货主企业」，该场景由客户商品管理按网货主体的推送覆盖）
    stations   ：明细行，一行 = 一个「油站 + 油品」
-                reduce 仅在锁站锁价模式下有值，为「价格调整金额」：正数=减价、负数=涨价 */
+                reduce 仅在锁站锁价模式下有值，为「价格调整金额」：正数=涨价、负数=降价 */
 const LOCK_RULES = [
   {id:'AS2026100001', name:'万联上海 · 沈阳天津锁站锁价', mode:'锁站锁价', status:'生效',
    entities:['E1001'], owners:['SH0200001'],
    remark:'上海分公司常跑沈阳、天津线，按线路锁定油站并让利',
    createdBy:'张运营', createdAt:'2026-10-08 15:42', updatedBy:'张运营', updatedAt:'2026-10-08 15:42',
    stations:[
-     {station:'ST0001', goods:'G01', reduce:0.10},
-     {station:'ST0007', goods:'G01', reduce:0.05},
+     {station:'ST0001', goods:'G01', reduce:-0.10},
+     {station:'ST0007', goods:'G01', reduce:-0.05},
    ]},
   {id:'AS2026100002', name:'万联天津 · 沈阳天津锁站锁价', mode:'锁站锁价', status:'生效',
    entities:['E1001'], owners:['SH0200002'],
-   remark:'天津分公司同线路，个别油站按涨幅回调（负数=涨价）',
+   remark:'天津分公司同线路，个别油站按涨幅回调（正数=涨价）',
    createdBy:'张运营', createdAt:'2026-10-08 16:05', updatedBy:'张运营', updatedAt:'2026-10-08 16:05',
    stations:[
-     {station:'ST0001', goods:'G01', reduce:0.06},
-     {station:'ST0002', goods:'G02', reduce:-0.20},
-     {station:'ST0003', goods:'G01', reduce:0.04},
+     {station:'ST0001', goods:'G01', reduce:-0.06},
+     {station:'ST0002', goods:'G02', reduce:0.20},
+     {station:'ST0003', goods:'G01', reduce:-0.04},
    ]},
   {id:'AS2026100003', name:'蒙晋通达本部 · 天津锁站', mode:'锁站', status:'生效',
    entities:['E1002'], owners:['SH0100002'],
@@ -1781,8 +2092,8 @@ const LOCK_RULES = [
    remark:'两个网货主体、两个货主共用一套站与价；暂时停用，等价格确认',
    createdBy:'李运营', createdAt:'2026-10-08 18:02', updatedBy:'王运营', updatedAt:'2026-10-09 09:15',
    stations:[
-     {station:'ST0004', goods:'G01', reduce:0.08},
-     {station:'ST0005', goods:'G02', reduce:0.12},
+     {station:'ST0004', goods:'G01', reduce:-0.08},
+     {station:'ST0005', goods:'G02', reduce:-0.12},
    ]},
   {id:'AS2026100005', name:'万联本部 · 试点货主统一锁站', mode:'锁站', status:'停用',
    entities:['E1001'], owners:['SH0200001','SH0200002'],
@@ -1798,9 +2109,9 @@ const LOCK_RULES = [
    remark:'一条规则同时挂多个网货主体（3 主体 × 3 货主企业），暂未启用',
    createdBy:'张运营', createdAt:'2026-10-09 13:40', updatedBy:'张运营', updatedAt:'2026-10-09 13:40',
    stations:[
-     {station:'ST0001', goods:'G01', reduce:0.06},
-     {station:'ST0006', goods:'G03', reduce:0.10},
-     {station:'ST0008', goods:'G03', reduce:0.08},
+     {station:'ST0001', goods:'G01', reduce:-0.06},
+     {station:'ST0006', goods:'G03', reduce:-0.10},
+     {station:'ST0008', goods:'G03', reduce:-0.08},
    ]},
 ];
 
@@ -1847,8 +2158,8 @@ const LOCK_RULES = [
     remark:'货主企业数量大，用于验证详情内的检索、分页',
     createdBy:'张运营', createdAt:'2026-10-09 11:30', updatedBy:'张运营', updatedAt:'2026-10-09 11:30',
     stations:[
-      {station:'ST0001', goods:'G01', reduce:0.05},
-      {station:'ST0002', goods:'G02', reduce:0.03},
+      {station:'ST0001', goods:'G01', reduce:-0.05},
+      {station:'ST0002', goods:'G02', reduce:-0.03},
     ]});
 })();
 
@@ -1862,7 +2173,7 @@ const LOCK_RULES = [
     entities:['E1002'], owners:['SH0100002','SH0200003'],
     remark:'明细行数大，用于验证检索、筛选与分页',
     createdBy:'张运营', createdAt:'2026-10-09 12:10', updatedBy:'张运营', updatedAt:'2026-10-09 12:10',
-    stations: rows.map((l,i)=>({...l, reduce: i%3===0 ? 0.05 : 0}))});
+    stations: rows.map((l,i)=>({...l, reduce: i%3===0 ? -0.05 : 0}))});
 })();
 
 const entityById = id => FREIGHT_ENTITIES.find(e=>e.id===id) || null;
@@ -2102,7 +2413,9 @@ function visibleCols(id){
   return colOrder(id).map(k=>map[k]).filter(c=>c && !hidden.includes(c.k));
 }
 function rowSelectable(id,o){
-  if(id==='orders'||id==='cOrders') return isEnergyInvoiceEligible(o);
+  /* 撮合/企业订单列表：线下渠道可开票订单进「批量申请开票」勾选池；
+     乐企渠道「开票成功/已红冲」订单可勾选用于「批量下载发票」（仅下载最新 1 次发票） */
+  if(id==='orders'||id==='cOrders') return isEnergyInvoiceEligible(o) || (o.invCh==='乐企' && (o.inv==='开票成功'||o.inv==='已红冲'));
   if(id==='fee') return isServiceFeeInvoiceEligible(o);
   return true;
 }
@@ -2243,12 +2556,81 @@ const ORDER_COLS = regCols('orders', [
                  td:o=>`<span style="color:var(--oil);font-weight:600">${money(o.real||o.est)}</span>`},
   {k:'st',       t:'订单状态',   w:'96px',  td:o=>pill(o.st)},
   {k:'pay',      t:'支付状态',   w:'96px',  td:o=>pill(o.pay)},
-  {k:'inv',      t:'开票状态',   w:'92px',  td:o=>pill(o.inv)},
-  {k:'ops',      t:'操作',       w:'200px', cls:'acts',
+  {k:'invCh',    t:'开票渠道',   w:'92px',  td:o=>invChTag(o)},
+  {k:'inv',      t:'开票状态',   w:'116px', td:o=>pill(o.inv)},
+  {k:'invFail',  t:'失败原因',   w:'180px', td:o=>o.invFail?`<span style="color:var(--bad);font-size:12px">${o.invFail}</span>`:'—'},
+  {k:'ops',      t:'操作',       w:'300px', cls:'acts',
                  td:o=>`<span class="btn-group"><button data-detail="${o.no}">详情</button>
+                        <button class="${leqiCanInvoice(o)?'':'off'}" data-confirm="leqiInvoice" data-key="${o.no}">手动开票</button>
+                        <button class="${((o.invCh||'线下')==='乐企'&&(o.inv==='开票成功'||o.inv==='已红冲')&&leqiLatestInv(o.no))?'':'off'}" data-leqiinv="${o.no}" title="该订单全部蓝/红票查看与下载">发票查看下载</button>
                         <button class="${o.pay==='已支付'?'danger':'off'}" data-confirm="refundApply" data-key="${o.no}">退款</button></span>`}
 ]);
 const qtyUnit = o => o.energy==='天然气' ? 'kg' : 'L';
+
+/* ---- 乐企开票通用小工具（撮合订单 / 自营订单共用） ---- */
+/* 手动开票可用状态：待开票 / 开票失败 / 已红冲（红冲无手动入口，均由退款发起） */
+const leqiCanInvoice = o => o.invCh==='乐企' && ['待开票','开票失败','已红冲'].includes(o.inv);
+const invChTag = o => o.invCh==='乐企' ? '<span class="tag f">乐企</span>' : '<span class="tag">线下</span>';
+/* 订单详情·开票信息区：渠道状态 + 全部蓝红票（逐张下载） + 开票记录 */
+function leqiOrderInvHTML(o){
+  const invs = leqiInvOfOrder(o.no);
+  const logs = leqiLogsOfOrder(o.no);
+  return `
+  <div>
+    <div class="sec-title">开票信息（乐企）</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px">
+      <dl class="kv">
+        <dt>开票渠道</dt><dd>${invChTag(o)}</dd>
+        <dt>开票状态</dt><dd>${pill(o.inv)}</dd>
+        ${o.invFail?`<dt>失败原因</dt><dd style="color:var(--bad)">${o.invFail}</dd>`:''}
+      </dl>
+      <dl class="kv">
+        <dt>销方（油站企业）</dt><dd>${o.stationCo}</dd>
+        <dt>购方</dt><dd>${o.cust}</dd>
+        <dt>开票规则</dt><dd>易宝支付成功即自动开票，一单一票；红冲均由退款发起</dd>
+      </dl>
+    </div>
+    <div class="tablewrap" style="margin-top:10px">
+      <table style="min-width:680px">
+        <thead><tr><th>发票类型</th><th>发票号码</th><th>金额（元）</th><th>开票时间</th><th>触发方式</th><th>状态</th><th>关联发票</th><th style="width:90px">附件</th></tr></thead>
+        <tbody>${invs.length?invs.map(i=>`<tr>
+          <td>${pill(i.type)}</td><td class="mono">${i.no}</td>
+          <td class="num" style="color:${i.amt<0?'var(--bad)':'var(--oil)'}">${money(i.amt)}</td>
+          <td class="mono">${i.t}</td><td>${i.trigger}</td>
+          <td>${pill(leqiInvStatusOf(i))}</td><td class="mono">${i.rel}</td>
+          <td class="acts"><button data-download="invoice" data-key="${i.no}">下载</button></td>
+        </tr>`).join(''):'<tr><td colspan="8" class="empty">暂无发票；开票成功 / 已红冲后此处可见全部蓝红票</td></tr>'}</tbody>
+      </table>
+    </div>
+    <div class="tablewrap" style="margin-top:10px">
+      <table style="min-width:680px">
+        <thead><tr><th>时间</th><th>触发方式</th><th>动作</th><th>结果</th><th>说明</th></tr></thead>
+        <tbody>${logs.length?logs.map(l=>`<tr>
+          <td class="mono">${l.t}</td><td>${l.way}</td><td>${l.act}</td>
+          <td>${l.result==='成功'?'<span class="pill ok">成功</span>':l.result==='失败'?'<span class="pill bad">失败</span>':'<span class="pill info">处理中</span>'}</td>
+          <td>${l.note}</td>
+        </tr>`).join(''):'<tr><td colspan="5" class="empty">暂无开票记录</td></tr>'}</tbody>
+      </table>
+    </div>
+    <p class="note" style="margin-top:8px">开票状态展示最新一次开票（蓝票+红票）的结果；开票失败自动重试每分钟 1 次×3 次，仍失败停留「开票失败」转人工。</p>
+  </div>`;
+}
+
+/* 退款处理进度：乐企订单在「运营确认」与「资金退回」之间插入红冲节点（红冲均由退款发起） */
+function leqiRedNode(o,r,step,done,failed){
+  const redFail  = o.inv==='红冲失败' || (r.redResult==='红冲失败' && failed);
+  const redDone  = o.inv==='已红冲';
+  const redDoing = o.inv==='红冲中';
+  const cls = redFail ? 'bad' : (redDone||redDoing ? '' : 'pend');
+  const dotStyle = redFail ? ' style="background:var(--bad)"' : '';
+  const m = redFail
+    ? `红冲失败：${r.redFail||o.invFail||'乐企红冲接口失败'}——退款单已终止为「退款失败」，线下抵扣处理完成后重新发起退款申请`
+    : redDone ? `${r.auditAt||'—'} · 退款审核通过触发红冲，已红冲，原蓝票冲销；继续执行退款`
+    : redDoing ? '退款审核通过触发红冲，红冲结果查询中；红冲成功后才执行退款'
+    : '退款审核通过后先红冲原蓝票，红冲成功后才执行退款';
+  return `<div class="it"><div class="dot ${cls}"${dotStyle}></div><div><div class="h">红冲原蓝票（乐企）</div>
+    <div class="m">${m}</div></div></div>`;
+}
 
 VIEWS.orders = () => {
   const list = ORDERS;
@@ -2263,7 +2645,7 @@ VIEWS.orders = () => {
         {l:'油站公司',t:'sel',o:OPT.stationCo,w2:1},
         {l:'订单状态',t:'sel',o:OPT.orderSt,w2:1},
         {l:'支付状态',t:'sel',o:OPT.paySt2,w2:1},
-        {l:'开票状态',t:'sel',o:OPT.invFlowSt,w2:1},
+        {l:'开票渠道',t:'sel',o:OPT.invChannel,w2:1},
         {l:'车牌号',t:'plate',p:'如 辽AEK808'},
         {l:'司机手机号',t:'tel',p:'11 位手机号'},
         {l:'油品名称',t:'sel',o:OPT.goods,w2:1},
@@ -2277,6 +2659,7 @@ VIEWS.orders = () => {
         {l:'能源类型',t:'sel',o:OPT.energy,w2:1},
         {l:'加油金额',t:'numrange',p1:'最小',p2:'最大',unit:'元',w2:1}
       ])}
+      <div class="f"><label class="w2">开票状态</label><div class="fc"><select class="inp"><option value="">全部</option><optgroup label="乐企">${OPT.leqiInvSt.map(x=>`<option>${x}</option>`).join('')}</optgroup><optgroup label="线下">${OPT.invFlowSt.map(x=>`<option>${x}</option>`).join('')}</optgroup></select></div></div>
     </div>
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button><span class="spacer"></span>
       <button class="btn link" onclick="const f=document.getElementById('orderFilters');f.classList.toggle('collapsed');this.textContent=f.classList.contains('collapsed')?'展开更多筛选':'收起筛选'">展开更多筛选</button></div>
@@ -2287,6 +2670,7 @@ VIEWS.orders = () => {
       <span class="title-stat">共 <b>${list.length}</b> 笔 · 合计 <b class="num-bad">¥${money(totalAmt)}</b></span>
       <span class="spacer"></span>
       <button class="btn sm" data-modal="backfill">订单补录</button>
+      <button class="btn sm" onclick="batchDownloadLeqiInvoices()">批量下载发票</button>
       <button class="btn sm primary" onclick="batchOrderInvoice()">批量申请开票</button>
       ${colCfgBtn('orders')}
       <button class="btn sm" data-modal="export">导出</button></div>
@@ -2322,8 +2706,20 @@ VIEWS.orders = () => {
         ['加油金额','金额','客户实际支付给油站的油款：核销前=下单预估金额，核销后=实际金额'],
         ['订单状态','待确认 / 已完成 / 已取消 / 退款中 / 已退款','管业务进度'],
         ['支付状态','待支付 / 支付中 / 已支付 / 支付失败 / 已退款','管资金到账，与订单状态互不阻塞'],
-        ['开票状态','未开票 / 开票中 / 已开票 / 已撤销','本期能源发票统一状态'],
+        ['开票渠道','乐企 / 线下','乐企=易宝支付+平台自营站柴油订单（支付成功即自动开票）；其余订单为线下渠道（客户申请+油站上传）'],
+        ['开票状态（渠道分治）','乐企渠道：待开票/开票中/开票失败/开票成功/红冲中/红冲失败/已红冲；线下渠道：未开票/开票中/已开票/已撤销','同一列按订单开票渠道显示对应值集；展示最新一次开票（蓝票+红票）的结果'],
+        ['失败原因','开票失败 / 红冲失败时展示','乐企接口返回的失败原因；开票失败自动重试每分钟 1 次×3 次，仍失败转人工'],
 
+      ])) +
+    nb('乐企开票：支付即开票（渠道分治）',
+      '<p><b>开票渠道=乐企</b>的订单（易宝支付 + 平台自营站柴油），支付成功后系统实时调用乐企自动开票，交易与开票解耦：开票失败不影响订单交易完成。</p>' +
+      tbl(['场景','口径'],[
+        ['开票触发','易宝支付成功即触发（乐企发票开具），不再校验分账处理完成；一单一票，票面无折扣行'],
+        ['开票状态','乐企渠道 7 值：待开票/开票中/开票失败/开票成功/红冲中/红冲失败/已红冲；线下渠道订单沿用 4 值不变，同列分治展示'],
+        ['开票失败','自动重试每分钟 1 次×3 次（重试开具），仍失败停留「开票失败」并展示失败原因，转人工手动开票或技术排查'],
+        ['手动开票','可用状态=待开票/开票失败/已红冲；已红冲重开蓝票用于「退款取消，仍需开票」场景'],
+        ['红冲','均由退款发起（退款审核通过触发），无手动红冲入口；红冲失败→退款单终止为「退款失败」，线下抵扣处理完成后重新发起退款申请'],
+        ['发票附件','详情抽屉展示全部蓝红票+开票记录；操作列「发票查看下载」仅开票成功/已红冲可见（弹窗展示该订单全部蓝/红票，逐张查看/下载，不限格式 url/pdf/ofd）']
       ])) +
     nb('业务规则',
       '\u003cp\u003e\u003cb\u003e订单全链路流转：\u003c/b\u003e\u003c/p\u003e' +
@@ -2335,7 +2731,9 @@ VIEWS.orders = () => {
         ['详情','任何时候','打开抽屉，展示订单信息 / 资金流水 / 支付凭证三个页签'],
         ['退款','支付状态为"已支付"','发起整单退款申请，进入退款审核流程'],
         ['订单补录','任何时候','补录线下已发生交易，不冻结额度，提交后状态直接为"已完成"，正常发起两笔调拨'],
-        ['批量申请开票','订单主状态、支付状态满足可开票值，且分账处理完成','按开票方+受票方+能源类型拆分申请单；提交前按申请单展示对应订单，每组超过5笔可独立翻页；提交后申请单与订单开票状态均为"开票中"'],
+        ['手动开票','开票渠道=乐企，且开票状态为「待开票/开票失败/已红冲」时亮','确认后调乐企发票开具，订单开票状态置为「开票中」并写入开票记录；已红冲订单重开蓝票（退款取消仍需开票场景）'],
+        ['批量下载发票','勾选行中存在「开票成功/已红冲」订单（乐企渠道）','仅下载各订单最新 1 次发票，支持单选/多选格式；非该状态的订单自动跳过，任务完成后在下载中心获取'],
+        ['批量申请开票','订单主状态、支付状态满足可开票值，且分账处理完成（乐企渠道订单自动开票，不进入本入口）','按开票方+受票方+能源类型拆分申请单；提交前按申请单展示对应订单，每组超过5笔可独立翻页；提交后申请单与订单开票状态均为"开票中"'],
         ['导出','任何时候','导出当前筛选（或已勾选）结果，字段与列表列一一对应']
       ])) +
     nb('边界情况',
@@ -2524,7 +2922,7 @@ VIEWS.group = () => {
         ['开票金额','取<b>总单金额</b>，不是任何单个子单的金额'],
         ['拆票装箱','总单是<b>不可分割的最小单位</b>。一个申请单拆成多张发票时，同一个总单只能整个落在其中一张票上'],
         ['部分开票','不存在。一个总单要么没开票，要么整个开完'],
-        ['开票后退款','本期不联动发票状态，已开票状态和流程保持不变']
+        ['开票后退款','乐企渠道订单：退款审核通过后先红冲原蓝票再退款（红冲失败拦截退款，退款单终止为「退款失败」）；线下渠道订单：不联动发票状态，已开票状态和流程保持不变']
       ]) +
       '<p style="margin-top:8px">代价是客户从票面上<b>看不出这笔油费该分摊到哪几张运单</b>，而这正是他们做成本归集要的。解决办法是「导出子单」——导出的明细表里每张运单占用多少钱、折合多少升都已经分摊好，发票和明细表配合使用。</p>' +
       '<p style="margin-top:6px">曾考虑把运单号写进发票备注栏，但税控备注有字数上限，运单一多写不下，且票面信息与账务分摊混在一起反而容易引起税务疑问。<b>不采用。</b></p>') +
@@ -2749,10 +3147,19 @@ VIEWS.refund = () => {
         ['审核状态','待确认','已提交，等运营点「确认退款」'],
         ['','已确认','已确认，退款开始执行；记录确认人与确认时间'],
         ['退款状态','待审核','单子刚提交，还没确认，钱一分没动'],
-        ['','审核中','已确认，两笔反向转账执行中'],
-        ['','已退款','油款、服务费、额度回补全部完成']
+        ['','审核中','已确认，两笔反向转账执行中（乐企订单此时处于红冲环节）'],
+        ['','已退款','油款、服务费、额度回补全部完成'],
+        ['','退款失败','终态：乐企订单红冲失败时退款单终止；线下抵扣处理完成后重新发起退款申请']
       ]) +
       '<p style="margin-top:10px">两个字段是<b>联动的</b>：审核状态是「操作走到哪」，退款状态是「钱走到哪」。确认这个动作同时把审核状态推到「已确认」、把退款状态从「待审核」推到「审核中」。</p>') +
+    nb('乐企开票订单的退款：先红冲后退款',
+      '<p>开票渠道=<b>乐企</b>的订单（开票成功），退款审核通过后<b>必须先红冲原蓝票</b>（乐企发票冲红，红冲均由退款发起、唯一触发点），红冲成功后才执行退款；<b>无手动红冲入口</b>。</p>' +
+      tbl(['退款审核后的三种结果','提示口径','后续动作'],[
+        ['红冲成功 + 退款成功','红冲成功，原蓝票已冲销；油款与服务费两笔退回成功','退款单完成，订单开票状态=已红冲'],
+        ['红冲成功 + 退款失败（资金侧）','红冲成功，但油款或服务费转账失败','退款单标「退款失败」，转运营人工工单处理'],
+        ['红冲失败 + 退款失败','红冲失败：展示乐企返回的失败原因；退款单<b>终止为「退款失败」</b>','线下抵扣处理完成后<b>重新发起退款申请</b>再走审核；审核通过后再次触发红冲']
+      ]) +
+      '<p style="margin-top:8px">红冲进行中的订单<b>拦截确认退款</b>；已红冲的订单退款不再触发红冲。线下渠道订单不受影响，发票状态维持现状不联动。</p>') +
     nb('什么情况下能发起退款',
       '<p>能不能退、怎么退，完全取决于这笔订单的<b>支付状态</b>：</p>' +
       branch([
@@ -2780,7 +3187,7 @@ VIEWS.refund = () => {
       ])) +
     nb('详情里有什么',
       tbl(['区块','内容','用来做什么'],[
-        ['退款进度','提交退款申请 → 运营确认 → 资金退回','查看当前处理进度'],
+        ['退款进度','提交退款申请 → 运营确认 →（乐企：红冲原蓝票）→ 资金退回','查看当前处理进度'],
         ['申请信息','单号、关联订单、发起方、发起人、时间和原因','核实这单为什么退'],
         ['订单与客户','总公司、油站公司、油站、司机车牌、原订单金额与支付状态','确认退款对应的原订单'],
         ['退款金额构成','油款 / 服务费 / 额度三行，各自的方向、记录位置与状态','说清这一单一共动了几笔钱、分别记在哪个页面'],
@@ -2789,6 +3196,7 @@ VIEWS.refund = () => {
       '<p style="margin-top:10px">金额区块里<b>服务费那一行标注了「记录在服务费订单」</b>：本页只做展示，那一笔的支付状态以「服务费订单」页为准。这和订单页的口径一致——服务费的账在服务费自己的菜单里。</p>') +
     nb('确认之后，系统按顺序做这些事',
       '<ol style="padding-left:18px;display:flex;flex-direction:column;gap:4px">' +
+      '<li>乐企开票订单：先调乐企冲红原蓝票（红冲失败→退款单终止为「退款失败」并拦截执行）。</li>' +
       '<li>发起两笔反向转账：油款从油站公司退回客户；服务费从平台退回原支付方。</li>' +
       '<li>把额度回补到原运单。</li>' +
       '<li>退款状态从「审核中」更新为「已退款」。</li></ol>') +
@@ -2796,6 +3204,353 @@ VIEWS.refund = () => {
   )}`;
 };
 
+
+/* ================= 自营订单管理（订单中心） =================
+   现网订单中心自营订单页简化复刻；开票渠道/开票状态口径与撮合订单一致（渠道分治）。 */
+const SELFORDES_COLS = regCols('selfOrders', [
+  {k:'no',      t:'订单流水号', w:'200px', td:o=>`<span class="mono">${o.no}</span><div class="t2">${o.time}</div>`},
+  {k:'co',      t:'所属公司',   td:o=>`<div class="t1">${o.co}</div><div class="t2">${o.coType}</div>`},
+  {k:'customer',t:'客户信息',   w:'150px', td:o=>`${o.driver}<div class="t2 mono">${o.plate}</div>`},
+  {k:'station', t:'油站信息',   td:o=>`<div class="t1">${o.station}</div><div class="t2">${o.stationCo}</div>`},
+  {k:'goods',   t:'油品 / 数量', w:'140px', td:o=>`${o.goods}<div class="t2 num">${o.qty.toFixed(2)} ${qtyUnit(o)}</div>`},
+  {k:'amt',     t:'实付金额',   w:'110px', cls:'num', td:o=>`<b class="num" style="color:var(--oil)">${money(o.amt)}</b>`},
+  {k:'paySt',   t:'司机支付状态', w:'110px', td:o=>pill(o.paySt)},
+  {k:'deductSt',t:'油站扣款状态', w:'110px', td:o=>pill(o.deductSt)},
+  {k:'verifySt',t:'订单核销状态', w:'110px', td:o=>pill(o.verifySt)},
+  {k:'invCh',   t:'开票渠道',   w:'92px',  td:o=>invChTag(o)},
+  {k:'inv',     t:'开票状态',   w:'116px', td:o=>pill(o.inv)},
+  {k:'invFail', t:'失败原因',   w:'180px', td:o=>o.invFail?`<span style="color:var(--bad);font-size:12px">${o.invFail}</span>`:'—'},
+  {k:'ops',     t:'操作',       w:'300px', cls:'acts', td:o=>selfOrderOps(o)}
+]);
+/* 行操作：详情 + 手动开票（乐企可用状态）+ 操作下拉（整体/客户/油站退款、网点支付、修改结算信息） */
+function selfOrderOps(o){
+  const hasInv = (o.invCh||'线下')==='乐企' && (o.inv==='开票成功'||o.inv==='已红冲') && !!leqiLatestInv(o.no);
+  return `<span class="btn-group">
+    <button data-sdetail="${o.no}">详情</button>
+    ${leqiCanInvoice(o)?`<button data-confirm="leqiInvoice" data-key="${o.no}">手动开票</button>`:''}
+    ${hasInv?`<button data-leqiinv="${o.no}" title="该订单全部蓝/红票查看与下载">发票查看下载</button>`:''}
+    <button data-selfmenu="${o.no}">操作 ▾</button></span>`;
+}
+/* 全局唯一操作菜单：body 级 fixed 定位，避免被表格冻结列/后续行的层叠上下文遮盖 */
+function toggleSelfMenu(no, btn){
+  const m = document.getElementById('selfMenuGlobal'); if(!m||!btn) return;
+  const wasHidden = m.hidden;
+  closeSelfMenus();
+  if(wasHidden){
+    m.querySelectorAll('button').forEach(b=>b.dataset.no = no);
+    m.hidden = false;
+    const r = btn.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
+    let left = Math.max(8, Math.min(r.right - mw, window.innerWidth - mw - 8));
+    let top = r.bottom + 4;
+    if(top + mh > window.innerHeight - 8) top = Math.max(8, r.top - mh - 4);
+    m.style.left = left+'px'; m.style.top = top+'px';
+  }
+}
+function closeSelfMenus(){ const m=document.getElementById('selfMenuGlobal'); if(m) m.hidden=true; }
+/* 客户退款 / 油站退款 = 同一次退款的资金两侧：整体退款生成两张退款单 */
+function handleSelfAction(act, no){
+  const o = SELFORDES.find(x=>x.no===no); if(!o) return;
+  closeSelfMenus();
+  if(act==='整体退款'||act==='客户退款'||act==='油站退款'){
+    const mk = (type,suf)=>({
+      id:'ZRTK'+Date.now()+suf, order:o.no, time:leqiNow().slice(0,16), type,
+      driver:o.driver, plate:o.plate, goods:`${o.goods} · ${o.qty.toFixed(2)} ${qtyUnit(o)}`, amt:o.amt,
+      reason:'演示：从自营订单列表发起', audit:'待审核',
+      redResult:(o.invCh==='乐企'&&o.inv==='开票成功')?'红冲成功':undefined, auditBy:'—', auditAt:'—',
+      subs:[{no:o.no+'001', waybill:'—', driver:`${o.driver} / ${o.plate}`, amt:o.amt}]
+    });
+    if(act==='整体退款'){ SELF_REFUNDS.unshift(mk('客户退款','A'), mk('油站退款','B')); showToast('已生成客户退款 + 油站退款两张退款单（同一次退款的资金两侧），待审核'); }
+    else { SELF_REFUNDS.unshift(mk(act,'C')); showToast(`已生成「${act}」退款单，待审核`); }
+    paint();
+  } else if(act==='网点支付'){ showToast('演示：进入网点支付流程'); }
+  else { showToast('演示：进入修改结算信息流程'); }
+}
+VIEWS.selfOrders = () => {
+  return `
+  <div class="card">
+    <div class="card-h"><h2>自营订单列表</h2><div class="spacer"></div>
+      <button class="btn sm" onclick="batchDownloadLeqiInvoices()">批量下载发票</button>
+      <button class="btn sm" data-export-async="selfOrders">导出</button>
+      ${colCfgBtn('selfOrders')}
+    </div>
+    <div class="filters collapsed" id="selfOrderFilters">
+      ${filterRow([
+        {l:'订单流水号',t:'code',p:'ZY 开头，字母数字',max:32},
+        {l:'订单时间',t:'range',w2:1},
+        {l:'所属公司',t:'sel',o:OPT.cust,w2:1},
+        {l:'司机支付状态',t:'sel',o:OPT.selfPaySt,w2:1},
+        {l:'油站扣款状态',t:'sel',o:OPT.selfDeductSt,w2:1},
+        {l:'订单核销状态',t:'sel',o:OPT.selfVerifySt,w2:1},
+        {l:'开票渠道',t:'sel',o:OPT.invChannel,w2:1},
+        {l:'开票状态',t:'sel',o:OPT.leqiInvSt,w2:1},
+        {l:'油站名称',t:'text',p:'油站名称模糊查询',max:30,w2:1},
+        {l:'车牌号',t:'plate',p:'如 辽AEK808'}
+      ])}
+    </div>
+    <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button><span class="spacer"></span>
+      <button class="btn link" onclick="const f=document.getElementById('selfOrderFilters');f.classList.toggle('collapsed');this.textContent=f.classList.contains('collapsed')?'展开更多筛选':'收起筛选'">展开更多筛选</button></div>
+  </div>
+
+  <div class="card">
+    <div class="card-b">
+      ${dataTable('selfOrders', SELFORDES, '2080px', '暂无自营订单')}
+      ${pagerHTML(SELFORDES.length)}
+    </div>
+  </div>
+  ${notes(
+    nb('这个页面是做什么的',
+      '<p>对应现网「订单中心 → 自营订单管理」（oms.wanyoutong.cn#/orderCenter/selfOrderInfo，原型做字段级简化）。自营订单 = 平台自营站成交、资金走自营清分链路的订单。本需求在本页落地<b>乐企开票渠道分治</b>的展示与操作。</p>') +
+    nb('关键规则',
+      tbl(['列 / 操作','口径'],[
+        ['开票渠道','乐企 / 线下。乐企=易宝支付+平台自营站柴油订单；天然气订单不接乐企、不可乐企手动开票，按线下渠道口径处理'],
+        ['开票状态','按渠道分治：乐企=待开票/开票中/开票失败/开票成功/红冲中/红冲失败/已红冲；线下=未开票/开票中/已开票/已撤销。同列显示，展示最新一次开票（蓝票+红票）的结果'],
+        ['失败原因','乐企「开票失败/红冲失败」时展示接口原因；开票失败自动重试每分钟 1 次×3 次'],
+        ['手动开票','乐企渠道且状态为 待开票/开票失败/已红冲 时亮；红冲无手动入口（均由退款发起）'],
+        ['操作下拉','整体退款=同时生成客户退款+油站退款两张退款单（同一次退款的资金两侧）；客户退款/油站退款单发其一；网点支付、修改结算信息为现网既有能力'],
+        ['批量下载发票','勾选「开票成功/已红冲」订单，仅下载各单最新 1 次发票，异步任务到下载中心获取']
+      ])) +
+    nb('校验与提示',
+      '<ul style="margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px">' +
+      '<li>「客户退款 / 油站退款」生成的退款单进入<b>自营订单退款</b>页审核；审核通过后乐企蓝票先红冲（红冲失败拦截退款）。</li>' +
+      '<li>支付成功即自动开票（交易与开票解耦），开票失败不影响订单交易完成。</li>' +
+      '<li>操作列「发票查看下载」入口仅开票成功/已红冲可见，弹窗展示该订单全部蓝/红票，支持逐张查看与下载（不限格式 url/pdf/ofd）。</li></ul>')
+  )}`;
+};
+
+/* ================= 自营订单退款（订单中心） ================= */
+const SELFRF_COLS = regCols('selfRefund', [
+  {k:'id',    t:'退款单号', w:'190px', td:r=>`<span class="mono">${r.id}</span><div class="t2">${r.time}</div>`},
+  {k:'type',  t:'退款类型', w:'96px',  td:r=>`<span class="tag ${r.type==='客户退款'?'b':'o'}">${r.type}</span>`},
+  {k:'order', t:'订单流水号', w:'190px', td:r=>`<span class="mono">${r.order}</span>`},
+  {k:'invCh', t:'开票渠道',   w:'92px',  td:r=>invChTag({invCh:(SELFORDES.find(x=>x.no===r.order)||{}).invCh})},
+  {k:'info',  t:'订单信息',   td:r=>`<div class="t1">${r.driver} · <span class="mono">${r.plate}</span></div><div class="t2">${r.goods}</div>`},
+  {k:'amt',   t:'退款金额',   w:'110px', cls:'num', td:r=>`<b class="num" style="color:var(--oil)">${money(r.amt)}</b>`},
+  {k:'reason',t:'退款原因',   td:r=>r.reason},
+  {k:'audit', t:'审核状态',   w:'104px', td:r=>pill(r.audit)},
+  {k:'ops',   t:'操作',       w:'150px', cls:'acts', td:r=>`<span class="btn-group"><button data-srefdetail="${r.id}">详情</button><button class="${r.audit==='待审核'?'danger':'off'}" data-selfaudit="${r.id}">审核</button></span>`}
+]);
+VIEWS.selfRefund = () => {
+  return `
+  <div class="card">
+    <div class="card-h"><h2>自营订单退款列表</h2><div class="spacer"></div>
+      <button class="btn sm" data-export-async="selfRefund">导出</button>
+      ${colCfgBtn('selfRefund')}
+    </div>
+    <div class="filters collapsed" id="selfRefundFilters">
+      ${filterRow([
+        {l:'退款单号',t:'code',p:'ZRTK 开头',max:32},
+        {l:'订单流水号',t:'code',p:'ZY 开头，字母数字',max:32},
+        {l:'退款类型',t:'sel',o:OPT.selfRefType,w2:1},
+        {l:'审核状态',t:'sel',o:OPT.selfAuditSt,w2:1},
+        {l:'申请时间',t:'range',w2:1}
+      ])}
+    </div>
+    <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button><span class="spacer"></span>
+      <button class="btn link" onclick="const f=document.getElementById('selfRefundFilters');f.classList.toggle('collapsed');this.textContent=f.classList.contains('collapsed')?'展开更多筛选':'收起筛选'">展开更多筛选</button></div>
+  </div>
+
+  <div class="card">
+    <div class="card-b">
+      ${dataTable('selfRefund', SELF_REFUNDS, '1590px', '暂无退款单')}
+      ${pagerHTML(SELF_REFUNDS.length)}
+    </div>
+  </div>
+  ${notes(
+    nb('这个页面是做什么的',
+      '<p>对应现网「订单中心 → 自营订单退款」。退款单按资金侧拆单：<b>客户退款</b>（客户账户侧）与<b>油站退款</b>（油站公司账户侧）是<b>同一次退款的资金两侧</b>，「整体退款」会生成两张退款单、分别审核出款。</p>') +
+    nb('关键规则',
+      tbl(['列 / 操作','口径'],[
+        ['退款类型','客户退款 / 油站退款'],
+        ['审核状态','待审核 / 审核通过 / 审核驳回 / 退款失败（终态）'],
+        ['审核','待审核单点「审核」：弹窗核对子订单明细后选择通过 / 驳回'],
+        ['红冲前置','乐企渠道订单（开票成功）审核通过后先红冲原蓝票：红冲成功→继续退款；红冲失败→退款单终止为「退款失败」，线下抵扣处理完成后重新发起退款申请；红冲进行中→拦截审核']
+      ])) +
+    nb('校验与提示',
+      '<ul style="margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px">' +
+      '<li>退款金额只读，等于该订单实付金额（整单退款）。</li>' +
+      '<li>审核弹窗展示子订单明细（拆单场景按子单逐行）。</li>' +
+      '<li>「退款失败」为终态：详情页展示失败原因与重新发起路径，不提供原地重试。</li></ul>')
+  )}`;
+};
+/* 自营退款审核：通过走红冲前置三态，驳回即终态 */
+function processSelfRefundAudit(decision){
+  const r = SELF_REFUNDS.find(x=>x.id===window._selfAuditKey); if(!r) return;
+  document.getElementById('modal').classList.remove('on');
+  if(r.audit!=='待审核'){ showToast('该退款单已处理'); return; }
+  if(decision==='驳回'){
+    r.audit='审核驳回'; r.auditBy='张世民（运营中台）'; r.auditAt=leqiNow().slice(0,16);
+    showToast('已驳回该退款申请'); paint(); return;
+  }
+  const o = SELFORDES.find(x=>x.no===r.order);
+  if(o && o.invCh==='乐企' && o.inv==='红冲中'){ showToast('红冲进行中，暂不能通过审核'); return; }
+  if(o && o.invCh==='乐企' && (o.inv==='开票成功'||o.inv==='红冲失败')){
+    if(r.redResult==='红冲失败'){
+      r.audit='退款失败'; r.auditBy='张世民（运营中台）'; r.auditAt=leqiNow().slice(0,16);
+      r.failNote = r.failNote || '乐企红冲接口失败';
+      o.inv='红冲失败'; o.invFail=r.failNote;
+      LEQI_LOGS.push({order:o.no, t:leqiNow(), way:'退款红冲', act:'发票冲红', result:'失败', note:r.failNote+'；退款单终止为「退款失败」'});
+      showToast('退款失败：红冲失败——' + r.failNote);
+    }else{
+      o.inv='已红冲';
+      const blue = leqiInvOfOrder(o.no).find(i=>i.type==='蓝票');
+      LEQI_INV.push({no:'0441202609120000'+String(1330+LEQI_INV.length).padStart(4,'0'), order:o.no, biz:'自营', type:'红票',
+        rel:blue?blue.no:'—', drawer:o.stationCo, buyer:o.co, amt:-o.amt, t:leqiNow(), trigger:'退款红冲',
+        file:`乐企发票_红冲_${o.no}.pdf`});
+      LEQI_LOGS.push({order:o.no, t:leqiNow(), way:'退款红冲', act:'发票冲红', result:'成功', note:'红冲成功，原蓝票已冲销'});
+      r.audit='审核通过'; r.auditBy='张世民（运营中台）'; r.auditAt=leqiNow().slice(0,16);
+      r.redNote='红冲成功（乐企发票冲红），继续执行退款';
+      showToast('红冲成功，退款执行中');
+    }
+  } else {
+    r.audit='审核通过'; r.auditBy='张世民（运营中台）'; r.auditAt=leqiNow().slice(0,16);
+    showToast('审核通过，退款执行中');
+  }
+  paint();
+}
+
+/* ================= 网点公司管理（网点中心） ================= */
+const SITECO_COLS = regCols('siteCompany', [
+  {k:'name',   t:'客户名称 / ID', w:'260px', td:s=>`<div class="t1">${s.name}</div><div class="t2 mono">${s.id}</div>`},
+  {k:'level',  t:'客户等级', w:'96px', td:s=>`<span class="tag ${s.level==='铂金'?'b':s.level==='黄金'?'o':''}">${s.level}</span>`},
+  {k:'yb',     t:'易宝账户', w:'104px', td:s=>s.yb==='已开通'?'<span class="pill ok">已开通</span>':'<span class="pill bad">未开通</span>'},
+  {k:'enable', t:'启用状态', w:'96px',  td:s=>pill(s.enable)},
+  {k:'line',   t:'开票失败自动下线', w:'150px', td:s=>s.line==='未开启'?'<span style="color:var(--muted)">未开启</span>':`<span class="tag f">${s.line}</span>`},
+  {k:'created',t:'创建信息', w:'240px', td:s=>`<span style="font-size:12px;color:var(--muted)">${s.created}</span>`},
+  {k:'ops',    t:'操作', w:'330px', cls:'acts', td:s=>`<span class="btn-group">
+    <button onclick="showToast('演示：进入修改（基础信息编辑）')">修改</button>
+    <button onclick="showToast('演示：复制录入')">复制录入</button>
+    <button data-siteco-detail="${s.id}">详情</button>
+    <button class="${s.yb==='已开通'?'off':''}" onclick="showToast('演示：开通易宝账户')">开通账户</button>
+    <button onclick="showToast('演示：撮合开户')">撮合开户</button>
+    <button data-siteline="${s.id}">开票配置</button>
+    ${s.enable==='停用'?`<button data-site-enable="${s.id}">启用</button>`:''}</span>`}
+]);
+VIEWS.siteCompany = () => {
+  return `
+  <div class="card">
+    <div class="card-h"><h2>网点公司列表</h2><div class="spacer"></div>
+      <button class="btn sm" data-export-async="siteCompany">导出</button>
+    </div>
+    <div class="filters collapsed" id="siteCoFilters">
+      ${filterRow([
+        {l:'客户名称',t:'text',p:'名称模糊查询',max:40},
+        {l:'客户ID',t:'code',p:'WD 开头',max:16},
+        {l:'客户等级',t:'sel',o:OPT.siteLevel,w2:1},
+        {l:'启用状态',t:'sel',o:OPT.siteEnable,w2:1}
+      ])}
+    </div>
+    <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button><span class="spacer"></span>
+      <button class="btn link" onclick="const f=document.getElementById('siteCoFilters');f.classList.toggle('collapsed');this.textContent=f.classList.contains('collapsed')?'展开更多筛选':'收起筛选'">展开更多筛选</button></div>
+  </div>
+
+  <div class="card">
+    <div class="card-b">
+      ${dataTable('siteCompany', SITE_COS, '1600px', '暂无网点公司', true)}
+      ${pagerHTML(SITE_COS.length)}
+    </div>
+  </div>
+  ${notes(
+    nb('这个页面是做什么的',
+      '<p>对应现网「网点中心 → 网点公司管理」（oms.wanyoutong.cn#/siteCenter/oilSiteCompanyInfo）。本需求在本页新增<b>开票配置</b>：线上开票失败 n 笔自动下线的熔断配置；其余行操作（修改 / 复制录入 / 详情 / 开通账户 / 撮合开户）为现网既有能力。</p>') +
+    nb('关键规则：开票失败自动下线',
+      tbl(['项','口径'],[
+        ['配置载体','网点公司（油站公司）维度，「开票配置」弹窗；默认关闭，n 默认 1'],
+        ['开启前置','该网点公司<b>已开通易宝账户</b>——未开通时保存拦截并提示'],
+        ['计数口径','该网点当前开票状态=开票失败的<b>应开票订单数</b>（仅乐企线上订单；历史全量累计，做过红冲的订单不算「未开」）'],
+        ['触发动作','累计达 n 笔 → 自动下线：启用状态置<b>停用</b>；同时站内信/短信预警（现有能力）并在操作记录留痕'],
+        ['恢复','手动「启用」后重新上线，<b>开票失败计数清零</b>、从 0 重新累计']
+      ])) +
+    nb('校验与提示',
+      '<ul style="margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px">' +
+      '<li>自动下线是<b>系统动作</b>：操作记录记「自动下线」，与人工停用区分。</li>' +
+      '<li>n 为正整数，最小 1；修改配置即时生效并记操作记录。</li>' +
+      '<li>技术阶段确认下线动作的字段落点（启用状态置停用为本原型口径）。</li></ul>')
+  )}`;
+};
+function enableSiteCo(id){
+  const s = SITE_COS.find(x=>x.id===id); if(!s) return;
+  s.enable='启用';
+  s.logs.unshift({t:leqiNow().slice(0,19), act:'启用', note:'运营手动启用，开票失败计数从 0 重新累计'});
+  showToast('已启用；该网点开票失败计数已清零并重新累计');
+  paint();
+}
+function saveSiteLineConf(){
+  const s = SITE_COS.find(x=>x.id===window._siteLineKey); if(!s) return;
+  const chk = document.getElementById('siteLineChk');
+  if(chk && chk.checked){
+    if(s.yb!=='已开通'){ showToast('该网点公司未开通易宝账户，不允许开启自动下线配置'); return; }
+    const nEl = document.getElementById('siteLineN');
+    const n = Math.max(1, parseInt(nEl&&nEl.value,10)||1);
+    s.line = `n=${n}`;
+    s.logs.unshift({t:leqiNow().slice(0,19), act:'开票配置', note:`开启「线上开票失败 n 笔自动下线」，n=${n}`});
+    showToast(`已保存：线上开票失败累计 ${n} 笔自动下线`);
+  } else {
+    s.line='未开启';
+    s.logs.unshift({t:leqiNow().slice(0,19), act:'开票配置', note:'关闭「线上开票失败 n 笔自动下线」'});
+    showToast('已保存：关闭自动下线配置');
+  }
+  document.getElementById('modal').classList.remove('on');
+  paint();
+}
+
+/* ================= 订单发票管理（发票中心） ================= */
+const LEQIINV_COLS = regCols('orderInvoices', [
+  {k:'no',    t:'发票号码', w:'190px', cls:'mono', td:i=>i.no},
+  {k:'type',  t:'发票类型', w:'92px',  td:i=>pill(i.type)},
+  {k:'order', t:'订单流水号 / 时间', w:'220px', td:i=>`<span class="mono">${i.order}</span><div class="t2">${(SELFORDES.find(o=>o.no===i.order)||ORDERS.find(o=>o.no===i.order)||{}).time||'—'}</div>`},
+  {k:'biz',   t:'业务线', w:'80px', td:i=>`<span class="tag ${i.biz==='自营'?'o':'b'}">${i.biz}</span>`},
+  {k:'drawer',t:'销方', td:i=>i.drawer},
+  {k:'buyer', t:'购方', td:i=>i.buyer},
+  {k:'amt',   t:'金额（元）', w:'120px', cls:'num', td:i=>`<span class="num" style="color:${i.amt<0?'var(--bad)':'var(--oil)'}">${money(i.amt)}</span>`},
+  {k:'t',     t:'开票时间', w:'150px', cls:'mono', td:i=>i.t},
+  {k:'trigger', t:'触发方式', w:'120px', td:i=>i.trigger},
+  {k:'rel',   t:'关联发票', w:'180px', cls:'mono', td:i=>i.rel},
+  {k:'st',    t:'开票结果状态', w:'110px', td:i=>pill(leqiInvStatusOf(i))},
+  {k:'ops',   t:'附件', w:'140px', cls:'acts', td:i=>`<span class="btn-group"><button data-download="invoice" data-key="${i.no}">查看</button><button data-download="invoice" data-key="${i.no}">下载</button></span>`}
+]);
+VIEWS.orderInvoices = () => {
+  return `
+  <div class="card">
+    <div class="card-h"><h2>订单发票列表</h2><div class="spacer"></div>
+      <button class="btn sm" data-export-async="orderInvoices">导出</button>
+      ${colCfgBtn('orderInvoices')}
+    </div>
+    <div class="filters collapsed" id="orderInvFilters">
+      ${filterRow([
+        {l:'订单流水号',t:'code',p:'MH / ZY 开头',max:32},
+        {l:'发票号码',t:'code',p:'数字票号',max:32},
+        {l:'业务线',t:'sel',o:['撮合','自营'],w2:1},
+        {l:'发票类型',t:'sel',o:['蓝票','红票'],w2:1},
+        {l:'开票时间',t:'range',w2:1}
+      ])}
+    </div>
+    <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button><span class="spacer"></span>
+      <button class="btn link" onclick="const f=document.getElementById('orderInvFilters');f.classList.toggle('collapsed');this.textContent=f.classList.contains('collapsed')?'展开更多筛选':'收起筛选'">展开更多筛选</button></div>
+  </div>
+
+  <div class="card">
+    <div class="card-b">
+      ${dataTable('orderInvoices', LEQI_INV, '2200px', '暂无发票')}
+      ${pagerHTML(LEQI_INV.length)}
+    </div>
+  </div>
+  ${notes(
+    nb('这个页面是做什么的',
+      '<p>发票中心新增菜单。<b>撮合 + 自营的乐企订单发票全量历史</b>：每张发票一行（蓝票 / 红票逐张），完整呈现开票 → 红冲 → 再次开票的多轮记录。</p>') +
+    nb('关键规则',
+      tbl(['列 / 口径','说明'],[
+        ['每张发票一行','蓝票与红票各自一行；红票金额为负数，「关联发票」指向被冲销的原蓝票'],
+        ['业务线','撮合 / 自营，来自订单归属'],
+        ['触发方式','自动-支付成功 / 退款红冲 / 手动开票'],
+        ['开票结果状态','蓝票=开票成功；红票=已红冲'],
+        ['附件','每张发票独立 url/pdf/ofd，支持查看 / 下载']
+      ])) +
+    nb('校验与提示',
+      '<ul style="margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px">' +
+      '<li>本页只覆盖<b>乐企渠道</b>发票；线下渠道发票仍按既有流程在能源发票管理（油站上传）中管理。</li>' +
+      '<li>开票过程与失败原因在订单详情「开票信息（乐企）」区的开票记录中查看。</li></ul>')
+  )}`;
+};
 
 /* ---- 支付凭证 ---- */
 VIEWS.voucher = () => {
@@ -2936,6 +3691,17 @@ function batchOrderInvoice(){
   if(!eligible.length){ showToast('所选订单不满足开票资格'); return; }
   openConfirm(isEnterprise?'cInvoiceBatch':'orderBatchInvoice', eligible.map(o=>o.no).join(','));
 }
+/* 乐企批量下载发票：仅「开票成功/已红冲」订单可参与，仅下载最新 1 次发票 */
+function batchDownloadLeqiInvoices(){
+  const nos = getCheckedFees();
+  if(nos.length===0){ showToast('请先勾选需要下载发票的订单'); return; }
+  const pool = current==='selfOrders' ? SELFORDES : ORDERS;
+  const picked = pool.filter(o=>nos.includes(o.no));
+  const ok = picked.filter(o=>o.inv==='开票成功'||o.inv==='已红冲');
+  if(ok.length===0){ showToast('勾选的订单中没有「开票成功/已红冲」的记录'); return; }
+  if(ok.length<picked.length) showToast(`已跳过 ${picked.length-ok.length} 笔非「开票成功/已红冲」订单，不参与下载`);
+  startAsyncDownload(ok.length);
+}
 function batchFeeInvoice(){
   const nos = getCheckedFees();
   if(nos.length===0){ showToast('请先勾选需要开票的服务费订单'); return; }
@@ -2957,7 +3723,7 @@ function startAsyncDownload(count){
   setTimeout(()=>showToast('批量下载任务已完成，可前往下载中心获取'),1200);
 }
 function startAsyncExport(name){
-  const counts = {fee:feeExportRows().length, energyInvApply:APPLIES.length, feeInvApply:FEE_INV_APPLIES.length, stationInv:APPLIES.length, stationFeeInv:FEE_INV_APPLIES.length, cApply:CAPPLIES.length};
+  const counts = {fee:feeExportRows().length, energyInvApply:APPLIES.length, feeInvApply:FEE_INV_APPLIES.length, stationInv:APPLIES.length, stationFeeInv:FEE_INV_APPLIES.length, cApply:CAPPLIES.length, orders:ORDERS.length, selfOrders:SELFORDES.length, selfRefund:SELF_REFUNDS.length, siteCompany:SITE_COS.length, orderInvoices:LEQI_INV.length};
   const count = counts[name] || 0;
   if(count>20000){ showToast('当前结果超过 2 万条，请缩小筛选范围后重试'); return; }
   showToast(`已提交 ${count} 条数据的导出任务，请到下载中心查看`);
@@ -5028,6 +5794,80 @@ document.getElementById('modalClose').onclick = ()=>modal.classList.remove('on')
 modal.addEventListener('click', e=>{ if(e.target===modal) modal.classList.remove('on'); });
 
 const MODALS = {
+  /* 自营退款审核：核对子订单明细后通过 / 驳回（乐企红冲前置口径见页面说明） */
+  leqiInvs: {
+    title:'发票附件',
+    foot:'<button class="btn" data-mclose="1">关闭</button>',
+    body:()=>{
+      const os = leqiInvOfOrder(window._leqiInvKey) || [];
+      const o = SELFORDES.find(x=>x.no===window._leqiInvKey) || ORDERS.find(x=>x.no===window._leqiInvKey) || {};
+      return `
+      <p class="t2" style="margin-top:-4px">订单 <b class="mono">${window._leqiInvKey}</b>（${(o.invCh||'线下')==='乐企'?'乐企渠道':'线下渠道'}）名下全部乐企发票，支持逐张查看与下载（不限格式 url/pdf/ofd）。</p>
+      <div class="card" style="box-shadow:none;margin:12px 0"><div class="card-b">
+        <table class="tbl"><thead><tr><th>发票号码</th><th>发票类型</th><th>金额（元）</th><th>开票时间</th><th>开票结果状态</th><th style="width:110px">操作</th></tr></thead>
+        <tbody>${os.length?os.map(i=>`<tr>
+          <td class="mono">${i.no}</td><td>${pill(i.type)}</td><td class="num">${money(i.amt)}</td><td class="mono">${i.t}</td><td>${pill(leqiInvStatusOf(i))}</td>
+          <td class="acts"><span class="btn-group"><button data-download="invoice" data-key="${i.no}">查看</button><button data-download="invoice" data-key="${i.no}">下载</button></span></td>
+        </tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--muted)">暂无发票</td></tr>'}</tbody></table>
+      </div></div>`;
+    }
+  },
+  selfRefundAudit: {
+    title:'退款审核',
+    foot:'<button class="btn" data-mclose="1">取消</button><button class="btn danger" data-selfaudit-ok="驳回">驳回</button><button class="btn primary" data-selfaudit-ok="通过">审核通过</button>',
+    body:()=>{
+      const r = SELF_REFUNDS.find(x=>x.id===window._selfAuditKey) || SELF_REFUNDS[0];
+      return `
+      <div class="banner warn"><div><b>红冲前置</b><span class="txt">乐企渠道订单（开票成功）审核通过后<b>先红冲原蓝票</b>：红冲成功→继续退款；红冲失败→本退款单终止为「退款失败」，线下抵扣处理完成后重新发起退款申请；红冲进行中→拦截审核。</span></div></div>
+      <div class="card" style="box-shadow:none;margin:12px 0"><div class="card-b">
+        <div class="sec-title">退款信息</div>
+        <dl class="cf-kv" style="margin-top:10px">
+          <dt>退款单号</dt><dd class="mono">${r.id}</dd>
+          <dt>退款类型</dt><dd><span class="tag ${r.type==='客户退款'?'b':'o'}">${r.type}</span></dd>
+          <dt>订单流水号</dt><dd class="mono">${r.order}</dd>
+          <dt>退款金额</dt><dd><b class="num" style="color:var(--oil)">${money(r.amt)}</b> 元</dd>
+          <dt>退款原因</dt><dd>${r.reason}</dd>
+        </dl>
+      </div></div>
+      <div class="card" style="box-shadow:none;margin:0"><div class="card-b">
+        <div class="sec-title">子订单明细（${r.subs.length} 笔）</div>
+        <div class="tablewrap" style="margin-top:10px">
+          <table style="min-width:560px">
+            <thead><tr><th>子订单号</th><th>运单号</th><th>司机 / 车牌</th><th>金额（元）</th></tr></thead>
+            <tbody>${r.subs.map(s=>`<tr><td class="mono">${s.no}</td><td class="mono">${s.waybill}</td><td>${s.driver}</td><td class="num">${money(s.amt)}</td></tr>`).join('')}</tbody>
+          </table>
+        </div>
+      </div></div>`;
+    }
+  },
+  /* 网点公司 · 开票配置：线上开票失败 n 笔自动下线 */
+  siteLineConf: {
+    title:'开票配置 · 线上开票失败自动下线',
+    foot:'<button class="btn" data-mclose="1">取消</button><button class="btn primary" data-siteline-save="1">保存</button>',
+    body:()=>{
+      const s = SITE_COS.find(x=>x.id===window._siteLineKey) || SITE_COS[0];
+      const on = s.line!=='未开启';
+      const n = on ? s.line.split('=')[1] : '1';
+      return `
+      <div class="card" style="box-shadow:none;margin:0"><div class="card-b" style="display:flex;flex-direction:column;gap:14px">
+        <dl class="cf-kv">
+          <dt>网点公司</dt><dd>${s.name}（<span class="mono">${s.id}</span>）</dd>
+          <dt>易宝账户</dt><dd>${s.yb==='已开通'?'<span class="pill ok">已开通</span>':'<span class="pill bad">未开通</span>'}</dd>
+          <dt>当前配置</dt><dd>${s.line==='未开启'?'未开启':'已开启（'+s.line+'）'}</dd>
+        </dl>
+        <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer">
+          <input type="checkbox" id="siteLineChk" ${on?'checked':''} onchange="document.getElementById('siteLineNWrap').style.display=this.checked?'flex':'none'">
+          <b>线上开票失败 n 笔自动下线</b>
+        </label>
+        <div id="siteLineNWrap" style="${on?'display:flex':'display:none'};align-items:center;gap:10px">
+          <span>失败笔数阈值 n =</span>
+          <input id="siteLineN" class="inp" type="number" min="1" step="1" value="${n}" style="width:90px">
+          <span class="hint">默认 1，正整数</span>
+        </div>
+        <p class="note">计数口径：该网点当前开票状态=开票失败的应开票订单数（仅乐企线上订单，历史全量累计；做过红冲不算「未开」）。达标即自动下线（启用状态→停用）+ 站内信/短信预警 + 操作记录留痕；重新启用后计数清零。</p>
+      </div></div>`;
+    }
+  },
   colcfg: {
     title:'列设置',
     foot:'<button class="btn" data-colreset="1">恢复默认</button><span style="flex:1"></span><button class="btn primary">完成</button>',
@@ -6464,6 +7304,48 @@ const CONFIRM_ACTIONS = {
   lockDiscard: () => {
     const fn = window._lockPendingClose; window._lockPendingClose = null;
     if(typeof fn === 'function') fn();
+  },
+  /* --- 乐企手动开票：调乐企发票开具，订单开票状态置为「开票中」并写入开票记录 --- */
+  leqiInvoice: key => {
+    const o = ORDERS.find(x=>x.no===key) || SELFORDES.find(x=>x.no===key);
+    if(!o || !leqiCanInvoice(o)) return;
+    o.inv = '开票中';
+    o.invFail = '';
+    LEQI_LOGS.push({order:o.no, t:leqiNow(), way:'手动开票', act:'发票开具', result:'处理中', note:'已提交乐企，开具结果查询中'});
+    showToast('已发起乐企开票，订单开票状态置为「开票中」');
+    paint();
+  },
+  /* --- 确认退款：乐企开票订单先红冲后退款（红冲均由退款发起，唯一触发点） ---
+     红冲成功 → 继续退款；红冲失败 → 退款单终止为「退款失败」，重新发起退款申请再走审核；
+     红冲进行中 → 拦截，不允许确认 */
+  refundConfirm: key => {
+    const r = REFUNDS.find(x=>x.id===key); if(!r) return;
+    const o = ORDERS.find(x=>x.no===r.order);
+    if(o && o.invCh==='乐企' && o.inv==='红冲中'){ showToast('红冲进行中，暂不能确认退款'); return; }
+    if(o && o.invCh==='乐企' && (o.inv==='开票成功'||o.inv==='红冲失败')){
+      if(r.redResult==='红冲失败'){
+        r.audit='已确认'; r.auditBy='张世民（运营中台）'; r.auditAt=leqiNow().slice(0,16); r.st='退款失败';
+        r.redFail = r.redFail || '乐企红冲接口失败';
+        o.inv='红冲失败'; o.invFail=r.redFail;
+        LEQI_LOGS.push({order:o.no, t:leqiNow(), way:'退款红冲', act:'发票冲红', result:'失败', note:r.redFail+'；退款单终止为「退款失败」'});
+        showToast('退款失败：红冲失败——' + r.redFail);
+      }else{
+        o.inv='已红冲';
+        const blue = leqiInvOfOrder(o.no).find(i=>i.type==='蓝票');
+        LEQI_INV.push({no:'0441202608270000'+String(1220+LEQI_INV.length).padStart(4,'0'), order:o.no, biz:'撮合', type:'红票',
+          rel:blue?blue.no:'—', drawer:o.stationCo, buyer:o.cust, amt:-(o.real||o.est), t:leqiNow(),
+          trigger:'退款红冲', file:`乐企发票_红冲_${o.no}.pdf`});
+        LEQI_LOGS.push({order:o.no, t:leqiNow(), way:'退款红冲', act:'发票冲红', result:'成功', note:'红冲成功，原蓝票已冲销'});
+        r.audit='已确认'; r.auditBy='张世民（运营中台）'; r.auditAt=leqiNow().slice(0,16);
+        r.st='已退款'; r.done=leqiNow().slice(0,16); r.inv='开票成功 · 已红冲';
+        showToast('红冲成功，退款成功');
+      }
+    }else{
+      r.audit='已确认'; r.auditBy='张世民（运营中台）'; r.auditAt=leqiNow().slice(0,16);
+      r.st='已退款'; r.done=leqiNow().slice(0,16);
+      showToast('已确认并执行退款');
+    }
+    paint();
   }
 };
 document.getElementById('modalFoot').addEventListener('click', e=>{
@@ -6684,6 +7566,7 @@ DTAB.info = o => {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px">
         <dl class="kv">
           <dt>开票状态</dt><dd>${pill(o.inv)}</dd>
+          <dt>开票渠道</dt><dd>${o.invCh?invChTag(o):'<span class="tag">线下</span>'}</dd>
           <dt>开票方</dt><dd>${o.stationCo}</dd>
           <dt>受票方</dt><dd>${o.cust}</dd>
         </dl>
@@ -6694,6 +7577,7 @@ DTAB.info = o => {
         </dl>
       </div>
     </div>
+    ${o.invCh==='乐企'?leqiOrderInvHTML(o):''}
 
   </div></div>
     ${notes(
@@ -7061,6 +7945,7 @@ const SIMPLE_DRAWER_NAMES = {
   fee:['收付与订单','发票信息'],
   txnDetail:['交易信息'], refundTxnDetail:['退款信息'], stationAcct:['账户信息','资金流水','可用操作'],
   sfFlow:['交易明细'], refund:['处理进度','申请信息','金额明细','异常处理'],
+  selfOrder:['订单信息','开票信息'], selfRefund:['处理进度','申请信息','子订单明细'], siteCo:['基本信息','操作记录'],
   feeInvApply:['申请单信息','订单明细','发票文件'], stationFeeInv:['申请单信息','订单明细','发票文件'],
   apply:['申请单信息','订单明细','发票文件'], invoice:['发票要素','关联订单'], feebill:['账单信息']
 };
@@ -7487,7 +8372,9 @@ function openSimple(kind,key){
       const r = REFUNDS.find(x=>x.id===key);
       const o = ORDERS.find(x=>x.no===r.order) || {};
       const done = r.st==='已退款';
+      const failed = r.st==='退款失败';
       const step = r.st==='待审核' ? 0 : (r.st==='审核中' ? 1 : 3);
+      const leqiRed = o.invCh==='乐企';
       document.getElementById('drawerTitle').textContent='退款申请详情';
       return `
       <div class="sumhead"><div class="no mono">${r.id}</div>
@@ -7508,8 +8395,9 @@ function openSimple(kind,key){
             <div class="m">${r.apply} · ${r.by} · ${r.byName}</div></div></div>
           <div class="it"><div class="dot ${step>=1?'':'pend'}"></div><div><div class="h">运营确认</div>
             <div class="m">${r.audit==='已确认'?r.auditAt+' · '+r.auditBy+' · 已确认，开始执行退款':'待确认——确认后立即执行，不再有第二道审批'}</div></div></div>
+          ${leqiRed?leqiRedNode(o,r,step,done,failed):''}
           <div class="it"><div class="dot ${step>=3?'':'pend'}"></div><div><div class="h">资金退回</div>
-            <div class="m">${done?'油款与服务费两笔均已退回成功':'两笔反向转账执行中，各自成功各自失败'}</div></div></div>
+            <div class="m">${done?'油款与服务费两笔均已退回成功':failed?'退款单已终止：红冲失败，未执行退款':'两笔反向转账执行中，各自成功各自失败'}</div></div></div>
         </div>
       </div></div>
 
@@ -7552,10 +8440,149 @@ function openSimple(kind,key){
       <div class="card"><div class="card-b">
         <div class="sec-title">异常情况处理</div>
         <div style="margin-top:10px;padding:10px 12px;background:var(--surface-2);border-radius:6px;font-size:12px;line-height:1.8">
-          <div><b>退款失败：</b>若油款或服务费任一转账失败，标记为「退款失败」，转运营人工工单处理。</div>
+          <div><b>乐企订单红冲失败：</b>乐企渠道订单（开票成功）退款审核通过后先红冲原蓝票；红冲失败则本退款单<b>终止为「退款失败」</b>，不执行退款。线下抵扣处理完成后<b>重新发起退款申请</b>再走审核，审核通过后再次触发红冲。</div>
+          <div style="margin-top:6px"><b>退款失败（资金）：</b>若油款或服务费任一转账失败，标记为「退款失败」，转运营人工工单处理。</div>
           <div style="margin-top:6px"><b>部分退款：</b>两笔转账独立执行，可能出现油款退回成功但服务费退回失败的情况。此时状态为「部分成功」，由运营人工核实处理。</div>
           <div style="margin-top:6px"><b>处理入口：</b>本页只展示处理结果，不提供人工重试操作。</div>
         </div>
+      </div></div>`;
+    },
+    /* ---- 自营订单详情 ---- */
+    selfOrder:()=>{
+      const o = SELFORDES.find(x=>x.no===key);
+      document.getElementById('drawerTitle').textContent='自营订单详情';
+      return `
+      <div class="sumhead"><div class="no mono">${o.no}</div>
+        <div class="sec">${o.time} · ${o.station}（${o.stationCo}）</div>
+        <div class="pills">${pill(o.paySt)}${pill(o.deductSt)}${pill(o.verifySt)}${invChTag(o)}</div>
+        <div class="money">
+          <div class="oilv"><div class="l">实付金额</div><div class="v num">¥ ${money(o.amt)}</div></div>
+          <div><div class="l">油品</div><div class="v">${o.goods}</div></div>
+          <div><div class="l">数量</div><div class="v num">${o.qty.toFixed(2)} ${qtyUnit(o)}</div></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-b">
+        <div class="sec-title">订单信息</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px">
+          <dl class="kv">
+            <dt>订单流水号</dt><dd class="mono">${o.no}</dd>
+            <dt>订单时间</dt><dd class="mono">${o.time}</dd>
+            <dt>所属公司</dt><dd>${o.co}（${o.coType}）</dd>
+            <dt>司机 / 车牌</dt><dd>${o.driver} · <span class="mono">${o.plate}</span></dd>
+            <dt>司机支付状态</dt><dd>${pill(o.paySt)}</dd>
+          </dl>
+          <dl class="kv">
+            <dt>油站信息</dt><dd>${o.station}（${o.stationCo}）</dd>
+            <dt>油品 / 数量</dt><dd>${o.goods} · ${o.qty.toFixed(2)} ${qtyUnit(o)}</dd>
+            <dt>油站扣款状态</dt><dd>${pill(o.deductSt)}</dd>
+            <dt>订单核销状态</dt><dd>${pill(o.verifySt)}</dd>
+            <dt>退款</dt><dd><button data-go="selfRefund">查看自营订单退款</button></dd>
+          </dl>
+        </div>
+      </div></div>
+      <div class="card"><div class="card-b">${o.invCh==='乐企'?leqiOrderInvHTML(o):`
+        <div>
+          <div class="sec-title">开票信息（线下渠道）</div>
+          <dl class="kv" style="grid-template-columns:160px 1fr">
+            <dt>开票渠道</dt><dd>${invChTag(o)}</dd>
+            <dt>开票状态</dt><dd>${pill(o.inv)}</dd>
+            <dt>开票说明</dt><dd>线下渠道订单按既有线下开票流程处理（客户申请 + 油站上传），本页不展示乐企发票。</dd>
+          </dl>
+        </div>`}</div></div>`;
+    },
+    /* ---- 自营退款单详情：进度线（乐企含红冲节点） ---- */
+    selfRefund:()=>{
+      const r = SELF_REFUNDS.find(x=>x.id===key);
+      const o = SELFORDES.find(x=>x.no===r.order) || {};
+      const done = r.audit==='审核通过';
+      const failed = r.audit==='退款失败';
+      const rejected = r.audit==='审核驳回';
+      document.getElementById('drawerTitle').textContent='自营退款单详情';
+      return `
+      <div class="sumhead"><div class="no mono">${r.id}</div>
+        <div class="sec">关联订单 ${r.order} · 申请时间 ${r.time} · ${r.type}</div>
+        <div class="pills">${pill(r.audit)}<span class="tag ${r.type==='客户退款'?'b':'o'}">${r.type}</span>${invChTag(o)}</div>
+        <div class="money">
+          <div class="oilv"><div class="l">退款金额</div><div class="v num">¥ ${money(r.amt)}</div></div>
+          <div><div class="l">审核人</div><div class="v">${r.auditBy}</div></div>
+          <div><div class="l">审核时间</div><div class="v mono">${r.auditAt}</div></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-b">
+        <div class="sec-title">处理进度</div>
+        <div class="tl" style="margin-top:10px">
+          <div class="it"><div class="dot"></div><div><div class="h">提交退款申请</div>
+            <div class="m">${r.time} · ${r.reason}</div></div></div>
+          <div class="it"><div class="dot ${rejected?'bad':''}"${rejected?' style="background:var(--bad)"':''}></div><div><div class="h">退款审核</div>
+            <div class="m">${rejected?'已驳回：退款申请终止':r.auditBy!=='—'?r.auditAt+' · '+r.auditBy+' · 审核通过':'待审核——弹窗核对子订单明细后通过 / 驳回'}</div></div></div>
+          ${(o.invCh==='乐企')?(()=>{ const redFail=failed; const redDone=o.inv==='已红冲'&&done; const redDoing=o.inv==='红冲中';
+            const m = redFail?`红冲失败：${r.failNote||'乐企红冲接口失败'}——退款单终止为「退款失败」，线下抵扣处理完成后重新发起退款申请`
+              :redDoing?'审核通过触发红冲，红冲结果查询中；红冲成功后才执行退款'
+              :redDone?'红冲成功，原蓝票冲销，继续执行退款'
+              :r.redNote||'审核通过后先红冲原蓝票，红冲成功后才执行退款';
+            return `<div class="it"><div class="dot ${redFail?'bad':(redDone||redDoing?'':'pend')}"${redFail?' style="background:var(--bad)"':''}></div><div><div class="h">红冲原蓝票（乐企）</div><div class="m">${m}</div></div></div>`;})():''}
+          <div class="it"><div class="dot ${done?'':'pend'}"></div><div><div class="h">资金退回（${r.type}）</div>
+            <div class="m">${done?'退款执行中 / 已退回':failed?'退款单已终止：红冲失败，未执行退款':'待审核通过后执行'}</div></div></div>
+        </div>
+      </div></div>
+      <div class="card"><div class="card-b">
+        <div class="sec-title">申请信息</div>
+        <dl class="kv">
+          <dt>退款单号</dt><dd class="mono">${r.id}</dd>
+          <dt>退款类型</dt><dd>${r.type}${r.type==='油站退款'?'<span class="hint">（与客户退款为同一次退款的资金两侧）</span>':''}</dd>
+          <dt>关联订单</dt><dd class="mono">${r.order}</dd>
+          <dt>退款金额</dt><dd class="num"><b style="color:var(--oil)">${money(r.amt)}</b> 元（只读，整单退款）</dd>
+          <dt>退款原因</dt><dd>${r.reason}</dd>
+          ${failed&&r.failNote?`<dt>失败原因</dt><dd style="color:var(--bad)">${r.failNote}</dd>
+          <dt>后续路径</dt><dd>线下抵扣处理完成后<b>重新发起退款申请</b>，审核通过后再次触发红冲</dd>`:''}
+        </dl>
+      </div></div>
+      <div class="card"><div class="card-b">
+        <div class="sec-title">子订单明细（${r.subs.length} 笔）</div>
+        <div class="tablewrap" style="margin-top:10px">
+          <table style="min-width:560px">
+            <thead><tr><th>子订单号</th><th>运单号</th><th>司机 / 车牌</th><th>金额（元）</th></tr></thead>
+            <tbody>${r.subs.map(s=>`<tr><td class="mono">${s.no}</td><td class="mono">${s.waybill}</td><td>${s.driver}</td><td class="num">${money(s.amt)}</td></tr>`).join('')}</tbody>
+          </table>
+        </div>
+      </div></div>`;
+    },
+    /* ---- 网点公司详情 ---- */
+    siteCo:()=>{
+      const s = SITE_COS.find(x=>x.id===key);
+      document.getElementById('drawerTitle').textContent='网点公司详情';
+      return `
+      <div class="sumhead"><div class="no mono">${s.id}</div>
+        <div class="sec">${s.name} · ${s.level}客户</div>
+        <div class="pills">${pill(s.enable)}${s.yb==='已开通'?'<span class="pill ok">易宝账户已开通</span>':'<span class="pill bad">易宝账户未开通</span>'}</div>
+        <div class="money">
+          <div><div class="l">开票失败自动下线</div><div class="v">${s.line==='未开启'?'未开启':s.line}</div></div>
+          <div><div class="l">客户等级</div><div class="v">${s.level}</div></div>
+          <div><div class="l">创建</div><div class="v" style="font-size:12px">${s.created}</div></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-b">
+        <div class="sec-title">基本信息</div>
+        <dl class="kv">
+          <dt>客户名称</dt><dd>${s.name}</dd>
+          <dt>客户ID</dt><dd class="mono">${s.id}</dd>
+          <dt>客户等级</dt><dd>${s.level}</dd>
+          <dt>易宝账户</dt><dd>${s.yb}</dd>
+          <dt>启用状态</dt><dd>${pill(s.enable)}</dd>
+          <dt>开票失败自动下线</dt><dd>${s.line==='未开启'?'未开启':s.line}</dd>
+          <dt>创建信息</dt><dd style="font-size:12px">${s.created}</dd>
+        </dl>
+        <div style="margin-top:12px"><button data-siteline="${s.id}">开票配置</button></div>
+      </div></div>
+      <div class="card"><div class="card-b">
+        <div class="sec-title">操作记录</div>
+        <div class="tablewrap" style="margin-top:10px">
+          <table style="min-width:640px">
+            <thead><tr><th>时间</th><th>动作</th><th>说明</th></tr></thead>
+            <tbody>${s.logs.length?s.logs.map(l=>`<tr><td class="mono">${l.t}</td><td>${l.act}</td><td>${l.note}</td></tr>`).join(''):'<tr><td colspan="3" class="empty">暂无操作记录</td></tr>'}</tbody>
+          </table>
+        </div>
+        <p class="note" style="margin-top:8px">自动下线由系统触发并留痕，与人工停用区分；重新启用后开票失败计数清零。</p>
       </div></div>`;
     },
     feeInvApply:()=>{
@@ -7971,7 +8998,7 @@ CONFIRMS.cRefundApply = key => {
    商品中心 · 货主锁站锁价
    数据与口径见同目录《货主锁站锁价-产品需求-页面说明.md》
    规则唯一：同一「网货主体 + 货主企业」至多一条生效规则（保存与启用均校验）
-   价格口径：锁后价 = 企业价（网点商品管理维护）− 价格调整金额（正数=减价、负数=涨价；锁站模式不调价）；
+   价格口径：锁后价 = 企业价（网点商品管理维护）+ 价格调整金额（正数=涨价、负数=降价；锁站模式不调价）；
    锁后价同步驱动上游结算价与下游企业价，上下游订单单价 / 金额 / 总金额一致
    货主企业取自主数据（客户中心 → 网货货主），配置时搜索选择，必选、至少一家
    配置入口为右侧抽屉（非弹窗）
@@ -8106,18 +9133,19 @@ VIEWS.freightLock = () => {
     ${pagerHTML(list.length)}
   </div>
   ${notes(
-    nb('页面用途', '<p>运营按「网货主体 × 货主企业」维度配置锁站 / 锁站锁价规则，确定司机端可见的油站与价格。规则生效期间，明细内油站全部展示并可加注；锁站不生效时，回落客户商品管理按网货主体的推送数据。</p>') +
+    nb('页面用途', '<p>运营按「网货主体 × 货主企业」维度配置锁站 / 锁站锁价规则，确定司机端可见的油站与价格。规则生效期间，按明细保留的「油站+油品」展示并可加注（规则涉及的油站未保留的油品不展示，即使推送中存在；规则未涉及的推送油站照常展示）；锁站不生效时，回落客户商品管理按网货主体的推送数据。</p>') +
     nb('关键规则',
       '<p><b>适用范围</b>＝适用网货主体 × 适用货主企业（笛卡尔积）；适用货主企业从主数据搜索选择、无生效状态——每选一家都进入适用范围，可逐个移除；适用货主企业必选、至少选择一家（新建与编辑保存时均校验），「全部货主企业」场景由客户商品管理按网货主体的推送覆盖、不通过本规则表达。</p>' +
       '<p style="margin-top:6px"><b>唯一性</b>：同一「网货主体+货主企业」组合至多一条生效规则；保存与启用均校验，冲突拦截并提示冲突规则编号；停用规则不参与校验。</p>' +
-      '<p style="margin-top:6px"><b>模式与价格</b>：锁站（价格沿用原企业价）／锁站锁价（逐行填写价格调整金额：正数＝减价、负数＝涨价，涨价不设上限，至少一行调整金额 ≠ 0）；锁后价＝原企业价 − 价格调整金额（正减负加），不得小于 0，低于成本价需二次确认负毛利。</p>' +
-      '<p style="margin-top:6px"><b>油站范围与可见性</b>：规则可选油站为网点管理全部油站（价格在「网点商品管理」维护）；未随客户商品管理推送的油站，只要被「网货主体+货主企业」的生效规则配置，司机端同样展示并可加注；锁站不生效（无生效规则 / 停用 / 删除）时回落客户商品管理按网货主体的推送数据。</p>' +
+      '<p style="margin-top:6px"><b>模式与价格</b>：锁站（价格沿用原企业价）／锁站锁价（逐行填写价格调整金额：正数＝涨价、负数＝降价，涨价不设上限，至少一行调整金额 ≠ 0）；锁后价＝原企业价 + 价格调整金额（正加负减），不得小于 0，低于成本价需二次确认负毛利。</p>' +
+      '<p style="margin-top:6px"><b>价格调整金额列展示</b>：配置抽屉内为可编辑输入框、显示输入原值（正数不带「+」）；详情抽屉按方向带符号显示——正数「+金额」（红色，涨价）、负数「-金额」（绿色，降价）、0 显示「0.00」、锁站模式显示「—」；导出列按原始带符号值输出（正数不加「+」、负数带「-」，锁站模式显示「—」）。</p>' +
+      '<p style="margin-top:6px"><b>油站范围与可见性</b>：规则可选油站为网点管理全部油站（价格在「网点商品管理」维护）；规则生效期间，司机端按规则明细保留的「油站+油品」展示——规则涉及的油站仅展示保留的油品行、未保留的油品不展示（即使推送中存在），规则未涉及的推送油站照常展示；未随客户商品管理推送的油站，只要被「网货主体+货主企业」的生效规则配置，司机端同样展示并可加注；锁站不生效（无生效规则 / 停用 / 删除）时回落客户商品管理按网货主体的推送数据。</p>' +
       '<p style="margin-top:6px"><b>合同校验</b>：添加油站时校验「油站×网货主体 有合同，或 油站×万油通主体 有签约合同」，无合同的油站拦截、不可添加；订单生成时后端同样校验。</p>' +
       '<p style="margin-top:6px"><b>价格联动</b>：价格调整金额同步驱动上游结算价与下游企业价，锁价生效期间生成的订单，上下游单价、金额、总金额同步变动且保持一致（测试重点，见 PRD）。</p>' +
       '<p style="margin-top:6px"><b>列表展示</b>：适用网货主体 / 适用货主企业 / 适用油站三列只保留数字，完整名单在详情抽屉查看。</p>' +
       '<p style="margin-top:6px"><b>货主企业</b>：主数据由「客户中心 → 网货货主」页面维护（页面导入），配置规则时从主数据搜索选择，按名称或 ID 模糊匹配。</p>' +
-      '<p style="margin-top:6px"><b>司机端判定</b>：先判断全部运单是否同属一个「网货主体+货主企业」组合——存在不同组合的运单即直接展示客户商品管理推送数据；同一组合再判断该组合是否有生效规则，有则展示规则明细内的油站与油价（锁站沿用原企业价、锁站锁价按调整金额取价；明细内油站不受推送范围限制），没有则展示客户商品管理按网货主体的推送数据。停用/删除后回落推送结果；已产生订单不追溯。</p>') +
-    nb('校验口径', '<p>保存拦截：规则名称必填且 ≤50 字、网货主体 ≥1、货主企业 ≥1、明细 ≥1 行、价格调整金额逐行必填且最多两位小数（正数=减价、负数=涨价，填 0 表示可见但不调价）、至少一行调整金额 ≠ 0、锁后价 ≥0、「主体+货主」组合冲突；锁后价低于成本价走二次确认后放行（涨价行不会触发）；启用拦截：组合冲突。</p>') +
+      '<p style="margin-top:6px"><b>司机端判定</b>：先判断全部运单是否同属一个「网货主体+货主企业」组合——存在不同组合的运单即直接展示客户商品管理推送数据；同一组合再判断该组合是否有生效规则，有则按规则明细保留的「油站+油品」展示与取价（锁站沿用原企业价、锁站锁价按调整金额取价；规则涉及的油站仅展示保留的油品行、未保留的油品不展示，即使推送中存在；明细内油站不受推送范围限制），没有则展示客户商品管理按网货主体的推送数据。停用/删除后回落推送结果；已产生订单不追溯。</p>') +
+    nb('校验口径', '<p>保存拦截：规则名称必填且 ≤50 字、网货主体 ≥1、货主企业 ≥1、明细 ≥1 行、价格调整金额逐行必填且最多两位小数（正数=涨价、负数=降价，填 0 表示可见但不调价）、至少一行调整金额 ≠ 0、锁后价 ≥0、「主体+货主」组合冲突；锁后价低于成本价走二次确认后放行（涨价行不会触发）；启用拦截：组合冲突。</p>') +
     nb('导出说明（详情抽屉）',
       '<p>详情抽屉底部「导出」按钮导出本规则全量名单，不受抽屉内搜索与翻页影响，不限规则状态；导出为 1 个 Excel 文件、3 个 sheet，文件名「规则编号_规则名称.xlsx」（如 AS2026100001_万联上海 · 沈阳天津锁站锁价.xlsx）。</p>' +
       '<p style="margin-top:8px"><b>Sheet1 适用网货主体</b>（一行 = 一个主体）：</p>' +
@@ -8132,8 +9160,8 @@ VIEWS.freightLock = () => {
       '</tbody></table></div>' +
       '<p style="margin-top:8px"><b>Sheet3 油站油品明细</b>（一行 = 一个「油站+油品」；锁站模式价格调整金额列为「—」、锁后价＝原企业价）：</p>' +
       '<div class="tablewrap"><table class="lock-pool" style="min-width:0"><thead><tr><th>油站编码</th><th>油站名称</th><th>油站公司</th><th>油品</th><th class="num">原企业价(元)</th><th class="num">成本价(元)</th><th class="num">价格调整金额(元)</th><th class="num">锁后价(元)</th></tr></thead><tbody>' +
-      '<tr><td class="mono">ST0001</td><td>××加油站</td><td>××石油</td><td>0#柴油</td><td class="num">6.85</td><td class="num">6.20</td><td class="num">0.50</td><td class="num">6.35</td></tr>' +
-      '<tr><td class="mono">ST0007</td><td>××油气站</td><td>××能源</td><td>0#柴油</td><td class="num">7.10</td><td class="num">6.40</td><td class="num">-0.30</td><td class="num">7.40</td></tr>' +
+      '<tr><td class="mono">ST0001</td><td>××加油站</td><td>××石油</td><td>0#柴油</td><td class="num">6.85</td><td class="num">6.20</td><td class="num">-0.50</td><td class="num">6.35</td></tr>' +
+      '<tr><td class="mono">ST0007</td><td>××油气站</td><td>××能源</td><td>0#柴油</td><td class="num">7.10</td><td class="num">6.40</td><td class="num">0.30</td><td class="num">7.40</td></tr>' +
       '</tbody></table></div>') +
     nb('关键枚举', '<p>规则状态：生效、停用；模式：锁站、锁站锁价；能源类型：取油站目录实际值（演示数据：柴油、天然气）；分页：20/50/100 条每页。</p>')
   )}`;
@@ -8301,7 +9329,7 @@ function lockDrawerBody(){
 
   <div class="card"><div class="card-b">
     <div class="sec-title">油站与油品明细
-      <span class="ck-tip">${lockState.mode===LOCK_MODE.PRICE?'逐行填写价格调整金额（正数=减价、负数=涨价），锁后价 = 原企业价 − 调整金额':'锁站模式不调价，价格沿用原企业价'}</span>
+      <span class="ck-tip">${lockState.mode===LOCK_MODE.PRICE?'逐行填写价格调整金额（正数=涨价、负数=降价），锁后价 = 原企业价 + 调整金额':'锁站模式不调价，价格沿用原企业价'}</span>
     </div>
     <div class="ck-toolbar">
       <button class="btn sm primary" type="button" onclick="lockOpenStationPicker()">选择油站</button>
@@ -8363,7 +9391,7 @@ function lockSetName(v){ if(lockState) lockState.name = v; }
 function lockSetRemark(v){ if(lockState) lockState.remark = v; }
 function lockSetMode(m){
   const s = lockState;
-  /* PRD：切换为锁站时明细减价列禁用并清空减价 */
+  /* PRD：切换为锁站时明细价格调整金额列禁用并清空 */
   if(m!==LOCK_MODE.PRICE) s.stations.forEach(l=>{ l.reduce = null; });
   s.mode = m;
   lockRefresh();
@@ -8407,10 +9435,6 @@ function lockBlankReduceLines(){
   const s = lockState;
   if(s.mode!==LOCK_MODE.PRICE) return [];
   return s.stations.filter(lockIsReduceBlank);
-}
-function lockDelGoods(stationCode, goodsId){
-  lockState.stations = lockState.stations.filter(l=>!(l.station===stationCode && l.goods===goodsId));
-  lockRefresh();
 }
 function lockHasGoods(stationCode, goodsId){
   return lockState.stations.some(l=>l.station===stationCode && l.goods===goodsId);
@@ -8458,7 +9482,7 @@ function lockLinesSumHTML(){
 /* 明细表：一行 = 一个「油站 + 油品」 */
 function lockLinesTable(){
   const s = lockState;
-  if(!s.stations.length) return '<div class="ck-empty ck-empty-lg">尚未选择油站，点击「选择油站」从系统已有油站中添加；勾选油站即带出该站全部油品行，可在此逐行填写减价或删除不需要的油品</div>';
+  if(!s.stations.length) return '<div class="ck-empty ck-empty-lg">尚未选择油站，点击「选择油站」从系统已有油站中添加；勾选油站即带出该站全部油品行，可在此逐行填写价格调整金额或删除不需要的油品</div>';
   /* 工具条独立于列表区，翻页/筛选只重绘 #lockLinesTableBox，搜索框不失焦 */
   const energies = [...new Set(s.stations.map(l=>lockStation(l.station)?.energy).filter(Boolean))];
   return `<div class="ck-list-tools">
@@ -8489,8 +9513,8 @@ function lockLinesTableHTML(){
     const i = idx;
     const st = lockStation(l.station), g = lockGoods(l.station, l.goods);
     if(!st || !g) return '';
-    const cut = Number(l.reduce)||0;
-    const final = s.mode===LOCK_MODE.PRICE ? Math.max(g.entPrice-cut,0) : g.entPrice;
+    const adj = Number(l.reduce)||0;
+    const final = s.mode===LOCK_MODE.PRICE ? Math.max(g.entPrice+adj,0) : g.entPrice;
     const over = final < g.cost;
     const noBase = !(g.entPrice>0);
     /* 逐行必填：未填写的行标红提示，保存时同样会被拦截 */
@@ -8504,7 +9528,7 @@ function lockLinesTableHTML(){
       <td class="num">${s.mode!==LOCK_MODE.PRICE?'<span class="dash">—</span>'
         : noBase?'<span class="dash">—</span>'
         : `<input class="inp mono${blank?' lk-req':''}" type="text" inputmode="decimal" value="${l.reduce==null?'':l.reduce}"
-             title="${blank?'请填写价格调整金额：正数=减价、负数=涨价，填 0 表示可见但不调价':''}"
+             title="${blank?'请填写价格调整金额：正数=涨价、负数=降价，填 0 表示可见但不调价':''}"
              placeholder="必填"
              oninput="lockSetReduce(${i},this.value)" style="width:104px;text-align:right">`}</td>
       <td class="num" id="lockFinal-${i}">
@@ -8523,7 +9547,7 @@ function lockLinesTableHTML(){
     ${lockPagerHTML(rows.length, s.linePage, s.linePageSize, 'lockLinePageGo', 'lockLinePageSize')}`;
 }
 /* 价格调整金额输入清洗：全角句号/逗号视为小数点，过滤其余非法字符；
-   负号仅允许出现在首位（正数=减价、负数=涨价）；
+   负号仅允许出现在首位（正数=涨价、负数=降价）；
    不用 type=number——中文输入法组合输入、滚轮与非法中间态会让浏览器悄悄改写或清空 value（输入 0.3 变 0 的根因） */
 function lockParseReduce(v){
   const raw = String(v).replace(/－/g,'-');   /* 全角负号归一化 */
@@ -8546,7 +9570,7 @@ function lockSetReduce(i, v){
   const g = lockGoods(l.station, l.goods);
   const cell = document.getElementById('lockFinal-'+i);
   if(cell && g){
-    const final = Math.max(g.entPrice-(Number(l.reduce)||0),0);
+    const final = Math.max(g.entPrice+(Number(l.reduce)||0),0);
     const over = final < g.cost;
     cell.innerHTML = `<span class="num ${over?'over':''}" title="${over?'低于成本价，保存前需确认负毛利':''}">¥${money(final)}</span>`;
   }
@@ -8660,7 +9684,7 @@ function lockPickClearSel(){
   lockPickRefreshList();
   lockRefreshLineTable();
 }
-/* 站粒度勾选：勾选带出该站全部油品行（减价留空待逐行填写），取消移除该站全部明细行 */
+/* 站粒度勾选：勾选带出该站全部油品行（价格调整金额留空待逐行填写），取消移除该站全部明细行 */
 function lockPickToggleStation(stationCode, on){
   const st = lockStation(stationCode); if(!st) return;
   if(on) st.goods.forEach(g=>lockAddGoods(stationCode,g.goodsId));
@@ -8685,16 +9709,16 @@ function lockValidate(){
   if(s.stations.length && !validLines.length) errs.push('所选油站油品均无企业价，无法配置');
   if(s.mode===LOCK_MODE.PRICE){
     /* PRD：锁站锁价模式下价格调整金额逐行必填（填 0 表示可见但不调价，但必须显式填写）；
-       正数=减价、负数=涨价，涨价不设上限 */
+       正数=涨价、负数=降价，涨价不设上限 */
     const blank = lockBlankReduceLines();
     if(blank.length) errs.push(`有 ${blank.length} 行未填写价格调整金额`);
     /* PRD：价格调整金额最多两位小数 */
     const dec = s.stations.filter(l=>l.reduce!=null && l.reduce!=='' && /\.\d{3,}$/.test(String(l.reduce)));
     if(dec.length) errs.push(`有 ${dec.length} 行的价格调整金额超过两位小数`);
     const adj = s.stations.filter(l=>l.reduce!=null && l.reduce!=='' && Number(l.reduce)!==0);
-    if(s.stations.length && !adj.length) errs.push('锁站锁价模式下请至少为一行填写非 0 的价格调整金额（正数=减价、负数=涨价），否则请改用「锁站」模式');
-    const zero = s.stations.filter(l=>{ const g=lockGoods(l.station,l.goods); return g && g.entPrice - (Number(l.reduce)||0) < 0; });
-    if(zero.length) errs.push(`有 ${zero.length} 行锁后价小于 0，请减小价格调整金额`);
+    if(s.stations.length && !adj.length) errs.push('锁站锁价模式下请至少为一行填写非 0 的价格调整金额（正数=涨价、负数=降价），否则请改用「锁站」模式');
+    const zero = s.stations.filter(l=>{ const g=lockGoods(l.station,l.goods); return g && g.entPrice + (Number(l.reduce)||0) < 0; });
+    if(zero.length) errs.push(`有 ${zero.length} 行锁后价小于 0，请调高价格调整金额`);
   }
   /* 规则唯一性：同「网货主体 + 货主企业」不允许两条生效规则 */
   const conflicts = lockConflicts({entities:s.entities, owners:s.owners, status:LOCK_STATUS.ON}, s.editId);
@@ -8708,7 +9732,7 @@ function lockNegativeGross(){
   const s = lockState;
   return s.stations.filter(l=>{
     const g = lockGoods(l.station,l.goods); if(!g) return false;
-    const final = s.mode===LOCK_MODE.PRICE ? g.entPrice-(Number(l.reduce)||0) : g.entPrice;
+    const final = s.mode===LOCK_MODE.PRICE ? g.entPrice+(Number(l.reduce)||0) : g.entPrice;
     return final < g.cost;
   });
 }
@@ -8810,11 +9834,11 @@ function openLockRuleView(id){
           <th class="num">原企业价</th><th class="num">成本价</th><th class="num">价格调整金额</th><th class="num">锁后价</th></tr></thead>
         <tbody>${r.stations.map(l=>{
           const st=lockStation(l.station), g=lockGoods(l.station,l.goods); if(!st||!g) return '';
-          const cut = r.mode===LOCK_MODE.PRICE ? (Number(l.reduce)||0) : 0;
-          const final = Math.max(g.entPrice-cut,0);
+          const adj = r.mode===LOCK_MODE.PRICE ? (Number(l.reduce)||0) : 0;
+          const final = Math.max(g.entPrice+adj,0);
           const adjCell = r.mode!==LOCK_MODE.PRICE ? '<span class="dash">—</span>'
-            : cut>0 ? `<span style="color:var(--fee);font-weight:600" title="减价 ${money(cut)} 元">-${money(cut)}</span>`
-            : cut<0 ? `<span style="color:var(--ok);font-weight:600" title="涨价 ${money(-cut)} 元">+${money(-cut)}</span>`
+            : adj>0 ? `<span style="color:var(--fee);font-weight:600" title="涨价 ${money(adj)} 元">+${money(adj)}</span>`
+            : adj<0 ? `<span style="color:var(--ok);font-weight:600" title="降价 ${money(-adj)} 元">-${money(-adj)}</span>`
             : '<span class="dash">0.00</span>';
           return `<tr>
             <td class="mono">${st.code}</td>
@@ -9124,6 +10148,13 @@ function whImportConfirm(){
 const initialPage = location.hash.slice(1);
 go(PAGES.some(p=>p.id===initialPage) ? initialPage : 'orders');
 </script>
+<div class="self-menu" id="selfMenuGlobal" hidden>
+  <button type="button" data-selfact="整体退款">整体退款</button>
+  <button type="button" data-selfact="客户退款">客户退款</button>
+  <button type="button" data-selfact="油站退款">油站退款</button>
+  <button type="button" data-selfact="网点支付">网点支付</button>
+  <button type="button" data-selfact="修改结算信息">修改结算信息</button>
+</div>
 <script src="./live-alignment.js"></script>
 
 </body>
