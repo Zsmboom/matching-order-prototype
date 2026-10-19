@@ -141,8 +141,9 @@ function liveListCard(title,extra,headers,rows,width){
   return '<div class="card live-list-card live-list-'+page+'"><div class="card-h">'+(listOnly?'':'<h2>'+title+'</h2><span class="title-stat">'+label+'</span>')+(leading?extra:'')+'<span class="spacer"></span>'+summary+(leading?'':extra)+'</div>'+liveTable(headers,rows,width)+pagerHTML(rows.length)+'</div>';
 }
 
-/* 乐企渠道：手动开票可用状态（待开票/开票失败/已红冲）；红冲无手动入口，均由退款发起 */
+/* 乐企渠道：手动开票可用状态（待开票/开票失败/已红冲）；手动红冲可用状态（开票成功/红冲失败重发），红冲完可再开票 */
 const liveLeqiCanInvoice=o=>(o.invCh||'线下')==='乐企'&&['待开票','开票失败','已红冲'].includes(o.invoice);
+const liveLeqiCanRed=o=>(o.invCh||'线下')==='乐企'&&['开票成功','红冲失败'].includes(o.invoice);
 const liveInvCh=o=>(o.invCh||'线下')==='乐企'?'<span class="tag f">乐企</span>':'<span class="tag">线下</span>';
 const liveLeqiHasInv=o=>(o.invCh||'线下')==='乐企'&&(o.invoice==='开票成功'||o.invoice==='已红冲')&&!!leqiLatestInv(o.no);
 const liveInvOp=o=>'<button type="button" onclick="liveDrawer(\'order\',\''+o.no+'\',1)" title="该订单全部蓝/红票查看与下载">发票查看下载</button>';
@@ -151,7 +152,7 @@ VIEWS.orders=()=>{
   const rows=list.map(o=>{
     const invCh=o.invCh||'线下';
     const check=((o.invoice==='未开票'||o.invoice==='已撤销')&&o.status==='支付成功'&&!LIVE.refunds.some(r=>r.order===o.no&&r.status==='待审核'))||(invCh==='乐企'&&(o.invoice==='开票成功'||o.invoice==='已红冲'));
-    return '<tr><td><input type="checkbox" class="live-order-check" value="'+o.no+'" '+(check?'':'disabled')+' aria-label="选择订单 '+o.no+'"></td><td><b class="mono">'+o.no+'</b><div class="t2">'+o.time+' · '+o.source+'</div></td><td>'+liveBadge(o.status)+'<div class="t2">'+o.verify+'</div></td><td>'+liveInvCh(o)+'</td><td>'+liveBadge(o.invoice)+'</td><td>'+(o.invFail?'<span style="color:var(--bad);font-size:12px">'+o.invFail+'</span>':'—')+'</td><td>'+o.customer+'<div class="t2">撮合账户 · '+o.energy+'</div></td><td>'+o.driver+' · '+o.phone+'<div class="t2">'+o.plate+'</div></td><td>'+o.station+'<div class="t2">'+o.stationCo+'</div></td><td>'+o.goods+'<div class="t2">'+o.qty+' · 油机价 '+o.machinePrice+' · 企业价 '+o.enterprisePrice+'</div></td><td class="num">'+liveMoney(o.amount)+'</td><td>客户 '+liveMoney(o.customerFee)+' · 油站 '+liveMoney(o.stationFee)+'<div class="t2">'+o.feeState+'</div></td><td class="acts">'+liveAct('order',o.no)+(liveLeqiCanInvoice(o)?' '+liveBtn('leqiInvoice',o.no,'手动开票'):'')+(liveLeqiHasInv(o)?' '+liveInvOp(o):'')+(o.refundable?' '+liveBtn('refundApply',o.no,'申请退款'):'')+'</td></tr>';
+    return '<tr><td><input type="checkbox" class="live-order-check" value="'+o.no+'" '+(check?'':'disabled')+' aria-label="选择订单 '+o.no+'"></td><td><b class="mono">'+o.no+'</b><div class="t2">'+o.time+' · '+o.source+'</div></td><td>'+liveBadge(o.status)+'<div class="t2">'+o.verify+'</div></td><td>'+liveInvCh(o)+'</td><td>'+liveBadge(o.invoice)+'</td><td>'+(o.invFail?'<span style="color:var(--bad);font-size:12px">'+o.invFail+'</span>':'—')+'</td><td>'+o.customer+'<div class="t2">撮合账户 · '+o.energy+'</div></td><td>'+o.driver+' · '+o.phone+'<div class="t2">'+o.plate+'</div></td><td>'+o.station+'<div class="t2">'+o.stationCo+'</div></td><td>'+o.goods+'<div class="t2">'+o.qty+' · 油机价 '+o.machinePrice+' · 企业价 '+o.enterprisePrice+'</div></td><td class="num">'+liveMoney(o.amount)+'</td><td>客户 '+liveMoney(o.customerFee)+' · 油站 '+liveMoney(o.stationFee)+'<div class="t2">'+o.feeState+'</div></td><td class="acts">'+liveAct('order',o.no)+(liveLeqiCanInvoice(o)?' '+liveBtn('leqiInvoice',o.no,'手动开票'):'')+(liveLeqiCanRed(o)?' '+liveBtn('leqiRed',o.no,'手动红冲'):'')+(liveLeqiHasInv(o)?' '+liveInvOp(o):'')+(o.refundable?' '+liveBtn('refundApply',o.no,'申请退款'):'')+'</td></tr>';
   });
   return liveFilters('orders')+liveListCard('能源订单管理','<button class="btn sm" onclick="liveDrawer(\'backfill\',\'new\')">撮合订单补单</button><button class="btn sm" onclick="liveExport(\'orders\')">导出</button><button class="btn sm" onclick="liveModal(\'leqiDownload\',\'\')">批量下载发票</button><button class="btn sm primary" onclick="liveModal(\'energyBatch\',\'\')">批量申请开票</button>', ['选择','订单信息','订单状态','开票渠道','开票状态','失败原因','客户公司','司机与车辆','油站 / 油站公司','加注油品','金额信息','服务费','操作'],rows,'2660px')+notes(
     nb('实际页面口径','<p>支付、核销、退款、服务费与发票分别维护状态。能源订单编号以 MH 开头；退款申请仅适用于待核销的一键支付订单。列表中的客户与油站服务费分别显示，客户无服务费时金额为 0。</p>')+
@@ -160,7 +161,8 @@ VIEWS.orders=()=>{
       tbl(['场景','口径'],[
         ['开票状态','乐企渠道 7 值：待开票/开票中/开票失败/开票成功/红冲中/红冲失败/已红冲；线下渠道订单沿用 4 值（未开票/开票中/已开票/已撤销），同列分治展示，筛选按渠道分组'],
         ['开票失败','自动重试每分钟 1 次×3 次（重试开具），仍失败停留「开票失败」并展示失败原因，转人工手动开票或技术排查'],
-        ['手动开票','可用状态=待开票/开票失败/已红冲；已红冲重开蓝票用于「退款取消，仍需开票」场景；红冲无手动入口，均由退款发起'],
+        ['手动开票','可用状态=待开票/开票失败/已红冲；已红冲重开蓝票用于「换开」等需要再次开票的场景（红冲完成后即可发起）'],
+        ['手动红冲','可用状态=开票成功/红冲失败（重发）；必填红冲原因 5–200 字写入开票记录；成功→已红冲（原蓝票冲销）可再次手动开票，失败→红冲失败展示乐企原因；退款红冲（审核通过触发）与本入口互为补充，红冲中拦截退款审核'],
         ['批量下载发票','勾选「开票成功/已红冲」的乐企订单，仅下载各单最新 1 次发票，不限格式 url/pdf/ofd；乐企订单不进「批量申请开票」勾选池'],
         ['发票附件','详情抽屉「发票信息」页签展示全部蓝红票+开票记录；操作列「发票查看下载」仅开票成功/已红冲可见，点击直达该抽屉，全部蓝/红票可逐张查看下载（不限格式 url/pdf/ofd）']
       ])));
@@ -176,7 +178,7 @@ VIEWS.refund=()=>{
   return liveFilters('refund')+liveListCard('退款申请管理','<button class="btn sm" onclick="liveExport(\'refund\')">导出</button>', ['退款申请','原订单与客户','司机与车辆','油站','退款金额','申请原因','状态与时间','操作'],rows,'1550px')+notes(
     nb('退款资格与影响','<p>当前撮合退款仅支持待核销一键支付订单的整单全额退款。审核通过后，商品本金原路退回，已支付服务费原路退回、未支付服务费取消应收，关联网货子单冲销并恢复司机扣减或补贴。申请处理中暂停核销和新开票。</p>')+
     nb('乐企开票订单的退款：先红冲后退款',
-      '<p>开票渠道=<b>乐企</b>的订单（开票成功），退款审核通过后<b>必须先红冲原蓝票</b>（红冲均由退款发起、唯一触发点），红冲成功后才执行退款；<b>无手动红冲入口</b>。红冲进行中的订单拦截审核。</p>'+
+      '<p>开票渠道=<b>乐企</b>的订单（开票成功），退款审核通过后<b>必须先红冲原蓝票</b>（由退款审核通过触发），红冲成功后才执行退款；红冲进行中的订单拦截审核。手动红冲为运营主动换开场景的独立入口（订单列表操作列），不影响退款流程。</p>'+
       tbl(['退款审核后的三种结果','提示口径','后续动作'],[
         ['红冲成功 + 退款成功','红冲成功，原蓝票已冲销；商品本金与服务费原路退回成功','退款单完成，订单开票状态=已红冲'],
         ['红冲成功 + 退款失败（资金侧）','红冲成功，但资金转账失败','退款单标「退款失败」，转运营人工工单处理'],
@@ -489,8 +491,22 @@ function liveModal(kind,key){
         ...(o.invFail?[['失败原因',o.invFail]]:[]),
         ['销方（油站企业）',o.stationCo],['购方',o.customer],['金额',liveMoney(o.amount)]
       ])+
-      '<p class="note">手动开票可用状态：待开票 / 开票失败 / 已红冲；已红冲重开蓝票用于「退款取消，仍需开票」场景；红冲无手动入口，均由退款发起。</p>';
+      '<p class="note">手动开票可用状态：待开票 / 开票失败 / 已红冲；已红冲重开蓝票用于「换开」等需要再次开票的场景，红冲完成后即可发起。</p>';
     primary='确认开票';
+  }else if(kind==='leqiRed'){
+    const o=LIVE.orders.find(x=>x.no===key);
+    if(!o||!liveLeqiCanRed(o)){showToast('仅「开票成功/红冲失败」的乐企订单可手动红冲');return;}
+    const blue=leqiLatestInv(o.no);
+    heading='乐企手动红冲';
+    content='<p>将对订单 <b class="mono">'+o.no+'</b> 当前开票成功的蓝票调用乐企发票冲红，订单开票状态置为「红冲中」，红冲结果查询后更新。</p>'+
+      liveSection('核对信息',[
+        ['订单号',o.no],['开票渠道','<span class="tag f">乐企</span>'],['当前开票状态',liveBadge(o.invoice)],
+        ['原蓝票号码',blue?('<span class="mono">'+blue.no+'</span>'):'—'],
+        ['销方（油站企业）',o.stationCo],['购方',o.customer],['金额',liveMoney(o.amount)]
+      ])+
+      '<div class="fi"><label for="live-modal-reason">红冲原因 <span class="req">*</span></label><textarea id="live-modal-reason" class="inp" maxlength="200" minlength="5" placeholder="必填，5–200 字，写入开票记录留痕（如：开票信息有误需换开 / 购方要求重开…）"></textarea><span class="t2">5–200 字</span></div>'+
+      '<p class="note">手动红冲可用状态：开票成功 / 红冲失败（重发）；成功→已红冲（原蓝票冲销），可再次手动开票重开蓝票；失败→红冲失败展示乐企原因，可重新发起；红冲中拦截退款审核。</p>';
+    primary='确认红冲';requireField=true;
   }else if(kind==='leqiDownload'){
     const nos=liveSelected('.live-order-check').map(no=>LIVE.orders.find(x=>x.no===no)).filter(o=>o&&(o.invCh||'线下')==='乐企'&&(o.invoice==='开票成功'||o.invoice==='已红冲'));
     if(!nos.length){showToast('请先勾选「开票成功/已红冲」的乐企订单');return;}
@@ -526,6 +542,37 @@ function liveFinish(kind,key,requireField){
   if(kind==='leqiInvoice'&&key){
     const o=LIVE.orders.find(x=>x.no===key);
     if(o){o.invoice='开票中';o.invFail='';LEQI_LOGS.push({order:o.no,t:leqiNow(),way:'手动开票',act:'发票开具',result:'处理中',note:'已提交乐企，开具结果查询中'});showToast('已发起乐企开票，订单开票状态置为「开票中」');paint();return;}
+  }
+  if(kind==='leqiRed'&&key){
+    const o=LIVE.orders.find(x=>x.no===key);
+    if(o){
+      const rs=document.getElementById('live-modal-reason');
+      const reason=rs?rs.value.trim():'';
+      if(reason.length<5||reason.length>200){modal.classList.add('on');rs&&rs.focus();showToast('请填写红冲原因（5–200 字）');return;}
+      const blue=leqiLatestInv(o.no);
+      const failDemo=o.no==='MH20260827094500000001'&&!o._redFailedDemo;
+      if(failDemo)o._redFailedDemo=true;
+      o.invoice='红冲中';
+      LEQI_LOGS.push({order:o.no,t:leqiNow(),way:'手动红冲',act:'发票冲红',result:'处理中',note:'红冲原因：'+reason+'；已提交乐企，红冲结果查询中'});
+      showToast('已发起红冲，订单开票状态置为「红冲中」，红冲结果查询中');
+      paint();
+      setTimeout(function(){
+        if(failDemo){
+          o.invoice='红冲失败';o.invFail='购方已认证抵扣，需线下沟通抵扣处理';
+          LEQI_LOGS.push({order:o.no,t:leqiNow(),way:'手动红冲',act:'发票冲红',result:'失败',note:o.invFail+'；可重新发起手动红冲'});
+          showToast('红冲失败：'+o.invFail);
+        }else{
+          o.invoice='已红冲';o.invFail='';
+          LEQI_INV.push({no:'0441202608270000'+String(1340+LEQI_INV.length).padStart(4,'0'),order:o.no,biz:'撮合',type:'红票',
+            rel:blue?blue.no:'—',drawer:o.stationCo,buyer:o.customer,amt:-o.amount,t:leqiNow(),trigger:'手动红冲',
+            file:'乐企发票_红冲_'+o.no+'.pdf'});
+          LEQI_LOGS.push({order:o.no,t:leqiNow(),way:'手动红冲',act:'发票冲红',result:'成功',note:'红冲原因：'+reason+'；红冲成功，原蓝票已冲销，可再次手动开票'});
+          showToast('红冲成功，原蓝票已冲销；可对订单再次手动开票');
+        }
+        paint();
+      },900);
+      return;
+    }
   }
   if(kind==='refundApprove'&&key){ liveRefundApprove(key); return; }
   if(kind==='refundReject'&&key){
