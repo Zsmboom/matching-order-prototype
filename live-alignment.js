@@ -489,7 +489,7 @@ function liveModal(kind,key){
     const o=LIVE.orders.find(x=>x.no===key);
     if(!o||!liveLeqiCanInvoice(o)){showToast('仅「未开票/开票失败/已红冲」的乐企订单可手动开票');return;}
     heading='乐企手动开票';
-    content='<p>将对订单 <b class="mono">'+o.no+'</b> 调用乐企发票开具，订单开票状态置为「开票中」，开具结果查询后更新。</p>'+
+    content='<p>将对订单 <b class="mono">'+o.no+'</b> 调用乐企发票开具接口，订单开票状态置为「开票中」，开具结果查询后更新。</p>'+
       liveSection('核对信息',[
         ['订单号',o.no],['开票渠道','<span class="tag f">乐企</span>'],['当前开票状态',liveBadge(o.invoice)],
         ...(o.invFail?[['失败原因',o.invFail]]:[]),
@@ -502,7 +502,7 @@ function liveModal(kind,key){
     if(!o||!liveLeqiCanRed(o)){showToast('仅「开票成功/红冲失败」的乐企订单可手动红冲');return;}
     const blue=leqiLatestInv(o.no);
     heading='乐企手动红冲';
-    content='<p>将对订单 <b class="mono">'+o.no+'</b> 当前开票成功的蓝票调用乐企发票冲红，订单开票状态置为「红冲中」，红冲结果查询后更新。</p>'+
+    content='<p>将对订单 <b class="mono">'+o.no+'</b> 当前开票成功的蓝票调用乐企发票冲红接口，订单开票状态置为「红冲中」，红冲结果查询后更新。</p>'+
       liveSection('核对信息',[
         ['订单号',o.no],['开票渠道','<span class="tag f">乐企</span>'],['当前开票状态',liveBadge(o.invoice)],
         ['原蓝票号码',blue?('<span class="mono">'+blue.no+'</span>'):'—'],

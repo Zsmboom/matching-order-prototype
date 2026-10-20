@@ -6641,7 +6641,7 @@ const CONFIRMS = {
           ['销方（油站企业）',o.stationCo],['购方',o.cust||o.co],['金额',money(o.real||o.est||o.amt)]],
       fields:[{l:'红冲原因',t:'ta',p:'必填，5–200 字，写入开票记录留痕（如：开票信息有误需换开 / 购方要求重开…）',max:200,min:5,req:1,span:3}],
       list:['可用状态：开票成功 / 红冲失败（重发）。',
-            '红冲成功后原蓝票冲销，订单开票状态置「已红冲」，可再次手动开票重开蓝票；红冲失败展示乐企原因，可重新发起。'],
+            '红冲成功后原蓝票冲销，订单开票状态置「已红冲」，可再次手动开票重开蓝票；红冲失败展示乐企原因，可重新发起；红冲中拦截退款审核。'],
       ok:'确认红冲', okClass:'danger'
     };
   },
@@ -7375,7 +7375,7 @@ const CONFIRM_ACTIONS = {
     }
     const blue = leqiLatestInv(o.no);
     /* 演示：MH20260827094500000001 首次红冲失败（购方已认证抵扣），重发即成功；其余一次成功 */
-    const failDemo = o.no==='MH20260827094500000001' && !o._redFailedDemo;
+    const failDemo = (o.no==='MH20260827094500000001'||o.no==='ZY20260912093102201') && !o._redFailedDemo;
     if(failDemo) o._redFailedDemo = true;
     o.inv = '红冲中';
     LEQI_LOGS.push({order:o.no, t:leqiNow(), way:'手动红冲', act:'发票冲红', result:'处理中', note:'红冲原因：'+reason+'；已提交乐企，红冲结果查询中'});
