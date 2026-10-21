@@ -1366,6 +1366,11 @@ const SELFORDES = [
    driver:'宿红', plate:'蒙T9U81U', station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司',
    goods:'0# 轻柴油', energy:'柴油', qty:120.82, amt:812.30,
    paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'红冲中', invCh:'乐企'},
+  {no:'ZY20260911095504417', time:'2026-09-11 09:55:04', co:'万联易达物流科技有限公司', coType:'自签物流公司',
+   driver:'田玲玲', plate:'辽AEK808', station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司',
+   goods:'0# 轻柴油', energy:'柴油', qty:88.60, amt:590.08,
+   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'红冲失败', invCh:'乐企',
+   invFail:'乐企红冲接口返回：购方已认证抵扣，需线下沟通抵扣处理'},
   {no:'ZY20260911100817226', time:'2026-09-11 10:08:17', co:'蒙晋通达运输有限公司', coType:'网货主体',
    driver:'孙倩', plate:'蒙A2288L', station:'天津武清京津站', stationCo:'中石油天津销售分公司',
    goods:'0# 轻柴油', energy:'柴油', qty:96.50, amt:642.69,
@@ -1379,6 +1384,10 @@ const SELFORDES = [
    driver:'王志刚', plate:'鲁F1234Q', station:'济南章丘服务区站', stationCo:'中交兴路能源有限公司',
    goods:'LNG', energy:'天然气', qty:118.55, amt:694.70,
    paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'已开票', invCh:'线下'},
+  {no:'ZY20260910170003822', time:'2026-09-10 17:00:38', co:'鲁通冷链物流有限公司', coType:'网货主体',
+   driver:'王志刚', plate:'鲁F1234Q', station:'济南章丘服务区站', stationCo:'中交兴路能源有限公司',
+   goods:'LNG', energy:'天然气', qty:64.30, amt:377.10,
+   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'已撤销', invCh:'线下'},
   {no:'ZY20260910091222518', time:'2026-09-10 09:12:22', co:'测试客户2', coType:'自签物流公司',
    driver:'李强', plate:'京A1234Q', station:'北京大兴机场西站', stationCo:'畅油网络科技有限公司',
    goods:'CNG', energy:'天然气', qty:236.70, amt:1420.00,
@@ -2430,7 +2439,7 @@ function dataTable(id, list, minWidth, empty, noSelect){
       const k = c.k==='ops' ? 'stickR' : '';
       const cls = k ? ' class="'+k+'"' : '';
       const w = c.w ? ' style="width:'+c.w+'"' : '';
-      return `<th${cls}${w}>${c.t}</th>`;
+      return `<th${cls}${w}>${c.t}${c.help?leqiFieldHelp(c.help):''}</th>`;
     }).join('') + '</tr>';
   const body = list.length
     ? list.map(o=>{
@@ -2632,8 +2641,244 @@ function leqiRedNode(o,r,step,done,failed){
     : redDone ? `${r.auditAt||'—'} · 退款审核通过触发红冲，已红冲，原蓝票冲销；继续执行退款`
     : redDoing ? '退款审核通过触发红冲，红冲结果查询中；红冲成功后才执行退款'
     : '退款审核通过后先红冲原蓝票，红冲成功后才执行退款';
-  return `<div class="it"><div class="dot ${cls}"${dotStyle}></div><div><div class="h">红冲原蓝票（乐企）</div>
+  return `<div class="it"><div class="dot ${cls}"${dotStyle}></div><div><div class="h">红冲原蓝票（乐企）${mhRefundNodeHelp('red',r,o)}</div>
     <div class="m">${m}</div></div></div>`;
+}
+
+/* ---- 节点说明卡（fh，两套皮肤共用组件）：点击节点旁「？」显示，点击弹层以外任意区域关闭 ----
+   组件与监听统一放基础层；对齐层 fhHelp 直接委托本函数（脚本在其后加载，渲染时才调用） */
+function fhCardHTML(card, up){
+  return '<span class="fh-wrap'+(up?' up':'')+'" tabindex="0" aria-label="节点口径说明">'
+    +'<span class="fh-ico" aria-hidden="true">？</span>'
+    +'<span class="fh-card" role="tooltip">'+card+'</span></span>';
+}
+function fhCloseAll(){
+  document.querySelectorAll('.fh-wrap.on').forEach(w=>{
+    w.classList.remove('on');
+    const c=w.querySelector('.fh-card'); if(c){c.style.position='';c.style.left='';c.style.top='';c.style.maxWidth='';}
+  });
+}
+/* 弹层定位：视口固定定位（表格横向滚动容器 overflow-x:auto 与抽屉边缘都不裁切），左右放不下自动翻边、上下放不下翻到上方 */
+function fhPlace(wrap){
+  const card=wrap.querySelector('.fh-card'), ico=wrap.querySelector('.fh-ico');
+  if(!card||!ico) return;
+  const r=ico.getBoundingClientRect(), vw=window.innerWidth, vh=window.innerHeight;
+  const cw=Math.min(470, vw-24);
+  card.style.maxWidth=cw+'px';
+  let left=r.right+6;
+  if(left+cw>vw-8) left=Math.max(8, r.left-cw-6);
+  card.style.position='fixed'; card.style.left=left+'px'; card.style.top=(r.bottom+4)+'px';
+  const ch=card.offsetHeight;
+  if(r.bottom+4+ch>vh-8) card.style.top=Math.max(8, r.top-ch-6)+'px';
+}
+function fhOpen(wrap){
+  fhCloseAll();
+  const card=wrap.querySelector('.fh-card'); if(!card) return;
+  wrap.classList.add('on');
+  fhPlace(wrap);
+}
+document.addEventListener('click', e=>{
+  const wrap = e.target.closest('.fh-wrap');
+  if(wrap && e.target.closest('.fh-ico')){
+    const wasOn = wrap.classList.contains('on');
+    if(wasOn) fhCloseAll(); else fhOpen(wrap);
+    return;
+  }
+  if(wrap) return; /* 弹层内部点击不关闭 */
+  fhCloseAll();
+});
+window.addEventListener('scroll', e=>{
+  const wrap=document.querySelector('.fh-wrap.on'); if(!wrap) return;
+  const t=e.target;
+  if(t instanceof Element && wrap.querySelector('.fh-card').contains(t)) return; /* 卡片内部滚动（翻看长内容）不关闭、不跟随；页面级滚动 target=document 非 Element */
+  const r=wrap.querySelector('.fh-ico').getBoundingClientRect();
+  if(r.top<-24||r.bottom>window.innerHeight+24||r.right<-24||r.left>window.innerWidth+24){ fhCloseAll(); return; } /* 锚点「？」滚出视口才关闭 */
+  fhPlace(wrap); /* 页面/表格滚动时弹层跟随锚点重新定位，保持可见 */
+}, true);
+
+/* 退款处理进度 · 逐节点说明卡内容：撮合退款申请详情用（运营确认口径），与对齐层 liveNodeHelp 同源 */
+function mhRefundNodeHelp(k, r, o){
+  const dot=c=>'<span class="fh-dot'+(c?' '+c:'')+'"></span>';
+  if(k==='submit') return fhCardHTML(
+    '<h5>节点状态 · 提交退款申请（穷举）</h5>'
+    +tbl(['节点状态','圆点','页面展示内容（示例）'],[
+      ['已提交',dot(''),'「2026-08-27 10:12 · 运营平台 · 张世民（运营中台）」（时间＋发起方＋发起人）']
+    ])
+    +'<p><b>出现条件：</b>油站或运营核实问题后代为发起；仅待核销一键支付订单的整单全额退款。</p>'
+    +'<p><b>关键规则：</b>开票终态（未开票 / 开票失败 / 开票成功 / 红冲失败 / 已红冲）可发起退款；开票中 / 红冲中为进行中状态、退款入口置灰；申请处理中暂停核销与新开票。</p>'
+    +'<p class="mut">与 PRD 7.2.2 同源。</p>');
+  if(k==='confirm') return fhCardHTML(
+    '<h5>节点状态 · 运营确认（穷举）</h5>'
+    +tbl(['节点状态','圆点','页面展示内容（示例）'],[
+      ['待确认',dot('pend'),'「待确认——确认后立即执行，不再有第二道审批」'],
+      ['已确认',dot(''),'「2026-08-26 21:20 · 张世民（运营中台） · 已确认，开始执行退款」']
+    ])
+    +'<p><b>由谁处理：</b>运营（确认弹窗「确认退款」）。</p>'
+    +'<p><b>后续流转：</b>确认 → 乐企订单先红冲原蓝票，红冲成功后执行退款（线下订单直接执行退款）。</p>'
+    +'<p><b>关键规则：</b>订单开票状态=红冲中时点确认 → 拦截，提示「红冲进行中，暂不能确认退款」。</p>'
+    +'<p class="mut">与 PRD 7.2.2 同源。</p>');
+  if(k==='red') return fhCardHTML(
+    '<h5>本节点何时出现</h5>'
+    +'<p>仅开票渠道=<b>乐企</b>且蓝票<b>开票成功未红冲</b>（含红冲失败重开后再次确认）的退款单；线下渠道订单无本节点、不显示本区块。</p>'
+    +'<h5>节点状态 · 红冲原蓝票（穷举 4 态）</h5>'
+    +tbl(['节点状态','圆点','页面展示内容（示例）'],[
+      ['未触发',dot('pend'),'「退款审核通过后先红冲原蓝票，红冲成功后才执行退款」'],
+      ['红冲中',dot('run'),'「退款审核通过触发红冲，红冲结果查询中；红冲成功后才执行退款」'],
+      ['已红冲',dot(''),'「2026-08-26 21:20 · 退款审核通过触发红冲，已红冲，原蓝票冲销；继续执行退款」'],
+      ['红冲失败',dot('fail'),'「红冲失败：购方已认证抵扣，需线下沟通抵扣处理——退款单已终止为「退款失败」，线下抵扣处理完成后重新发起退款申请」']
+    ])
+    +'<p><b>关键规则：</b>① 红冲唯一触发点=运营确认（订单列表「手动红冲」为独立换开入口，不影响退款流程）；② 红冲中拦截确认；③ 线下渠道不拦截、不联动。</p>'
+    +'<p class="mut">与 PRD 7.2.2 同源。</p>');
+  return fhCardHTML(
+    '<h5>节点状态 · 资金退回（穷举）</h5>'
+    +tbl(['节点状态','圆点','页面展示内容（示例）'],[
+      ['待执行',dot('pend'),'「待运营确认后执行」'],
+      ['执行中',dot('run'),'「两笔反向转账执行中，各自成功各自失败」'],
+      ['已退款',dot(''),'「油款与服务费两笔均已退回成功；额度回补原运单」'],
+      ['退款失败 · 红冲失败终止',dot('fail'),'「退款单已终止：红冲失败，未执行退款」——线下抵扣处理完成后重新发起退款申请新开一单'],
+      ['退款失败 · 资金侧失败',dot('fail'),'红冲成功，但油款或服务费转账失败——转运营人工工单处理']
+    ])
+    +'<p><b>关键规则：</b>油款与服务费为两笔独立转账，各自成功各自失败；红冲失败终止后重新发起退款申请再走确认，确认后再次触发红冲。</p>'
+    +'<p class="mut">与 PRD 7.2.2 同源。</p>', true);
+}
+
+/* 退款处理进度 · 逐节点说明卡内容：自营退款单详情用（退款审核口径，审核通过/驳回示例带时间＋操作人） */
+function zyRefundNodeHelp(k, r, o){
+  const dot=c=>'<span class="fh-dot'+(c?' '+c:'')+'"></span>';
+  if(k==='submit') return fhCardHTML(
+    '<h5>节点状态 · 提交退款申请（穷举）</h5>'
+    +tbl(['节点状态','圆点','页面展示内容（示例）'],[
+      ['已提交',dot(''),'「2026-09-12 09:30:11 · 重复支付」（时间＋退款原因）']
+    ])
+    +'<p><b>出现条件：</b>自营订单整单退款，生成退款单；客户退款与油站退款为同一次退款的资金两侧。</p>'
+    +'<p><b>关键规则：</b>开票终态（未开票 / 开票失败 / 开票成功 / 红冲失败 / 已红冲）可发起退款；开票中 / 红冲中为进行中状态、退款入口置灰；申请处理中暂停核销与新开票。</p>'
+    +'<p class="mut">与 PRD 7.2.2 同源。</p>');
+  if(k==='audit') return fhCardHTML(
+    '<h5>节点状态 · 退款审核（穷举）</h5>'
+    +tbl(['节点状态','圆点','页面展示内容（示例）'],[
+      ['待审核',dot('pend'),'「待审核——弹窗核对子订单明细后通过 / 驳回」'],
+      ['审核通过',dot(''),'「2026-09-12 13:20 · 张世民（运营中台） · 审核通过」'],
+      ['审核驳回',dot('fail'),'「2026-09-12 16:01 · 张世民（运营中台） · 已驳回：退款申请终止」']
+    ])
+    +'<p><b>由谁处理：</b>运营（审核弹窗「通过 / 驳回」）。</p>'
+    +'<p><b>后续流转：</b>通过 → 乐企订单先红冲原蓝票，红冲成功后执行退款（线下订单直接执行退款）；驳回 → 退款单终态「审核驳回」，不再执行退款。</p>'
+    +'<p><b>关键规则：</b>订单开票状态=红冲中时点通过 → 拦截，提示「红冲进行中，暂不能通过审核」。</p>'
+    +'<p class="mut">与 PRD 7.2.2 同源。</p>');
+  if(k==='red') return fhCardHTML(
+    '<h5>本节点何时出现</h5>'
+    +'<p>仅开票渠道=<b>乐企</b>且蓝票<b>开票成功未红冲</b>（含红冲失败重开后再次审核通过）的退款单；线下渠道订单无本节点、不显示本区块。</p>'
+    +'<h5>节点状态 · 红冲原蓝票（穷举 4 态）</h5>'
+    +tbl(['节点状态','圆点','页面展示内容（示例）'],[
+      ['未触发',dot('pend'),'「审核通过后先红冲原蓝票，红冲成功后才执行退款」'],
+      ['红冲中',dot('run'),'「审核通过触发红冲，红冲结果查询中；红冲成功后才执行退款」'],
+      ['已红冲',dot(''),'「红冲成功，原蓝票冲销，继续执行退款」'],
+      ['红冲失败',dot('fail'),'「红冲失败：购方已认证抵扣，需线下沟通抵扣处理——退款单终止为「退款失败」，线下抵扣处理完成后重新发起退款申请」']
+    ])
+    +'<p><b>关键规则：</b>① 红冲唯一触发点=退款审核通过（订单列表「手动红冲」为独立换开入口，不影响退款流程）；② 红冲中拦截审核；③ 线下渠道不拦截、不联动。</p>'
+    +'<p class="mut">与 PRD 7.2.2 同源。</p>');
+  return fhCardHTML(
+    '<h5>节点状态 · 资金退回（穷举）</h5>'
+    +tbl(['节点状态','圆点','页面展示内容（示例）'],[
+      ['待执行',dot('pend'),'「待审核通过后执行」；已驳回「退款申请已驳回：不再执行退款」'],
+      ['执行中',dot('run'),'「两笔反向转账执行中，各自成功各自失败」'],
+      ['已退回',dot(''),'「油款与服务费两笔均已退回成功」'],
+      ['退款失败 · 红冲失败终止',dot('fail'),'「退款单已终止：红冲失败，未执行退款」——线下抵扣处理完成后重新发起退款申请新开一单'],
+      ['退款失败 · 资金侧失败',dot('fail'),'红冲成功，但油款或服务费转账失败——转运营人工工单处理']
+    ])
+    +'<p><b>关键规则：</b>油款与服务费为两笔独立转账，各自成功各自失败；红冲失败终止后重新发起退款申请再走审核，审核通过后再次触发红冲。</p>'
+    +'<p class="mut">与 PRD 7.2.2 同源。</p>', true);
+}
+
+/* ---- 250.4 乐企开票 · 关键字段说明卡（撮合订单 / 自营订单 / 订单发票管理 / 网点公司管理共用，跨页展示一致）----
+   通过列定义 help 字段挂到表头（dataTable 渲染），列设置面板只读 c.t 文案不受影响 */
+function leqiFieldHelp(kind){
+  const dot=c=>'<span class="fh-dot'+(c?' '+c:'')+'"></span>';
+  if(kind==='invCh') return fhCardHTML(
+    '<h5>取值（穷举 2 值）</h5>'
+    +tbl(['取值','判定口径'],[
+      ['乐企','柴油 ＋ 易宝支付 ＋ 直接与加油站结算——三条件同时满足；<b>支付成功即实时调用乐企自动开票</b>（交易与开票解耦，开票失败不影响订单交易完成）'],
+      ['线下','天然气订单（本期不自动开票、不排斥后续纳入）、三方对接站与非易宝支付订单；沿用既有线下开票流程（客户申请 ＋ 油站上传）']
+    ])
+    +'<p><b>历史订单：</b>上线前历史订单不处理，按线下渠道展示。</p>'
+    +'<p class="mut">与 PRD 7.2.1 同源。</p>');
+  if(kind==='invStatus') return fhCardHTML(
+    '<h5>渠道分治 · 同列展示最新 1 次开票（蓝票＋红票）结果</h5>'
+    +'<h5>乐企渠道（穷举 7 态）</h5>'
+    +tbl(['状态','圆点','页面展示内容（示例）'],[
+      ['未开票',dot('pend'),'「未开票」——蓝票尚未开具；为手动开票可用状态'],
+      ['开票中',dot('run'),'「开票中」——已调用乐企开票、结果查询中；进行中状态，拦截退款申请与退款审核'],
+      ['开票失败',dot('fail'),'「开票失败」——自动重试每分钟 1 次×3 次仍失败，停留本态并在「失败原因」展示乐企返回原因，转人工手动开票'],
+      ['开票成功',dot(''),'「开票成功」——蓝票开具成功；可手动红冲、可申请退款（审核通过先红冲）'],
+      ['红冲中',dot('run'),'「红冲中」——红冲接口已调用、结果查询中；进行中状态，拦截退款申请与退款审核'],
+      ['红冲失败',dot('fail'),'「红冲失败」——展示乐企返回原因；可手动红冲重发；退款场景下退款单已终止「退款失败」'],
+      ['已红冲',dot(''),'「已红冲」——蓝票已冲销（红票开具）；可手动开票重开蓝票（换开）']
+    ])
+    +'<h5>线下渠道（穷举 4 态）</h5>'
+    +tbl(['状态','页面展示内容（示例）'],[
+      ['未开票','「未开票」——尚未发起线下开票申请'],
+      ['开票中','「开票中」——开票申请处理中（客户申请＋油站上传）'],
+      ['已开票','「已开票」——线下发票已上传生效'],
+      ['已撤销','「已撤销」——开票申请撤销；可重新发起申请']
+    ])
+    +'<p><b>关键规则：</b>开票中 / 红冲中（进行中）拦截退款申请与退款审核；乐企订单不进「批量申请开票」勾选池（保留给线下）。</p>'
+    +'<p class="mut">与 PRD 7.2.1 同源。</p>');
+  if(kind==='invFail') return fhCardHTML(
+    '<h5>展示规则（穷举 3 场景）</h5>'
+    +tbl(['场景','页面展示内容（示例）'],[
+      ['开票失败','「购方已认证抵扣，需线下沟通抵扣处理」——乐企返回原文，红色小字；重试 3 次仍失败后停留展示，转人工'],
+      ['红冲失败','「乐企红冲接口返回：购方已认证抵扣…」——乐企返回原文，红色小字；可手动红冲重发'],
+      ['其余状态','「—」']
+    ])
+    +'<p><b>联动：</b>开票失败累计计入网点公司「线上开票失败 n 笔自动下线」计数（做过红冲的订单不算「未开」）。</p>'
+    +'<p class="mut">与 PRD 7.2.1 同源。</p>');
+  if(kind==='orderOps') return fhCardHTML(
+    '<h5>操作出现条件（穷举）</h5>'
+    +tbl(['操作','出现条件','说明'],[
+      ['详情','恒显','订单详情抽屉（发票信息页签含全部蓝/红票与开票记录）'],
+      ['手动开票','乐企且 未开票 / 开票失败 / 已红冲','已红冲重开蓝票（换开场景）；线下渠道无此入口'],
+      ['手动红冲','乐企且 开票成功 / 红冲失败（重发）','必填红冲原因 5–200 字写入开票记录；成功→已红冲可再次开票；独立换开入口，不影响退款流程'],
+      ['发票查看下载','乐企且 开票成功 / 已红冲','全部蓝/红票逐张查看与下载（不限 url/pdf/ofd）'],
+      ['申请退款','开票终态（未开票 / 开票失败 / 开票成功 / 红冲失败 / 已红冲）可申请','开票中 / 红冲中置灰，提示「开票/红冲进行中，暂不可申请退款」'],
+      ['批量申请开票（页头）','仅线下订单进勾选池','乐企订单不进「批量申请开票」勾选池（保留给线下）']
+    ])
+    +'<p class="mut">与 PRD 7.2.1 同源。</p>');
+  if(kind==='invoiceType') return fhCardHTML(
+    '<h5>取值（穷举 2 值）</h5>'
+    +tbl(['类型','页面展示内容（示例）'],[
+      ['蓝票','正常开具的销项发票，金额为正；有返利消耗的订单商品行=原价金额并带 1 行负数折扣行，价税合计=实付金额'],
+      ['红票','对蓝票冲销生成的负数发票（金额红色负数展示）；按原蓝票票面<b>镜像负数</b>开具、不重算，「关联发票」指向被冲销的原蓝票']
+    ])
+    +'<p><b>序列留痕：</b>同一订单 开票 → 红冲 → 再次开票 形成多条记录，按开票时间倒序展示（蓝 → 红 → 蓝）。</p>'
+    +'<p class="mut">与 PRD 7.2.6 同源。</p>');
+  if(kind==='invoiceTrigger') return fhCardHTML(
+    '<h5>取值（穷举 4 值）</h5>'
+    +tbl(['触发方式','出现条件'],[
+      ['自动-支付成功','易宝支付成功即实时调用乐企自动开票（交易与开票解耦）'],
+      ['退款红冲','退款审核通过触发先红冲后退款（红冲成功才执行退款）'],
+      ['手动开票','运营点「手动开票」（未开票 / 开票失败 / 已红冲重开蓝票）'],
+      ['手动红冲','运营点「手动红冲」（开票成功 / 红冲失败重发；红冲原因必填 5–200 字）']
+    ])
+    +'<p><b>关联发票：</b>红票行「关联发票」= 被冲销的原蓝票票号；蓝票行「关联发票」=「—」。</p>'
+    +'<p class="mut">与 PRD 7.2.6 同源。</p>');
+  if(kind==='invoiceSt') return fhCardHTML(
+    '<h5>取值（穷举 2 值）</h5>'
+    +tbl(['发票类型','页面展示内容（示例）'],[
+      ['蓝票','「开票成功」——该蓝票当前有效'],
+      ['红票','「已红冲」——原蓝票已由该红票冲销']
+    ])
+    +'<p><b>口径：</b>本列为<b>票面维度</b>的结果状态，区别于订单维度「开票状态」（显示最新 1 次开票结果）。</p>'
+    +'<p class="mut">与 PRD 7.2.6 同源。</p>');
+  if(kind==='siteLine') return fhCardHTML(
+    '<h5>线上开票失败 n 笔自动下线 · 配置口径</h5>'
+    +tbl(['项','口径'],[
+      ['配置','网点公司维度「开票配置」弹窗；开关默认关，n 默认 1（正整数）；<b>未开通易宝账户拦截保存</b>'],
+      ['本列展示','「未开启」灰字；开启后显示「n=N」标签（N=配置的阈值）'],
+      ['计数口径','该网点公司当前开票状态=开票失败的<b>应开票订单数</b>（仅乐企线上订单；历史全量累计，做过红冲的订单不算「未开」）'],
+      ['触发动作','累计达 n 笔 → <b>自动下线</b>：启用状态置停用并<b>下透网点</b>——名下上线中网点全部联动下线（不可加注、不可产生新订单）；站内信/短信预警；操作记录记「自动下线」（与人工停用区分）'],
+      ['恢复','手动「启用」后重新上线：被联动下线的网点<b>恢复上线</b>（网点自身原为下线的不动），<b>开票失败计数清零</b>、从 0 重新累计']
+    ])
+    +'<p class="mut">与 PRD 7.2.5 同源。</p>');
+  return '';
 }
 
 VIEWS.orders = () => {
@@ -3224,10 +3469,10 @@ const SELFORDES_COLS = regCols('selfOrders', [
   {k:'paySt',   t:'司机支付状态', w:'110px', td:o=>pill(o.paySt)},
   {k:'deductSt',t:'油站扣款状态', w:'110px', td:o=>pill(o.deductSt)},
   {k:'verifySt',t:'订单核销状态', w:'110px', td:o=>pill(o.verifySt)},
-  {k:'invCh',   t:'开票渠道',   w:'92px',  td:o=>invChTag(o)},
-  {k:'inv',     t:'开票状态',   w:'116px', td:o=>pill(o.inv)},
-  {k:'invFail', t:'失败原因',   w:'180px', td:o=>o.invFail?`<span style="color:var(--bad);font-size:12px">${o.invFail}</span>`:'—'},
-  {k:'ops',     t:'操作',       w:'360px', cls:'acts', td:o=>selfOrderOps(o)}
+  {k:'invCh',   t:'开票渠道',   w:'92px', help:'invCh', td:o=>invChTag(o)},
+  {k:'inv',     t:'开票状态',   w:'116px', help:'invStatus', td:o=>pill(o.inv)},
+  {k:'invFail', t:'失败原因',   w:'180px', help:'invFail', td:o=>o.invFail?`<span style="color:var(--bad);font-size:12px">${o.invFail}</span>`:'—'},
+  {k:'ops',     t:'操作',       w:'360px', cls:'acts', help:'orderOps', td:o=>selfOrderOps(o)}
 ]);
 /* 行操作：详情 + 手动开票（乐企可用状态）+ 操作下拉（整体/客户/油站退款、网点支付、修改结算信息） */
 function selfOrderOps(o){
@@ -3427,7 +3672,7 @@ const SITECO_COLS = regCols('siteCompany', [
   {k:'level',  t:'客户等级', w:'96px', td:s=>`<span class="tag ${s.level==='铂金'?'b':s.level==='黄金'?'o':''}">${s.level}</span>`},
   {k:'yb',     t:'易宝账户', w:'104px', td:s=>s.yb==='已开通'?'<span class="pill ok">已开通</span>':'<span class="pill bad">未开通</span>'},
   {k:'enable', t:'启用状态', w:'96px',  td:s=>pill(s.enable)},
-  {k:'line',   t:'开票失败自动下线', w:'150px', td:s=>s.line==='未开启'?'<span style="color:var(--muted)">未开启</span>':`<span class="tag f">${s.line}</span>`},
+  {k:'line',   t:'开票失败自动下线', w:'150px', help:'siteLine', td:s=>s.line==='未开启'?'<span style="color:var(--muted)">未开启</span>':`<span class="tag f">${s.line}</span>`},
   {k:'created',t:'创建信息', w:'240px', td:s=>`<span style="font-size:12px;color:var(--muted)">${s.created}</span>`},
   {k:'ops',    t:'操作', w:'330px', cls:'acts', td:s=>`<span class="btn-group">
     <button onclick="showToast('演示：进入修改（基础信息编辑）')">修改</button>
@@ -3510,16 +3755,16 @@ function saveSiteLineConf(){
 /* ================= 订单发票管理（发票中心） ================= */
 const LEQIINV_COLS = regCols('orderInvoices', [
   {k:'no',    t:'发票号码', w:'190px', cls:'mono', td:i=>i.no},
-  {k:'type',  t:'发票类型', w:'92px',  td:i=>pill(i.type)},
+  {k:'type',  t:'发票类型', w:'92px', help:'invoiceType', td:i=>pill(i.type)},
   {k:'order', t:'订单流水号 / 时间', w:'220px', td:i=>`<span class="mono">${i.order}</span><div class="t2">${(SELFORDES.find(o=>o.no===i.order)||ORDERS.find(o=>o.no===i.order)||{}).time||'—'}</div>`},
   {k:'biz',   t:'业务线', w:'80px', td:i=>`<span class="tag ${i.biz==='自营'?'o':'b'}">${i.biz}</span>`},
   {k:'drawer',t:'销方', td:i=>i.drawer},
   {k:'buyer', t:'购方', td:i=>i.buyer},
   {k:'amt',   t:'金额（元）', w:'120px', cls:'num', td:i=>`<span class="num" style="color:${i.amt<0?'var(--bad)':'var(--oil)'}">${money(i.amt)}</span>`},
   {k:'t',     t:'开票时间', w:'150px', cls:'mono', td:i=>i.t},
-  {k:'trigger', t:'触发方式', w:'120px', td:i=>i.trigger},
+  {k:'trigger', t:'触发方式', w:'120px', help:'invoiceTrigger', td:i=>i.trigger},
   {k:'rel',   t:'关联发票', w:'180px', cls:'mono', td:i=>i.rel},
-  {k:'st',    t:'开票结果状态', w:'110px', td:i=>pill(leqiInvStatusOf(i))},
+  {k:'st',    t:'开票结果状态', w:'110px', help:'invoiceSt', td:i=>pill(leqiInvStatusOf(i))},
   {k:'ops',   t:'附件', w:'140px', cls:'acts', td:i=>`<span class="btn-group"><button data-download="invoice" data-key="${i.no}">查看</button><button data-download="invoice" data-key="${i.no}">下载</button></span>`}
 ]);
 VIEWS.orderInvoices = () => {
@@ -3555,7 +3800,7 @@ VIEWS.orderInvoices = () => {
       tbl(['列 / 口径','说明'],[
         ['每张发票一行','蓝票与红票各自一行；红票金额为负数，「关联发票」指向被冲销的原蓝票'],
         ['业务线','撮合 / 自营，来自订单归属'],
-        ['触发方式','自动-支付成功 / 退款红冲 / 手动开票 / 手动红冲（红票）；同一订单红冲后再次开票会形成新的蓝票行，按开票时间倒序']
+        ['触发方式','自动-支付成功 / 退款红冲 / 手动开票 / 手动红冲（红票）；同一订单红冲后再次开票会形成新的蓝票行，按开票时间倒序'],
         ['开票结果状态','蓝票=开票成功；红票=已红冲'],
         ['附件','每张发票独立 url/pdf/ofd，支持查看 / 下载']
       ])) +
@@ -8473,12 +8718,12 @@ function openSimple(kind,key){
       <div class="card"><div class="card-b">
         <div class="sec-title">退款处理进度</div>
         <div class="tl" style="margin-top:10px">
-          <div class="it"><div class="dot"></div><div><div class="h">提交退款申请</div>
+          <div class="it"><div class="dot"></div><div><div class="h">提交退款申请${mhRefundNodeHelp('submit',r,o)}</div>
             <div class="m">${r.apply} · ${r.by} · ${r.byName}</div></div></div>
-          <div class="it"><div class="dot ${step>=1?'':'pend'}"></div><div><div class="h">运营确认</div>
+          <div class="it"><div class="dot ${step>=1?'':'pend'}"></div><div><div class="h">运营确认${mhRefundNodeHelp('confirm',r,o)}</div>
             <div class="m">${r.audit==='已确认'?r.auditAt+' · '+r.auditBy+' · 已确认，开始执行退款':'待确认——确认后立即执行，不再有第二道审批'}</div></div></div>
           ${leqiRed?leqiRedNode(o,r,step,done,failed):''}
-          <div class="it"><div class="dot ${step>=3?'':'pend'}"></div><div><div class="h">资金退回</div>
+          <div class="it"><div class="dot ${step>=3?'':'pend'}"></div><div><div class="h">资金退回${mhRefundNodeHelp('fund',r,o)}</div>
             <div class="m">${done?'油款与服务费两笔均已退回成功':failed?'退款单已终止：红冲失败，未执行退款':'两笔反向转账执行中，各自成功各自失败'}</div></div></div>
         </div>
       </div></div>
@@ -8591,19 +8836,19 @@ function openSimple(kind,key){
         </div>
       </div>
       <div class="card"><div class="card-b">
-        <div class="sec-title">处理进度</div>
+        <div class="sec-title">退款处理进度</div>
         <div class="tl" style="margin-top:10px">
-          <div class="it"><div class="dot"></div><div><div class="h">提交退款申请</div>
+          <div class="it"><div class="dot"></div><div><div class="h">提交退款申请${zyRefundNodeHelp('submit',r,o)}</div>
             <div class="m">${r.time} · ${r.reason}</div></div></div>
-          <div class="it"><div class="dot ${rejected?'bad':''}"${rejected?' style="background:var(--bad)"':''}></div><div><div class="h">退款审核</div>
-            <div class="m">${rejected?'已驳回：退款申请终止':r.auditBy!=='—'?r.auditAt+' · '+r.auditBy+' · 审核通过':'待审核——弹窗核对子订单明细后通过 / 驳回'}</div></div></div>
+          <div class="it"><div class="dot ${rejected?'bad':''}"${rejected?' style="background:var(--bad)"':''}></div><div><div class="h">退款审核${zyRefundNodeHelp('audit',r,o)}</div>
+            <div class="m">${rejected?r.auditAt+' · '+r.auditBy+' · 已驳回：退款申请终止':r.auditBy!=='—'?r.auditAt+' · '+r.auditBy+' · 审核通过':'待审核——弹窗核对子订单明细后通过 / 驳回'}</div></div></div>
           ${(o.invCh==='乐企')?(()=>{ const redFail=failed; const redDone=o.inv==='已红冲'&&done; const redDoing=o.inv==='红冲中';
             const m = redFail?`红冲失败：${r.failNote||'乐企红冲接口失败'}——退款单终止为「退款失败」，线下抵扣处理完成后重新发起退款申请`
               :redDoing?'审核通过触发红冲，红冲结果查询中；红冲成功后才执行退款'
               :redDone?'红冲成功，原蓝票冲销，继续执行退款'
               :r.redNote||'审核通过后先红冲原蓝票，红冲成功后才执行退款';
-            return `<div class="it"><div class="dot ${redFail?'bad':(redDone||redDoing?'':'pend')}"${redFail?' style="background:var(--bad)"':''}></div><div><div class="h">红冲原蓝票（乐企）</div><div class="m">${m}</div></div></div>`;})():''}
-          <div class="it"><div class="dot ${done?'':'pend'}"></div><div><div class="h">资金退回（${r.type}）</div>
+            return `<div class="it"><div class="dot ${redFail?'bad':(redDone||redDoing?'':'pend')}"${redFail?' style="background:var(--bad)"':''}></div><div><div class="h">红冲原蓝票（乐企）${zyRefundNodeHelp('red',r,o)}</div><div class="m">${m}</div></div></div>`;})():''}
+          <div class="it"><div class="dot ${done?'':'pend'}"></div><div><div class="h">资金退回（${r.type}）${zyRefundNodeHelp('fund',r,o)}</div>
             <div class="m">${done?'退款执行中 / 已退回':failed?'退款单已终止：红冲失败，未执行退款':'待审核通过后执行'}</div></div></div>
         </div>
       </div></div>

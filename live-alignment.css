@@ -290,3 +290,23 @@ body:not(.live-surface) .oms-drawer-footer{display:none}
   body.live-surface .live-list-card .card-h{flex-wrap:wrap}
 }
 
+/* ---- 关键字段点击说明（2026-10-21 按更新后的角色改版）：？图标 + 点击展开富卡片、点击弹层以外任意区域关闭 ----
+   载体收敛口径：规则/枚举/状态机的解释挂关键字段点击弹层，不占页面展示层；颜色全部用既有 CSS 变量，深浅色主题自适应 */
+.fh-wrap{position:relative;display:inline-flex;align-items:center;margin-left:6px;vertical-align:middle;outline:none}
+.fh-ico{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);font-size:10px;font-weight:600;line-height:1;cursor:pointer;user-select:none}
+.fh-wrap:hover .fh-ico,.fh-wrap.on .fh-ico{color:var(--info);border-color:var(--info)}
+.fh-card{position:absolute;z-index:80;top:calc(100% + 2px);left:calc(100% + 2px);width:470px;max-width:min(470px,calc(100vw - 48px));max-height:min(45vh,430px);overflow:auto;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);font-size:12px;line-height:1.7;color:var(--ink);text-align:left;display:none;cursor:default}
+.fh-wrap.up .fh-card{top:auto;bottom:calc(100% + 2px)}
+.fh-wrap.on .fh-card{display:block}
+.fh-dot{display:inline-block;width:11px;height:11px;border-radius:50%;border:2px solid var(--ok);background:var(--surface);vertical-align:-2px}
+.fh-dot.run{border-color:var(--warn)}
+.fh-dot.pend{border-color:var(--line)}
+.fh-dot.fail{border-color:var(--bad)}
+.fh-card h5{margin:9px 0 3px;font-size:12px;color:var(--ink-2)}
+.fh-card h5:first-child{margin-top:0}
+.fh-card p{margin:2px 0}
+.fh-card .tablewrap{margin:5px 0 2px}
+.fh-card .matrix{font-size:11.5px}
+.fh-card .matrix th,.fh-card .matrix td{padding:4px 7px}
+.fh-card .mut{color:var(--muted)}
+

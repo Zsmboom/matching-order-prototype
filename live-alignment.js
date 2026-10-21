@@ -16,6 +16,7 @@ const LIVE = {
     {no:'MH20260827091800000003',time:'2026-08-27 09:18:44',source:'正常下单',customer:'测试客户2',driver:'李强',phone:'178****5328',plate:'京A1234Q',station:'天津武清京津站',stationCo:'中石油天津销售分公司',energy:'柴油',goods:'0# 轻柴油',qty:'96.50 L',nozzle:'03',machinePrice:'6.66',enterprisePrice:'6.66',machineAmount:642.69,amount:642.69,payment:'易宝支付',status:'支付成功',verify:'已核销',invoice:'开票失败',customerFee:0,stationFee:7.71,feeState:'已收',apply:'—',refundable:false,invCh:'乐企',invFail:'购方税号与客户认证信息不一致'},
     {no:'MH20260826175200000004',time:'2026-08-26 17:52:30',source:'正常下单',customer:'测试客户2',driver:'李强',phone:'178****5328',plate:'京A1234Q',station:'沈阳浑南加油站',stationCo:'中石化辽宁石油分公司',energy:'柴油',goods:'0# 轻柴油',qty:'183.04 L',nozzle:'04',machinePrice:'6.72',enterprisePrice:'6.72',machineAmount:1230.00,amount:1230.00,payment:'易宝支付',status:'支付成功',verify:'已核销',invoice:'红冲中',customerFee:0,stationFee:14.76,feeState:'已收',apply:'—',refundable:true,invCh:'乐企'},
     {no:'MH20260826164000000005',time:'2026-08-26 16:40:01',source:'正常下单',customer:'蒙晋通达运输有限公司',driver:'孙倩',phone:'150****3311',plate:'蒙A2288L',station:'天津武清京津站',stationCo:'中石油天津销售分公司',energy:'柴油',goods:'-10# 柴油',qty:'210.50 L',nozzle:'01',machinePrice:'6.85',enterprisePrice:'6.85',machineAmount:1441.93,amount:1441.93,payment:'易宝支付',status:'支付成功',verify:'已核销',invoice:'已红冲',customerFee:0,stationFee:17.30,feeState:'已收',apply:'—',refundable:false,invCh:'乐企'},
+    {no:'MH2026082516100000005A',time:'2026-08-25 16:10:42',source:'正常下单',customer:'万联易达物流科技有限公司',driver:'赵德明',phone:'135****0098',plate:'津B7788Z',station:'天津武清京津站',stationCo:'中石油天津销售分公司',energy:'柴油',goods:'0# 轻柴油',qty:'88.60 L',nozzle:'06',machinePrice:'6.66',enterprisePrice:'6.66',machineAmount:590.08,amount:590.08,payment:'易宝支付',status:'支付成功',verify:'已核销',invoice:'红冲失败',customerFee:0,stationFee:7.08,feeState:'已收',apply:'—',refundable:false,invCh:'乐企',invFail:'乐企红冲接口返回：购方已认证抵扣，需线下沟通抵扣处理'},
     {no:'MH20260826150800000006',time:'2026-08-26 15:08:26',source:'正常下单',customer:'万联易达物流科技有限公司',driver:'赵德明',phone:'135****0098',plate:'津B7788Z',station:'天津武清京津站',stationCo:'中石油天津销售分公司',energy:'柴油',goods:'0# 轻柴油',qty:'96.50 L',nozzle:'02',machinePrice:'6.66',enterprisePrice:'6.66',machineAmount:642.69,amount:642.69,payment:'易宝支付',status:'支付成功',verify:'已核销',invoice:'开票成功',customerFee:0,stationFee:7.71,feeState:'已收',apply:'—',refundable:true,invCh:'乐企'},
     {no:'MH20260827102200000007',time:'2026-08-27 10:22:09',source:'正常下单',customer:'万联易达物流科技有限公司',driver:'田玲玲',phone:'157****7832',plate:'辽AEK808',station:'沈阳浑南加油站',stationCo:'中石化辽宁石油分公司',energy:'柴油',goods:'0# 轻柴油',qty:'52.10 L',nozzle:'05',machinePrice:'6.72',enterprisePrice:'6.72',machineAmount:350.11,amount:350.11,payment:'易宝支付',status:'支付成功',verify:'已核销',invoice:'未开票',customerFee:0,stationFee:4.20,feeState:'已收',apply:'—',refundable:false,invCh:'乐企'}
   ],
@@ -31,11 +32,11 @@ const LIVE = {
   ],
   refunds:[
     {no:'MHRF202609241342000001',order:'MH20260923200500000005',customer:'示例运输有限公司',driver:'赵师傅',phone:'198****6650',plate:'京A66778',station:'示例一键支付站',amount:0.10,fee:0,reason:'现场申请整单退款',source:'运营补单',status:'待审核',time:'2026-09-24 13:42:03'},
-    {no:'MHRF202609281116000002',order:'MH20260928110900000007',customer:'示例物流有限公司',driver:'王师傅',phone:'188****0008',plate:'京A11111',station:'示例天然气站',amount:0.10,fee:0.01,reason:'重复下单',source:'正常下单',status:'退款成功',time:'2026-09-28 11:16:27'},
+    {no:'MHRF202609281116000002',order:'MH20260928110900000007',customer:'示例物流有限公司',driver:'王师傅',phone:'188****0008',plate:'京A11111',station:'示例天然气站',amount:0.10,fee:0.01,reason:'重复下单',source:'正常下单',status:'退款成功',time:'2026-09-28 11:16:27',auditBy:'张世民（运营中台）',auditAt:'2026-09-28 11:16:40'},
     /* ---- 乐企开票订单的退款演示单：redResult 预置本次演示的红冲结果（红冲触发=退款审核通过先红冲后退款） ---- */
     {no:'MHRF202608271012000003',order:'MH20260827094500000001',customer:'万联易达物流有限公司',driver:'田玲玲',phone:'157****7832',plate:'辽AEK808',station:'沈阳浑南加油站',amount:795.02,fee:9.54,reason:'司机加错油品，整单退款',source:'正常下单',status:'待审核',time:'2026-08-27 10:12:00',invCh:'乐企',redResult:'红冲成功',inv:'开票成功 · 未红冲'},
     {no:'MHRF202608271040000004',order:'MH20260826150800000006',customer:'万联易达物流有限公司',driver:'赵德明',phone:'135****0098',plate:'津B7788Z',station:'天津武清京津站',amount:642.69,fee:7.71,reason:'油品质量争议，客户要求退款',source:'运营补单',status:'待审核',time:'2026-08-27 10:40:00',invCh:'乐企',redResult:'红冲失败',redFail:'乐企红冲接口返回：购方已认证抵扣，需线下沟通抵扣处理完成后重新发起退款申请',inv:'开票成功 · 未红冲'},
-    {no:'MHRF202608271102000005',order:'MH20260826175200000004',customer:'测试客户2',driver:'李强',phone:'178****5328',plate:'京A1234Q',station:'沈阳浑南加油站',amount:1230.00,fee:14.76,reason:'重复支付',source:'正常下单',status:'退款处理中',time:'2026-08-27 11:02:00',invCh:'乐企',inv:'红冲中'}
+    {no:'MHRF202608271102000005',order:'MH20260826175200000004',customer:'测试客户2',driver:'李强',phone:'178****5328',plate:'京A1234Q',station:'沈阳浑南加油站',amount:1230.00,fee:14.76,reason:'重复支付',source:'正常下单',status:'退款处理中',time:'2026-08-27 11:02:00',invCh:'乐企',inv:'红冲中',auditBy:'张世民（运营中台）',auditAt:'2026-08-27 11:04:35'}
   ],
   energyInvoices:[
     {no:'KP2100000000000000001',batch:'BAT202609220001',customer:'示例物流有限公司',status:'已开票',time:'2026-09-22 20:19:42',stationCo:'示例能源有限公司',energy:'柴油',rate:'13%',orders:['MH20260922140500000001','MH20260922140800000002','MH20260922142200000003'],amount:2,qty:'0.25 L',files:['能源发票_01.pdf']},
@@ -157,7 +158,7 @@ VIEWS.orders=()=>{
     const check=((o.invoice==='未开票'||o.invoice==='已撤销')&&o.status==='支付成功'&&!LIVE.refunds.some(r=>r.order===o.no&&r.status==='待审核'))||(invCh==='乐企'&&(o.invoice==='开票成功'||o.invoice==='已红冲'));
     return '<tr><td><input type="checkbox" class="live-order-check" value="'+o.no+'" '+(check?'':'disabled')+' aria-label="选择订单 '+o.no+'"></td><td><b class="mono">'+o.no+'</b><div class="t2">'+o.time+' · '+o.source+'</div></td><td>'+liveBadge(o.status)+'<div class="t2">'+o.verify+'</div></td><td>'+liveInvCh(o)+'</td><td>'+liveBadge(o.invoice)+'</td><td>'+(o.invFail?'<span style="color:var(--bad);font-size:12px">'+o.invFail+'</span>':'—')+'</td><td>'+o.customer+'<div class="t2">撮合账户 · '+o.energy+'</div></td><td>'+o.driver+' · '+o.phone+'<div class="t2">'+o.plate+'</div></td><td>'+o.station+'<div class="t2">'+o.stationCo+'</div></td><td>'+o.goods+'<div class="t2">'+o.qty+' · 油机价 '+o.machinePrice+' · 企业价 '+o.enterprisePrice+'</div></td><td class="num">'+liveMoney(o.amount)+'</td><td>客户 '+liveMoney(o.customerFee)+' · 油站 '+liveMoney(o.stationFee)+'<div class="t2">'+o.feeState+'</div></td><td class="acts">'+liveAct('order',o.no)+(liveLeqiCanInvoice(o)?' '+liveBtn('leqiInvoice',o.no,'手动开票'):'')+(liveLeqiCanRed(o)?' '+liveBtn('leqiRed',o.no,'手动红冲'):'')+(liveLeqiHasInv(o)?' '+liveInvOp(o):'')+(liveRefundOp(o))+'</td></tr>';
   });
-  return liveFilters('orders')+liveListCard('能源订单管理','<button class="btn sm" onclick="liveDrawer(\'backfill\',\'new\')">撮合订单补单</button><button class="btn sm" onclick="liveExport(\'orders\')">导出</button><button class="btn sm" onclick="liveModal(\'leqiDownload\',\'\')">批量下载发票</button><button class="btn sm primary" onclick="liveModal(\'energyBatch\',\'\')">批量申请开票</button>', ['选择','订单信息','订单状态','开票渠道','开票状态','失败原因','客户公司','司机与车辆','油站 / 油站公司','加注油品','金额信息','服务费','操作'],rows,'2660px')+notes(
+  return liveFilters('orders')+liveListCard('能源订单管理','<button class="btn sm" onclick="liveDrawer(\'backfill\',\'new\')">撮合订单补单</button><button class="btn sm" onclick="liveExport(\'orders\')">导出</button><button class="btn sm" onclick="liveModal(\'leqiDownload\',\'\')">批量下载发票</button><button class="btn sm primary" onclick="liveModal(\'energyBatch\',\'\')">批量申请开票</button>', ['选择','订单信息','订单状态','开票渠道'+leqiFieldHelp('invCh'),'开票状态'+leqiFieldHelp('invStatus'),'失败原因'+leqiFieldHelp('invFail'),'客户公司','司机与车辆','油站 / 油站公司','加注油品','金额信息','服务费','操作'+leqiFieldHelp('orderOps')],rows,'2660px')+notes(
     nb('实际页面口径','<p>支付、核销、退款、服务费与发票分别维护状态。能源订单编号以 MH 开头；退款申请仅适用于待核销的一键支付订单。列表中的客户与油站服务费分别显示，客户无服务费时金额为 0。</p>')+
     nb('乐企开票：支付即开票（渠道分治）',
       '<p><b>开票渠道=乐企</b>的订单（易宝支付 + 平台自营站柴油），支付成功后系统实时调用乐企自动开票，交易与开票解耦：开票失败不影响订单交易完成。</p>'+
@@ -276,6 +277,60 @@ function liveFeeDetail(f){
       ['申请单号',f.feeApply],['服务费开票状态',f.invoice],['开票方','万联易达'],['受票方',f.payerName],['税率','6%']
     ]:[['服务费开票状态',f.invoice],['发票信息','暂无发票信息']]);
 }
+/* ---- 关键字段点击说明（2026-10-21 按更新后的角色改版，与 PRD 7.2.2 同源）----
+   处理进度（乐企：先红冲后退款）进度线的 4 个节点逐节点挂「？」：
+   提交退款申请 / 退款审核 / 红冲原蓝票（乐企）/ 资金退回——每张卡片按状态直接展开：
+   节点状态穷举 + 每个状态的圆点图标 + 页面展示内容（示例沿用页面既有展示格式）+ 逻辑说明简要；
+   交互=点击「？」显示、点击弹层以外任意区域关闭；节点文案逐字同 liveRefundRedBlock，两处必须一起改 */
+function fhHelp(card, up){
+  /* 组件与点击监听统一在 index.html 基础层 fhCardHTML（两套皮肤共用同一套 fh 说明卡） */
+  return fhCardHTML(card, up);
+}
+function liveNodeHelp(k, up){
+  const dot=c=>'<span class="fh-dot'+(c?' '+c:'')+'"></span>';
+  if(k==='submit') return fhHelp(
+    '<h5>节点状态 · 提交退款申请（穷举）</h5>'
+    +tbl(['节点状态','圆点','页面展示内容（示例）'],[
+      ['已提交',dot(''),'「2026-08-27 10:12:00」（展示申请时间）']
+    ])
+    +'<p><b>出现条件：</b>油站或运营核实问题后代为发起；仅待核销一键支付订单的整单全额退款。</p>'
+    +'<p><b>关键规则：</b>开票终态（未开票 / 开票失败 / 开票成功 / 红冲失败 / 已红冲）可发起退款；开票中 / 红冲中为进行中状态、退款入口置灰；申请处理中暂停核销与新开票。</p>'
+    +'<p class="mut">与 PRD 7.2.2 同源。</p>');
+  if(k==='audit') return fhHelp(
+    '<h5>节点状态 · 退款审核（穷举）</h5>'
+    +tbl(['节点状态','圆点','页面展示内容（示例）'],[
+      ['待审核',dot('pend'),'「待审核——审核通过后触发红冲」'],
+      ['审核通过',dot(''),'「2026-09-12 13:20 · 张世民（运营中台） · 审核通过」'],
+      ['已拒绝',dot('fail'),'「2026-09-12 16:01 · 张世民（运营中台） · 已拒绝——退款申请终止」']
+    ])
+    +'<p><b>由谁处理：</b>运营（审核抽屉内「通过并退款 / 拒绝退款」）。</p>'
+    +'<p><b>后续流转：</b>通过 → 乐企订单先红冲原蓝票，红冲成功后执行退款（线下订单直接执行退款）；拒绝 → 退款单终态「已拒绝」，订单恢复原待核销状态。</p>'
+    +'<p><b>关键规则：</b>订单开票状态=红冲中时点「通过并退款」→ 拦截，提示「红冲进行中，暂不能通过审核」。</p>'
+    +'<p class="mut">与 PRD 7.2.2 同源。</p>');
+  if(k==='red') return fhHelp(
+    '<h5>本节点何时出现</h5>'
+    +'<p>仅开票渠道=<b>乐企</b>且蓝票<b>开票成功未红冲</b>（含红冲失败重开后再次审核通过）的退款单；线下渠道订单无本节点、不显示本区块。</p>'
+    +'<h5>节点状态 · 红冲原蓝票（穷举 4 态）</h5>'
+    +tbl(['节点状态','圆点','页面展示内容（示例）'],[
+      ['未触发',dot('pend'),'「当前发票状态：开票成功 · 未红冲；退款审核通过后先红冲原蓝票，红冲成功后才执行退款」'],
+      ['红冲中',dot('run'),'「退款审核通过触发红冲，红冲结果查询中；红冲成功后才执行退款」'],
+      ['已红冲',dot(''),'「退款审核通过触发红冲，已红冲，原蓝票冲销；继续执行退款」'],
+      ['红冲失败',dot('fail'),'「红冲失败：购方已认证抵扣，需线下沟通抵扣处理——退款单已终止为「退款失败」，线下抵扣处理完成后重新发起退款申请」']
+    ])
+    +'<p><b>关键规则：</b>① 红冲唯一触发点=退款审核通过（订单列表「手动红冲」为独立换开入口，不影响退款流程）；② 红冲中拦截审核；③ 线下渠道不拦截、不联动。</p>'
+    +'<p class="mut">与 PRD 7.2.2 同源。</p>');
+  return fhHelp(
+    '<h5>节点状态 · 资金退回（穷举）</h5>'
+    +tbl(['节点状态','圆点','页面展示内容（示例）'],[
+      ['待红冲成功后执行',dot('pend'),'「待红冲成功后执行」'],
+      ['执行中',dot('run'),'「两笔转账执行中，各自成功各自失败」'],
+      ['商品本金与服务费已原路退回',dot(''),'「商品本金与服务费已原路退回」（退款单「退款成功」）'],
+      ['退款失败（红冲失败终止）',dot('fail'),'「退款单已终止：红冲失败，未执行退款」——线下抵扣处理完成后重新发起退款申请新开一单'],
+      ['退款失败（资金侧失败）',dot('fail'),'红冲成功，但资金转账失败——退款单标「退款失败」，转运营人工工单处理']
+    ])
+    +'<p><b>关键规则：</b>商品本金与服务费为两笔独立转账，各自成功各自失败；红冲失败终止后重新发起退款申请再走审核，审核通过后再次触发红冲；退款成功后订单开票状态=已红冲。</p>'
+    +'<p class="mut">与 PRD 7.2.2 同源。</p>', up);
+}
 function liveRefundRedBlock(r){
   const o=LIVE.orders.find(x=>x.no===r.order);
   if(!o||(o.invCh||'线下')!=='乐企') return '';
@@ -288,10 +343,10 @@ function liveRefundRedBlock(r){
     :redDoing?'退款审核通过触发红冲，红冲结果查询中；红冲成功后才执行退款'
     :(r.inv?('当前发票状态：'+r.inv+'；'):'')+'退款审核通过后先红冲原蓝票，红冲成功后才执行退款';
   return '<div class="card"><div class="card-b"><div class="sec-title">处理进度（乐企：先红冲后退款）</div><div class="tl" style="margin-top:10px">'+
-    '<div class="it"><span class="dot"></span><div><div class="h">提交退款申请</div><div class="m">'+r.time+'</div></div></div>'+
-    '<div class="it"><span class="dot '+(r.status==='待审核'?'pend':'')+'"></span><div><div class="h">退款审核</div><div class="m">'+(r.status==='待审核'?'待审核——审核通过后触发红冲':'审核通过')+'</div></div></div>'+
-    '<div class="it"><span class="dot '+((redFail||redDone||redDoing)?'':'pend')+'"'+(redFail?' style="background:var(--bad)"':'')+'></span><div><div class="h">红冲原蓝票（乐企）</div><div class="m">'+m+'</div></div></div>'+
-    '<div class="it"><span class="dot '+(r.status==='退款成功'?'':'pend')+'"></span><div><div class="h">资金退回</div><div class="m">'+(r.status==='退款成功'?'商品本金与服务费已原路退回':failed?'退款单已终止：红冲失败，未执行退款':'待红冲成功后执行')+'</div></div></div>'+
+    '<div class="it"><span class="dot"></span><div><div class="h">提交退款申请'+liveNodeHelp('submit')+'</div><div class="m">'+r.time+'</div></div></div>'+
+    '<div class="it"><span class="dot '+(r.status==='待审核'?'pend':'')+'"></span><div><div class="h">退款审核'+liveNodeHelp('audit')+'</div><div class="m">'+(r.status==='待审核'?'待审核——审核通过后触发红冲':r.status==='已拒绝'?((r.auditAt||'—')+' · '+(r.auditBy||'—')+' · 已拒绝——退款申请终止'):((r.auditAt||'—')+' · '+(r.auditBy||'—')+' · 审核通过'))+'</div></div></div>'+
+    '<div class="it"><span class="dot '+((redFail||redDone||redDoing)?'':'pend')+'"'+(redFail?' style="background:var(--bad)"':'')+'></span><div><div class="h">红冲原蓝票（乐企）'+liveNodeHelp('red')+'</div><div class="m">'+m+'</div></div></div>'+
+    '<div class="it"><span class="dot '+(r.status==='退款成功'?'':'pend')+'"></span><div><div class="h">资金退回'+liveNodeHelp('refund', true)+'</div><div class="m">'+(r.status==='退款成功'?'商品本金与服务费已原路退回':failed?'退款单已终止：红冲失败，未执行退款':'待红冲成功后执行')+'</div></div></div>'+
     '</div></div></div>';
 }
 function liveRefundDetail(r,audit){
@@ -581,7 +636,7 @@ function liveFinish(kind,key,requireField){
   if(kind==='refundApprove'&&key){ liveRefundApprove(key); return; }
   if(kind==='refundReject'&&key){
     const r=LIVE.refunds.find(x=>x.no===key);
-    if(r){r.status='已拒绝';showToast('已拒绝退款申请，订单恢复原待核销状态');paint();return;}
+    if(r){r.status='已拒绝';r.auditBy='张世民（运营中台）';r.auditAt=leqiNow();showToast('已拒绝退款申请，订单恢复原待核销状态');paint();return;}
   }
   showToast('原型演示：'+(kind.includes('Download')?'下载任务已提交':'操作已确认'));
 }
@@ -591,6 +646,7 @@ function liveRefundApprove(no){
   const o=LIVE.orders.find(x=>x.no===r.order);
   if(o&&(o.invCh||'线下')==='乐企'){
     if(o.invoice==='红冲中'){showToast('红冲进行中，暂不能通过审核');return;}
+    r.auditBy='张世民（运营中台）';r.auditAt=leqiNow();
     if(o.invoice==='开票成功'||o.invoice==='红冲失败'){
       if(r.redResult==='红冲失败'){
         r.status='退款失败';r.redFail=r.redFail||'乐企红冲接口失败';
@@ -608,6 +664,7 @@ function liveRefundApprove(no){
       showToast('红冲成功，退款成功');paint();return;
     }
   }
+  r.auditBy='张世民（运营中台）';r.auditAt=leqiNow();
   r.status='退款成功';
   showToast('审核通过，退款执行成功');paint();
 }
