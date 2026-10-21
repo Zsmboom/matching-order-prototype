@@ -2021,6 +2021,10 @@ const LOCK_STATIONS = [
   /* 合同校验演示站：与网货主体及万油通主体均无签约合同，添加到规则明细时拦截（见 lockAddGoods） */
   {code:'ST0009', name:'锦州凌海物流站',   co:'凌海物流有限公司',     energy:'柴油',   city:'锦州', noContract:true, goods:[
     {goodsId:'G01', goodsName:'0# 轻柴油', entPrice:6.72, cost:6.18}]},
+  /* 失效油站演示站：已在网点管理下线——选油站弹层置灰不可勾选（lockPickStationHTML），
+     修改保存时明细内存在下线油站会被拦截（saveLockRule → lockOfflineStations 弹窗） */
+  {code:'ST0010', name:'沈阳新民物流站',   co:'新民运输有限公司',     energy:'柴油',   city:'沈阳', offline:true, goods:[
+    {goodsId:'G01', goodsName:'0# 轻柴油', entPrice:6.66, cost:6.10}]},
 ];
 /* 大数据量演示数据：油站目录在既有样例基础上补齐到约 300 个，
    用于验证抽屉里油站选择器与「油站 + 油品」明细的搜索 / 筛选 / 分页。
@@ -2106,12 +2110,13 @@ const LOCK_RULES = [
    ]},
   {id:'AS2026100005', name:'万联本部 · 试点货主统一锁站', mode:'锁站', status:'停用',
    entities:['E1001'], owners:['SH0200001','SH0200002'],
-   remark:'覆盖万联易达两家试点货主企业，暂未启用',
+   remark:'覆盖万联易达两家试点货主企业，暂未启用；与生效规则 0001/0002 同组合（演示停用保存不拦冲突、启用拦截），明细含已下线油站 ST0010（演示失效油站保存拦截）',
    createdBy:'张运营', createdAt:'2026-10-09 10:02', updatedBy:'张运营', updatedAt:'2026-10-09 10:02',
    stations:[
      {station:'ST0001', goods:'G01', reduce:null},
      {station:'ST0003', goods:'G01', reduce:null},
      {station:'ST0007', goods:'G01', reduce:null},
+     {station:'ST0010', goods:'G01', reduce:null},
    ]},
   {id:'AS2026100008', name:'华北区域 · 三主体统一锁站锁价', mode:'锁站锁价', status:'停用',
    entities:['E1001','E1002','E1003'], owners:['SH0100001','SH0100002','SH0100003'],
@@ -7580,7 +7585,8 @@ const CONFIRM_ACTIONS = {
   },
   lockRuleToggle: key => {
     const r = LOCK_RULE_BY_ID(key); if(!r) return;
-    /* 启用时执行与保存一致的唯一性校验：与生效规则的「网货主体+货主企业」组合冲突则拦截，状态不变 */
+    /* 启用时执行唯一性校验：与生效规则的「网货主体+货主企业」组合冲突则拦截，状态不变
+       （停用规则的保存不校验组合冲突，此处是生效前的最后拦截点；生效中的规则修改保存仍校验） */
     if(r.status!==LOCK_STATUS.ON){
       const conflicts = lockConflicts({entities:r.entities, owners:r.owners, status:LOCK_STATUS.ON}, r.id);
       if(conflicts.length){
@@ -7596,6 +7602,12 @@ const CONFIRM_ACTIONS = {
   lockNegGross: () => {
     const fn = window._lockPendingSave; window._lockPendingSave = null;
     if(typeof fn === 'function') fn();
+  },
+  /* 失效油站拦截弹窗：移除下线油站的全部明细行后重新走保存校验 */
+  lockOfflineStations: key => {
+    const codes = new Set(String(key).split(','));
+    lockState.stations = lockState.stations.filter(l=>!codes.has(l.station));
+    saveLockRule();
   },
   lockDiscard: () => {
     const fn = window._lockPendingClose; window._lockPendingClose = null;
@@ -9469,16 +9481,20 @@ VIEWS.freightLock = () => {
     nb('页面用途', '<p>运营按「网货主体 × 货主企业」维度配置锁站 / 锁站锁价规则，确定司机端可见的油站与价格。规则生效期间，按明细保留的「油站+油品」展示并可加注（规则涉及的油站未保留的油品不展示，即使推送中存在；规则未涉及的推送油站照常展示）；锁站不生效时，回落客户商品管理按网货主体的推送数据。</p>') +
     nb('关键规则',
       '<p><b>适用范围</b>＝适用网货主体 × 适用货主企业（笛卡尔积）；适用货主企业从主数据搜索选择、无生效状态——每选一家都进入适用范围，可逐个移除；适用货主企业必选、至少选择一家（新建与编辑保存时均校验），「全部货主企业」场景由客户商品管理按网货主体的推送覆盖、不通过本规则表达。</p>' +
-      '<p style="margin-top:6px"><b>唯一性</b>：同一「网货主体+货主企业」组合至多一条生效规则；保存与启用均校验，冲突拦截并提示冲突规则编号；停用规则不参与校验。</p>' +
+      '<p style="margin-top:6px"><b>唯一性</b>：同一「网货主体+货主企业」组合至多一条生效规则；生效中的规则修改保存与启用时均校验，冲突拦截并提示冲突规则编号；停用规则不参与冲突校验，其修改保存不校验组合冲突（可与任何规则同组合共存），启用时拦截。</p>' +
       '<p style="margin-top:6px"><b>模式与价格</b>：锁站（价格沿用原企业价）／锁站锁价（逐行填写价格调整金额：正数＝涨价、负数＝降价，涨价不设上限，至少一行调整金额 ≠ 0）；锁后价＝原企业价 + 价格调整金额（正加负减），不得小于 0，低于成本价需二次确认负毛利。</p>' +
       '<p style="margin-top:6px"><b>价格调整金额列展示</b>：配置抽屉内为可编辑输入框、显示输入原值（正数不带「+」）；详情抽屉按方向带符号显示——正数「+金额」（红色，涨价）、负数「-金额」（绿色，降价）、0 显示「0.00」、锁站模式显示「—」；导出列按原始带符号值输出（正数不加「+」、负数带「-」，锁站模式显示「—」）。</p>' +
       '<p style="margin-top:6px"><b>油站范围与可见性</b>：规则可选油站为网点管理全部油站（价格在「网点商品管理」维护）；规则生效期间，司机端按规则明细保留的「油站+油品」展示——规则涉及的油站仅展示保留的油品行、未保留的油品不展示（即使推送中存在），规则未涉及的推送油站照常展示；未随客户商品管理推送的油站，只要被「网货主体+货主企业」的生效规则配置，司机端同样展示并可加注；锁站不生效（无生效规则 / 停用 / 删除）时回落客户商品管理按网货主体的推送数据。</p>' +
       '<p style="margin-top:6px"><b>合同校验</b>：添加油站时校验「油站×网货主体 有合同，或 油站×万油通主体 有签约合同」，无合同的油站拦截、不可添加；订单生成时后端同样校验。</p>' +
+      '<p style="margin-top:6px"><b>失效油站</b>：明细内油站在「网点管理」已下线的，修改保存时弹窗拦截并列出下线油站，可「移除下线油站并保存」；仅修改保存时校验（新建保存与启用不校验），仅油站维度判定；明细行与选油站弹层对下线油站带「已下线」标记，弹层中置灰不可勾选（演示数据 ST0010）。</p>' +
       '<p style="margin-top:6px"><b>价格联动</b>：价格调整金额同步驱动上游结算价与下游企业价，锁价生效期间生成的订单，上下游单价、金额、总金额同步变动且保持一致（测试重点，见 PRD）。</p>' +
       '<p style="margin-top:6px"><b>列表展示</b>：适用网货主体 / 适用货主企业 / 适用油站三列只保留数字，完整名单在详情抽屉查看。</p>' +
       '<p style="margin-top:6px"><b>货主企业</b>：主数据由「客户中心 → 网货货主」页面维护（页面导入），配置规则时从主数据搜索选择，按名称或 ID 模糊匹配。</p>' +
       '<p style="margin-top:6px"><b>司机端判定</b>：先判断全部运单是否同属一个「网货主体+货主企业」组合——存在不同组合的运单即直接展示客户商品管理推送数据；同一组合再判断该组合是否有生效规则，有则按规则明细保留的「油站+油品」展示与取价（锁站沿用原企业价、锁站锁价按调整金额取价；规则涉及的油站仅展示保留的油品行、未保留的油品不展示，即使推送中存在；明细内油站不受推送范围限制），没有则展示客户商品管理按网货主体的推送数据。命中锁站锁价模式规则的组合，司机端只展示企业价（＝锁后价）、不展示万联价（万联价＝在企业价基础上的优惠价格，命中后不展示、不生效，订单按企业价计价结算）；命中锁站模式规则的组合按现网已有价格规则展示（企业价＝原企业价、万联价照常展示）；未命中与回落推送时企业价、万联价照常展示。停用/删除后回落推送结果；已产生订单不追溯。</p>') +
-    nb('校验口径', '<p>保存拦截：规则名称必填且 ≤50 字、网货主体 ≥1、货主企业 ≥1、明细 ≥1 行、价格调整金额逐行必填且最多两位小数（正数=涨价、负数=降价，填 0 表示可见但不调价）、至少一行调整金额 ≠ 0、锁后价 ≥0、「主体+货主」组合冲突；锁后价低于成本价走二次确认后放行（涨价行不会触发）；启用拦截：组合冲突。</p>') +
+    nb('校验口径', '<p>保存拦截（新建保存即生效、生效中的规则修改保存）：规则名称必填且 ≤50 字、网货主体 ≥1、货主企业 ≥1、明细 ≥1 行、价格调整金额逐行必填且最多两位小数（正数=涨价、负数=降价，填 0 表示可见但不调价）、至少一行调整金额 ≠ 0、锁后价 ≥0、「主体+货主」组合冲突（仅与其他生效中的规则比对，修改排除规则自身）；锁后价低于成本价走二次确认后放行（涨价行不会触发）。</p>' +
+      '<p style="margin-top:6px">保存拦截（停用规则的修改保存）：同上各校验项，但<b>不校验「主体+货主」组合冲突</b>（可与任何规则同组合共存，启用时拦截）。</p>' +
+      '<p style="margin-top:6px">修改保存拦截（失效油站）：明细内油站在网点管理已下线的，弹窗列出并拦截保存，可「移除下线油站并保存」；仅修改保存时校验（新建保存与启用不校验）、仅油站维度。</p>' +
+      '<p style="margin-top:6px">启用拦截：组合冲突（与其他生效中的规则比对，停用规则不参与）。</p>') +
     nb('导出说明（详情抽屉）',
       '<p>详情抽屉底部「导出」按钮导出本规则全量名单，不受抽屉内搜索与翻页影响，不限规则状态；导出为 1 个 Excel 文件、3 个 sheet，文件名「规则编号_规则名称.xlsx」（如 AS2026100001_万联上海 · 沈阳天津锁站锁价.xlsx）。</p>' +
       '<p style="margin-top:8px"><b>Sheet1 适用网货主体</b>（一行 = 一个主体）：</p>' +
@@ -9744,6 +9760,10 @@ function lockAddGoods(stationCode, goodsId){
   const s = lockState;
   if(!lockGoods(stationCode, goodsId)) return false;
   const st = lockStation(stationCode);
+  if(st && st.offline){
+    showToast('油站已下线，无法添加');
+    return false;
+  }
   if(st && st.noContract){
     showToast('添加失败：该油站与网货主体及万油通主体均无签约合同，无法添加');
     return false;
@@ -9757,6 +9777,10 @@ function lockAddGoods(stationCode, goodsId){
 /* 明细行校验：油站与油品必须能在系统目录中对上，且该油品属于该油站 */
 function lockBadLines(){
   return lockState.stations.filter(l=>!lockStation(l.station) || !lockGoods(l.station, l.goods));
+}
+/* 失效油站：明细内油站在「网点管理」已下线（仅修改保存时校验，见 saveLockRule） */
+function lockOfflineLines(){
+  return lockState.stations.filter(l=>lockStation(l.station)?.offline);
 }
 /* 锁站锁价模式下「未填写价格调整金额」的明细行：逐行必填，填 0 也算已填，留空才算未填 */
 function lockIsReduceBlank(l){
@@ -9854,7 +9878,7 @@ function lockLinesTableHTML(){
     const blank = lockIsReduceBlank(l);
     return `<tr>
       <td class="mono">${st.code}</td>
-      <td><div class="t1">${st.name}</div><div class="t2">${st.co}</div></td>
+      <td><div class="t1">${st.name}${st.offline?' <span class="tag f">已下线</span>':''}</div><div class="t2">${st.co}</div></td>
       <td>${g.goodsName}<div class="t2">${st.energy}</div></td>
       <td class="num">${noBase?'<span class="tag f">无企业价</span>':`¥${money(g.entPrice)}`}</td>
       <td class="num">¥${money(g.cost)}</td>
@@ -9994,9 +10018,20 @@ function lockPickEnergySegHTML(){
     + [...new Set(LOCK_STATIONS.map(x=>x.energy))].map(e=>
         `<button type="button" class="${s.pickEnergy===e?'on':''}" onclick="lockPickSetEnergy('${e}')">${e}</button>`).join('');
 }
-/* 一行一站：勾选 = 该站全部油品行进明细；已勾选的站带「已选择」标识 */
+/* 一行一站：勾选 = 该站全部油品行进明细；已勾选的站带「已选择」标识；
+   已下线油站置灰、勾选框禁用，不可添加（修改保存时明细内的下线油站另行拦截） */
 function lockPickStationHTML(st){
   const on = st.goods.some(g=>lockHasGoods(st.code,g.goodsId));
+  if(st.offline){
+    return `<div class="ck-pick-station">
+      <label class="ck-pick-row" style="opacity:.55">
+        <input type="checkbox" disabled title="油站已下线，无法添加" aria-label="油站已下线 ${st.name}">
+        <span class="ck-pick-main"><b>${st.name}</b><span class="t2">${st.co} · ${st.energy} · ${st.city}</span></span>
+        <span class="ck-pick-code mono">${st.code}</span>
+        <span class="tag f">已下线</span>
+      </label>
+    </div>`;
+  }
   return `<div class="ck-pick-station${on?' on':''}">
     <label class="ck-pick-row">
       <input type="checkbox" ${on?'checked':''} onchange="lockPickToggleStation('${st.code}',this.checked)"
@@ -10020,6 +10055,7 @@ function lockPickClearSel(){
 /* 站粒度勾选：勾选带出该站全部油品行（价格调整金额留空待逐行填写），取消移除该站全部明细行 */
 function lockPickToggleStation(stationCode, on){
   const st = lockStation(stationCode); if(!st) return;
+  if(on && st.offline){ showToast('油站已下线，无法添加'); return; }
   if(on) st.goods.forEach(g=>lockAddGoods(stationCode,g.goodsId));
   else lockState.stations = lockState.stations.filter(l=>l.station!==stationCode);
   lockPickRefreshList();
@@ -10053,11 +10089,18 @@ function lockValidate(){
     const zero = s.stations.filter(l=>{ const g=lockGoods(l.station,l.goods); return g && g.entPrice + (Number(l.reduce)||0) < 0; });
     if(zero.length) errs.push(`有 ${zero.length} 行锁后价小于 0，请调高价格调整金额`);
   }
-  /* 规则唯一性：同「网货主体 + 货主企业」不允许两条生效规则 */
-  const conflicts = lockConflicts({entities:s.entities, owners:s.owners, status:LOCK_STATUS.ON}, s.editId);
-  if(conflicts.length){
-    const c = conflicts[0];
-    errs.push(`适用范围与生效规则 ${c.self?'（本规则内重复）':c.rule.id} 冲突：${c.entityId?entityName(c.entityId):''} + ${c.ownerText}`);
+  /* 规则唯一性：同「网货主体 + 货主企业」不允许两条生效规则。
+     校验时机（2026-10-20 调整）：仅对保存后处于生效状态的规则校验——
+     新建保存（保存即生效）与生效中的规则修改保存时，与其他生效中的规则比对；
+     停用规则的保存不校验组合冲突（可与任何规则同组合共存），启用时再拦截 */
+  const editTarget = s.editId ? LOCK_RULE_BY_ID(s.editId) : null;
+  const saveAsOn = editTarget ? editTarget.status===LOCK_STATUS.ON : true;
+  if(saveAsOn){
+    const conflicts = lockConflicts({entities:s.entities, owners:s.owners, status:LOCK_STATUS.ON}, s.editId);
+    if(conflicts.length){
+      const c = conflicts[0];
+      errs.push(`适用范围与生效规则 ${c.self?'（本规则内重复）':c.rule.id} 冲突：${c.entityId?entityName(c.entityId):''} + ${c.ownerText}`);
+    }
   }
   return errs;
 }
@@ -10073,6 +10116,15 @@ function saveLockRule(){
   const errs = lockValidate();
   if(errs.length){ showToast('保存失败：'+errs[0]); return; }
   const s = lockState;
+  /* 失效油站拦截：仅修改保存时校验（新建保存与启用不校验），仅油站维度——
+     明细内油站在「网点管理」已下线的，弹窗列出并拦截，可移除后保存 */
+  if(s.editId){
+    const offStations = [...new Set(lockOfflineLines().map(l=>l.station))];
+    if(offStations.length){
+      openConfirm('lockOfflineStations', offStations.join(','));
+      return;
+    }
+  }
   const neg = lockNegativeGross();
   const doSave = () => {
     /* 新建规则默认生效；修改规则保持原有状态，不因保存而把停用规则静默启用 */
@@ -10114,6 +10166,22 @@ CONFIRMS.lockDiscard = () => ({
   list:['关闭后本次填写或调整的内容不会保留。','已经保存过的规则不受影响。'],
   ok:'放弃修改', okClass:'danger'
 });
+/* 失效油站拦截弹窗：列出明细内已下线的油站，可一键移除后继续保存 */
+CONFIRMS.lockOfflineStations = key => {
+  const codes = String(key).split(',');
+  const rows = codes.map(code=>{
+    const st = lockStation(code);
+    const goods = ((st&&st.goods)||[]).map(g=>g.goodsName).join('、');
+    return `<li>${st?st.name:code}（<span class="mono">${code}</span>，可加注油品：${goods}）</li>`;
+  }).join('');
+  return {
+    title:'部分油站已下线', tone:'warn',
+    lead:`明细中有 <b>${codes.length}</b> 个油站已在网点管理下线，无法保存。`,
+    body:`<ul class="cf-list" style="margin-top:8px">${rows}</ul>`,
+    list:['「移除下线油站并保存」会先移除这些油站的全部明细行，再按保存校验继续保存，其余明细保留。','仅修改保存时校验油站下线状态；新建保存与启用不校验，仅油站维度判定。'],
+    ok:'移除下线油站并保存', okClass:'primary'
+  };
+};
 
 /* ---------- 规则详情抽屉 ---------- */
 function openLockRuleView(id){
@@ -10175,7 +10243,7 @@ function openLockRuleView(id){
             : '<span class="dash">0.00</span>';
           return `<tr>
             <td class="mono">${st.code}</td>
-            <td><div class="t1">${st.name}</div><div class="t2">${st.co}</div></td>
+            <td><div class="t1">${st.name}${st.offline?' <span class="tag f">已下线</span>':''}</div><div class="t2">${st.co}</div></td>
             <td>${g.goodsName}</td>
             <td class="num">¥${money(g.entPrice)}</td>
             <td class="num">¥${money(g.cost)}</td>
