@@ -312,21 +312,20 @@ function liveNodeHelp(k, up){
     +'<p>仅开票渠道=<b>乐企</b>且蓝票<b>开票成功未红冲</b>（含红冲失败重开后再次审核通过）的退款单；线下渠道订单无本节点、不显示本区块。</p>'
     +'<h5>节点状态 · 红冲原蓝票（穷举 4 态）</h5>'
     +tbl(['节点状态','圆点','页面展示内容（示例）'],[
-      ['未触发',dot('pend'),'「当前发票状态：开票成功 · 未红冲；退款审核通过后先红冲原蓝票，红冲成功后才执行退款」'],
-      ['红冲中',dot('run'),'「退款审核通过触发红冲，红冲结果查询中；红冲成功后才执行退款」'],
-      ['已红冲',dot(''),'「退款审核通过触发红冲，已红冲，原蓝票冲销；继续执行退款」'],
+      ['未触发',dot('pend'),'未到本环节——不展示小字（仅节点标题）'],
+      ['红冲中',dot('run'),'「红冲中——红冲结果查询中，红冲成功后才执行退款」'],
+      ['已红冲',dot(''),'「已红冲——原蓝票冲销，继续执行退款」'],
       ['红冲失败',dot('fail'),'「红冲失败：购方已认证抵扣，需线下沟通抵扣处理——退款单已终止为「退款失败」，线下抵扣处理完成后重新发起退款申请」']
     ])
     +'<p><b>关键规则：</b>① 红冲唯一触发点=退款审核通过（订单列表「手动红冲」为独立换开入口，不影响退款流程）；② 红冲中拦截审核；③ 线下渠道不拦截、不联动。</p>'
     +'<p class="mut">与 PRD 7.2.2 同源。</p>');
   return fhHelp(
     '<h5>节点状态 · 资金退回（穷举）</h5>'
+    +'<p class="mut" style="margin:0 0 4px">未到本环节（审核未通过 / 已拒绝 / 红冲中 / 红冲失败终止）不展示小字，仅节点标题。</p>'
     +tbl(['节点状态','圆点','页面展示内容（示例）'],[
-      ['待红冲成功后执行',dot('pend'),'「待红冲成功后执行」'],
       ['执行中',dot('run'),'「两笔转账执行中，各自成功各自失败」'],
       ['商品本金与服务费已原路退回',dot(''),'「商品本金与服务费已原路退回」（退款单「退款成功」）'],
-      ['退款失败（红冲失败终止）',dot('fail'),'「退款单已终止：红冲失败，未执行退款」——线下抵扣处理完成后重新发起退款申请新开一单'],
-      ['退款失败（资金侧失败）',dot('fail'),'红冲成功，但资金转账失败——退款单标「退款失败」，转运营人工工单处理']
+      ['退款失败（资金侧失败）',dot('fail'),'「红冲成功，但资金转账失败——退款单标「退款失败」，转运营人工工单处理」']
     ])
     +'<p><b>关键规则：</b>商品本金与服务费为两笔独立转账，各自成功各自失败；红冲失败终止后重新发起退款申请再走审核，审核通过后再次触发红冲；退款成功后订单开票状态=已红冲。</p>'
     +'<p class="mut">与 PRD 7.2.2 同源。</p>', up);
@@ -338,15 +337,25 @@ function liveRefundRedBlock(r){
   const redFail=o.invoice==='红冲失败'||(r.redResult==='红冲失败'&&failed);
   const redDone=o.invoice==='已红冲';
   const redDoing=o.invoice==='红冲中';
-  const m=redFail?'红冲失败：'+(r.redFail||o.invFail||'乐企红冲接口失败')+'——退款单已终止为「退款失败」，线下抵扣处理完成后重新发起退款申请'
-    :redDone?'退款审核通过触发红冲，已红冲，原蓝票冲销；继续执行退款'
-    :redDoing?'退款审核通过触发红冲，红冲结果查询中；红冲成功后才执行退款'
-    :(r.inv?('当前发票状态：'+r.inv+'；'):'')+'退款审核通过后先红冲原蓝票，红冲成功后才执行退款';
+  const started=r.status!=='待审核'&&r.status!=='已拒绝'; /* 流程已过审核——后续环节才可能开始 */
+  /* 展示口径：未到达的环节只显示节点标题、不显示小字；小字=已到达环节的具体状态（审核通过由后续环节状态推导写入） */
+  const auditMsg=r.status==='待审核'?'待审核——审核通过后触发红冲'
+    :r.status==='已拒绝'?((r.auditAt||'—')+' · '+(r.auditBy||'—')+' · 已拒绝——退款申请终止')
+    :((r.auditAt||'—')+' · '+(r.auditBy||'—')+' · 审核通过');
+  const redMsg=!started?''
+    :redFail?'红冲失败：'+(r.redFail||o.invFail||'乐企红冲接口失败')+'——退款单已终止为「退款失败」'
+    :redDoing?'红冲中——红冲结果查询中，红冲成功后才执行退款'
+    :redDone?'已红冲——原蓝票冲销，继续执行退款'
+    :'';
+  const fundMsg=!started?''
+    :r.status==='退款成功'?'商品本金与服务费已原路退回'
+    :(failed&&!redFail)?'红冲成功，但资金转账失败——退款单标「退款失败」，转运营人工工单处理'
+    :'';
   return '<div class="card"><div class="card-b"><div class="sec-title">处理进度（乐企：先红冲后退款）</div><div class="tl" style="margin-top:10px">'+
     '<div class="it"><span class="dot"></span><div><div class="h">提交退款申请'+liveNodeHelp('submit')+'</div><div class="m">'+r.time+'</div></div></div>'+
-    '<div class="it"><span class="dot '+(r.status==='待审核'?'pend':'')+'"></span><div><div class="h">退款审核'+liveNodeHelp('audit')+'</div><div class="m">'+(r.status==='待审核'?'待审核——审核通过后触发红冲':r.status==='已拒绝'?((r.auditAt||'—')+' · '+(r.auditBy||'—')+' · 已拒绝——退款申请终止'):((r.auditAt||'—')+' · '+(r.auditBy||'—')+' · 审核通过'))+'</div></div></div>'+
-    '<div class="it"><span class="dot '+((redFail||redDone||redDoing)?'':'pend')+'"'+(redFail?' style="background:var(--bad)"':'')+'></span><div><div class="h">红冲原蓝票（乐企）'+liveNodeHelp('red')+'</div><div class="m">'+m+'</div></div></div>'+
-    '<div class="it"><span class="dot '+(r.status==='退款成功'?'':'pend')+'"></span><div><div class="h">资金退回'+liveNodeHelp('refund', true)+'</div><div class="m">'+(r.status==='退款成功'?'商品本金与服务费已原路退回':failed?'退款单已终止：红冲失败，未执行退款':'待红冲成功后执行')+'</div></div></div>'+
+    '<div class="it"><span class="dot '+(r.status==='待审核'?'pend':'')+'"></span><div><div class="h">退款审核'+liveNodeHelp('audit')+'</div><div class="m">'+auditMsg+'</div></div></div>'+
+    '<div class="it"><span class="dot '+((redFail||redDone||redDoing)?'':'pend')+'"'+(redFail?' style="background:var(--bad)"':'')+'></span><div><div class="h">红冲原蓝票（乐企）'+liveNodeHelp('red')+'</div>'+(redMsg?'<div class="m">'+redMsg+'</div>':'')+'</div></div>'+
+    '<div class="it"><span class="dot '+(r.status==='退款成功'?'':'pend')+'"></span><div><div class="h">资金退回'+liveNodeHelp('refund', true)+'</div>'+(fundMsg?'<div class="m">'+fundMsg+'</div>':'')+'</div></div>'+
     '</div></div></div>';
 }
 function liveRefundDetail(r,audit){
