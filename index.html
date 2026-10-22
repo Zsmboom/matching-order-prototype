@@ -1745,7 +1745,7 @@ function rmbUpper(n){
 
 /* ================= 路由 ================= */
 /* 菜单三级结构：side（平台端） → grp（业务模块） → subgrp（可选子模块） → name（菜单） */
-const SIDES = ['运营平台','油站端','企业端'];
+const SIDES = ['运营平台','油站端','企业端','司机端'];
 
 const PAGES = [
   /* ---- 运营平台 · 撮合订单 ---- */
@@ -1797,6 +1797,9 @@ const PAGES = [
   {id:'monthly',  name:'月账单',       sub:'按月汇总 / 充值退款', side:'企业端', grp:'财务管理'},
   {id:'txns', name:'账户资金流水',   sub:'企业账户资金流水数据查询', side:'企业端', grp:'财务管理'},
 
+  /* ---- 司机端 · 网货 App 内嵌 H5（独立文件 driver-h5.html，iframe 承载） ---- */
+  {id:'driverH5', name:'优惠加油', sub:'司机端网货 H5 · 油站列表 / 加油计价 / 订单（演示数据，本期未与锁站规则联动）', side:'司机端', grp:'司机端'},
+
 ];
 
 
@@ -1822,6 +1825,7 @@ const SITES = {
   '运营平台':{brand:'运营中台', home:'orders'},
   '油站端':  {brand:'油站管理端', home:'stationInv'},
   '企业端':  {brand:'企业客户端', home:'cOrders'},
+  '司机端':  {brand:'司机端 H5', home:'driverH5'},
 };
 const siteLast = {};
 const navOpen = new Set();
@@ -1896,6 +1900,7 @@ function go(id){
   const mode = document.querySelector('.mode');
   if(p.side==='企业端'){ mode.textContent = '企业端 · ' + CUST_ME; mode.classList.add('cust'); mode.classList.remove('station'); }
   else if(p.side==='油站端'){ mode.textContent = '油站端 · 中石化辽宁石油分公司'; mode.classList.add('station'); mode.classList.remove('cust'); }
+  else if(p.side==='司机端'){ mode.textContent = '司机端 · 网货 App 内嵌 H5'; mode.classList.remove('cust'); mode.classList.remove('station'); }
   else { mode.textContent = '撮合模式 · 平台不进货不垫资'; mode.classList.remove('cust'); mode.classList.remove('station'); }
   renderNav(); renderTabs();
   paint();
@@ -2610,6 +2615,15 @@ document.addEventListener('change', e=>{
 
 /* ================= 页面 ================= */
 const VIEWS = {};
+
+/* ---- 司机端 · 网货 App 内嵌 H5（独立文件 driver-h5.html，iframe 承载；不进 OMS 对齐层） ---- */
+VIEWS.driverH5 = () => `
+  <div class="driver-frame-wrap">
+    <div class="driver-frame-tip">司机端 H5 · 网货 App 内嵌「优惠加油」<span>演示数据；本期未与《货主锁站锁价》规则联动</span></div>
+    <div class="driver-phone">
+      <iframe class="driver-frame" src="driver-h5.html" title="司机端优惠加油 H5"></iframe>
+    </div>
+  </div>`;
 
 /* ---- 撮合订单管理 ---- */
 const ORDER_CHIPS = [

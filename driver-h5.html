@@ -1628,6 +1628,61 @@
         font-weight: 700;
       }
 
+      .status-wait {
+        color: var(--orange);
+        font-weight: 700;
+      }
+
+      .status-refund {
+        color: #8a8f99;
+        font-weight: 700;
+      }
+
+      .order-empty {
+        margin: 12px 15px;
+        padding: 34px 16px;
+        border-radius: 8px;
+        background: #fff;
+        color: #8a8f99;
+        font-size: 14px;
+        line-height: 1.8;
+        text-align: center;
+        box-shadow: var(--shadow);
+      }
+
+      .order-empty b {
+        display: block;
+        margin-bottom: 4px;
+        color: #1f2329;
+        font-size: 16px;
+      }
+
+      .fuel-mode {
+        display: flex;
+        gap: 8px;
+      }
+
+      .fuel-mode button {
+        height: 30px;
+        padding: 0 12px;
+        border-radius: 15px;
+        background: #f5f5f5;
+        color: #666d78;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .fuel-mode button.active {
+        background: var(--soft);
+        color: var(--primary);
+      }
+
+      .qr-box svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
       .pay-line {
         display: flex;
         align-items: baseline;
@@ -5362,7 +5417,7 @@
                 <div>
                   <div class="station-title-line"><div class="station-name">1113站点</div></div>
                   <div class="station-meta">山东省济南市槐荫区青岛路与齐鲁大道交叉口东160米</div>
-                  <div class="station-tags"><span class="tag road-tag highway">高速</span><span class="tag channel-tag">中交</span></div>
+                  <div class="station-tags"><span class="tag road-tag highway">高速</span><span class="tag channel-tag">中交车旺</span></div>
                 </div>
                 <div class="distance"><i class="loc-arrow"></i>0.1km</div>
               </div>
@@ -5371,7 +5426,82 @@
                 <div class="price-stack"><div class="effective-price"><small data-home-price-label>万联价</small><b data-home-price>¥5.52/L</b></div><div class="price-detail"><span class="line-through">油机价 ¥6.50</span></div></div>
               </div>
             </article>
-            <article class="station-card" data-go="qr-payment" data-station-entry="qr" data-station-price="5.80|6.00">
+            <article class="station-card" data-go="detail" data-settlement-mode="liter" data-station-price="5.46|5.93">
+              <div class="station-top">
+                <div class="logo">CNPC</div>
+                <div>
+                  <div class="station-title-line"><div class="station-name">万联易达济南西直营站</div></div>
+                  <div class="station-meta">山东省济南市槐荫区经十西路与腊山河东路交叉口</div>
+                  <div class="station-tags"><span class="tag road-tag highway">高速</span><span class="tag channel-tag">自营</span></div>
+                </div>
+                <div class="distance"><i class="loc-arrow"></i>2.3km</div>
+              </div>
+              <div class="price-row subsidy-price-row">
+                <div class="oil-no">0#</div>
+                <div class="price-stack"><div class="effective-price"><small data-home-price-label>万联价</small><b data-home-price>¥5.46/L</b></div><div class="price-detail"><span class="line-through">油机价 ¥6.47</span></div></div>
+              </div>
+            </article>
+            <article class="station-card" data-go="detail" data-settlement-mode="liter" data-station-price="5.88|6.39">
+              <div class="station-top">
+                <div class="logo sino">Sinopec</div>
+                <div>
+                  <div class="station-title-line"><div class="station-name">京台高速德州服务区站</div></div>
+                  <div class="station-meta">山东省德州市齐河县京台高速德州服务区（北京方向）</div>
+                  <div class="station-tags"><span class="tag road-tag highway">高速</span><span class="tag channel-tag">中交车旺</span></div>
+                </div>
+                <div class="distance"><i class="loc-arrow"></i>8.6km</div>
+              </div>
+              <div class="price-row subsidy-price-row">
+                <div class="oil-no">-10#</div>
+                <div class="price-stack"><div class="effective-price"><small data-home-price-label>万联价</small><b data-home-price>¥5.88/L</b></div><div class="price-detail"><span class="line-through">油机价 ¥6.98</span></div></div>
+              </div>
+            </article>
+            <article class="station-card" data-go="detail" data-settlement-mode="liter" data-station-price="6.42|6.98">
+              <div class="station-top">
+                <div class="logo">CNPC</div>
+                <div>
+                  <div class="station-title-line"><div class="station-name">济南炼化经十路站</div></div>
+                  <div class="station-meta">山东省济南市历下区经十路与浆水泉路交叉口</div>
+                  <div class="station-tags"><span class="tag road-tag local">非高速</span><span class="tag channel-tag">三桶油</span></div>
+                </div>
+                <div class="distance"><i class="loc-arrow"></i>12.4km</div>
+              </div>
+              <div class="price-row subsidy-price-row">
+                <div class="oil-no">92#</div>
+                <div class="price-stack"><div class="effective-price"><small data-home-price-label>万联价</small><b data-home-price>¥6.42/L</b></div><div class="price-detail"><span class="line-through">油机价 ¥7.36</span></div></div>
+              </div>
+            </article>
+            <article class="station-card" data-go="detail" data-settlement-mode="amount" data-station-price="2.86|3.11">
+              <div class="station-top">
+                <div class="logo gas">LNG</div>
+                <div>
+                  <div class="station-title-line"><div class="station-name">邹平长山物流加气站</div></div>
+                  <div class="station-meta">山东省滨州市邹平市长山镇物流园区北门</div>
+                  <div class="station-tags"><span class="tag road-tag local">非高速</span><span class="tag channel-tag">鑫能</span></div>
+                </div>
+                <div class="distance"><i class="loc-arrow"></i>18.9km</div>
+              </div>
+              <div class="price-row subsidy-price-row">
+                <div class="oil-no">LNG</div>
+                <div class="price-stack"><div class="effective-price"><small data-home-price-label>万联价</small><b data-home-price>¥2.86/L</b></div><div class="price-detail"><span class="line-through">油站价 ¥4.90</span></div></div>
+              </div>
+            </article>
+            <article class="station-card" data-go="detail" data-settlement-mode="liter" data-station-price="5.35|5.81">
+              <div class="station-top">
+                <div class="logo sino">Sinopec</div>
+                <div>
+                  <div class="station-title-line"><div class="station-name">滨州博兴物流大道站</div></div>
+                  <div class="station-meta">山东省滨州市博兴县兴福镇物流大道东段</div>
+                  <div class="station-tags"><span class="tag road-tag local">非高速</span><span class="tag channel-tag">中交车旺</span></div>
+                </div>
+                <div class="distance"><i class="loc-arrow"></i>36.2km</div>
+              </div>
+              <div class="price-row subsidy-price-row">
+                <div class="oil-no">0#</div>
+                <div class="price-stack"><div class="effective-price"><small data-home-price-label>万联价</small><b data-home-price>¥5.35/L</b></div><div class="price-detail"><span class="line-through">油机价 ¥6.30</span></div></div>
+              </div>
+            </article>
+            <article class="station-card" data-go="qr-payment" data-station-entry="qr" data-station-price="5.80|6.30">
               <div class="station-top">
                 <div class="logo sino">Sinopec</div>
                 <div>
@@ -5386,7 +5516,67 @@
                 <div class="price-stack"><div class="effective-price"><small data-home-price-label>万联价</small><b data-home-price>¥5.80/L</b></div><div class="price-detail"><span class="line-through">油站价 ¥7.00</span></div></div>
               </div>
             </article>
-            <article class="station-card" data-go="detail" data-settlement-mode="amount" data-station-price="2.90|3.00">
+            <article class="station-card" data-go="detail" data-settlement-mode="amount" data-station-price="2.83|3.08">
+              <div class="station-top">
+                <div class="logo gas">LNG</div>
+                <div>
+                  <div class="station-title-line"><div class="station-name">东营广饶加气站</div></div>
+                  <div class="station-meta">山东省东营市广饶县广青路与孙武湖路交叉口</div>
+                  <div class="station-tags"><span class="tag road-tag highway">高速</span><span class="tag channel-tag">卡世通</span></div>
+                </div>
+                <div class="distance"><i class="loc-arrow"></i>52.7km</div>
+              </div>
+              <div class="price-row subsidy-price-row">
+                <div class="oil-no">LNG</div>
+                <div class="price-stack"><div class="effective-price"><small data-home-price-label>万联价</small><b data-home-price>¥2.83/L</b></div><div class="price-detail"><span class="line-through">油站价 ¥4.85</span></div></div>
+              </div>
+            </article>
+            <article class="station-card" data-go="detail" data-settlement-mode="liter" data-station-price="5.72|6.22">
+              <div class="station-top">
+                <div class="logo">CNPC</div>
+                <div>
+                  <div class="station-title-line"><div class="station-name">德州齐河服务区站</div></div>
+                  <div class="station-meta">山东省德州市齐河县济聊高速齐河服务区</div>
+                  <div class="station-tags"><span class="tag road-tag highway">高速</span><span class="tag channel-tag">运达通</span></div>
+                </div>
+                <div class="distance"><i class="loc-arrow"></i>78.5km</div>
+              </div>
+              <div class="price-row subsidy-price-row">
+                <div class="oil-no">-20#</div>
+                <div class="price-stack"><div class="effective-price"><small data-home-price-label>万联价</small><b data-home-price>¥5.72/L</b></div><div class="price-detail"><span class="line-through">油机价 ¥6.85</span></div></div>
+              </div>
+            </article>
+            <article class="station-card" data-go="detail" data-settlement-mode="liter" data-station-price="6.10|6.63">
+              <div class="station-top">
+                <div class="logo sino">Sinopec</div>
+                <div>
+                  <div class="station-title-line"><div class="station-name">泰安新泰光明站</div></div>
+                  <div class="station-meta">山东省泰安市新泰市光明路与青龙路交叉口</div>
+                  <div class="station-tags"><span class="tag road-tag local">非高速</span><span class="tag channel-tag">鑫盛</span></div>
+                </div>
+                <div class="distance"><i class="loc-arrow"></i>136.8km</div>
+              </div>
+              <div class="price-row subsidy-price-row">
+                <div class="oil-no">-35#</div>
+                <div class="price-stack"><div class="effective-price"><small data-home-price-label>万联价</small><b data-home-price>¥6.10/L</b></div><div class="price-detail"><span class="line-through">油机价 ¥7.25</span></div></div>
+              </div>
+            </article>
+            <article class="station-card" data-go="detail" data-settlement-mode="amount" data-station-price="5.58|6.06">
+              <div class="station-top">
+                <div class="logo">CNPC</div>
+                <div>
+                  <div class="station-title-line"><div class="station-name">青岛胶州湾高速站</div></div>
+                  <div class="station-meta">山东省青岛市胶州市胶州湾高速营海出口西300米</div>
+                  <div class="station-tags"><span class="tag road-tag highway">高速</span><span class="tag channel-tag">江投</span></div>
+                </div>
+                <div class="distance"><i class="loc-arrow"></i>210.4km</div>
+              </div>
+              <div class="price-row subsidy-price-row">
+                <div class="oil-no">0#</div>
+                <div class="price-stack"><div class="effective-price"><small data-home-price-label>万联价</small><b data-home-price>¥5.58/L</b></div><div class="price-detail"><span class="line-through">油机价 ¥6.55</span></div></div>
+              </div>
+            </article>
+            <article class="station-card" data-go="detail" data-settlement-mode="amount" data-station-price="2.90|3.15">
               <div class="station-top">
                 <div class="logo gas">LNG</div>
                 <div>
@@ -5401,8 +5591,7 @@
                 <div class="price-stack"><div class="effective-price"><small data-home-price-label>万联价</small><b data-home-price>¥2.90/L</b></div><div class="price-detail"><span class="line-through">油站价 ¥5.00</span></div></div>
               </div>
             </article>
-          </div>
-          <div class="float-actions">
+<div class="float-actions">
             <button class="float-action" type="button" data-account-switch aria-label="切换油气额度账户"><b aria-hidden="true">↻</b>切换账户</button>
             <button class="float-action" type="button" data-go="orders"><b>☰</b>我的订单</button>
             <button class="float-action" type="button"><b>☏</b>联系客服</button>
@@ -5518,14 +5707,46 @@
               <div class="search"><span class="icon"></span><span>请输入油站名称搜索</span></div>
               <button style="font-size:17px;color:#333" type="button">取消</button>
             </div>
-            <div class="tabs">
-              <button class="active" type="button">全部</button>
-              <button type="button">待支付</button>
-              <button type="button">支付成功</button>
-              <button type="button">已退款</button>
+            <div class="tabs" data-order-tabs role="tablist" aria-label="订单状态筛选">
+              <button class="active" type="button" data-status="all" aria-selected="true">全部</button>
+              <button type="button" data-status="wait" aria-selected="false">待支付</button>
+              <button type="button" data-status="paid" aria-selected="false">支付成功</button>
+              <button type="button" data-status="refund" aria-selected="false">已退款</button>
             </div>
           </div>
-          <article class="order-card" data-go="success">
+          <article class="order-card" data-go="success" data-order-status="wait">
+            <div class="order-card-top">
+              <div><h3>德州齐河服务区站</h3><p>当前运单支付</p></div>
+              <div class="status-wait">待支付</div>
+            </div>
+            <div class="pay-line">
+              <div class="spec">-20#　180.00L</div>
+              <div>待扣： <b>¥1029.64</b></div>
+            </div>
+            <div class="order-extra">
+              <span>枪号<b>7号</b></span>
+              <span>万联价<b>¥5.72/L</b></span>
+              <span>结算金额<b>¥1119.60</b></span>
+            </div>
+            <div class="order-time">订单号：WYB202606011302220012　时间：2026-06-01 13:02:22</div>
+          </article>
+          <article class="order-card" data-go="success" data-order-status="wait">
+            <div class="order-card-top">
+              <div><h3>东营广饶加气站</h3><p>二维码支付 · 当前运单</p></div>
+              <div class="status-wait">待支付</div>
+            </div>
+            <div class="pay-line">
+              <div class="spec">LNG　220.00kg</div>
+              <div>待扣： <b>¥623.39</b></div>
+            </div>
+            <div class="order-extra">
+              <span>枪号<b>LNG</b></span>
+              <span>万联价<b>¥2.83/kg</b></span>
+              <span>结算金额<b>¥677.60</b></span>
+            </div>
+            <div class="order-time">订单号：WYB202606011259010011　时间：2026-06-01 12:59:01</div>
+          </article>
+          <article class="order-card" data-go="success" data-order-status="paid">
             <div class="order-card-top">
               <div><h3>1113站点</h3><p>同主体组合支付 · 3张运单</p></div>
               <div class="status-green">支付成功</div>
@@ -5541,9 +5762,9 @@
             </div>
             <div class="order-time">订单号：WYB202606011145460001　时间：2026-06-01 11:45:46</div>
           </article>
-          <article class="order-card" data-go="success">
+          <article class="order-card" data-go="success" data-order-status="paid">
             <div class="order-card-top">
-              <div><h3>二维码测试站</h3><p>万联易达天津分公司</p></div>
+              <div><h3>二维码测试站</h3><p>二维码支付 · 当前运单</p></div>
               <div class="status-green">支付成功</div>
             </div>
             <div class="pay-line">
@@ -5552,14 +5773,14 @@
             </div>
             <div class="order-extra">
               <span>枪号<b>6号</b></span>
-              <span>补贴后价<b>¥5.52/L</b></span>
-              <span>上报金额<b>¥720.00</b></span>
+              <span>万联价<b>¥5.52/L</b></span>
+              <span>结算金额<b>¥720.00</b></span>
             </div>
             <div class="order-time">订单号：WYB202606011038530002　时间：2026-06-01 10:38:53</div>
           </article>
-          <article class="order-card" data-go="success">
+          <article class="order-card" data-go="success" data-order-status="paid">
             <div class="order-card-top">
-              <div><h3>二维码测试站</h3><p>万联易达天津分公司</p></div>
+              <div><h3>二维码测试站</h3><p>二维码支付 · 当前运单</p></div>
               <div class="status-green">支付成功</div>
             </div>
             <div class="pay-line">
@@ -5568,11 +5789,127 @@
             </div>
             <div class="order-extra">
               <span>枪号<b>LNG</b></span>
-              <span>补贴后价<b>¥2.805/kg</b></span>
-              <span>上报金额<b>¥900.00</b></span>
+              <span>万联价<b>¥2.805/kg</b></span>
+              <span>结算金额<b>¥900.00</b></span>
             </div>
             <div class="order-time">订单号：WYB202606011037560003　时间：2026-06-01 10:37:56</div>
           </article>
+          <article class="order-card" data-go="success" data-order-status="paid">
+            <div class="order-card-top">
+              <div><h3>万联易达济南西直营站</h3><p>当前运单支付</p></div>
+              <div class="status-green">支付成功</div>
+            </div>
+            <div class="pay-line">
+              <div class="spec">0#　200.00L</div>
+              <div>实扣： <b>¥1091.12</b></div>
+            </div>
+            <div class="order-extra">
+              <span>枪号<b>3号</b></span>
+              <span>万联价<b>¥5.46/L</b></span>
+              <span>结算金额<b>¥1186.00</b></span>
+            </div>
+            <div class="order-time">订单号：WYB202606010945120004　时间：2026-06-01 09:45:12</div>
+          </article>
+          <article class="order-card" data-go="success" data-order-status="paid">
+            <div class="order-card-top">
+              <div><h3>京台高速德州服务区站</h3><p>同主体组合支付 · 2张运单</p></div>
+              <div class="status-green">支付成功</div>
+            </div>
+            <div class="pay-line">
+              <div class="spec">-10#　260.00L</div>
+              <div>实扣： <b>¥1528.49</b></div>
+            </div>
+            <div class="order-extra">
+              <span>枪号<b>4号</b></span>
+              <span>万联价<b>¥5.88/L</b></span>
+              <span>结算金额<b>¥1661.40</b></span>
+            </div>
+            <div class="order-time">订单号：WYB202605312012330005　时间：2026-05-31 20:12:33</div>
+          </article>
+          <article class="order-card" data-go="success" data-order-status="paid">
+            <div class="order-card-top">
+              <div><h3>济南炼化经十路站</h3><p>当前运单支付</p></div>
+              <div class="status-green">支付成功</div>
+            </div>
+            <div class="pay-line">
+              <div class="spec">92#　45.00L</div>
+              <div>实扣： <b>¥288.97</b></div>
+            </div>
+            <div class="order-extra">
+              <span>枪号<b>9号</b></span>
+              <span>万联价<b>¥6.42/L</b></span>
+              <span>结算金额<b>¥314.10</b></span>
+            </div>
+            <div class="order-time">订单号：WYB202605310847260006　时间：2026-05-31 08:47:26</div>
+          </article>
+          <article class="order-card" data-go="success" data-order-status="paid">
+            <div class="order-card-top">
+              <div><h3>邹平长山物流加气站</h3><p>当前运单支付</p></div>
+              <div class="status-green">支付成功</div>
+            </div>
+            <div class="pay-line">
+              <div class="spec">LNG　150.00kg</div>
+              <div>实扣： <b>¥429.18</b></div>
+            </div>
+            <div class="order-extra">
+              <span>枪号<b>LNG</b></span>
+              <span>万联价<b>¥2.86/kg</b></span>
+              <span>结算金额<b>¥466.50</b></span>
+            </div>
+            <div class="order-time">订单号：WYB202605301633440007　时间：2026-05-30 16:33:44</div>
+          </article>
+          <article class="order-card" data-go="success" data-order-status="paid">
+            <div class="order-card-top">
+              <div><h3>滨州博兴物流大道站</h3><p>同主体组合支付 · 4张运单</p></div>
+              <div class="status-green">支付成功</div>
+            </div>
+            <div class="pay-line">
+              <div class="spec">0#　380.00L</div>
+              <div>实扣： <b>¥2031.18</b></div>
+            </div>
+            <div class="order-extra">
+              <span>枪号<b>5号</b></span>
+              <span>万联价<b>¥5.35/L</b></span>
+              <span>结算金额<b>¥2207.80</b></span>
+            </div>
+            <div class="order-time">订单号：WYB202605291210180008　时间：2026-05-29 12:10:18</div>
+          </article>
+          <article class="order-card" data-go="success" data-order-status="refund">
+            <div class="order-card-top">
+              <div><h3>泰安新泰光明站</h3><p>当前运单支付</p></div>
+              <div class="status-refund">已退款</div>
+            </div>
+            <div class="pay-line">
+              <div class="spec">-35#　160.00L</div>
+              <div>已退： <b>¥975.94</b></div>
+            </div>
+            <div class="order-extra">
+              <span>枪号<b>8号</b></span>
+              <span>万联价<b>¥6.10/L</b></span>
+              <span>结算金额<b>¥1060.80</b></span>
+            </div>
+            <div class="order-time">订单号：WYB202605281926400009　时间：2026-05-28 19:26:40</div>
+          </article>
+          <article class="order-card" data-go="success" data-order-status="refund">
+            <div class="order-card-top">
+              <div><h3>青岛胶州湾高速站</h3><p>二维码支付 · 当前运单</p></div>
+              <div class="status-refund">已退款</div>
+            </div>
+            <div class="pay-line">
+              <div class="spec">0#　300.00L</div>
+              <div>已退： <b>¥1672.56</b></div>
+            </div>
+            <div class="order-extra">
+              <span>枪号<b>2号</b></span>
+              <span>万联价<b>¥5.58/L</b></span>
+              <span>结算金额<b>¥1818.00</b></span>
+            </div>
+            <div class="order-time">订单号：WYB202605280715090010　时间：2026-05-28 07:15:09</div>
+          </article>
+          <div class="order-empty" data-order-empty hidden>
+            <b>暂无该状态订单</b>
+            下拉刷新或换个筛选看看
+          </div>
         </section>
 
         <section class="screen" data-screen="detail">
@@ -5637,7 +5974,7 @@
             </div>
           </div>
           <div class="module">
-            <div class="module-title">本次加注</div>
+            <div class="module-title"><span>本次加注</span><div class="fuel-mode" role="group" aria-label="加注录入方式"><button class="active" type="button" data-input-mode="liter">按升数</button><button type="button" data-input-mode="amount">按金额</button></div></div>
             <div class="fuel-entry">
               <div class="fuel-entry-main">
                 <div class="fuel-input-wrap"><input data-fuel-input type="number" value="" placeholder="请输入加油机升数" min="0.01" step="0.01" inputmode="decimal" aria-label="加油机升数" /><em data-entry-unit>L</em></div>
@@ -5709,7 +6046,7 @@
           </div>
           <div class="qr-panel">
             <p data-qr-status-desc>请向油站工作人员出示二维码</p>
-            <div class="qr-box"><img data-payment-qr src="assets/payment-qr.png" alt="油气支付二维码" /></div>
+            <div class="qr-box" data-payment-qr role="img" aria-label="油气支付二维码"></div>
             <div class="qr-validity"><span>二维码有效期</span><b data-qr-countdown>04:59</b><button class="qr-refresh" type="button" data-qr-refresh>刷新二维码</button></div>
           </div>
           <div class="qr-flow" aria-label="二维码支付流程">
@@ -5807,7 +6144,7 @@
         <div class="sheet-head">排序和筛选 <button class="close" type="button" data-close>×</button></div>
         <div class="sheet-body">
           <div class="sheet-section"><h3>排序</h3><div class="chips"><button class="chip" type="button">综合排序</button><button class="chip active" type="button">距离最近</button><button class="chip" type="button">价格最低</button></div></div>
-          <div class="sheet-section"><h3>商品</h3><div class="chips"><button class="chip" type="button">-35#车用柴油</button><button class="chip" type="button">-20#车用柴油</button><button class="chip" type="button">-10#车用柴油</button><button class="chip" type="button">0#车用柴油</button><button class="chip" type="button">编号798</button><button class="chip" type="button">10#</button><button class="chip" type="button">LNG</button><button class="chip" type="button">92#</button><button class="chip" type="button">0#</button></div></div>
+          <div class="sheet-section"><h3>商品</h3><div class="chips"><button class="chip" type="button">-35#车用柴油</button><button class="chip" type="button">-20#车用柴油</button><button class="chip" type="button">-10#车用柴油</button><button class="chip" type="button">0#车用柴油</button><button class="chip" type="button">LNG</button><button class="chip" type="button">92#</button></div></div>
           <div class="sheet-section"><h3>品牌</h3><div class="chips"><button class="chip active" type="button">全部</button><button class="chip" type="button">中国石油</button><button class="chip" type="button">中国海油</button><button class="chip" type="button">中化道达尔</button><button class="chip" type="button">延长石油</button><button class="chip" type="button">壳牌</button><button class="chip" type="button">中国石化</button><button class="chip" type="button">中油BP</button><button class="chip" type="button">其他</button></div></div>
           <div class="sheet-section"><h3>是否高速</h3><div class="chips"><button class="chip active" type="button">全部</button><button class="chip" type="button">高速</button><button class="chip" type="button">非高速</button></div></div>
           <div class="sheet-section"><h3>距离</h3><div class="chips"><button class="chip active" type="button">全部</button><button class="chip" type="button">10KM内</button><button class="chip" type="button">30KM内</button><button class="chip" type="button">50KM内</button><button class="chip" type="button">100KM内</button></div></div>
@@ -5884,7 +6221,7 @@
         <div class="sheet-head">计价说明 <button class="close" type="button" data-close>×</button></div>
         <div class="sheet-body">
           <div class="subsidy-total"><span>本次平台补贴</span><b data-bind="subsidy">¥200.00</b></div>
-          <div class="calc-card"><h4>直接体现在万联价中</h4><p data-policy-scope>组合支付统一按实际参与运单最高8%计算</p><div class="calc-grid"><div><b>¥6.00/L</b><small>企业结算价</small></div><div><b style="color:#1f2329" data-bind="effectiveRate">8%</b><small>本次比例</small></div><div><b data-bind="unitPriceWithSymbol">¥5.52/L</b><small>万联价</small></div></div><div class="policy" data-policy-formula>预估万联价：¥6.00 × (1 - 8%) = ¥5.52/L，仅用于支付前展示。</div></div>
+          <div class="calc-card"><h4>直接体现在万联价中</h4><p data-policy-scope>组合支付统一按实际参与运单最高8%计算</p><div class="calc-grid"><div><b>¥6.00/L</b><small>企业价</small></div><div><b style="color:#1f2329" data-bind="effectiveRate">8%</b><small>本次比例</small></div><div><b data-bind="unitPriceWithSymbol">¥5.52/L</b><small>万联价</small></div></div><div class="policy" data-policy-formula>预估万联价：企业价 ¥6.00 × (1 - 8%) = ¥5.52/L，仅用于支付前展示。</div></div>
           <div class="calc-card"><h4>订单金额顺序</h4><p>最终金额不使用展示单价直接相乘</p><div class="calc-grid"><div><b data-bind="settlement">¥2499.96</b><small>订单结算</small></div><div><b style="color:#1f2329" data-bind="paid">¥2299.96</b><small>司机实付</small></div><div><b data-bind="subsidy">¥200.00</b><small>平台补贴</small></div></div><div class="policy">先计算订单结算金额，再计算司机实付，最后用“订单结算 - 司机实付”得到补贴。</div></div>
         </div>
       </section>
@@ -6196,15 +6533,10 @@
 
       function updatePaymentMode(result) {
         const rateText = `${Math.round(result.effectiveRate * 100)}%`;
-        const selectedQuota = result.selectedWaybillIndex === null ? null : pricing.quotas[result.selectedWaybillIndex];
         const paymentMethod = result.isCombo ? "同主体组合支付" : "当前运单支付";
         const isEnterprise = selectedAccountType === "enterprise";
         const pricingText = isEnterprise ? "企业价计价" : `最高${rateText}计价`;
 
-        setText("[data-payment-title]", result.isCombo ? "未选择运单，按组合支付" : "已选择当前运单，单独支付");
-        setText("[data-payment-desc]", result.isCombo ? "系统按装货时间自动依次扣减" : "再次点击已选运单可恢复组合支付");
-        setText("[data-payment-badge]", result.isCombo ? "组合支付" : "当前运单");
-        setText("[data-waybill-status]", result.isCombo ? "不选择则自动组合支付" : `已选额度 ${money(selectedQuota)} · 再次点击可取消`);
         setText("[data-confirm-payment-title]", `${paymentMethod} · ${isEnterprise ? "企业价" : result.isCombo ? `最高${rateText}计价` : `${rateText}计价`}`);
         setText("[data-success-description]", result.isCombo ? `${result.wayCount}张同主体运单已完成组合支付` : "当前运单已完成单独支付");
         setText("[data-success-payment-title]", orderSource === "qr" ? "二维码支付已完成" : result.isCombo ? "组合支付已完成" : "当前运单支付已完成");
@@ -6212,7 +6544,7 @@
         setText("[data-success-payment-method]", orderSource === "qr" ? `二维码支付 · ${paymentMethod}` : paymentMethod);
         setText("[data-success-related-count]", `${result.wayCount}张`);
         setText("[data-policy-scope]", result.isCombo ? `组合支付统一按实际参与运单最高${rateText}计算` : `当前运单按自身${rateText}比例计算`);
-        setText("[data-policy-formula]", `预估万联价：¥6.00 × (1 - ${rateText}) = ¥${result.unitPrice.toFixed(2)}/L，仅用于支付前展示。`);
+        setText("[data-policy-formula]", `预估万联价：企业价 ¥6.00 × (1 - ${rateText}) = ¥${result.unitPrice.toFixed(2)}/L，仅用于支付前展示。`);
         setText("[data-detail-rate]", pricingText);
         setText("[data-qr-rate]", pricingText);
         setBind("wayCount", `${result.wayCount}张`);
@@ -6266,19 +6598,6 @@
           updateChildCard(document.querySelector(`[data-confirm-child="${index}"]`), child);
           updateChildCard(document.querySelector(`[data-success-child="${index}"]`), child);
         });
-
-        const hint = document.querySelector("[data-entry-hint]");
-        if (hint) {
-          hint.textContent = result.wasCapped
-            ? `已按${result.wayCount}张运单可用油气额度自动调整为${inputMode === "liter" ? result.maxInput.toFixed(2) + "L" : money(result.maxInput)}。`
-            : inputMode === "liter"
-              ? result.isCombo
-                ? "输入升数最多两位小数，未选运单时系统按FIFO组合支付。"
-                : "输入升数最多两位小数，本次仅使用当前选中运单。"
-              : result.isCombo
-                ? "油机金额输入正整数，未选运单时系统按FIFO组合支付。"
-                : "油机金额输入正整数，本次仅使用当前选中运单。";
-        }
       }
 
       function toggleWaybillSelection(card) {
@@ -6361,10 +6680,54 @@
         }, 1000);
       }
 
+      /* 演示二维码：内联 SVG 生成（无外部图片依赖），刷新时按时间戳换图案 */
+      function renderPaymentQr(seed = Date.now()) {
+        const host = document.querySelector("[data-payment-qr]");
+        if (!host) return;
+        const size = 21;
+        const cell = 6;
+        const pad = 10;
+        let state = (seed % 2147483647) || 12345;
+        const next = () => (state = (state * 16807) % 2147483647) / 2147483647;
+        const finder = (ox, oy) =>
+          `<rect x="${pad + ox * cell}" y="${pad + oy * cell}" width="${7 * cell}" height="${7 * cell}" fill="none" stroke="#111" stroke-width="${cell}"/>` +
+          `<rect x="${pad + (ox + 2) * cell}" y="${pad + (oy + 2) * cell}" width="${3 * cell}" height="${3 * cell}"/>`;
+        const inFinder = (x, y) =>
+          (x < 7 && y < 7) || (x >= size - 7 && y < 7) || (x < 7 && y >= size - 7);
+        let modules = "";
+        for (let y = 0; y < size; y += 1) {
+          for (let x = 0; x < size; x += 1) {
+            if (inFinder(x, y)) continue;
+            if (next() > 0.5) {
+              modules += `<rect x="${pad + x * cell}" y="${pad + y * cell}" width="${cell}" height="${cell}"/>`;
+            }
+          }
+        }
+        const total = pad * 2 + size * cell;
+        host.innerHTML = `<svg viewBox="0 0 ${total} ${total}" width="100%" height="100%" role="img" aria-label="油气支付二维码"><rect width="${total}" height="${total}" fill="#fff"/><g fill="#111">${modules}${finder(0, 0)}${finder(size - 7, 0)}${finder(0, size - 7)}</g></svg>`;
+      }
+
       function refreshQrCode() {
-        const image = document.querySelector("[data-payment-qr]");
-        if (image) image.src = `assets/payment-qr.png?v=${Date.now()}`;
+        renderPaymentQr(Date.now());
         startQrCountdown();
+      }
+
+      /* 订单状态分栏：全部 / 待支付 / 支付成功 / 已退款 */
+      function filterOrders(status) {
+        const cards = document.querySelectorAll(".order-card[data-order-status]");
+        let shown = 0;
+        cards.forEach((card) => {
+          const match = status === "all" || card.dataset.orderStatus === status;
+          card.hidden = !match;
+          if (match) shown += 1;
+        });
+        const empty = document.querySelector("[data-order-empty]");
+        if (empty) empty.hidden = shown > 0;
+        document.querySelectorAll("[data-order-tabs] button").forEach((button) => {
+          const on = button.dataset.status === status;
+          button.classList.toggle("active", on);
+          button.setAttribute("aria-selected", String(on));
+        });
       }
 
       function confirmQrPayment(scanEvent) {
@@ -6440,6 +6803,9 @@
         const modeButton = event.target.closest("[data-input-mode]");
         if (modeButton) switchInputMode(modeButton.dataset.inputMode);
 
+        const orderTab = event.target.closest("[data-order-tabs] button");
+        if (orderTab) filterOrders(orderTab.dataset.status);
+
         if (event.target.closest("[data-fill-max]")) fillMaximumFuel();
 
         if (event.target.closest("[data-qr-refresh]")) refreshQrCode();
@@ -6460,6 +6826,8 @@
       pendingInitialLayer = initialLayer || null;
       go("account");
       updateOrder();
+      renderPaymentQr();
+      filterOrders("all");
     </script>
   </body>
 </html>
