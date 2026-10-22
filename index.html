@@ -1303,14 +1303,14 @@ const REFUNDS = [
    reason:'重复开票冲红失败，退款终止', amt:795.02, fee:9.54, apply:'2026-08-27 14:02',
    audit:'已确认', auditBy:'张世民（运营中台）', auditAt:'2026-08-27 14:15', st:'退款失败',
    done:'—', inv:'红冲失败', redResult:'红冲失败', redFail:'乐企红冲接口返回：购方已认证抵扣，需线下沟通抵扣处理',
-   failNote:'红冲失败，退款单终止；线下抵扣处理完成后重新发起退款申请'}
+   failNote:'红冲失败，审批保持「审核通过」、订单扣款状态=退款失败；线下抵扣处理完成后重新发起退款申请'}
 ];
 
 /* ================= 乐企开票演示数据 =================
    口径（docs/requirements/20261019-易宝乐企开票-规划.md）：
      · 开票渠道枚举=乐企/线下；乐企渠道订单开票状态 7 值（渠道分治）
      · 支付成功即触发开票（解耦）；失败自动重试每分钟 1 次×3 次；手动开票可用状态=未开票/开票失败/已红冲，已红冲可再次手动开票重开蓝票
-     · 红冲两条触发：退款红冲（退款审核通过，失败→退款单终止为「退款失败」）＋手动红冲（开票成功/红冲失败可发起，原因必填 5–200 字，成功→已红冲）
+     · 红冲两条触发：退款红冲（退款审核通过，红冲失败→审批保持「审核通过」、订单扣款状态「退款失败」）＋手动红冲（开票成功/红冲失败可发起，原因必填 5–200 字，成功→已红冲）
      · 每次开票（蓝/红、手动/自动）记录及结果入库 → LEQI_LOGS；发票逐张入库 → LEQI_INV */
 const LEQI_INV = [
   {no:'04412026082700001201', order:'MH20260827094500000001', biz:'撮合', type:'蓝票', rel:'—',
@@ -1346,6 +1346,12 @@ const LEQI_INV = [
   {no:'04412026091000001255', order:'ZY20260910173004233', biz:'自营', type:'红票', rel:'04412026091000001242',
    drawer:'中石化辽宁石油分公司', buyer:'万联易达科技有限公司（平台）', amt:-350.11, t:'2026-09-11 09:18:03',
    trigger:'退款红冲', file:'乐企发票_04412026091000001255.pdf'},
+  {no:'04412026091200001352', order:'ZY20260912160004571', biz:'自营', type:'蓝票', rel:'—',
+   drawer:'中石油天津销售分公司', buyer:'万联易达科技有限公司（平台）', amt:431.42, t:'2026-09-12 16:01:12',
+   trigger:'自动-支付成功', file:'乐企发票_04412026091200001352.pdf'},
+  {no:'04412026091200001363', order:'ZY20260912160004571', biz:'自营', type:'红票', rel:'04412026091200001352',
+   drawer:'中石油天津销售分公司', buyer:'万联易达科技有限公司（平台）', amt:-431.42, t:'2026-09-12 16:22:40',
+   trigger:'退款红冲', file:'乐企发票_04412026091200001363.pdf'},
   {no:'04412026091200001340', order:'ZY20260912143501882', biz:'自营', type:'蓝票', rel:'—',
    drawer:'中石化辽宁石油分公司', buyer:'万联易达科技有限公司（平台）', amt:1032.60, t:'2026-09-12 14:35:40',
    trigger:'自动-支付成功', file:'乐企发票_04412026091200001340.pdf'},
@@ -1395,83 +1401,96 @@ const SELFORDES = [
   {no:'ZY20260912150802417', time:'2026-09-12 15:08:02', co:'蒙晋通达运输有限公司', coType:'网货主体',
    driver:'宿红', plate:'蒙T9U81U', station:'天津武清京津站', stationCo:'中石油天津销售分公司',
    goods:'-10# 柴油', energy:'柴油', qty:88.40, amt:594.05,
-   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'开票失败', invCh:'乐企',
+   paySt:'已支付', deductSt:'退款中', verifySt:'已核销', inv:'开票失败', invCh:'乐企',
    invFail:'票池可开剩余不足，未开具', refund:'退款中'},
   /* 多子订单总单：3 条运单拆 3 张子订单，发票仍只 1 张（票对订单、不落子订单） */
   {no:'ZY20260912143501882', time:'2026-09-12 14:35:01', co:'万联易达物流科技有限公司', coType:'自签物流公司',
    driver:'孙倩', plate:'蒙A2288L', station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司',
    goods:'0# 轻柴油', energy:'柴油', qty:153.72, amt:1032.60,
-   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'开票成功', invCh:'乐企'},
+   paySt:'已支付', deductSt:'退款待审核', verifySt:'已核销', inv:'开票成功', invCh:'乐企'},
   {no:'ZY20260912093102201', time:'2026-09-12 09:31:02', co:'万联易达物流科技有限公司', coType:'自签物流公司',
    driver:'田玲玲', plate:'辽AEK808', station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司',
    goods:'0# 轻柴油', energy:'柴油', qty:191.43, amt:1286.40,
-   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'开票成功', invCh:'乐企'},
+   paySt:'已支付', deductSt:'退款待审核', verifySt:'已核销', inv:'开票成功', invCh:'乐企'},
   {no:'ZY20260912092807551', time:'2026-09-12 09:28:07', co:'万联易达物流科技有限公司', coType:'自签物流公司',
    driver:'赵德明', plate:'津B7788Z', station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司',
    goods:'0# 轻柴油', energy:'柴油', qty:52.10, amt:350.11,
-   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'未开票', invCh:'乐企'},
+   paySt:'已支付', deductSt:'支付成功', verifySt:'已核销', inv:'未开票', invCh:'乐企'},
   {no:'ZY20260911184206742', time:'2026-09-11 18:42:06', co:'万联易达物流科技有限公司', coType:'自签物流公司',
    driver:'周慧敏', plate:'津BQ7712', station:'天津武清京津站', stationCo:'中石油天津销售分公司',
    goods:'-10# 柴油', energy:'柴油', qty:86.20, amt:590.46,
-   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'已红冲', invCh:'乐企'},
+   paySt:'已支付', deductSt:'退款失败', verifySt:'已核销', inv:'红冲失败', invCh:'乐企',
+   invFail:'乐企红冲接口返回：购方已认证抵扣，需线下沟通抵扣处理',
+   refundFail:'红冲失败，审批通过、订单扣款状态=退款失败'},
   {no:'ZY20260911102209308', time:'2026-09-11 10:22:09', co:'蒙晋通达运输有限公司', coType:'网货主体',
    driver:'宿红', plate:'蒙T9U81U', station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司',
    goods:'0# 轻柴油', energy:'柴油', qty:120.82, amt:812.30,
-   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'红冲中', invCh:'乐企'},
+   paySt:'已支付', deductSt:'退款中', verifySt:'已核销', inv:'红冲中', invCh:'乐企'},
   {no:'ZY20260911095504417', time:'2026-09-11 09:55:04', co:'万联易达物流科技有限公司', coType:'自签物流公司',
    driver:'田玲玲', plate:'辽AEK808', station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司',
    goods:'0# 轻柴油', energy:'柴油', qty:88.60, amt:590.08,
-   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'红冲失败', invCh:'乐企',
+   paySt:'已支付', deductSt:'支付成功', verifySt:'已核销', inv:'红冲失败', invCh:'乐企',
    invFail:'乐企红冲接口返回：购方已认证抵扣，需线下沟通抵扣处理'},
   {no:'ZY20260911100817226', time:'2026-09-11 10:08:17', co:'蒙晋通达运输有限公司', coType:'网货主体',
    driver:'孙倩', plate:'蒙A2288L', station:'天津武清京津站', stationCo:'中石油天津销售分公司',
    goods:'0# 轻柴油', energy:'柴油', qty:96.50, amt:642.69,
-   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'开票失败', invCh:'乐企',
+   paySt:'已支付', deductSt:'支付成功', verifySt:'已核销', inv:'开票失败', invCh:'乐企',
    invFail:'购方税号与客户认证信息不一致'},
   /* 已退款且开票失败：同上，且该单仍计入网点公司熔断计数 */
   {no:'ZY20260911080602533', time:'2026-09-11 08:06:02', co:'测试客户2', coType:'自签物流公司',
    driver:'李强', plate:'京A1234Q', station:'北京大兴机场西站', stationCo:'畅油网络科技有限公司',
    goods:'0# 轻柴油', energy:'柴油', qty:64.20, amt:431.42,
-   paySt:'已退款', deductSt:'已扣款', verifySt:'已核销', inv:'开票失败', invCh:'乐企',
+   paySt:'已支付', deductSt:'已退款', verifySt:'已核销', inv:'开票失败', invCh:'乐企',
    invFail:'购方税号与客户认证信息不一致', refund:'已退款'},
   {no:'ZY20260910173004233', time:'2026-09-10 17:30:04', co:'万联易达物流科技有限公司', coType:'自签物流公司',
    driver:'田玲玲', plate:'辽AEK808', station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司',
    goods:'0# 轻柴油', energy:'柴油', qty:52.10, amt:350.11,
-   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'开票成功', invCh:'乐企'},
+   paySt:'已支付', deductSt:'支付成功', verifySt:'已核销', inv:'开票成功', invCh:'乐企'},
   {no:'ZY20260910164001933', time:'2026-09-10 16:40:01', co:'鲁通冷链物流有限公司', coType:'网货主体',
    driver:'王志刚', plate:'鲁F1234Q', station:'济南章丘服务区站', stationCo:'中交兴路能源有限公司',
    goods:'LNG', energy:'天然气', qty:118.55, amt:694.70,
-   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'已开票', invCh:'线下'},
+   paySt:'已支付', deductSt:'支付成功', verifySt:'已核销', inv:'已开票', invCh:'线下'},
   {no:'ZY20260910170003822', time:'2026-09-10 17:00:38', co:'鲁通冷链物流有限公司', coType:'网货主体',
    driver:'王志刚', plate:'鲁F1234Q', station:'济南章丘服务区站', stationCo:'中交兴路能源有限公司',
    goods:'LNG', energy:'天然气', qty:64.30, amt:377.10,
-   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'已撤销', invCh:'线下'},
+   paySt:'已支付', deductSt:'支付成功', verifySt:'已核销', inv:'已撤销', invCh:'线下'},
   {no:'ZY20260910091222518', time:'2026-09-10 09:12:22', co:'测试客户2', coType:'自签物流公司',
    driver:'李强', plate:'京A1234Q', station:'北京大兴机场西站', stationCo:'畅油网络科技有限公司',
    goods:'CNG', energy:'天然气', qty:236.70, amt:1420.00,
-   paySt:'待支付', deductSt:'待扣款', verifySt:'待核销', inv:'未开票', invCh:'线下'},
+   paySt:'待支付', deductSt:'待支付', verifySt:'待核销', inv:'未开票', invCh:'线下'},
   {no:'ZY20260909154409907', time:'2026-09-09 15:44:09', co:'万联易达物流科技有限公司', coType:'自签物流公司',
    driver:'赵德明', plate:'津B7788Z', station:'天津武清京津站', stationCo:'中石油天津销售分公司',
    goods:'-20# 柴油', energy:'柴油', qty:142.71, amt:977.59,
-   paySt:'已支付', deductSt:'扣款失败', verifySt:'已核销', inv:'未开票', invCh:'线下'},
+   paySt:'已支付', deductSt:'支付失败', verifySt:'已核销', inv:'未开票', invCh:'线下'},
+  /* 退款失败（资金退回失败）：审批已通过、钱没退成，需重新发起退款 */
+  {no:'ZY20260912160004571', time:'2026-09-12 16:00:45', co:'蒙晋通达运输有限公司', coType:'网货主体',
+   driver:'孙倩', plate:'蒙A2288L', station:'天津武清京津站', stationCo:'中石油天津销售分公司',
+   goods:'-10# 柴油', energy:'柴油', qty:64.20, amt:431.42,
+   paySt:'已支付', deductSt:'退款失败', verifySt:'已核销', inv:'已红冲', invCh:'乐企',
+   refund:'退款失败', refundFail:'易宝退款失败：油站收款账户状态异常'},
+  /* 已取消：订单取消、未发生过扣款 */
+  {no:'ZY20260912164503902', time:'2026-09-12 16:45:03', co:'鲁通冷链物流有限公司', coType:'网货主体',
+   driver:'王志刚', plate:'鲁F1234Q', station:'济南章丘服务区站', stationCo:'中交兴路能源有限公司',
+   goods:'LNG', energy:'天然气', qty:52.10, amt:305.32,
+   paySt:'待支付', deductSt:'已取消', verifySt:'待核销', inv:'未开票', invCh:'线下'}
 ];
 
-/* 自营订单退款：客户退款/油站退款为同一次退款的资金两侧；审核状态=待审核/审核通过/审核驳回/退款失败 */
+/* 自营订单退款：客户退款/油站退款为同一次退款的资金两侧；审核状态=待审核/审核通过/审核驳回（资金结果看订单油站扣款状态） */
 const SELF_REFUNDS = [
   {id:'ZRTK20260912000012', order:'ZY20260911184206742', time:'2026-09-12 09:30:11', type:'客户退款',
    driver:'周慧敏', plate:'津BQ7712', goods:'-10# 柴油 · 86.20 L', amt:590.46,
-   reason:'实际未加注，油枪跳枪异常', audit:'退款失败',
+   reason:'实际未加注，油枪跳枪异常', audit:'审核通过',
    redResult:'红冲成功',
    redNote:'红冲成功后执行退款；本次演示单为历史留样',
    auditBy:'张世民（运营中台）', auditAt:'2026-09-12 09:41',
-   failNote:'红冲接口超时，退款单终止；线下抵扣处理完成后重新发起退款申请',
+   failNote:'红冲接口超时，审批保持「审核通过」、订单扣款状态=退款失败；线下抵扣处理完成后重新发起退款申请',
    subs:[{no:'ZY20260911184206742001', waybill:'UD2026091100000301', driver:'周慧敏 / 津BQ7712', amt:590.46}]},
   {id:'ZRTK20260912000013', order:'ZY20260911184206742', time:'2026-09-12 09:30:11', type:'油站退款',
    driver:'周慧敏', plate:'津BQ7712', goods:'-10# 柴油 · 86.20 L', amt:590.46,
-   reason:'实际未加注，油枪跳枪异常', audit:'退款失败',
+   reason:'实际未加注，油枪跳枪异常', audit:'审核通过',
    redResult:'红冲成功', redNote:'红冲成功后执行退款；本次演示单为历史留样',
    auditBy:'张世民（运营中台）', auditAt:'2026-09-12 09:41',
-   failNote:'红冲接口超时，退款单终止；线下抵扣处理完成后重新发起退款申请',
+   failNote:'红冲接口超时，审批保持「审核通过」、订单扣款状态=退款失败；线下抵扣处理完成后重新发起退款申请',
    subs:[{no:'ZY20260911184206742001', waybill:'UD2026091100000301', driver:'周慧敏 / 津BQ7712', amt:590.46}]},
   {id:'ZRTK20260912000018', order:'ZY20260912093102201', time:'2026-09-12 11:20:36', type:'客户退款',
    driver:'田玲玲', plate:'辽AEK808', goods:'0# 轻柴油 · 191.43 L', amt:1286.40,
@@ -1489,8 +1508,8 @@ const SELF_REFUNDS = [
    auditBy:'张世民（运营中台）', auditAt:'2026-09-12 13:20',
    redNote:'审核通过触发红冲（乐企蓝票），红冲进行中，退款待红冲成功后执行',
    subs:[{no:'ZY20260911102209308001', waybill:'UD2026091100000288', driver:'宿红 / 蒙T9U81U', amt:812.30}]},
-  {id:'ZRTK20260912000024', order:'ZY20260910091222518', time:'2026-09-12 15:42:19', type:'客户退款',
-   driver:'李强', plate:'京A1234Q', goods:'CNG · 236.70 kg', amt:1420.00,
+  {id:'ZRTK20260912000024', order:'ZY20260911100817226', time:'2026-09-12 15:42:19', type:'客户退款',
+   driver:'孙倩', plate:'蒙A2288L', goods:'0# 轻柴油 · 96.50 L', amt:642.69,
    reason:'重复下单', audit:'审核驳回',
    auditBy:'张世民（运营中台）', auditAt:'2026-09-12 16:01',
    subs:[{no:'ZY20260910091222518001', waybill:'UD2026091000000241', driver:'李强 / 京A1234Q', amt:1420.00}]},
@@ -1510,7 +1529,32 @@ const SELF_REFUNDS = [
    auditBy:'—', auditAt:'—',
    subs:[{no:'ZY20260912143501882001', waybill:'UD2026091200000331', driver:'孙倩 / 蒙A2288L', amt:344.20},
          {no:'ZY20260912143501882002', waybill:'UD2026091200000332', driver:'孙倩 / 蒙A2288L', amt:344.20},
-         {no:'ZY20260912143501882003', waybill:'UD2026091200000333', driver:'孙倩 / 蒙A2288L', amt:344.20}]}
+         {no:'ZY20260912143501882003', waybill:'UD2026091200000333', driver:'孙倩 / 蒙A2288L', amt:344.20}]},
+
+  /* 资金在途：审批通过、资金退回处理中，订单扣款状态=退款中 */
+  {id:'ZRTK20260912000040', order:'ZY20260912150802417', time:'2026-09-12 15:20:33', type:'油站退款',
+   driver:'宿红', plate:'蒙T9U81U', goods:'-10# 柴油 · 88.40 L', amt:594.05,
+   reason:'油站侧重复扣款核实退回', audit:'审核通过',
+   auditBy:'张世民（运营中台）', auditAt:'2026-09-12 15:26',
+   redNote:'红冲成功（乐企发票冲红）；资金退回处理中，订单扣款状态=退款中',
+   subs:[{no:'ZY20260912150802417001', waybill:'UD2026091200000345', driver:'宿红 / 蒙T9U81U', amt:594.05}]},
+
+  {id:'ZRTK20260912000034', order:'ZY20260912160004571', time:'2026-09-12 16:20:08', type:'油站退款',
+   driver:'孙倩', plate:'蒙A2288L', goods:'-10# 柴油 · 64.20 L', amt:431.42,
+   reason:'油站侧对账差异，整单退回', audit:'审核通过',
+   auditBy:'张世民（运营中台）', auditAt:'2026-09-12 16:28',
+   failNote:'易宝退款失败：油站收款账户状态异常',
+   redNote:'红冲成功（乐企发票冲红）；资金退回失败，订单扣款状态=退款失败',
+   subs:[{no:'ZY20260912160004571001', waybill:'UD2026091200000352', driver:'孙倩 / 蒙A2288L', amt:431.42}]},
+
+  /* 已退款：审批通过且资金已退回，订单扣款状态=已退款 */
+  {id:'ZRTK20260912000037', order:'ZY20260911080602533', time:'2026-09-11 09:20:41', type:'客户退款',
+   driver:'李强', plate:'京A1234Q', goods:'0# 轻柴油 · 64.20 L', amt:431.42,
+   reason:'客户取消用油，整单退回', audit:'审核通过',
+   auditBy:'张世民（运营中台）', auditAt:'2026-09-11 09:26',
+   redNote:'客户退款不触发红冲；资金已原路退回',
+   subs:[{no:'ZY20260911080602533001', waybill:'UD2026091100000263', driver:'李强 / 京A1234Q', amt:431.42}]},
+
 ];
 
 /* ================= 网点公司管理演示数据（自动下线配置口径见页面说明） ================= */
@@ -1721,6 +1765,7 @@ TONE['生效']='ok'; TONE['停用']='mut';
 TONE['开票成功']='ok'; TONE['开票失败']='bad'; TONE['红冲中']='info'; TONE['红冲失败']='bad'; TONE['已红冲']='ok';
 /* 退款红冲前置：退款单终止态；自营退款审核驳回 */
 TONE['退款失败']='bad'; TONE['审核驳回']='mut'; TONE['已驳回']='mut'; TONE['退款成功']='ok'; TONE['退款中']='warn'; TONE['已红冲']='ok';
+TONE['支付成功']='ok'; TONE['支付失败']='bad'; TONE['退款待审核']='warn'; TONE['审核通过']='ok'; TONE['已取消']='mut';
 /* 订单发票管理：蓝票 / 红票 */
 TONE['蓝票']='ok'; TONE['红票']='bad';
 const tone = s => TONE[s] || 'mut';
@@ -2016,14 +2061,15 @@ const OPT = {
   acctName:['万联易达物流科技有限公司','蒙晋通达运输有限公司','鲁通冷链物流有限公司','中石化辽宁石油分公司','高灯能源科技有限公司','中交兴路能源有限公司','万联易达科技有限公司'],
   fundEvent:['客户资金调拨','服务费调拨','退款（资金退回）','冲正','差额调拨','差额退回'],
   refundBy:['运营平台','油站'],
-  refundSt:['待审核','退款中','退款成功','已驳回','退款失败'],
+  refundSt:['待审核','审核通过','审核驳回'],
   auditSt:['待确认','已确认'],
   /* 自营订单中心 / 网点公司管理（乐企开票配套演示页） */
   selfPaySt:['待支付','已支付','支付失败'],
-  selfDeductSt:['待扣款','已扣款','扣款失败'],
+  /* 油站扣款状态：支付语义（对齐现网扣款状态用词）+ 退款链路两个新值 */
+  selfDeductSt:['待支付','支付成功','支付失败','退款待审核','退款中','已退款','退款失败','已取消'],
   selfVerifySt:['待核销','已核销'],
   selfRefType:['客户退款','油站退款'],
-  selfAuditSt:['待审核','审核通过','审核驳回','退款失败'],
+  selfAuditSt:['待审核','审核通过','审核驳回'],
   siteLevel:['普通','黄金','铂金'],
   siteYbAcct:['已开通','未开通'],
   siteEnable:['启用','停用'],
@@ -2743,7 +2789,7 @@ function leqiRedNode(o,r,step,done,failed){
   const dotStyle = redFail ? ' style="background:var(--bad)"' : '';
   /* 展示口径：未到达的环节不展示小字（仅节点标题）；小字=已到达环节的具体状态 */
   const m = !redFail && !redDone && !redDoing ? ''
-    : redFail ? `红冲失败：${r.redFail||o.invFail||'乐企红冲接口失败'}——退款单已终止为「退款失败」`
+    : redFail ? `红冲失败：${r.redFail||o.invFail||'乐企红冲接口失败'}——审批单保持「审核通过」、订单扣款状态置「退款失败」`
     : redDone ? `已红冲——原蓝票冲销，继续执行退款`
     : `红冲中——红冲结果查询中，红冲成功后才执行退款`;
   return `<div class="it"><div class="dot ${cls}"${dotStyle}></div><div><div class="h">红冲原蓝票（乐企）${mhRefundNodeHelp('red',r,o)}</div>
@@ -2853,7 +2899,7 @@ function mhRefundNodeHelp(k, r, o){
       ['未触发',dot('pend'),'未到本环节——不展示小字（仅节点标题）'],
       ['红冲中',dot('run'),'「红冲中——红冲结果查询中，红冲成功后才执行退款」'],
       ['已红冲',dot(''),'「已红冲——原蓝票冲销，继续执行退款」'],
-      ['红冲失败',dot('fail'),'「红冲失败：购方已认证抵扣，需线下沟通抵扣处理——退款单已终止为「退款失败」，线下抵扣处理完成后重新发起退款申请」']
+      ['红冲失败',dot('fail'),'「红冲失败：购方已认证抵扣，需线下沟通抵扣处理——审批单保持「审核通过」、订单油站扣款状态置「退款失败」，线下抵扣处理完成后重新发起退款申请」']
     ])
     +'<p><b>关键规则：</b>① 红冲唯一触发点=运营确认（订单列表「手动红冲」为独立换开入口，不影响退款流程）；② 红冲中拦截确认；③ 线下渠道不拦截、不联动。</p>'
     +'<p class="mut">与 PRD 7.2.2 同源。</p>');
@@ -2863,7 +2909,7 @@ function mhRefundNodeHelp(k, r, o){
     +tbl(['节点状态','圆点','页面展示内容（示例）'],[
       ['执行中',dot('run'),'「两笔反向转账执行中，各自成功各自失败」'],
       ['已退款',dot(''),'「油款与服务费两笔均已退回成功；额度回补原运单」'],
-      ['退款失败 · 资金侧失败',dot('fail'),'「红冲成功，但油款或服务费转账失败——转运营人工工单处理」']
+      ['退款失败 · 资金退回失败',dot('fail'),'「红冲成功，但油款或服务费转账失败——审批单保持「审核通过」、订单油站扣款状态置「退款失败」，重新发起退款申请；审核通过时红冲自动通过、走易宝资金流退款」']
     ])
     +'<p><b>关键规则：</b>油款与服务费为两笔独立转账，各自成功各自失败；红冲失败终止后重新发起退款申请再走确认，确认后再次触发红冲。</p>'
     +'<p class="mut">与 PRD 7.2.2 同源。</p>', true);
@@ -2885,7 +2931,7 @@ function zyRefundNodeHelp(k, r, o){
     +tbl(['节点状态','圆点','页面展示内容（示例）'],[
       ['待审核',dot('pend'),'「待审核——弹窗核对子订单明细后通过 / 驳回」'],
       ['审核通过',dot(''),'「2026-09-12 13:20 · 张世民（运营中台） · 审核通过」'],
-      ['审核驳回',dot('fail'),'「2026-09-12 16:01 · 张世民（运营中台） · 已驳回：退款申请终止」']
+      ['审核驳回',dot('fail'),'「2026-09-12 16:01 · 张世民（运营中台） · 审核驳回：退款申请终止」']
     ])
     +'<p><b>由谁处理：</b>运营（审核弹窗「通过 / 驳回」）。</p>'
     +'<p><b>后续流转：</b>通过 → 乐企订单先红冲原蓝票，红冲成功后执行退款（线下订单直接执行退款）；驳回 → 退款单终态「审核驳回」，不再执行退款。</p>'
@@ -2899,7 +2945,7 @@ function zyRefundNodeHelp(k, r, o){
       ['未触发',dot('pend'),'未到本环节——不展示小字（仅节点标题）'],
       ['红冲中',dot('run'),'「红冲中——红冲结果查询中，红冲成功后才执行退款」'],
       ['已红冲',dot(''),'「已红冲——原蓝票冲销，继续执行退款」'],
-      ['红冲失败',dot('fail'),'「红冲失败：购方已认证抵扣，需线下沟通抵扣处理——退款单终止为「退款失败」，线下抵扣处理完成后重新发起退款申请」']
+      ['红冲失败',dot('fail'),'「红冲失败：购方已认证抵扣，需线下沟通抵扣处理——审批单保持「审核通过」、订单扣款状态置「退款失败」，线下抵扣处理完成后重新发起退款申请」']
     ])
     +'<p><b>关键规则：</b>① 红冲唯一触发点=退款审核通过（订单列表「手动红冲」为独立换开入口，不影响退款流程）；② 红冲中拦截审核；③ 线下渠道不拦截、不联动。</p>'
     +'<p class="mut">与 PRD 7.2.2 同源。</p>');
@@ -2909,7 +2955,7 @@ function zyRefundNodeHelp(k, r, o){
     +tbl(['节点状态','圆点','页面展示内容（示例）'],[
       ['执行中',dot('run'),'「两笔反向转账执行中，各自成功各自失败」'],
       ['已退回',dot(''),'「油款与服务费两笔均已退回成功」'],
-      ['退款失败 · 资金侧失败',dot('fail'),'「红冲成功，但油款或服务费转账失败——转运营人工工单处理」']
+      ['退款失败 · 资金退回失败',dot('fail'),'「红冲成功，但油款或服务费转账失败——审批单保持「审核通过」、订单油站扣款状态置「退款失败」，重新发起退款申请；审核通过时红冲自动通过、走易宝资金流退款」']
     ])
     +'<p><b>关键规则：</b>油款与服务费为两笔独立转账，各自成功各自失败；红冲失败终止后重新发起退款申请再走审核，审核通过后再次触发红冲。</p>'
     +'<p class="mut">与 PRD 7.2.2 同源。</p>', true);
@@ -2936,7 +2982,7 @@ function leqiFieldHelp(kind){
       ['开票失败',dot('fail'),'「开票失败」——自动重试每分钟 1 次×3 次仍失败，停留本态并在「失败原因」展示乐企返回原因，转人工手动开票'],
       ['开票成功',dot(''),'「开票成功」——蓝票开具成功；可手动红冲、可申请退款（审核通过先红冲）'],
       ['红冲中',dot('run'),'「红冲中」——红冲接口已调用、结果查询中；进行中状态，拦截退款申请与退款审核'],
-      ['红冲失败',dot('fail'),'「红冲失败」——展示乐企返回原因；可手动红冲重发；退款场景下退款单已终止「退款失败」'],
+      ['红冲失败',dot('fail'),'「红冲失败」——展示乐企返回原因；可手动红冲重发；退款场景下审批单保持「审核通过」、订单扣款状态置「退款失败」'],
       ['已红冲',dot(''),'「已红冲」——蓝票已冲销（红票开具）；可手动开票重开蓝票（换开）']
     ])
     +'<h5>线下渠道（穷举 4 态）</h5>'
@@ -3094,7 +3140,7 @@ VIEWS.orders = () => {
         ['开票状态','乐企渠道 7 值：未开票/开票中/开票失败/开票成功/红冲中/红冲失败/已红冲；线下渠道订单沿用 4 值不变，同列分治展示'],
         ['开票失败','自动重试每分钟 1 次×3 次（重试开具），仍失败停留「开票失败」并展示失败原因，转人工手动开票或技术排查'],
         ['手动开票','可用状态=未开票/开票失败/已红冲，且订单不处于退款中/已退款；已红冲重开蓝票用于「换开」等需要再次开票的场景（红冲完成后即可发起）；退款中/已退款订单不展示入口并停止失败自动重试'],
-        ['红冲','只红冲油站开出的这张乐企票（客户侧发票线下处理，不在本链路）；退款红冲：退款审核通过触发，红冲失败→退款单终止为「退款失败」，线下抵扣处理完成后重新发起退款申请；手动红冲：仅乐企渠道，可用状态=开票成功/红冲失败（重发），必填红冲原因（5–200 字，写入开票记录），成功→已红冲（原蓝票冲销），失败→红冲失败＋乐企原因可重发；红冲中拦截退款审核'],
+        ['红冲','只红冲油站开出的这张乐企票（客户侧发票线下处理，不在本链路）；退款红冲：退款审核通过触发，红冲失败→审批单保持「审核通过」、订单油站扣款状态置「退款失败」，线下抵扣处理完成后重新发起退款申请；手动红冲：仅乐企渠道，可用状态=开票成功/红冲失败（重发），必填红冲原因（5–200 字，写入开票记录），成功→已红冲（原蓝票冲销），失败→红冲失败＋乐企原因可重发；红冲中拦截退款审核'],
         ['红冲后再开票','已红冲订单可再次手动开票重开蓝票；发票序列按发生顺序展示（蓝票→红票→新蓝票），各票独立关联'],
         ['退款与开票联动','开票中/红冲中（进行中）不允许申请退款，操作列退款按钮置灰；未开票/开票失败/开票成功/红冲失败/已红冲（终态）可申请退款；红冲中同时拦截退款审核'],
         ['发票附件','详情抽屉展示全部蓝红票+开票记录；操作列「发票查看下载」仅开票成功/已红冲可见，点击直达订单详情页「开票信息（乐企）」页签，全部蓝/红票逐张查看/下载（不限格式 url/pdf/ofd）']
@@ -3303,7 +3349,7 @@ VIEWS.group = () => {
         ['开票金额','取<b>总单金额</b>，不是任何单个子单的金额'],
         ['拆票装箱','总单是<b>不可分割的最小单位</b>。一个申请单拆成多张发票时，同一个总单只能整个落在其中一张票上'],
         ['部分开票','不存在。一个总单要么没开票，要么整个开完'],
-        ['开票后退款','乐企渠道订单：退款审核通过后先红冲原蓝票再退款（红冲失败拦截退款，退款单终止为「退款失败」）；线下渠道订单：不联动发票状态，已开票状态和流程保持不变']
+        ['开票后退款','乐企渠道订单：退款审核通过后先红冲原蓝票再退款（红冲失败拦截退款，审批单保持「审核通过」、订单油站扣款状态置「退款失败」）；线下渠道订单：不联动发票状态，已开票状态和流程保持不变']
       ]) +
       '<p style="margin-top:8px">代价是客户从票面上<b>看不出这笔油费该分摊到哪几张运单</b>，而这正是他们做成本归集要的。解决办法是「导出子单」——导出的明细表里每张运单占用多少钱、折合多少升都已经分摊好，发票和明细表配合使用。</p>' +
       '<p style="margin-top:6px">曾考虑把运单号写进发票备注栏，但税控备注有字数上限，运单一多写不下，且票面信息与账务分摊混在一起反而容易引起税务疑问。<b>不采用。</b></p>') +
@@ -3701,6 +3747,7 @@ VIEWS.selfOrders = () => {
         ['开票状态','按渠道分治：乐企=未开票/开票中/开票失败/开票成功/红冲中/红冲失败/已红冲；线下=未开票/开票中/已开票/已撤销。同列显示，展示最新一次开票（蓝票+红票）的结果'],
         ['本页开票口径（重要）','本页开票渠道/状态显示的是<b>油站开给平台的进项票</b>（销方=油站公司、购方=平台内部主体）；<b>平台开给客户的销项票为线下开票后上传</b>（现网「客户开票」已有能力），本页不体现'],
         ['失败原因','乐企「开票失败/红冲失败」时展示接口原因；开票失败自动重试每分钟 1 次×3 次'],
+        ['油站扣款状态（8 值）','待支付 → 支付成功（平台已扣/已付油站）；失败分支：支付失败；退款链路：退款待审核 → 退款中 → 已退款，失败为退款失败；订单取消为已取消。<b>退款审核通过置「退款中」，资金退回成功置「已退款」，资金退回失败或红冲失败置「退款失败」</b>'],
         ['手动开票','乐企渠道且状态为 未开票/开票失败/已红冲 时亮；<b>订单处于退款中/已退款时不展示该入口，并停止开票失败自动重试</b>；已红冲可重开蓝票（换开场景）'],
         ['手动红冲','<b>仅乐企渠道</b>且状态为 开票成功/红冲失败（重发）时亮；必填红冲原因 5–200 字写入开票记录；成功→已红冲（原蓝票冲销）可再次手动开票，失败→红冲失败展示乐企原因；红冲中拦截退款审核'],
         ['票与订单关系','<b>一张票对一张订单（总单）</b>，不按子订单/运单拆分；红冲按订单一次。子订单只作为退款业务明细展示'],
@@ -3767,16 +3814,16 @@ VIEWS.selfRefund = () => {
     nb('关键规则',
       tbl(['列 / 操作','口径'],[
         ['退款类型','客户退款 / 油站退款'],
-        ['审核状态','待审核 / 审核通过 / 审核驳回 / 退款失败（终态）'],
+        ['审核状态','待审核 / 审核通过 / 审核驳回（审批只到审核结论；钱退没退成看订单「油站扣款状态」：退款中 / 已退款 / 退款失败）'],
         ['审核','待审核单点「审核」：弹窗核对子订单明细后选择通过 / 驳回'],
-        ['红冲前置（按退款类型）','整体退款、油站退款：乐企渠道订单（开票成功）审核通过后先红冲油站开出的原蓝票——红冲成功→继续退款；红冲失败→退款单终止为「退款失败」，线下抵扣处理完成后重新发起退款申请；红冲进行中→拦截审核。<b>客户退款：只退客户侧，不触发红冲</b>（平台开给客户的发票线下处理）']
+        ['红冲前置（按退款类型）','整体退款、油站退款：乐企渠道订单（开票成功）审核通过后先红冲油站开出的原蓝票——红冲成功→继续退款；红冲失败→审批单保持「审核通过」、订单油站扣款状态置「退款失败」，线下抵扣处理完成后重新发起退款申请；红冲进行中→拦截审核。<b>客户退款：只退客户侧，不触发红冲</b>（平台开给客户的发票线下处理）']
       ])) +
     nb('校验与提示',
       '<ul style="margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px">' +
       '<li>退款金额只读，等于该订单实付金额（整单退款）。</li>' +
       '<li>审核弹窗展示子订单明细（拆单场景按子单逐行）；<b>子订单只是退款业务明细，发票按订单一次红冲、不按子订单拆分</b>。</li>' +
       '<li><b>红冲只针对油站开出的乐企票</b>：整体退款/油站退款触发红冲；客户退款不红冲。</li>' +
-      '<li>「退款失败」为终态：详情页展示失败原因与重新发起路径，不提供原地重试。</li></ul>')
+      '<li>资金侧未退成时订单「油站扣款状态」=退款失败（审批单可能已是审核通过）：详情页展示失败原因与重新发起路径，不提供原地重试。</li></ul>')
   )}`;
 };
 /* 自营退款审核：通过走红冲前置三态，驳回即终态 */
@@ -3793,11 +3840,11 @@ function processSelfRefundAudit(decision){
   if(needRed && o && o.invCh==='乐企' && o.inv==='红冲中'){ showToast('红冲进行中，暂不能通过审核'); return; }
   if(needRed && o && o.invCh==='乐企' && (o.inv==='开票成功'||o.inv==='红冲失败')){
     if(r.redResult==='红冲失败'){
-      r.audit='退款失败'; r.auditBy='张世民（运营中台）'; r.auditAt=leqiNow().slice(0,16);
+      r.audit='审核通过'; r.auditBy='张世民（运营中台）'; r.auditAt=leqiNow().slice(0,16);
       r.failNote = r.failNote || '乐企红冲接口失败';
-      o.inv='红冲失败'; o.invFail=r.failNote;
-      LEQI_LOGS.push({order:o.no, t:leqiNow(), way:'退款红冲', act:'发票冲红', result:'失败', note:r.failNote+'；退款单终止为「退款失败」'});
-      showToast('退款失败：红冲失败——' + r.failNote);
+      o.inv='红冲失败'; o.invFail=r.failNote; o.deductSt='退款失败'; r.redNote='红冲失败：审批保持「审核通过」、订单扣款状态置「退款失败」';
+      LEQI_LOGS.push({order:o.no, t:leqiNow(), way:'退款红冲', act:'发票冲红', result:'失败', note:r.failNote+'；审批单保持「审核通过」、订单扣款状态置「退款失败」'});
+      showToast('红冲失败：审批驳回、订单扣款状态置「退款失败」——' + r.failNote);
     }else{
       o.inv='已红冲';
       const blue = leqiInvOfOrder(o.no).find(i=>i.type==='蓝票');
@@ -3806,12 +3853,14 @@ function processSelfRefundAudit(decision){
         file:`乐企发票_红冲_${o.no}.pdf`});
       LEQI_LOGS.push({order:o.no, t:leqiNow(), way:'退款红冲', act:'发票冲红', result:'成功', note:'红冲成功，原蓝票已冲销'});
       r.audit='审核通过'; r.auditBy='张世民（运营中台）'; r.auditAt=leqiNow().slice(0,16);
-      r.redNote='红冲成功（乐企发票冲红），继续执行退款';
-      showToast('红冲成功，退款执行中');
+      o.deductSt='退款中';
+      r.redNote='红冲成功（乐企发票冲红），订单扣款状态置「退款中」，继续执行退款';
+      showToast('红冲成功，订单扣款状态置「退款中」，退款执行中');
     }
   } else {
     r.audit='审核通过'; r.auditBy='张世民（运营中台）'; r.auditAt=leqiNow().slice(0,16);
-    showToast('审核通过，退款执行中');
+    if(o) o.deductSt='退款中';
+    showToast('审核通过，订单扣款状态置「退款中」，退款执行中');
   }
   paint();
 }
@@ -6263,7 +6312,7 @@ const MODALS = {
       return `
       ${r.type==='客户退款'
         ? '<div class="banner info"><div><b>本单为「客户退款」</b><span class="txt">只退客户侧资金，<b>不触发红冲</b>：红冲只针对油站开出的票；平台开给客户的发票在线下渠道处理。</span></div></div>'
-        : '<div class="banner warn"><div><b>红冲前置</b><span class="txt">乐企渠道订单（开票成功）审核通过后<b>先红冲油站开出的原蓝票</b>：红冲成功→继续退款；红冲失败→本退款单终止为「退款失败」，线下抵扣处理完成后重新发起退款申请；红冲进行中→拦截审核。<b>发票按订单一次红冲，不按子订单拆分。</b></span></div></div>'}
+        : '<div class="banner warn"><div><b>红冲前置</b><span class="txt">乐企渠道订单（开票成功）审核通过后<b>先红冲油站开出的原蓝票</b>：红冲成功→继续退款；红冲失败→审批单保持「审核通过」、订单油站扣款状态置「退款失败」，线下抵扣处理完成后重新发起退款申请；红冲进行中→拦截审核。<b>发票按订单一次红冲，不按子订单拆分。</b></span></div></div>'}
       <div class="card" style="box-shadow:none;margin:12px 0"><div class="card-b">
         <div class="sec-title">退款信息</div>
         <dl class="cf-kv" style="margin-top:10px">
@@ -7847,7 +7896,7 @@ const CONFIRM_ACTIONS = {
         r.audit='已确认'; r.auditBy='张世民（运营中台）'; r.auditAt=leqiNow().slice(0,16); r.st='退款失败';
         r.redFail = r.redFail || '乐企红冲接口失败';
         o.inv='红冲失败'; o.invFail=r.redFail;
-        LEQI_LOGS.push({order:o.no, t:leqiNow(), way:'退款红冲', act:'发票冲红', result:'失败', note:r.redFail+'；退款单终止为「退款失败」'});
+        LEQI_LOGS.push({order:o.no, t:leqiNow(), way:'退款红冲', act:'发票冲红', result:'失败', note:r.redFail+'；审批单保持「审核通过」、订单扣款状态置「退款失败」'});
         showToast('退款失败：红冲失败——' + r.redFail);
       }else{
         o.inv='已红冲';
@@ -8917,7 +8966,7 @@ function openSimple(kind,key,tabIndex=0){
             <div class="m">${r.audit==='已确认'?r.auditAt+' · '+r.auditBy+' · 已确认，开始执行退款':'待确认——确认后立即执行，不再有第二道审批'}</div></div></div>
           ${leqiRed?leqiRedNode(o,r,step,done,failed):''}
           <div class="it"><div class="dot ${step>=3?'':'pend'}"></div><div><div class="h">资金退回${mhRefundNodeHelp('fund',r,o)}</div>
-            ${step>=3?`<div class="m">${done?'油款与服务费两笔均已退回成功':(failed&&o.inv==='已红冲')?'红冲成功，但资金转账失败——退款单标「退款失败」，转运营人工工单处理':'两笔反向转账执行中，各自成功各自失败'}</div>`:''}</div></div>
+            ${step>=3?`<div class="m">${done?'油款与服务费两笔均已退回成功':(failed&&o.inv==='已红冲')?'红冲成功，但资金转账失败——审批单保持「审核通过」、订单扣款状态置「退款失败」，重新发起退款申请':'两笔反向转账执行中，各自成功各自失败'}</div>`:''}</div></div>
         </div>
       </div></div>
 
@@ -8990,6 +9039,7 @@ function openSimple(kind,key,tabIndex=0){
             <dt>所属公司</dt><dd>${o.co}（${o.coType}）</dd>
             <dt>司机 / 车牌</dt><dd>${o.driver} · <span class="mono">${o.plate}</span></dd>
             <dt>司机支付状态</dt><dd>${pill(o.paySt)}</dd>
+            ${o.refundFail?`<dt>退款失败原因</dt><dd style="color:var(--bad)">${o.refundFail}</dd>`:''}
           </dl>
           <dl class="kv">
             <dt>油站信息</dt><dd>${o.station}（${o.stationCo}）</dd>
@@ -9014,8 +9064,9 @@ function openSimple(kind,key,tabIndex=0){
     selfRefund:()=>{
       const r = SELF_REFUNDS.find(x=>x.id===key);
       const o = SELFORDES.find(x=>x.no===r.order) || {};
-      const done = r.audit==='审核通过';
-      const failed = r.audit==='退款失败';
+      const done = r.audit==='审核通过' && o.deductSt==='已退款';
+      const failed = o.deductSt==='退款失败';          /* 资金结果看订单油站扣款状态 */
+      const refunding = o.deductSt==='退款中';
       const rejected = r.audit==='审核驳回';
       document.getElementById('drawerTitle').textContent='自营退款单详情';
       return `
@@ -9024,6 +9075,7 @@ function openSimple(kind,key,tabIndex=0){
         <div class="pills">${pill(r.audit)}<span class="tag ${r.type==='客户退款'?'b':'o'}">${r.type}</span>${invChTag(o)}</div>
         <div class="money">
           <div class="oilv"><div class="l">退款金额</div><div class="v num">¥ ${money(r.amt)}</div></div>
+          <div><div class="l">订单扣款状态</div><div class="v">${o.deductSt?pill(o.deductSt):'—'}</div></div>
           <div><div class="l">审核人</div><div class="v">${r.auditBy}</div></div>
           <div><div class="l">审核时间</div><div class="v mono">${r.auditAt}</div></div>
         </div>
@@ -9034,17 +9086,20 @@ function openSimple(kind,key,tabIndex=0){
           <div class="it"><div class="dot"></div><div><div class="h">提交退款申请${zyRefundNodeHelp('submit',r,o)}</div>
             <div class="m">${r.time} · ${r.reason}</div></div></div>
           <div class="it"><div class="dot ${rejected?'bad':''}"${rejected?' style="background:var(--bad)"':''}></div><div><div class="h">退款审核${zyRefundNodeHelp('audit',r,o)}</div>
-            <div class="m">${rejected?r.auditAt+' · '+r.auditBy+' · 已驳回：退款申请终止':r.auditBy!=='—'?r.auditAt+' · '+r.auditBy+' · 审核通过':'待审核——弹窗核对子订单明细后通过 / 驳回'}</div></div></div>
-          ${(o.invCh==='乐企')?(()=>{ const started=r.audit!=='待审核'&&r.audit!=='审核驳回'; const redFail=failed&&o.inv==='红冲失败'; const redDone=o.inv==='已红冲'; const redDoing=o.inv==='红冲中';
+            <div class="m">${rejected?r.auditAt+' · '+r.auditBy+' · 审核驳回：退款申请终止':r.auditBy!=='—'?r.auditAt+' · '+r.auditBy+' · 审核通过':'待审核——弹窗核对子订单明细后通过 / 驳回'}</div></div></div>
+          ${(o.invCh==='乐企' && r.type!=='客户退款')?(()=>{ const started=r.audit!=='待审核'&&r.audit!=='审核驳回'; const redFail=failed&&o.inv==='红冲失败'; const redDone=o.inv==='已红冲'; const redDoing=o.inv==='红冲中';
             /* 展示口径：未到本环节不展示小字（仅节点标题） */
             const m = !started?''
-              :redFail?`红冲失败：${r.failNote||'乐企红冲接口失败'}——退款单终止为「退款失败」`
+              :redFail?`红冲失败：${r.failNote||'乐企红冲接口失败'}——审批单保持「审核通过」、订单扣款状态置「退款失败」`
               :redDoing?'红冲中——红冲结果查询中，红冲成功后才执行退款'
               :redDone?'已红冲——原蓝票冲销，继续执行退款'
               :'';
             return `<div class="it"><div class="dot ${redFail?'bad':(redDone||redDoing?'':'pend')}"${redFail?' style="background:var(--bad)"':''}></div><div><div class="h">红冲原蓝票（乐企）${zyRefundNodeHelp('red',r,o)}</div>${m?`<div class="m">${m}</div>`:''}</div></div>`;})():''}
-          <div class="it"><div class="dot ${done?'':'pend'}"></div><div><div class="h">资金退回（${r.type}）${zyRefundNodeHelp('fund',r,o)}</div>
-            ${(r.audit==='退款成功')?`<div class="m">${r.type==='油站退款'?'油款退款':'服务费退款'}已原路退回</div>`:(failed&&o.inv==='已红冲')?`<div class="m">红冲成功，但资金转账失败——退款单标「退款失败」，转运营人工工单处理</div>`:''}</div></div>
+          <div class="it"><div class="dot ${done?'':'pend'}${failed?' bad':''}"></div><div><div class="h">资金退回（${r.type}）${zyRefundNodeHelp('fund',r,o)}</div>
+            ${done?'<div class="m">资金已原路退回，订单扣款状态=已退款</div>'
+              :refunding?'<div class="m">退款处理中，订单扣款状态=退款中</div>'
+              :failed?'<div class="m">资金转账失败，订单扣款状态=退款失败——处理资金侧问题后重新发起退款申请；审核通过时红冲自动通过，直接走易宝资金流退款</div>'
+              :''}</div></div>
         </div>
       </div></div>
       <div class="card"><div class="card-b">
@@ -9055,8 +9110,9 @@ function openSimple(kind,key,tabIndex=0){
           <dt>关联订单</dt><dd class="mono">${r.order}</dd>
           <dt>退款金额</dt><dd class="num"><b style="color:var(--oil)">${money(r.amt)}</b> 元（只读，整单退款）</dd>
           <dt>退款原因</dt><dd>${r.reason}</dd>
-          ${failed&&r.failNote?`<dt>失败原因</dt><dd style="color:var(--bad)">${r.failNote}</dd>
-          <dt>后续路径</dt><dd>线下抵扣处理完成后<b>重新发起退款申请</b>，审核通过后再次触发红冲</dd>`:''}
+          <dt>订单油站扣款状态</dt><dd>${o.deductSt?pill(o.deductSt):'—'}</dd>
+          ${failed?`<dt>失败原因</dt><dd style="color:var(--bad)">${r.failNote||o.refundFail||'资金转账失败'}</dd>
+          <dt>后续路径</dt><dd>${rejected?'线下抵扣处理完成后<b>重新发起退款申请</b>，审核通过后再次触发红冲':'处理资金侧问题后<b>重新发起退款申请</b>；审核通过时红冲自动通过，直接走易宝资金流退款'}</dd>`:''}
         </dl>
       </div></div>
       <div class="card"><div class="card-b">
