@@ -638,6 +638,20 @@ body.drawer-foot-on:not(.live-surface) .oms-drawer-footer .btn{min-width:92px;ju
 .self-menu button{border:0;background:none;text-align:left;padding:7px 10px;border-radius:6px;font-size:12px;cursor:pointer;color:var(--ink,#111);white-space:nowrap}
 .self-menu button:hover{background:var(--bg2,#f3f4f6)}
 .self-menu[hidden]{display:none}
+
+/* ===== 司机端 H5 容器（iframe 承载独立文件 driver-h5.html，样式与原型互不影响） ===== */
+.driver-frame-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;padding:6px 0 30px}
+.driver-frame-tip{display:flex;align-items:center;flex-wrap:wrap;gap:8px;color:var(--ink-2);font-size:12.5px}
+.driver-frame-tip span{color:var(--muted)}
+/* 机身 432×924（含 6px 边框），iframe 内可视区正好 420×912＝H5 设计宽度；
+   窗口高度不足时整机等比缩放，不改 iframe 内部布局 */
+.driver-phone{position:relative;flex:none;width:432px;height:924px;padding:6px;border-radius:38px;background:#0b0f14;box-shadow:0 24px 60px rgba(15,23,42,.28);zoom:1}
+.driver-phone::before{content:"";position:absolute;top:16px;left:50%;width:108px;height:20px;margin-left:-54px;border-radius:12px;background:#0b0f14;z-index:2}
+.driver-frame{display:block;width:100%;height:100%;border:0;border-radius:33px;background:#fff}
+@media(max-height:1180px){.driver-phone{zoom:.9}}
+@media(max-height:1040px){.driver-phone{zoom:.8}}
+@media(max-height:920px){.driver-phone{zoom:.72}}
+@media(max-height:820px){.driver-phone{zoom:.64}}
 </style>
 <link rel="stylesheet" href="live-alignment.css">
 
