@@ -1,0 +1,6465 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>万油宝网货H5端</title>
+    <style>
+      :root {
+        --primary: #ff1f1f;
+        --orange: #ff7a00;
+        --gradient: linear-gradient(90deg, #ff5c63 0%, #ff7a00 100%);
+        --soft: #fff1ed;
+        --warm: #fff7ef;
+        --page: #f7f8fa;
+        --surface: #ffffff;
+        --line: #eeeeee;
+        --text: #1f2329;
+        --muted: #8a8f99;
+        --weak: #aeb4bd;
+        --price: #e60012;
+        --green: #40b857;
+        --shadow: 0 10px 24px rgba(31, 35, 41, 0.08);
+        --phone-width: 420px;
+        --phone-height: 912px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        font-family: "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        color: var(--text);
+        background: #e9edf2;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        border: 0;
+        background: none;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .phone {
+        position: relative;
+        width: min(100vw, var(--phone-width));
+        height: 100vh;
+        min-height: 0;
+        overflow: hidden;
+        background: var(--page);
+      }
+
+      .app {
+        height: calc(100% - 98px);
+        min-height: 0;
+        overflow-y: auto;
+        scrollbar-width: none;
+        padding-bottom: 16px;
+      }
+
+      .app::-webkit-scrollbar {
+        display: none;
+      }
+
+      .status {
+        position: relative;
+        height: 44px;
+        padding: 4px 24px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #fff;
+        color: #111;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .status-time {
+        min-width: 46px;
+        line-height: 1;
+        text-align: center;
+      }
+
+      .status-icons {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #111;
+      }
+
+      .cellular {
+        width: 18px;
+        height: 13px;
+        display: flex;
+        gap: 2px;
+        align-items: end;
+      }
+
+      .cellular i {
+        display: block;
+        width: 3px;
+        border-radius: 1px;
+        background: currentColor;
+      }
+
+      .cellular i:nth-child(1) { height: 4px; }
+      .cellular i:nth-child(2) { height: 7px; }
+      .cellular i:nth-child(3) { height: 10px; }
+      .cellular i:nth-child(4) { height: 13px; }
+
+      .battery-shell {
+        position: relative;
+        width: 25px;
+        height: 13px;
+        padding: 2px;
+        border: 1.5px solid currentColor;
+        border-radius: 4px;
+      }
+
+      .battery-shell::after {
+        content: "";
+        position: absolute;
+        right: -3px;
+        top: 4px;
+        width: 2px;
+        height: 5px;
+        border-radius: 0 2px 2px 0;
+        background: currentColor;
+        opacity: 0.45;
+      }
+
+      .battery-level {
+        display: block;
+        width: 78%;
+        height: 100%;
+        border-radius: 2px;
+        background: currentColor;
+      }
+
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.02);
+      }
+
+      .back {
+        position: absolute;
+        left: 14px;
+        top: 8px;
+        width: 40px;
+        height: 40px;
+        font-size: 34px;
+        line-height: 36px;
+        color: #252932;
+      }
+
+      .nav-title {
+        font-size: 19px;
+        font-weight: 700;
+      }
+
+      .screen {
+        display: none;
+        min-height: 100%;
+      }
+
+      .screen.active {
+        display: block;
+      }
+
+      .warm-head {
+        position: relative;
+        padding: 18px 15px 22px;
+        background:
+          radial-gradient(circle at 10% 15%, rgba(255, 115, 77, 0.24), transparent 32%),
+          radial-gradient(circle at 90% 18%, rgba(119, 204, 163, 0.22), transparent 30%),
+          linear-gradient(135deg, #fff1eb 0%, #fffaf5 58%, #effaf3 100%);
+      }
+
+      .search-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+
+      .search {
+        height: 44px;
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 0 16px;
+        background: #fff;
+        color: #a1a7b0;
+        box-shadow: 0 6px 16px rgba(38, 44, 53, 0.05);
+      }
+
+      .search .icon {
+        width: 20px;
+        height: 20px;
+        border: 3px solid #9ba1aa;
+        border-radius: 50%;
+        position: relative;
+        flex: 0 0 auto;
+      }
+
+      .search .icon::after {
+        content: "";
+        position: absolute;
+        width: 9px;
+        height: 3px;
+        border-radius: 3px;
+        right: -8px;
+        bottom: -4px;
+        background: #9ba1aa;
+        transform: rotate(45deg);
+      }
+
+      .map-btn,
+      .pill-btn {
+        height: 44px;
+        border-radius: 24px;
+        padding: 0 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        background: #fff;
+        color: #333;
+        font-weight: 600;
+        box-shadow: 0 6px 16px rgba(38, 44, 53, 0.05);
+        white-space: nowrap;
+      }
+
+      .map-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 65% 30%, #ff7a00 0 16%, transparent 17%),
+          linear-gradient(135deg, #5ec2ff 0 50%, #66c980 51% 100%);
+      }
+
+      .banner {
+        position: relative;
+        overflow: hidden;
+        min-height: 140px;
+        border-radius: 10px;
+        padding: 26px 22px;
+        background:
+          radial-gradient(circle at 78% 58%, rgba(59, 138, 255, 0.18), transparent 28%),
+          linear-gradient(105deg, #f7fbff 0%, #eefff4 100%);
+        box-shadow: var(--shadow);
+      }
+
+      .banner h2 {
+        margin: 0 0 3px;
+        color: #3150f4;
+        font-size: 30px;
+        line-height: 1;
+      }
+
+      .banner p {
+        margin: 0 0 12px;
+        color: #637083;
+        font-size: 12px;
+      }
+
+      .banner .learn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 78px;
+        height: 28px;
+        border-radius: 16px;
+        background: #ff743d;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .truck-art {
+        position: absolute;
+        right: 18px;
+        bottom: 24px;
+        width: 116px;
+        height: 72px;
+        border-radius: 16px;
+        background: linear-gradient(145deg, #eaf3ff, #ffffff);
+        box-shadow: 0 14px 28px rgba(53, 95, 171, 0.18);
+      }
+
+      .truck-art::before {
+        content: "";
+        position: absolute;
+        left: 14px;
+        bottom: 18px;
+        width: 56px;
+        height: 28px;
+        border-radius: 6px 3px 3px 6px;
+        background: #3578f6;
+        box-shadow: 50px 5px 0 -8px #ffc247;
+      }
+
+      .truck-art::after {
+        content: "";
+        position: absolute;
+        left: 24px;
+        bottom: 10px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #2b3340;
+        box-shadow: 45px 0 0 #2b3340, 74px 0 0 #2b3340;
+      }
+
+      .content {
+        padding: 12px 15px 18px;
+      }
+
+      .filter-bar {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin: -20px 0 10px;
+        position: relative;
+        z-index: 2;
+      }
+
+      .filter-pill {
+        min-width: 144px;
+        height: 42px;
+        border-radius: 24px;
+        background: #fff;
+        box-shadow: var(--shadow);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        font-weight: 700;
+      }
+
+      .chev {
+        width: 0;
+        height: 0;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 6px solid #1f2329;
+      }
+
+      .station-card {
+        position: relative;
+        min-height: 150px;
+        margin: 12px 0;
+        padding: 18px 16px 16px;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: var(--shadow);
+      }
+
+      .ribbon {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 28px;
+        min-width: 90px;
+        padding: 4px 14px;
+        border-radius: 12px 0 12px 0;
+        background: var(--gradient);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .station-top {
+        display: grid;
+        grid-template-columns: 62px 1fr auto;
+        gap: 10px;
+        align-items: start;
+      }
+
+      .logo {
+        width: 54px;
+        height: 54px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+        background: conic-gradient(from 20deg, #ffc247, #ff7a00, #c71d1d, #ffc247);
+        box-shadow: inset 0 -10px 0 rgba(255, 255, 255, 0.18);
+      }
+
+      .logo.sino {
+        background:
+          radial-gradient(circle at 48% 38%, #fff 0 28%, transparent 29%),
+          linear-gradient(135deg, #ffffff 0 45%, #e02020 46% 51%, #111 52%);
+        border: 1px solid #ececec;
+        color: #111;
+        font-size: 10px;
+      }
+
+      .logo.gas {
+        background:
+          linear-gradient(145deg, #ffe7d4, #fff),
+          linear-gradient(135deg, #ff7a00, #ff1f1f);
+        color: #ff7a00;
+        border: 1px solid #ffe2c7;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 34px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 4px;
+        border: 1px solid #e8b36c;
+        color: #d7832e;
+        font-size: 12px;
+        background: #fffaf3;
+      }
+
+      .station-name {
+        margin: 2px 0 4px;
+        font-size: 20px;
+        font-weight: 800;
+      }
+
+      .station-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      .distance {
+        height: 28px;
+        padding: 0 10px;
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #f4f6fa;
+        color: #5c6370;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .loc-arrow {
+        width: 0;
+        height: 0;
+        border-left: 7px solid transparent;
+        border-right: 4px solid transparent;
+        border-bottom: 15px solid #242832;
+        transform: rotate(45deg);
+      }
+
+      .price-row {
+        margin-top: 15px;
+        height: 48px;
+        border-radius: 8px;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1.25fr;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        background: #f8f9fb;
+      }
+
+      .oil-no {
+        height: 30px;
+        border-radius: 6px;
+        display: grid;
+        place-items: center;
+        background: #f0f2f5;
+        font-weight: 700;
+        color: #5d6472;
+      }
+
+      .price {
+        color: var(--price);
+        font-size: 24px;
+        font-weight: 900;
+        white-space: nowrap;
+      }
+
+      .old-price {
+        color: #9da3ad;
+        text-decoration: line-through;
+        white-space: nowrap;
+      }
+
+      .float-actions {
+        position: fixed;
+        right: calc(50% - min(50vw, 210px) + 12px);
+        bottom: 118px;
+        z-index: 35;
+        display: grid;
+        gap: 12px;
+      }
+
+      .float-action {
+        width: 62px;
+        height: 62px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: var(--shadow);
+        color: #444;
+        font-size: 12px;
+        display: grid;
+        place-items: center;
+        gap: 2px;
+      }
+
+      .float-action b {
+        display: block;
+        font-size: 24px;
+        line-height: 1;
+        color: var(--primary);
+      }
+
+      .bottom-tabs {
+        position: fixed;
+        left: 50%;
+        bottom: 0;
+        z-index: 40;
+        width: min(100vw, var(--phone-width));
+        transform: translateX(-50%);
+        height: 68px;
+        padding: 7px 18px 12px;
+        display: none;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.96);
+        border-top: 1px solid rgba(0, 0, 0, 0.04);
+      }
+
+      .tab {
+        color: #9aa1ac;
+        font-size: 12px;
+        display: grid;
+        place-items: center;
+        gap: 2px;
+      }
+
+      .tab.active {
+        color: var(--primary);
+        font-weight: 700;
+      }
+
+      .tab b {
+        font-size: 20px;
+        line-height: 1;
+      }
+
+      .map-canvas {
+        position: relative;
+        min-height: calc(100vh - 100px);
+        overflow: hidden;
+        background:
+          linear-gradient(28deg, transparent 0 45%, rgba(255, 173, 73, 0.72) 46% 48%, transparent 49%),
+          linear-gradient(118deg, transparent 0 36%, rgba(255, 190, 89, 0.62) 37% 39%, transparent 40%),
+          linear-gradient(6deg, transparent 0 56%, rgba(255, 199, 101, 0.45) 57% 59%, transparent 60%),
+          radial-gradient(circle at 15% 18%, #c6efc7 0 10%, transparent 11%),
+          radial-gradient(circle at 80% 78%, #c6efc7 0 11%, transparent 12%),
+          #eef3f7;
+      }
+
+      .map-canvas::before {
+        content: "北五环      德州      济南      北京南站      滨州";
+        position: absolute;
+        inset: 0;
+        padding: 210px 0 0 28px;
+        color: rgba(40, 47, 58, 0.55);
+        font-size: 16px;
+        font-weight: 700;
+        word-spacing: 38px;
+        line-height: 6.8;
+      }
+
+      .map-search {
+        position: absolute;
+        left: 15px;
+        right: 15px;
+        top: 36px;
+        z-index: 2;
+      }
+
+      .map-control {
+        position: absolute;
+        z-index: 3;
+        right: 16px;
+        top: 130px;
+        min-width: 168px;
+      }
+
+      .pin {
+        position: absolute;
+        z-index: 2;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        height: 36px;
+        padding: 0 12px;
+        border-radius: 7px;
+        background: #fff;
+        box-shadow: 0 8px 22px rgba(31, 35, 41, 0.18);
+        color: #8b8f98;
+        font-size: 18px;
+      }
+
+      .pin::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: -8px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #f18a32;
+        transform: translateX(-50%);
+      }
+
+      .pin b {
+        color: #df702b;
+        font-weight: 500;
+      }
+
+      .pin.one { left: 106px; top: 330px; }
+      .pin.two { left: 172px; top: 250px; max-width: 178px; overflow: hidden; }
+
+      .user-dot {
+        position: absolute;
+        left: 50%;
+        top: 43%;
+        z-index: 1;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.95);
+        display: grid;
+        place-items: center;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 9px 18px rgba(31, 35, 41, 0.12);
+      }
+
+      .user-dot::after {
+        content: "";
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #ef2d2d;
+      }
+
+      .map-float {
+        position: absolute;
+        right: 17px;
+        bottom: 115px;
+        z-index: 4;
+        display: grid;
+        gap: 14px;
+      }
+
+      .map-float .square {
+        width: 66px;
+        height: 66px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        gap: 2px;
+        background: #fff;
+        box-shadow: var(--shadow);
+        font-size: 12px;
+        color: #333;
+      }
+
+      .map-toast {
+        position: absolute;
+        left: 26px;
+        right: 26px;
+        bottom: 70px;
+        z-index: 3;
+        min-height: 46px;
+        border-radius: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.94);
+        color: #7a7f88;
+      }
+
+      .route-card {
+        margin: 12px 14px;
+        padding: 16px;
+        border-radius: 10px;
+        background: #fff;
+      }
+
+      .route-inputs {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .swap {
+        color: #20242a;
+        font-size: 24px;
+        text-align: center;
+      }
+
+      .route-line {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 50px;
+        padding: 0 16px;
+        background: #f8f9fb;
+        color: #bcc2ca;
+        font-size: 16px;
+      }
+
+      .route-line:first-child {
+        border-radius: 7px 7px 0 0;
+        background: #eef3ff;
+      }
+
+      .route-line:last-child {
+        border-radius: 0 0 7px 7px;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #49d07b;
+        flex: 0 0 auto;
+      }
+
+      .dot.red {
+        background: #ef3030;
+      }
+
+      .add-way {
+        margin-top: 16px;
+        color: #d8812c;
+        font-size: 16px;
+        font-weight: 500;
+      }
+
+      .record-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .record-title span {
+        color: #9aa1ac;
+        font-size: 15px;
+        font-weight: 500;
+      }
+
+      .history-item {
+        display: grid;
+        grid-template-columns: 28px 1fr;
+        gap: 10px;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 17px;
+        font-weight: 700;
+      }
+
+      .history-item small {
+        display: block;
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .route-actions {
+        position: fixed;
+        left: 50%;
+        bottom: 18px;
+        z-index: 42;
+        width: min(100vw, var(--phone-width));
+        transform: translateX(-50%);
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 24px;
+        padding: 0 22px;
+      }
+
+      .outline,
+      .primary {
+        height: 52px;
+        border-radius: 6px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .outline {
+        background: #fff;
+        border: 1px solid #9fa4ad;
+        color: #8a8f99;
+      }
+
+      .primary {
+        background: var(--gradient);
+        color: #fff;
+        box-shadow: 0 10px 18px rgba(255, 103, 43, 0.22);
+      }
+
+      .route-map {
+        position: relative;
+        min-height: calc(100vh - 100px);
+        background:
+          radial-gradient(circle at 70% 42%, #a8c7ec 0 13%, transparent 14%),
+          linear-gradient(128deg, transparent 0 51%, #54b972 52% 55%, transparent 56%),
+          linear-gradient(132deg, transparent 0 56%, rgba(84, 185, 114, 0.75) 57% 60%, transparent 61%),
+          #f3f4f5;
+      }
+
+      .route-route {
+        position: absolute;
+        left: 205px;
+        top: 244px;
+        width: 54px;
+        height: 330px;
+        border-radius: 50%;
+        border-left: 22px solid #38b364;
+        transform: rotate(-12deg);
+        opacity: 0.9;
+      }
+
+      .route-info {
+        position: absolute;
+        left: 10px;
+        right: 10px;
+        top: 18px;
+        z-index: 2;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+
+      .route-info .line {
+        height: 42px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #f9fafb;
+        padding: 0 14px;
+        font-size: 18px;
+      }
+
+      .route-info .line:first-child {
+        border-radius: 8px 8px 0 0;
+      }
+
+      .route-info .line:nth-child(2) {
+        border-radius: 0 0 8px 8px;
+      }
+
+      .way-label {
+        margin-top: 10px;
+        display: flex;
+        justify-content: space-between;
+        color: #333;
+      }
+
+      .way-label a {
+        color: #d98533;
+        text-decoration: none;
+      }
+
+      .route-summary {
+        position: absolute;
+        left: 10px;
+        right: 10px;
+        bottom: 0;
+        z-index: 3;
+        border-radius: 12px 12px 0 0;
+        background: #fff;
+        box-shadow: 0 -10px 24px rgba(31, 35, 41, 0.08);
+      }
+
+      .route-total {
+        margin: 0;
+        padding: 20px;
+        text-align: center;
+        background: #fff5ee;
+        color: #db7830;
+        font-size: 17px;
+      }
+
+      .route-total b {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 24px;
+      }
+
+      .route-stations {
+        padding: 13px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #333;
+        font-size: 16px;
+      }
+
+      .route-stations b,
+      .route-stations span {
+        color: #df7e2e;
+      }
+
+      .route-list-overlay {
+        padding-top: 242px;
+        background: linear-gradient(#ffffff00 0 30px, #fff 90px);
+      }
+
+      .section-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 8px 0 10px;
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .station-detail-head {
+        padding: 18px 15px 12px;
+        background:
+          radial-gradient(circle at 8% 12%, rgba(255, 111, 77, 0.24), transparent 32%),
+          radial-gradient(circle at 95% 8%, rgba(83, 190, 143, 0.18), transparent 32%),
+          #fff8f5;
+      }
+
+      .sub-nav {
+        height: 42px;
+        position: relative;
+        display: grid;
+        place-items: center;
+        font-size: 20px;
+        font-weight: 800;
+      }
+
+      .sub-back {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 42px;
+        height: 42px;
+        font-size: 34px;
+        line-height: 38px;
+      }
+
+      .detail-card {
+        margin-top: 12px;
+        padding: 16px;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: var(--shadow);
+      }
+
+      .detail-card .station-top {
+        grid-template-columns: 62px 1fr;
+        position: relative;
+        padding-right: 86px;
+      }
+
+      .detail-card .distance {
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+
+      .detail-card .station-meta {
+        display: block;
+        font-size: 12px;
+      }
+
+      .detail-card .station-meta b {
+        font-size: 15px !important;
+      }
+
+      .oil-lines {
+        margin-top: 12px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .oil-line {
+        display: grid;
+        grid-template-columns: 60px 86px 78px 1fr;
+        align-items: baseline;
+        gap: 8px;
+        color: #d9822c;
+        font-size: 18px;
+      }
+
+      .oil-line small {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .oil-line b {
+        color: #333;
+        font-size: 22px;
+      }
+
+      .notice {
+        margin: 12px 15px;
+        height: 42px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        background: #fff6e9;
+        color: #ca7a25;
+        font-weight: 700;
+      }
+
+      .notice i {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid #ff9a2f;
+        display: grid;
+        place-items: center;
+        font-style: normal;
+        font-size: 14px;
+      }
+
+      .waybill-wrap {
+        margin: 0 15px 12px;
+        padding: 12px 0 16px;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: var(--shadow);
+      }
+
+      .tip {
+        margin: 0 16px 12px;
+        padding: 10px 12px;
+        border-radius: 6px;
+        background: #fffbe9;
+        color: #cf8a2b;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .way-scroll {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 0 14px 10px;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+      }
+
+      .way-scroll::-webkit-scrollbar {
+        display: none;
+      }
+
+      .way-card {
+        position: relative;
+        flex: 0 0 218px;
+        min-height: 120px;
+        padding: 12px;
+        border: 1px solid #eceef1;
+        border-radius: 8px;
+        background: #fff;
+        scroll-snap-align: start;
+      }
+
+      .way-card.selected {
+        border-color: #ffb38a;
+        background: linear-gradient(180deg, #fffaf6 0%, #ffffff 62%);
+        box-shadow: 0 8px 20px rgba(255, 122, 0, 0.08);
+      }
+
+      .way-card.selected::after {
+        content: "当前";
+        position: absolute;
+        right: 10px;
+        bottom: 10px;
+        height: 20px;
+        padding: 0 7px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        background: #fff1eb;
+        color: #ff5b2e;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .way-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .way-head b {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .plate {
+        flex: 0 0 auto;
+        min-width: 66px;
+        height: 24px;
+        border-radius: 4px;
+        display: grid;
+        place-items: center;
+        background: var(--gradient);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .way-grid {
+        display: grid;
+        grid-template-columns: 52px 1fr;
+        gap: 6px 8px;
+        margin: 10px 0;
+        color: #9399a3;
+        font-size: 12px;
+      }
+
+      .way-grid b {
+        color: #333;
+        font-size: 13px;
+      }
+
+      .way-no {
+        margin-top: 10px;
+        color: #8a8f99;
+        font-size: 12px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .way-amount {
+        margin-top: 10px;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .way-amount small {
+        color: #8a8f99;
+        font-size: 12px;
+      }
+
+      .way-amount b {
+        color: var(--price);
+        font-size: 22px;
+        line-height: 1;
+      }
+
+      .waybill-summary {
+        margin: 0 14px;
+        padding-top: 2px;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+        color: #5f6673;
+        font-size: 13px;
+      }
+
+      .waybill-summary b {
+        color: var(--price);
+        font-size: 24px;
+        line-height: 1;
+      }
+
+      .rebate {
+        margin-bottom: 10px;
+        padding: 8px 10px;
+        border-radius: 6px;
+        background: #fff6e5;
+        color: #bd7227;
+        font-size: 12px;
+        line-height: 1.55;
+        font-weight: 600;
+      }
+
+      .direct-subsidy {
+        margin-bottom: 10px;
+        padding: 9px 10px;
+        border-radius: 8px;
+        background: #f1fff5;
+        color: #087443;
+        font-size: 12px;
+        line-height: 1.55;
+        font-weight: 700;
+      }
+
+      .way-foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #8a8f99;
+        font-size: 13px;
+      }
+
+      .way-foot b {
+        color: var(--price);
+        font-size: 24px;
+      }
+
+      .module {
+        margin: 12px 15px;
+        padding: 16px;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: var(--shadow);
+      }
+
+      .module-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .select-trigger {
+        min-width: 62px;
+        height: 34px;
+        border: 1px solid #c8ccd2;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        background: #fff;
+        font-weight: 700;
+      }
+
+      .gun-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+      }
+
+      .chip {
+        height: 40px;
+        border-radius: 6px;
+        background: #f5f5f5;
+        color: #333;
+        font-weight: 600;
+      }
+
+      .chip.active {
+        border: 1px solid #e4424d;
+        background: #fff0f0;
+        color: var(--primary);
+      }
+
+      .best-price {
+        margin: 12px 0;
+        padding: 11px 12px;
+        border-radius: 8px;
+        border: 1px solid #ffe2b2;
+        background: linear-gradient(90deg, #fff9ee, #fffefc);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .best-price b {
+        color: var(--price);
+        font-size: 24px;
+      }
+
+      .best-price small {
+        color: #8e8f98;
+      }
+
+      .price-pair {
+        display: flex;
+        gap: 28px;
+        align-items: baseline;
+      }
+
+      .price-pair b {
+        color: #ff7a00;
+        font-size: 22px;
+      }
+
+      .plate-box {
+        display: grid;
+        grid-template-columns: 132px 1fr;
+        gap: 14px;
+        align-items: start;
+      }
+
+      .photo {
+        position: relative;
+        height: 120px;
+        border-radius: 7px;
+        border: 1px dashed #d9dde3;
+        display: grid;
+        place-items: center;
+        color: #a8aeb8;
+        background: #fafbfc;
+        text-align: center;
+        font-size: 12px;
+      }
+
+      .photo.done {
+        align-items: end;
+        padding-bottom: 12px;
+        background:
+          linear-gradient(18deg, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.02)),
+          repeating-linear-gradient(170deg, #a2a6ab 0 4px, #c9cdd1 5px 9px);
+        color: #fff;
+        overflow: hidden;
+      }
+
+      .photo .x {
+        position: absolute;
+        right: 6px;
+        top: 6px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.65);
+        color: #fff;
+        font-size: 18px;
+      }
+
+      .camera-btn {
+        height: 42px;
+        border-radius: 6px;
+        background: var(--gradient);
+        color: #fff;
+        font-weight: 700;
+      }
+
+      .plate-result {
+        grid-column: 1 / -1;
+        height: 40px;
+        border-radius: 6px;
+        background: #f8f9fb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .plate-result b {
+        font-size: 18px;
+      }
+
+      .amount-panel {
+        border: 1px solid #e4242c;
+        background: #fff2f2;
+        height: 58px;
+        border-radius: 6px;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--price);
+      }
+
+      .amount-panel b {
+        font-size: 26px;
+      }
+
+      .discount-box {
+        margin-top: 10px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #ffe7d4;
+        background: #fffdf8;
+      }
+
+      .settlement-box {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .settlement-box div {
+        min-height: 58px;
+        padding: 10px;
+        border-radius: 8px;
+        background: #f8fafc;
+        border: 1px solid #edf0f3;
+      }
+
+      .settlement-box small {
+        display: block;
+        color: #8a8f99;
+        font-size: 12px;
+      }
+
+      .settlement-box b {
+        display: block;
+        margin-top: 4px;
+        color: #1f2329;
+        font-size: 17px;
+      }
+
+      .settlement-box .red b {
+        color: var(--price);
+      }
+
+      .settlement-box .green b {
+        color: #087443;
+      }
+
+      .discount-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        min-height: 26px;
+        font-size: 13px;
+      }
+
+      .discount-line strong {
+        color: var(--price);
+        font-size: 20px;
+      }
+
+      .help {
+        width: 18px;
+        height: 18px;
+        padding: 0;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #f3bf7d;
+        color: #d9862f;
+        background: #fff8e9;
+        font-size: 12px;
+        font-weight: 900;
+        line-height: 1;
+        vertical-align: middle;
+      }
+
+      .all-fill {
+        margin-top: 10px;
+        width: 100%;
+        height: 42px;
+        border-radius: 3px;
+        background: #f1f3f6;
+        color: #747b86;
+        font-weight: 600;
+      }
+
+      .amount-hint {
+        margin: 12px 0 0;
+        color: #989fa8;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .amount-hint b {
+        color: #4d525b;
+        font-size: 19px;
+      }
+
+      .sync-note {
+        margin-top: 10px;
+        padding: 9px 10px;
+        border-radius: 8px;
+        background: #f6f8fb;
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+
+      .submit-bar {
+        position: fixed;
+        left: 50%;
+        bottom: 0;
+        z-index: 45;
+        transform: translateX(-50%);
+        width: min(100vw, var(--phone-width));
+        height: 72px;
+        padding: 10px 16px 14px;
+        display: grid;
+        grid-template-columns: 1fr 132px;
+        align-items: center;
+        gap: 14px;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 -10px 24px rgba(31, 35, 41, 0.06);
+      }
+
+      .submit-total b {
+        color: var(--price);
+        font-size: 26px;
+      }
+
+      .submit-total span {
+        margin-left: 8px;
+        color: var(--primary);
+        font-size: 13px;
+      }
+
+      .submit {
+        height: 48px;
+        border-radius: 24px;
+        background: var(--gradient);
+        color: #fff;
+        font-size: 17px;
+        font-weight: 800;
+      }
+
+      .order-head {
+        padding: 18px 15px 16px;
+        background:
+          radial-gradient(circle at 8% 12%, rgba(255, 111, 77, 0.26), transparent 34%),
+          radial-gradient(circle at 95% 14%, rgba(90, 193, 144, 0.18), transparent 30%),
+          #fff7f3;
+      }
+
+      .order-title {
+        position: relative;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        font-size: 20px;
+        font-weight: 800;
+      }
+
+      .tabs {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        margin-top: 14px;
+      }
+
+      .tabs button {
+        height: 38px;
+        color: #333;
+        font-size: 16px;
+      }
+
+      .tabs button.active {
+        color: var(--primary);
+        font-weight: 800;
+        position: relative;
+      }
+
+      .tabs button.active::after {
+        content: "";
+        position: absolute;
+        left: 20px;
+        right: 20px;
+        bottom: 0;
+        height: 3px;
+        border-radius: 3px;
+        background: var(--primary);
+      }
+
+      .order-card {
+        margin: 12px 15px;
+        padding: 18px 16px;
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: var(--shadow);
+      }
+
+      .order-card-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .order-card h3 {
+        margin: 0 0 6px;
+        font-size: 20px;
+      }
+
+      .order-card p {
+        margin: 0 0 8px;
+        color: #666d78;
+      }
+
+      .status-green {
+        color: var(--green);
+        font-weight: 700;
+      }
+
+      .pay-line {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        padding: 10px 0 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .pay-line .spec {
+        font-size: 20px;
+      }
+
+      .pay-line b {
+        color: var(--price);
+        font-size: 22px;
+      }
+
+      .order-time {
+        padding-top: 14px;
+        color: #969da8;
+        font-size: 14px;
+      }
+
+      .order-extra {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px dashed #edf0f3;
+      }
+
+      .order-extra span {
+        display: block;
+        min-width: 0;
+        color: #8a8f99;
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .order-extra b {
+        display: block;
+        margin-top: 2px;
+        color: #1f2329;
+        font-size: 13px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .result-head {
+        padding: 28px 20px 116px;
+        background: linear-gradient(135deg, #ffc1b8 0%, #fff0d8 100%);
+      }
+
+      .result-title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+      }
+
+      .check {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 8px 16px rgba(230, 0, 18, 0.14);
+        position: relative;
+      }
+
+      .check::after {
+        content: "";
+        position: absolute;
+        left: 19px;
+        top: 17px;
+        width: 25px;
+        height: 15px;
+        border-left: 7px solid #e60012;
+        border-bottom: 7px solid #e60012;
+        transform: rotate(-45deg);
+        border-radius: 3px;
+      }
+
+      .result-title h2 {
+        margin: 0;
+        font-size: 23px;
+      }
+
+      .result-title p {
+        margin: 4px 0 0;
+        font-size: 17px;
+      }
+
+      .receipt {
+        margin: -82px 18px 20px;
+        padding: 26px 20px 22px;
+        border-radius: 6px;
+        background: #fff;
+        box-shadow: var(--shadow);
+        position: relative;
+      }
+
+      .receipt::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 10px;
+        border-radius: 6px 6px 0 0;
+        background: var(--gradient);
+      }
+
+      .amount-success {
+        text-align: center;
+        padding: 20px 0 24px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .amount-success b {
+        font-size: 42px;
+      }
+
+      .amount-success small {
+        display: block;
+        margin-top: 8px;
+        font-size: 17px;
+        font-weight: 700;
+      }
+
+      .detail-list {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .detail-list h3 {
+        margin: 0 0 12px;
+      }
+
+      .kv {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 30px;
+        color: #707782;
+      }
+
+      .kv b {
+        color: #1f2329;
+        text-align: right;
+        font-weight: 500;
+      }
+
+      .mask,
+      .sheet,
+      .dialog {
+        display: none;
+      }
+
+      .mask.active,
+      .sheet.active,
+      .dialog.active {
+        display: block;
+      }
+
+      .mask {
+        position: fixed;
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        z-index: 80;
+        width: min(100vw, var(--phone-width));
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.58);
+      }
+
+      .sheet {
+        position: fixed;
+        left: 50%;
+        bottom: 0;
+        z-index: 90;
+        width: min(100vw, var(--phone-width));
+        max-height: 78vh;
+        overflow: auto;
+        transform: translateX(-50%);
+        border-radius: 18px 18px 0 0;
+        background: #fff;
+      }
+
+      .sheet-head {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        height: 62px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        border-bottom: 1px solid var(--line);
+        font-size: 20px;
+        font-weight: 800;
+      }
+
+      .close {
+        position: absolute;
+        right: 14px;
+        top: 10px;
+        width: 42px;
+        height: 42px;
+        color: #8d939c;
+        font-size: 34px;
+        line-height: 36px;
+      }
+
+      .sheet-body {
+        padding: 18px 16px 22px;
+      }
+
+      .sheet-section {
+        margin-bottom: 22px;
+      }
+
+      .sheet-section h3 {
+        margin: 0 0 12px;
+        font-size: 17px;
+      }
+
+      .chips {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+
+      .sheet-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        padding: 0 6px 10px;
+      }
+
+      .sheet-actions .outline,
+      .sheet-actions .primary {
+        border-radius: 24px;
+      }
+
+      .province-list button {
+        display: block;
+        width: 100%;
+        height: 52px;
+        text-align: left;
+        font-size: 17px;
+      }
+
+      .province-list .active {
+        color: var(--primary);
+        font-weight: 800;
+      }
+
+      .dialog {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        z-index: 95;
+        width: min(calc(100vw - 56px), 334px);
+        transform: translate(-50%, -50%);
+        border-radius: 12px;
+        padding: 32px 18px 24px;
+        background: linear-gradient(#fff6ed, #fff);
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
+        text-align: center;
+      }
+
+      .dialog h3 {
+        margin: 0 0 26px;
+        font-size: 24px;
+      }
+
+      .dialog p {
+        margin: 0 0 28px;
+        font-size: 20px;
+        line-height: 1.45;
+      }
+
+      .dialog-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      .dialog-actions button {
+        height: 48px;
+        border-radius: 24px;
+        font-size: 17px;
+        font-weight: 700;
+      }
+
+      .dialog-actions .cancel {
+        border: 1px solid #9ea4ad;
+        background: #fff;
+        color: #737a84;
+      }
+
+      .dialog-actions .ok {
+        color: #fff;
+        background: var(--gradient);
+      }
+
+      .confirm-card {
+        margin-bottom: 18px;
+        padding: 16px;
+        border: 1px solid #ffe1da;
+        border-radius: 10px;
+        background: linear-gradient(#fff9f6, #fff);
+      }
+
+      .confirm-card .big {
+        color: var(--price);
+        font-size: 40px;
+        font-weight: 900;
+      }
+
+      .confirm-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin: 14px 0;
+      }
+
+      .confirm-stats div {
+        min-height: 64px;
+        padding: 10px;
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .confirm-stats b {
+        display: block;
+        color: #1f2329;
+        font-size: 20px;
+      }
+
+      .confirm-stats small {
+        color: #8a8f99;
+      }
+
+      .rule-note {
+        padding: 10px;
+        border-radius: 6px;
+        background: #f8f9fb;
+        color: #727985;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .deduct-card {
+        margin: 12px 0;
+        padding: 14px;
+        border-radius: 9px;
+        border: 1px solid #eef0f3;
+        background: #fff;
+      }
+
+      .deduct-card.active {
+        border-color: #ffd0a8;
+      }
+
+      .deduct-card .row {
+        display: grid;
+        grid-template-columns: 28px 1fr auto;
+        gap: 10px;
+        align-items: start;
+      }
+
+      .num {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: var(--gradient);
+        font-weight: 800;
+      }
+
+      .deduct-title {
+        font-weight: 800;
+        font-size: 17px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .deduct-meta {
+        margin-top: 6px;
+        color: #8a8f99;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .deduct-money {
+        color: var(--price);
+        font-size: 26px;
+        font-weight: 900;
+        text-align: right;
+      }
+
+      .deduct-money small {
+        display: block;
+        color: #8a8f99;
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .badges {
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .badge {
+        min-height: 24px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 10px;
+        background: #f8f9fb;
+        color: #727985;
+        font-size: 12px;
+      }
+
+      .badge.rebate {
+        margin: 0;
+        background: #fff4dd;
+        color: #c77c28;
+      }
+
+      .confirm-footer {
+        position: sticky;
+        bottom: 0;
+        margin: 18px -16px -22px;
+        padding: 14px 16px 18px;
+        background: #fff;
+        border-top: 1px solid var(--line);
+      }
+
+      .confirm-footer .sheet-actions {
+        width: 100%;
+      }
+
+      .subsidy-total {
+        margin-bottom: 12px;
+        padding: 12px;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        background: #fff8f5;
+      }
+
+      .subsidy-total b {
+        color: var(--price);
+        font-size: 24px;
+      }
+
+      .calc-card {
+        margin-bottom: 12px;
+        padding: 14px;
+        border: 1px solid #eef0f3;
+        border-radius: 8px;
+      }
+
+      .calc-card h4 {
+        margin: 0 0 4px;
+        font-size: 16px;
+      }
+
+      .calc-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin: 12px 0;
+      }
+
+      .calc-grid div {
+        padding: 10px 8px;
+        border-radius: 6px;
+        background: #fafafa;
+      }
+
+      .calc-grid b {
+        display: block;
+        color: var(--price);
+        font-size: 17px;
+      }
+
+      .calc-grid small,
+      .calc-card p {
+        color: #8a8f99;
+      }
+
+      .policy,
+      .formula {
+        margin: 8px 0 0;
+        padding: 9px 10px;
+        border-radius: 6px;
+        background: #fff7e8;
+        color: #bd7227;
+        font-size: 13px;
+      }
+
+      .formula {
+        background: #f8f9fb;
+        color: #69717d;
+      }
+
+      /* Density pass: keep the H5 close to a 375pt mobile canvas and avoid oversized demo typography. */
+      .phone {
+        width: min(100vw, var(--phone-width));
+      }
+
+      .status {
+        padding-inline: 24px;
+        font-size: 14px;
+      }
+
+      .nav {
+        height: 54px;
+      }
+
+      .nav-title {
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .back,
+      .sub-back {
+        font-size: 30px;
+      }
+
+      .warm-head {
+        padding: 16px 14px 18px;
+      }
+
+      .search-row {
+        gap: 9px;
+        margin-bottom: 8px;
+      }
+
+      .search {
+        height: 42px;
+        padding: 0 14px;
+        font-size: 14px;
+      }
+
+      .search .icon {
+        width: 18px;
+        height: 18px;
+        border-width: 3px;
+      }
+
+      .map-btn,
+      .pill-btn,
+      .filter-pill {
+        height: 40px;
+        padding: 0 12px;
+        font-size: 15px;
+      }
+
+      .map-icon {
+        width: 25px;
+        height: 25px;
+      }
+
+      .subsidy-ticker {
+        height: 30px;
+        margin: 0 0 12px;
+        padding: 0 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        overflow: hidden;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 122, 0, 0.16);
+        background: linear-gradient(90deg, #fff6ee 0%, #fffdf8 100%);
+        box-shadow: 0 6px 18px rgba(255, 122, 0, 0.06);
+      }
+
+      .ticker-badge {
+        flex: 0 0 auto;
+        height: 20px;
+        padding: 0 7px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: linear-gradient(90deg, #ff4d37, #ff8a1c);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .ticker-mask {
+        min-width: 0;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      .ticker-track {
+        width: max-content;
+        display: inline-flex;
+        align-items: center;
+        gap: 28px;
+        color: #7c4a25;
+        font-size: 12.5px;
+        font-weight: 600;
+        white-space: nowrap;
+        animation: subsidyTicker 34s linear infinite;
+      }
+
+      .ticker-track b {
+        color: #f01f1f;
+        font-weight: 900;
+      }
+
+      @keyframes subsidyTicker {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-50%);
+        }
+      }
+
+      .banner {
+        min-height: 126px;
+        padding: 22px 20px;
+      }
+
+      .banner h2 {
+        font-size: 27px;
+      }
+
+      .banner p {
+        max-width: 190px;
+        line-height: 1.45;
+      }
+
+      .truck-art {
+        right: 14px;
+        bottom: 24px;
+        width: 106px;
+        height: 64px;
+      }
+
+      .content {
+        padding: 10px 14px 16px;
+      }
+
+      .filter-bar {
+        margin-top: -18px;
+      }
+
+      .station-card {
+        min-height: 0;
+        margin: 10px 0;
+        padding: 15px 14px 14px;
+        border-radius: 11px;
+      }
+
+      .ribbon + .station-top {
+        margin-top: 13px;
+      }
+
+      .station-top {
+        grid-template-columns: 56px minmax(0, 1fr) auto;
+        gap: 9px;
+      }
+
+      .logo {
+        width: 48px;
+        height: 48px;
+        border-radius: 11px;
+        font-size: 11px;
+      }
+
+      .logo {
+        position: relative;
+        overflow: visible;
+        background: #fff;
+        border: 0;
+        box-shadow: none;
+        color: transparent;
+      }
+
+      .logo::before {
+        content: "";
+        position: absolute;
+        left: 7px;
+        top: 2px;
+        width: 34px;
+        height: 34px;
+        border-radius: 50% 50% 46% 46%;
+        background:
+          radial-gradient(circle at 50% 100%, #fff 0 16%, transparent 17%),
+          conic-gradient(from 210deg, #d91e1e 0 20deg, #ffb52a 20deg 56deg, #ffe06a 56deg 100deg, #ff9e1a 100deg 150deg, #d91e1e 150deg 220deg, #ffb52a 220deg 270deg, #d91e1e 270deg 360deg);
+        clip-path: polygon(50% 0, 94% 26%, 88% 72%, 63% 92%, 37% 92%, 12% 72%, 6% 26%);
+      }
+
+      .logo::after {
+        content: "";
+        position: absolute;
+        left: 8px;
+        bottom: 7px;
+        width: 32px;
+        height: 15px;
+        border-radius: 2px 2px 13px 13px;
+        background: #c91f1f;
+      }
+
+      .logo.sino {
+        border: 0;
+        background: #fff;
+      }
+
+      .logo.sino::before {
+        left: 4px;
+        top: 5px;
+        width: 40px;
+        height: 30px;
+        border-radius: 50%;
+        background:
+          linear-gradient(128deg, transparent 0 42%, #e02020 43% 52%, transparent 53%),
+          radial-gradient(ellipse at 18% 45%, transparent 0 34%, #111 35% 42%, transparent 43%),
+          radial-gradient(ellipse at 52% 45%, transparent 0 32%, #111 33% 40%, transparent 41%);
+        clip-path: none;
+      }
+
+      .logo.sino::after {
+        content: "Sinopec";
+        left: 3px;
+        bottom: 6px;
+        width: 42px;
+        height: auto;
+        border-radius: 0;
+        background: transparent;
+        color: #111;
+        font-size: 8px;
+        font-weight: 700;
+        transform: scaleX(0.92);
+        transform-origin: left bottom;
+      }
+
+      .logo.gas {
+        background: #fff9f2;
+        border: 1px solid #ffe1bd;
+        color: transparent;
+      }
+
+      .logo.gas::before {
+        left: 9px;
+        top: 9px;
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #ffbe55, #ff7132);
+        clip-path: polygon(50% 0, 100% 28%, 84% 100%, 16% 100%, 0 28%);
+      }
+
+      .logo.gas::after {
+        content: "LNG";
+        left: 10px;
+        bottom: 14px;
+        width: 30px;
+        height: auto;
+        background: transparent;
+        color: #fff;
+        font-size: 9px;
+        font-weight: 800;
+        text-align: center;
+      }
+
+      .tag {
+        height: 19px;
+        font-size: 11px;
+      }
+
+      .station-title-line {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      .station-title-line .tag {
+        flex: 0 0 auto;
+        min-width: 30px;
+        height: 18px;
+        padding: 0 4px;
+        font-size: 10px;
+      }
+
+      .station-tags {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        min-height: 18px;
+        margin-top: 5px;
+      }
+
+      .station-tags .tag {
+        flex: 0 0 auto;
+        min-width: 30px;
+        height: 18px;
+        padding: 0 5px;
+        font-size: 10px;
+        font-weight: 700;
+      }
+
+      .station-tags .road-tag.highway {
+        border-color: #ffc7a8;
+        background: #fff3e9;
+        color: #dc641f;
+      }
+
+      .station-tags .road-tag.local {
+        border-color: #b9e4d1;
+        background: #effaf5;
+        color: #24825f;
+      }
+
+      .station-tags .channel-tag {
+        border-color: #cbd9f4;
+        background: #f3f7ff;
+        color: #5274ac;
+      }
+
+      .station-meta + .station-tags {
+        margin-top: 4px;
+      }
+
+      [data-screen="home"] .station-card .station-top {
+        position: relative;
+        grid-template-columns: 56px minmax(0, 1fr);
+      }
+
+      [data-screen="home"] .station-card .station-title-line {
+        padding-right: 64px;
+      }
+
+      [data-screen="home"] .station-card .station-meta {
+        width: 100%;
+        max-width: none;
+      }
+
+      [data-screen="home"] .station-card .distance {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 21px;
+        padding: 0 6px;
+        gap: 3px;
+        border-radius: 11px;
+        font-size: 10.5px;
+        font-weight: 600;
+      }
+
+      [data-screen="home"] .station-card .distance .loc-arrow {
+        border-left-width: 5px;
+        border-right-width: 3px;
+        border-bottom-width: 10px;
+      }
+
+      .station-name {
+        min-width: 0;
+        flex: 1;
+        margin: 0;
+        font-size: 18px;
+        line-height: 1.2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .station-meta {
+        font-size: 12.5px;
+        line-height: 1.45;
+        margin-top: 6px;
+        display: block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .distance {
+        height: 26px;
+        padding: 0 9px;
+        font-size: 13px;
+      }
+
+      .station-extra {
+        margin-top: 9px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        color: #8a8f99;
+        font-size: 12px;
+      }
+
+      .station-extra span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .service-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 9px;
+      }
+
+      .service-tags span {
+        height: 22px;
+        padding: 0 8px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        background: #fff7eb;
+        color: #c97724;
+        font-size: 11px;
+      }
+
+      .price-row {
+        height: 44px;
+        grid-template-columns: 0.9fr 1fr 1.35fr;
+        margin-top: 14px;
+      }
+
+      .oil-no {
+        height: 28px;
+        font-size: 13px;
+      }
+
+      .price {
+        font-size: 22px;
+      }
+
+      .old-price {
+        font-size: 12px;
+      }
+
+      .subsidy-price-row {
+        min-height: 64px;
+        height: auto;
+        grid-template-columns: 64px minmax(0, 1fr);
+        gap: 8px;
+        padding: 9px 8px;
+        align-items: center;
+        justify-items: start;
+        background: linear-gradient(180deg, #fff8f5 0%, #f8f9fb 100%);
+        border: 1px solid #fff0e7;
+      }
+
+      .subsidy-price-row .oil-no {
+        width: 58px;
+        height: 38px;
+        border-radius: 19px;
+        background: #fff;
+        border: 1px solid #ffd8c2;
+        color: #bc5a22;
+        box-shadow: inset 0 0 0 1px rgba(255, 122, 0, 0.04);
+        justify-self: start;
+        white-space: nowrap;
+      }
+
+      .effective-price {
+        display: flex;
+        align-items: baseline;
+        justify-content: flex-end;
+        gap: 5px;
+        min-width: 0;
+        width: auto;
+        flex: 0 1 auto;
+      }
+
+      .effective-price small {
+        display: inline-flex;
+        width: fit-content;
+        height: 18px;
+        padding: 0 5px;
+        align-items: center;
+        border-radius: 9px;
+        background: #ffe9df;
+        color: #e45f22;
+        font-size: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .effective-price b {
+        color: var(--price);
+        font-size: 22px;
+        line-height: 1.1;
+        font-weight: 900;
+        white-space: nowrap;
+      }
+
+      .price-detail {
+        display: flex;
+        align-items: baseline;
+        justify-content: flex-end;
+        gap: 0;
+        margin-top: 0;
+        min-width: 0;
+        width: auto;
+        flex: 0 0 auto;
+        color: #8a8f99;
+        font-size: 11.5px;
+        line-height: 1.25;
+        text-align: right;
+      }
+
+      .price-detail span,
+      .price-detail em {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .price-detail span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0;
+        min-width: 0;
+      }
+
+      .price-detail em {
+        color: #e45f22;
+        font-style: normal;
+        font-weight: 600;
+      }
+
+      .price-stack {
+        min-width: 0;
+        width: 100%;
+        display: flex;
+        align-items: baseline;
+        justify-content: flex-end;
+        gap: 5px;
+      }
+
+      .price-detail .line-through {
+        color: #a7adb6;
+        font-size: 10.5px;
+        text-decoration: line-through;
+        text-decoration-thickness: 1px;
+      }
+
+      .float-action {
+        width: 66px;
+        height: 56px;
+        font-size: 11px;
+        white-space: nowrap;
+        line-height: 1;
+      }
+
+      .station-detail-head {
+        padding: 14px 14px 12px;
+      }
+
+      .sub-nav {
+        height: 40px;
+        font-size: 19px;
+      }
+
+      .detail-card,
+      .module {
+        padding: 14px;
+        border-radius: 11px;
+      }
+
+      .module {
+        margin: 10px 14px;
+      }
+
+      .module-title {
+        margin-bottom: 12px;
+        font-size: 17px;
+      }
+
+      .waybill-wrap {
+        margin: 0 14px 10px;
+      }
+
+      .way-card {
+        flex-basis: 270px;
+      }
+
+      .way-foot b {
+        font-size: 22px;
+      }
+
+      .best-price b:last-child {
+        font-size: 22px;
+      }
+
+      .price-pair b {
+        font-size: 20px;
+      }
+
+      .amount-panel {
+        height: 54px;
+      }
+
+      .amount-panel b {
+        font-size: 24px;
+      }
+
+      .discount-line strong {
+        font-size: 18px;
+      }
+
+      .submit-bar {
+        width: min(100vw, var(--phone-width));
+        height: 68px;
+        grid-template-columns: 1fr 128px;
+      }
+
+      .submit-total b {
+        font-size: 24px;
+      }
+
+      .submit {
+        height: 46px;
+      }
+
+      .sheet,
+      .mask {
+        width: min(100vw, var(--phone-width));
+      }
+
+      .sheet-head {
+        height: 58px;
+        font-size: 19px;
+      }
+
+      .confirm-card .big {
+        font-size: 38px;
+      }
+
+      .deduct-money {
+        font-size: 24px;
+      }
+
+      .deduct-card .row {
+        grid-template-columns: 22px minmax(0, 1fr) 84px;
+        gap: 8px;
+      }
+
+      .deduct-money {
+        grid-column: 3;
+        grid-row: 1 / span 2;
+        justify-self: end;
+        align-self: end;
+        margin-top: 0;
+        font-size: 21px;
+      }
+
+      .deduct-money small {
+        font-size: 12px;
+      }
+
+      .order-card h3 {
+        font-size: 18px;
+      }
+
+      .pay-line .spec {
+        font-size: 18px;
+      }
+
+      .pay-line b {
+        font-size: 20px;
+      }
+
+      /* Global page polish: apply the same compact rhythm to map, route, order, result and all sheets. */
+      .map-canvas::before {
+        padding-top: 190px;
+        font-size: 13px;
+        line-height: 6.2;
+        word-spacing: 30px;
+      }
+
+      .map-search {
+        left: 14px;
+        right: 14px;
+        top: 30px;
+      }
+
+      .map-control {
+        right: 14px;
+        top: 116px;
+        min-width: 142px;
+      }
+
+      .pin {
+        height: 32px;
+        padding: 0 10px;
+        border-radius: 7px;
+        font-size: 14px;
+      }
+
+      .pin .logo {
+        width: 20px !important;
+        height: 20px !important;
+        flex: 0 0 20px;
+      }
+
+      .pin .logo::before {
+        left: 3px;
+        top: 0;
+        width: 14px;
+        height: 14px;
+      }
+
+      .pin .logo::after {
+        left: 4px;
+        bottom: 2px;
+        width: 13px;
+        height: 7px;
+      }
+
+      .pin .logo.sino::before {
+        left: 1px;
+        top: 2px;
+        width: 18px;
+        height: 14px;
+      }
+
+      .pin .logo.sino::after {
+        content: "";
+        left: 0;
+        bottom: 2px;
+        width: 20px;
+        height: 2px;
+        background: #111;
+      }
+
+      .pin::after {
+        bottom: -7px;
+        width: 12px;
+        height: 12px;
+      }
+
+      .pin.one {
+        left: 92px;
+        top: 304px;
+      }
+
+      .pin.two {
+        left: 146px;
+        top: 235px;
+        max-width: 158px;
+      }
+
+      .user-dot {
+        width: 46px;
+        height: 46px;
+      }
+
+      .user-dot::after {
+        width: 24px;
+        height: 24px;
+      }
+
+      .map-float {
+        right: 14px;
+        bottom: 100px;
+        gap: 10px;
+      }
+
+      .map-float .square {
+        width: 58px;
+        height: 58px;
+        border-radius: 12px;
+        font-size: 11px;
+      }
+
+      .map-float .square b {
+        font-size: 20px;
+      }
+
+      .map-toast {
+        left: 22px;
+        right: 22px;
+        bottom: 58px;
+        min-height: 40px;
+        font-size: 13px;
+      }
+
+      .route-card {
+        margin: 10px 14px;
+        padding: 14px;
+        border-radius: 9px;
+      }
+
+      .route-inputs {
+        grid-template-columns: 32px 1fr;
+      }
+
+      .swap {
+        font-size: 21px;
+      }
+
+      .route-line {
+        height: 46px;
+        gap: 10px;
+        padding: 0 14px;
+        font-size: 15px;
+      }
+
+      .add-way {
+        margin-top: 13px;
+        font-size: 15px;
+      }
+
+      .record-title {
+        margin-bottom: 8px;
+        font-size: 17px;
+      }
+
+      .history-item {
+        grid-template-columns: 24px 1fr;
+        padding: 13px 0;
+        font-size: 16px;
+      }
+
+      .history-item small {
+        margin-top: 4px;
+        font-size: 12px;
+      }
+
+      .route-actions {
+        width: min(100vw, var(--phone-width));
+        grid-template-columns: 112px 1fr;
+        gap: 16px;
+        padding: 0 18px;
+      }
+
+      .outline,
+      .primary {
+        height: 48px;
+        font-size: 16px;
+      }
+
+      .route-route {
+        left: 190px;
+        top: 230px;
+        height: 300px;
+        border-left-width: 18px;
+      }
+
+      .route-info {
+        left: 12px;
+        right: 12px;
+        top: 14px;
+        padding: 14px;
+      }
+
+      .route-info .line {
+        height: 38px;
+        padding: 0 12px;
+        font-size: 16px;
+      }
+
+      .way-label {
+        margin-top: 8px;
+        font-size: 14px;
+      }
+
+      .route-total {
+        padding: 16px;
+        font-size: 15px;
+      }
+
+      .route-total b {
+        margin-bottom: 6px;
+        font-size: 21px;
+      }
+
+      .route-stations {
+        padding: 12px 14px;
+        font-size: 14px;
+      }
+
+      .route-list-overlay {
+        padding-top: 224px;
+      }
+
+      .order-head {
+        padding: 14px 14px 12px;
+      }
+
+      .order-title {
+        height: 38px;
+        font-size: 19px;
+      }
+
+      .tabs {
+        margin-top: 10px;
+      }
+
+      .tabs button {
+        height: 36px;
+        font-size: 15px;
+      }
+
+      .order-card {
+        margin: 10px 14px;
+        padding: 15px 14px;
+      }
+
+      .order-card h3 {
+        font-size: 17px;
+        line-height: 1.2;
+      }
+
+      .order-card p {
+        margin-bottom: 7px;
+        font-size: 13px;
+      }
+
+      .status-green {
+        font-size: 14px;
+        white-space: nowrap;
+      }
+
+      .pay-line {
+        padding: 9px 0 12px;
+      }
+
+      .pay-line .spec {
+        font-size: 17px;
+      }
+
+      .pay-line b {
+        font-size: 19px;
+      }
+
+      .order-time {
+        padding-top: 12px;
+        font-size: 12.5px;
+        line-height: 1.55;
+      }
+
+      .order-extra {
+        gap: 7px;
+        margin-top: 9px;
+        padding-top: 9px;
+      }
+
+      .result-head {
+        padding: 24px 20px 100px;
+      }
+
+      .result-title {
+        gap: 14px;
+      }
+
+      .check {
+        width: 56px;
+        height: 56px;
+      }
+
+      .check::after {
+        left: 17px;
+        top: 15px;
+        width: 22px;
+        height: 13px;
+        border-left-width: 6px;
+        border-bottom-width: 6px;
+      }
+
+      .result-title h2 {
+        font-size: 21px;
+      }
+
+      .result-title p {
+        font-size: 15px;
+      }
+
+      .receipt {
+        margin: -72px 16px 18px;
+        padding: 22px 18px 20px;
+      }
+
+      .amount-success {
+        padding: 18px 0 20px;
+      }
+
+      .amount-success b {
+        font-size: 36px;
+      }
+
+      .amount-success small {
+        font-size: 15px;
+      }
+
+      .detail-list {
+        padding: 12px 0;
+      }
+
+      .detail-list h3 {
+        margin-bottom: 10px;
+        font-size: 17px;
+      }
+
+      .kv {
+        min-height: 27px;
+        gap: 10px;
+        font-size: 13.5px;
+        line-height: 1.45;
+      }
+
+      .sheet {
+        max-height: 76vh;
+        border-radius: 16px 16px 0 0;
+      }
+
+      .sheet-head {
+        height: 56px;
+        font-size: 18px;
+      }
+
+      .close {
+        right: 12px;
+        top: 8px;
+        font-size: 30px;
+      }
+
+      .sheet-body {
+        padding: 16px 14px 20px;
+      }
+
+      .sheet-section {
+        margin-bottom: 18px;
+      }
+
+      .sheet-section h3 {
+        margin-bottom: 10px;
+        font-size: 16px;
+      }
+
+      .chips {
+        gap: 9px;
+      }
+
+      .chip {
+        height: 36px;
+        border-radius: 18px;
+        font-size: 13.5px;
+      }
+
+      .province-list button {
+        height: 46px;
+        font-size: 16px;
+      }
+
+      .dialog {
+        width: min(calc(100vw - 48px), 318px);
+        padding: 28px 18px 22px;
+      }
+
+      .dialog h3 {
+        margin-bottom: 22px;
+        font-size: 21px;
+      }
+
+      .dialog p {
+        margin-bottom: 24px;
+        font-size: 17px;
+      }
+
+      .dialog-actions {
+        gap: 14px;
+      }
+
+      .dialog-actions button {
+        height: 46px;
+        font-size: 16px;
+      }
+
+      .confirm-card {
+        margin-bottom: 16px;
+        padding: 14px;
+      }
+
+      .confirm-card .big {
+        font-size: 36px;
+      }
+
+      .confirm-stats {
+        gap: 8px;
+        margin: 12px 0;
+      }
+
+      .confirm-stats div {
+        min-height: 58px;
+        padding: 9px;
+      }
+
+      .confirm-stats b {
+        font-size: 18px;
+      }
+
+      .confirm-stats small {
+        font-size: 12px;
+      }
+
+      .rule-note {
+        font-size: 12.5px;
+      }
+
+      .section-title {
+        font-size: 17px;
+      }
+
+      .deduct-card {
+        margin: 10px 0;
+        padding: 12px;
+      }
+
+      .num {
+        width: 22px;
+        height: 22px;
+        font-size: 13px;
+      }
+
+      .deduct-title {
+        font-size: 15.5px;
+      }
+
+      .deduct-meta {
+        font-size: 12px;
+        line-height: 1.55;
+      }
+
+      .badge {
+        min-height: 22px;
+        padding: 0 8px;
+        font-size: 11.5px;
+      }
+
+      .confirm-footer {
+        margin: 16px -14px -20px;
+        padding: 12px 14px 16px;
+      }
+
+      .subsidy-total {
+        padding: 10px 12px;
+        font-size: 14px;
+      }
+
+      .subsidy-total b {
+        font-size: 22px;
+      }
+
+      .calc-card {
+        padding: 12px;
+      }
+
+      .calc-card h4 {
+        font-size: 15.5px;
+      }
+
+      .calc-grid {
+        gap: 7px;
+      }
+
+      .calc-grid div {
+        padding: 9px 7px;
+      }
+
+      .calc-grid b {
+        font-size: 15.5px;
+      }
+
+      [data-screen="detail"] .detail-card {
+        overflow: hidden;
+      }
+
+      [data-screen="detail"] .station-detail-head {
+        padding: 10px 14px 10px;
+      }
+
+      [data-screen="detail"] .detail-card .station-top {
+        min-width: 0;
+        width: 100%;
+        grid-template-columns: 46px minmax(0, 1fr);
+        padding-right: 0;
+        gap: 10px;
+        align-items: center;
+      }
+
+      [data-screen="detail"] .detail-card .station-top > div:not(.logo):not(.distance) {
+        min-width: 0;
+      }
+
+      [data-screen="detail"] .detail-card {
+        margin-top: 6px;
+        padding: 11px 12px;
+        border-radius: 10px;
+        box-shadow: 0 6px 16px rgba(31, 35, 41, 0.06);
+      }
+
+      [data-screen="detail"] .detail-card .logo {
+        width: 42px;
+        height: 42px;
+      }
+
+      [data-screen="detail"] .station-name-row {
+        display: flex;
+        min-width: 0;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      [data-screen="detail"] .detail-card .station-name {
+        margin: 0;
+        font-size: 16.5px;
+        line-height: 1.25;
+      }
+
+      [data-screen="detail"] .detail-card .station-name,
+      [data-screen="detail"] .detail-card .station-meta {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      [data-screen="detail"] .detail-card .service-tags {
+        display: flex;
+        min-width: 0;
+        gap: 4px;
+        flex-wrap: wrap;
+        overflow: visible;
+      }
+
+      [data-screen="detail"] .detail-card .service-tags span {
+        flex: 0 0 auto;
+        padding: 0 6px;
+      }
+
+      [data-screen="detail"] .detail-card .distance {
+        position: static;
+        height: 24px;
+        padding: 0 8px;
+        font-size: 12px;
+        flex: 0 0 auto;
+      }
+
+      [data-screen="detail"] .detail-card .station-meta {
+        margin-top: 4px;
+        font-size: 12px;
+      }
+
+      [data-screen="detail"] > .notice {
+        display: none;
+      }
+
+      [data-screen="detail"] {
+        padding-bottom: 92px;
+      }
+
+      [data-screen="detail"] .sub-nav {
+        font-size: 18px;
+        height: 36px;
+      }
+
+      [data-screen="detail"] .way-card {
+        flex-basis: 278px;
+        min-height: 118px;
+        padding: 13px;
+        border-radius: 10px;
+      }
+
+      [data-screen="detail"] .waybill-wrap {
+        margin: 12px 18px;
+        padding-top: 12px;
+        padding-bottom: 13px;
+        overflow: hidden;
+      }
+
+      [data-screen="detail"] .waybill-wrap .tip {
+        margin: 0 16px 10px;
+        padding: 0;
+        background: transparent;
+        color: #1f2329;
+        font-size: 16px;
+        font-weight: 800;
+      }
+
+      [data-screen="detail"] .way-scroll {
+        padding-left: 0;
+        padding-right: 16px;
+        scroll-padding-left: 16px;
+      }
+
+      [data-screen="detail"] .way-scroll::before {
+        content: "";
+        flex: 0 0 8px;
+        width: 8px;
+      }
+
+      [data-screen="detail"] .way-card {
+        scroll-margin-left: 16px;
+      }
+
+      [data-screen="detail"] .way-card.selected::after {
+        content: none;
+      }
+
+      [data-screen="detail"] .way-head {
+        gap: 7px;
+      }
+
+      [data-screen="detail"] .way-head b {
+        min-width: 0;
+        flex: 1;
+        font-size: 16px;
+        line-height: 1.25;
+      }
+
+      [data-screen="detail"] .plate {
+        min-width: 62px;
+        height: 22px;
+        font-size: 11px;
+      }
+
+      [data-screen="detail"] .way-no {
+        margin-top: 10px;
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      [data-screen="detail"] .way-amount {
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px dashed #ece1d8;
+      }
+
+      [data-screen="detail"] .way-amount small {
+        font-size: 12px;
+      }
+
+      [data-screen="detail"] .way-amount b {
+        font-size: 24px;
+      }
+
+      [data-screen="detail"] .waybill-summary {
+        font-size: 13px;
+      }
+
+      [data-screen="detail"] .waybill-summary b {
+        font-size: 24px;
+      }
+
+      [data-screen="detail"] .plate-confirm {
+        min-height: 58px;
+        border-radius: 10px;
+        border: 1px solid #eef0f4;
+        background: #f8fafc;
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      [data-screen="detail"] .plate-confirm small {
+        display: block;
+        color: #8a8f99;
+        font-size: 12px;
+        margin-bottom: 3px;
+      }
+
+      [data-screen="detail"] .plate-confirm b {
+        color: #1f2329;
+        font-size: 20px;
+        line-height: 1.1;
+      }
+
+      [data-screen="detail"] .plate-confirm span {
+        min-width: 92px;
+        height: 28px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background: #fff7eb;
+        color: #c97724;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      [data-screen="detail"] .plate-action {
+        width: 86px;
+        height: 34px;
+        border-radius: 18px;
+        font-size: 13px;
+      }
+
+      [data-screen="detail"] .module-title {
+        font-size: 16.5px;
+      }
+
+      [data-screen="detail"] .best-price b:last-child {
+        font-size: 21px;
+      }
+
+      [data-screen="detail"] .detail-price-line {
+        margin-top: 12px;
+        min-height: 48px;
+        padding-top: 10px;
+        border-top: 1px solid #f0f1f3;
+        display: grid;
+        grid-template-columns: 58px minmax(0, 1fr);
+        align-items: center;
+        gap: 10px;
+      }
+
+      [data-screen="detail"] .detail-price-line .oil-no {
+        width: 56px;
+        height: 32px;
+        border-radius: 16px;
+        border: 1px solid #ffd0b5;
+        background: #fff;
+        color: #bc5a22;
+        font-size: 12px;
+      }
+
+      [data-screen="detail"] .amount-panel b {
+        font-size: 24px;
+      }
+
+      [data-screen="detail"] .submit-total {
+        min-width: 0;
+        display: grid;
+        align-content: center;
+        gap: 3px;
+      }
+
+      [data-screen="detail"] .submit-pay {
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+        min-width: 0;
+        white-space: nowrap;
+      }
+
+      [data-screen="detail"] .submit-pay span {
+        margin-left: 0;
+        color: #4f5661;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      [data-screen="detail"] .submit-pay b {
+        color: var(--price);
+        font-size: 21px;
+        line-height: 1.1;
+      }
+
+      [data-screen="detail"] .submit-meta {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        min-width: 0;
+        white-space: nowrap;
+      }
+
+      [data-screen="detail"] .submit-meta span {
+        margin-left: 0;
+        display: inline-flex;
+        align-items: baseline;
+        gap: 2px;
+        color: #8a8f99;
+        font-size: 10px;
+      }
+
+      [data-screen="detail"] .submit-meta b,
+      [data-screen="detail"] .submit-meta strong {
+        font-size: 11px;
+        line-height: 1.1;
+      }
+
+      [data-screen="detail"] .submit-meta b {
+        color: #5f6672;
+      }
+
+      [data-screen="detail"] .submit-meta strong {
+        color: #f06a22;
+      }
+
+      [data-screen="detail"] .discount-box {
+        padding: 12px;
+      }
+
+      [data-screen="detail"] .discount-summary {
+        min-height: 30px;
+        padding-bottom: 6px;
+        margin-bottom: 6px;
+        border-bottom: 1px dashed #ffe1c7;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 800;
+      }
+
+      [data-screen="detail"] .discount-summary span {
+        font-size: 14px;
+        color: #1f2329;
+      }
+
+      [data-screen="detail"] .discount-summary strong {
+        color: #d94b32;
+        font-size: 15.5px;
+        font-weight: 700;
+      }
+
+      [data-screen="detail"] .discount-line {
+        min-height: 26px;
+        font-size: 12.5px;
+      }
+
+      [data-screen="detail"] .discount-line span {
+        color: #8a8f99;
+        font-weight: 500;
+      }
+
+      [data-screen="detail"] .discount-line strong {
+        color: #d94b32;
+        font-size: 15.5px !important;
+        font-weight: 700;
+      }
+
+      [data-screen="detail"] .submit-bar {
+        position: fixed;
+        left: 50%;
+        bottom: 0;
+        transform: translateX(-50%);
+        width: min(100vw, var(--phone-width));
+        padding-left: 14px;
+        padding-right: 12px;
+        grid-template-columns: minmax(0, 1fr) 118px;
+        gap: 10px;
+        margin-top: 0;
+        box-shadow: 0 -10px 24px rgba(31, 35, 41, 0.08);
+      }
+
+      /* V3.13: direct-price subsidy and same-subject combined payment. */
+      [data-screen="detail"] .combo-notice {
+        margin: 10px 14px;
+        min-height: 44px;
+        padding: 9px 12px;
+        border: 1px solid #ffe0c2;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        background: #fff8ef;
+      }
+
+      .combo-notice strong {
+        display: block;
+        color: #9c4f18;
+        font-size: 13px;
+      }
+
+      .combo-notice span {
+        display: block;
+        margin-top: 2px;
+        color: #9a7a63;
+        font-size: 11px;
+      }
+
+      .combo-badge {
+        flex: 0 0 auto;
+        min-width: 74px;
+        height: 26px;
+        padding: 0 9px;
+        border-radius: 13px;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        margin: 0 !important;
+        background: #ffefe7;
+        color: #f05a31 !important;
+        font-size: 11px !important;
+        font-weight: 800;
+      }
+
+      [data-screen="detail"] .waybill-headline {
+        margin: 0 16px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .waybill-headline b {
+        color: #1f2329;
+        font-size: 16px;
+      }
+
+      .waybill-headline small {
+        color: #f06a22;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      [data-screen="detail"] .way-card.combo-way {
+        flex-basis: 252px;
+        min-height: 112px;
+        border-color: #eceef2;
+        background: #fff;
+        cursor: pointer;
+      }
+
+      [data-screen="detail"] .way-card.combo-way.selected {
+        border-color: #ff8d62;
+        background: linear-gradient(180deg, #fff8f3, #fff);
+        box-shadow: 0 6px 16px rgba(255, 93, 46, 0.1);
+      }
+
+      .way-select {
+        flex: 0 0 auto;
+        height: 22px;
+        padding: 0 8px;
+        border: 1px solid #ffb596;
+        border-radius: 11px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        color: #e86629;
+        font-size: 10px;
+        font-weight: 800;
+      }
+
+      [data-screen="detail"] .way-card.combo-way .way-amount {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+      }
+
+      [data-screen="detail"] .way-card.combo-way .way-amount b {
+        text-align: right;
+      }
+
+      .way-card.combo-way.selected .way-select {
+        border-color: #ff5b35;
+        background: #ff5b35;
+        color: #fff;
+      }
+
+      .way-card.combo-way.selected .way-select::before {
+        content: "✓";
+        margin-right: 3px;
+      }
+
+      .way-time {
+        margin-top: 5px;
+        color: #a0a5ad;
+        font-size: 11px;
+      }
+
+      .input-mode {
+        width: 100%;
+        height: 38px;
+        margin-bottom: 12px;
+        padding: 3px;
+        border-radius: 8px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        background: #f3f4f6;
+      }
+
+      .input-mode button {
+        border-radius: 6px;
+        color: #777e89;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .input-mode button.active {
+        background: #fff;
+        color: #e64b2e;
+        box-shadow: 0 2px 8px rgba(31, 35, 41, 0.08);
+      }
+
+      .fuel-entry {
+        min-height: 66px;
+        padding: 10px 12px;
+        border: 1px solid #ffb7a8;
+        border-radius: 8px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        background: #fff7f5;
+      }
+
+      .fuel-entry-main {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+      }
+
+      .fuel-input-wrap {
+        min-width: 0;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .fuel-input-wrap input {
+        width: 100%;
+        min-width: 0;
+        appearance: textfield;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: #e82020;
+        font-size: 27px;
+        font-weight: 800;
+      }
+
+      .fuel-input-wrap input::-webkit-inner-spin-button,
+      .fuel-input-wrap input::-webkit-outer-spin-button {
+        margin: 0;
+        appearance: none;
+      }
+
+      .fuel-input-wrap input::placeholder {
+        color: #9ca2ac;
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .fuel-input-wrap em {
+        color: #e82020;
+        font-size: 15px;
+        font-style: normal;
+        font-weight: 700;
+      }
+
+      .fuel-entry-side {
+        min-width: 112px;
+        min-height: 42px;
+        padding-left: 10px;
+        border-left: 1px solid #f2d8d1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 5px;
+        color: #d15d44;
+        font-size: 11px;
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      .fuel-entry-side b {
+        display: inline;
+        margin-top: 0;
+        color: #c63d28;
+        font-size: 14px;
+      }
+
+      .fuel-limit-row {
+        min-height: 44px;
+        padding: 8px 2px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .fuel-limit-copy {
+        min-width: 0;
+        display: flex;
+        align-items: baseline;
+        gap: 7px;
+      }
+
+      .fuel-limit-copy span {
+        color: #858b95;
+        font-size: 11px;
+        white-space: nowrap;
+      }
+
+      .fuel-limit-copy b {
+        color: #e84b2d;
+        font-size: 17px;
+        white-space: nowrap;
+      }
+
+      .fill-max {
+        flex: 0 0 auto;
+        height: 30px;
+        padding: 0 13px;
+        border: 1px solid #ff9c78;
+        border-radius: 15px;
+        background: #fff;
+        color: #e85b31;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .pay-overview {
+        margin-top: 10px;
+        padding: 12px;
+        border: 1px solid #ffe4cc;
+        border-radius: 8px;
+        background: #fffdf9;
+      }
+
+      .pay-primary {
+        padding-bottom: 9px;
+        margin-bottom: 8px;
+        border-bottom: 1px dashed #f1ddca;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .pay-primary span {
+        color: #30343b;
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .pay-primary strong {
+        color: var(--price);
+        font-size: 22px;
+      }
+
+      .pay-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 7px;
+      }
+
+      .pay-grid div {
+        min-height: 22px;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 6px;
+        color: #8a8f99;
+        font-size: 11px;
+      }
+
+      .pay-grid b {
+        color: #535a64;
+        font-size: 12px;
+      }
+
+      .pay-grid .accent b {
+        color: #df5b2c;
+      }
+
+      .submit-meta span:first-child b {
+        text-decoration: line-through;
+        text-decoration-thickness: 1px;
+      }
+
+      @media (max-width: 340px) {
+        .fuel-entry {
+          padding: 9px 10px;
+          gap: 8px;
+        }
+
+        .fuel-input-wrap input {
+          font-size: 25px;
+        }
+
+        .fuel-input-wrap input::placeholder {
+          font-size: 12px;
+        }
+
+        .fuel-entry-side {
+          min-width: 98px;
+          padding-left: 8px;
+          gap: 4px;
+          font-size: 10px;
+        }
+
+        .fuel-entry-side b {
+          font-size: 12px;
+        }
+
+        .fuel-limit-row {
+          gap: 8px;
+        }
+
+        .fuel-limit-copy {
+          gap: 5px;
+        }
+
+        .fuel-limit-copy span {
+          font-size: 10px;
+        }
+
+        .fuel-limit-copy b {
+          font-size: 15px;
+        }
+
+        .fill-max {
+          padding: 0 10px;
+        }
+      }
+
+      [data-sheet="confirm"] {
+        max-height: 90vh;
+      }
+
+      [data-sheet="confirm"] .sheet-body {
+        padding-top: 12px;
+      }
+
+      .confirm-parent {
+        margin-bottom: 12px;
+        padding: 14px;
+        border: 1px solid #ffd9c7;
+        border-radius: 9px;
+        background: #fff9f5;
+      }
+
+      .confirm-mode-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .confirm-mode-row > span:first-child {
+        color: #d46025;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .confirm-mode-row .confirm-way-count {
+        color: #8e949d;
+        font-size: 11px;
+      }
+
+      .confirm-mode-row .confirm-way-count b {
+        margin-right: 2px;
+        color: #30343b;
+        font-size: 13px;
+      }
+
+      .confirm-pay-hero {
+        padding: 14px 0 12px;
+        text-align: center;
+      }
+
+      .confirm-pay-hero small,
+      .confirm-pay-hero strong {
+        display: block;
+      }
+
+      .confirm-pay-hero small {
+        color: #858b95;
+        font-size: 11px;
+      }
+
+      .confirm-pay-hero strong {
+        margin-top: 3px;
+        color: var(--price);
+        font-size: 30px;
+        line-height: 1.15;
+      }
+
+      .confirm-fuel-brief {
+        padding: 10px 0;
+        border-top: 1px solid #f5ded2;
+        border-bottom: 1px solid #f5ded2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 26px;
+        color: #7e858f;
+        font-size: 11px;
+      }
+
+      .confirm-fuel-brief b {
+        margin-left: 4px;
+        color: #30343b;
+        font-size: 14px;
+      }
+
+      .confirm-saving-brief {
+        padding-top: 11px;
+      }
+
+      .confirm-saving-total {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        color: #98491f;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .confirm-saving-total strong {
+        color: #dc4e2f;
+        font-size: 18px;
+      }
+
+      .confirm-saving-brief p {
+        margin: 5px 0 0;
+        color: #9b755f;
+        font-size: 10.5px;
+        text-align: right;
+      }
+
+      .confirm-saving-brief p b {
+        color: #d85c33;
+      }
+
+      .confirm-saving-brief p i {
+        margin: 0 7px;
+        color: #c7a18a;
+        font-style: normal;
+      }
+
+      .split-caption {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 14px 0 8px;
+        color: #30343b;
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .split-caption small {
+        color: #e36a31;
+        font-size: 11px;
+      }
+
+      .split-order-card {
+        margin: 0 0 8px;
+        padding: 12px;
+        border: 1px solid #eceff3;
+        border-radius: 8px;
+        background: #fafbfc;
+        box-shadow: none;
+      }
+
+      .split-order-card[data-confirm-child="2"] {
+        margin-bottom: 0;
+      }
+
+      .split-order-head {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .split-order-index {
+        padding: 3px 6px;
+        border-radius: 4px;
+        background: #fff0e9;
+        color: #df5a27;
+        font-size: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .split-order-head b {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #252930;
+        font-size: 13px;
+      }
+
+      .split-order-head strong {
+        color: var(--price);
+        font-size: 17px;
+      }
+
+      .split-order-head strong::before {
+        margin-right: 3px;
+        color: #9a9fa7;
+        font-size: 9px;
+        font-weight: 500;
+        content: "扣款";
+      }
+
+      .split-order-meta {
+        margin: 5px 0 9px;
+        overflow: hidden;
+        color: #979ca5;
+        font-size: 10px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .split-order-brief {
+        padding: 8px 0;
+        border-top: 1px solid #eef0f2;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        color: #8e949d;
+        font-size: 10px;
+      }
+
+      .split-order-brief b {
+        margin-right: 3px;
+        color: #252930;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .split-order-finance {
+        padding-top: 7px;
+        border-top: 1px dashed #eceef1;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        color: #9298a1;
+        font-size: 9.5px;
+      }
+
+      .split-order-finance b {
+        margin-left: 2px;
+        color: #555c66;
+        font-size: 10.5px;
+      }
+
+      .split-order-finance span:nth-child(2) b {
+        color: #d95a32;
+      }
+
+      .success-summary {
+        margin: 12px 0 4px;
+        padding: 12px;
+        border-radius: 8px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        background: #fff8f4;
+      }
+
+      .success-summary div {
+        display: flex;
+        justify-content: space-between;
+        gap: 6px;
+        color: #8a8f99;
+        font-size: 11px;
+      }
+
+      .success-summary b {
+        color: #3f454e;
+        font-size: 12px;
+      }
+
+      .success-splits {
+        display: grid;
+        gap: 7px;
+      }
+
+      .success-split {
+        padding: 9px 10px;
+        border-radius: 7px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 4px 10px;
+        background: #f8f9fb;
+      }
+
+      .success-split b {
+        overflow: hidden;
+        color: #31363e;
+        font-size: 12px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .success-split strong {
+        color: var(--price);
+        font-size: 13px;
+      }
+
+      .success-split small {
+        grid-column: 1 / -1;
+        color: #9298a1;
+        font-size: 10px;
+      }
+
+      .qr-refresh {
+        border: 1px solid #ff8b62;
+        background: #fff;
+        color: #ed5b31;
+        font-weight: 800;
+      }
+
+      .qr-screen {
+        min-height: calc(100vh - 92px);
+        padding-bottom: 24px;
+        background: #f5f6f8;
+      }
+
+      .qr-station-detail {
+        padding: 10px 14px;
+      }
+
+      .qr-station-detail .detail-card {
+        margin-top: 0;
+        padding: 11px 12px;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 6px 16px rgba(31, 35, 41, 0.06);
+      }
+
+      .qr-station-detail .station-top {
+        min-width: 0;
+        width: 100%;
+        grid-template-columns: 46px minmax(0, 1fr);
+        padding-right: 0;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .qr-station-detail .station-top > div:not(.logo):not(.distance) {
+        min-width: 0;
+      }
+
+      .qr-station-detail .logo {
+        width: 42px;
+        height: 42px;
+      }
+
+      .qr-station-detail .station-name-row {
+        display: flex;
+        min-width: 0;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .qr-station-detail .station-name {
+        margin: 0;
+        overflow: hidden;
+        color: #1f2329;
+        font-size: 16.5px;
+        line-height: 1.25;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .qr-station-detail .distance {
+        position: static;
+        flex: 0 0 auto;
+        height: 24px;
+        padding: 0 8px;
+        font-size: 12px;
+      }
+
+      .qr-station-detail .station-meta {
+        margin-top: 4px;
+        overflow: hidden;
+        color: #8f959e;
+        font-size: 12px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .qr-waybill-wrap {
+        margin: 10px 14px;
+        padding: 12px 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: none;
+      }
+
+      .qr-waybill-wrap .waybill-headline {
+        padding: 0 12px;
+        display: grid;
+        justify-content: stretch;
+        gap: 3px;
+      }
+
+      .qr-waybill-wrap .waybill-headline b {
+        font-size: 14px;
+      }
+
+      .qr-waybill-wrap .waybill-headline small {
+        font-size: 10px;
+        line-height: 1.35;
+        white-space: normal;
+      }
+
+      .qr-waybill-wrap .way-scroll {
+        padding: 9px 12px 0;
+        scroll-padding-left: 12px;
+      }
+
+      .qr-way-card {
+        flex-basis: 252px;
+        min-height: 112px;
+        cursor: pointer;
+      }
+
+      .qr-way-card.selected {
+        border-color: #ff8d62;
+        background: linear-gradient(180deg, #fff8f3, #fff);
+        box-shadow: 0 6px 16px rgba(255, 93, 46, 0.1);
+      }
+
+      .qr-way-card.selected::after {
+        content: none;
+      }
+
+      .qr-way-card .way-amount {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+      }
+
+      .qr-way-card .way-amount b {
+        color: var(--price);
+        font-size: 19px;
+        text-align: right;
+      }
+
+      .qr-panel {
+        margin: 10px 14px 0;
+        padding: 18px 16px 16px;
+        border-radius: 8px;
+        background: #fff;
+        text-align: center;
+      }
+
+      .qr-panel > p {
+        margin: 0 0 12px;
+        color: #858b95;
+        font-size: 12px;
+      }
+
+      .qr-box {
+        width: min(228px, 74vw);
+        aspect-ratio: 1;
+        margin: 0 auto;
+        padding: 8px;
+        border: 1px solid #eceef1;
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .qr-box img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: contain;
+        image-rendering: pixelated;
+      }
+
+      .qr-validity {
+        min-height: 32px;
+        margin-top: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        color: #888e98;
+        font-size: 11px;
+      }
+
+      .qr-validity b {
+        color: #ea6239;
+        font-size: 13px;
+      }
+
+      .qr-refresh {
+        height: 28px;
+        padding: 0 9px;
+        border-color: #ffd4c1;
+        border-radius: 14px;
+        font-size: 11px;
+      }
+
+      .qr-scope {
+        margin: 10px 14px 0;
+        padding: 12px;
+        border: 1px solid #ffe2d1;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        background: #fff;
+        text-align: left;
+      }
+
+      .qr-waybill-wrap .qr-scope,
+      .detail-waybill-wrap .qr-scope {
+        margin: 0 12px;
+        padding: 10px 11px;
+        border: 0;
+      }
+
+      .detail-waybill-wrap .qr-scope {
+        padding-top: 4px;
+        padding-bottom: 12px;
+      }
+
+      .qr-scope div {
+        min-width: 0;
+      }
+
+      .qr-scope > div {
+        flex: 1;
+      }
+
+      .qr-scope strong,
+      .qr-scope span {
+        display: block;
+      }
+
+      .qr-scope strong {
+        color: #2f343c;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .qr-scope span {
+        margin-top: 3px;
+        overflow: hidden;
+        color: #8d939c;
+        font-size: 10px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .qr-scope .qr-scope-limit {
+        margin-top: 7px;
+        display: flex;
+        align-items: baseline;
+        gap: 5px;
+        flex-wrap: wrap;
+        line-height: 1.45;
+      }
+
+      .qr-scope .qr-scope-limit span {
+        margin: 0;
+        display: inline;
+        overflow: visible;
+        color: #8d939c;
+        font-size: 10px;
+        text-overflow: clip;
+        white-space: nowrap;
+      }
+
+      .qr-scope .qr-scope-limit b {
+        color: var(--price);
+        font-size: 13px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .qr-fuel-limit {
+        margin-top: 9px;
+        padding-top: 0;
+        border-top: 0;
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+      }
+
+      .qr-fuel-limit span {
+        margin: 0;
+        color: #686f79;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .qr-fuel-limit b {
+        color: var(--price);
+        font-size: 16px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .qr-scope > b {
+        flex: none;
+        padding: 4px 7px;
+        border-radius: 4px;
+        background: #fff2e8;
+        color: #dc672f;
+        font-size: 10px;
+      }
+
+      .qr-flow {
+        margin: 10px 14px 0;
+        padding: 13px 12px;
+        border-radius: 8px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        background: #fff;
+      }
+
+      .qr-flow div {
+        position: relative;
+        color: #8c929b;
+        font-size: 10px;
+        text-align: center;
+      }
+
+      .qr-flow div:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        top: 10px;
+        right: -18%;
+        width: 36%;
+        height: 1px;
+        background: #e8eaed;
+      }
+
+      .qr-flow b {
+        width: 21px;
+        height: 21px;
+        margin: 0 auto 5px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: #fff0e8;
+        color: #eb6138;
+        font-size: 10px;
+      }
+
+      .qr-footnote {
+        margin: 8px 18px 0;
+        color: #969ca5;
+        font-size: 10px;
+        line-height: 1.5;
+        text-align: center;
+      }
+
+      .qr-confirm-source {
+        margin-bottom: 10px;
+        padding: 9px 10px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #fff4ed;
+        color: #a95025;
+        font-size: 11px;
+      }
+
+      .qr-confirm-source[hidden] {
+        display: none;
+      }
+
+      .qr-confirm-source b {
+        color: #df4e2d;
+        font-size: 12px;
+      }
+
+      @media (max-width: 340px) {
+        [data-screen="detail"] .submit-pay b {
+          font-size: 18px;
+        }
+
+        .qr-panel {
+          padding-top: 14px;
+        }
+
+        .qr-box {
+          width: min(210px, 70vw);
+        }
+      }
+
+      @media (min-width: 760px) {
+        body {
+          padding: 15px 22px;
+        }
+
+        .phone {
+          height: min(var(--phone-height), calc(100vh - 30px));
+          min-height: 0;
+          border-radius: 24px;
+          box-shadow: 0 18px 60px rgba(23, 31, 43, 0.2);
+        }
+
+        .app {
+          height: calc(100% - 98px);
+          min-height: 0;
+          overflow-y: auto;
+          scrollbar-width: none;
+        }
+
+        .app::-webkit-scrollbar {
+          display: none;
+        }
+
+        .screen,
+        .account-screen {
+          min-height: 100%;
+        }
+      }
+
+      /* Account context: the selected waybill group controls pricing and all downstream flows. */
+      .account-screen {
+        min-height: 100%;
+        padding: clamp(64px, 10vh, 88px) 16px 38px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        background:
+          radial-gradient(circle at 92% 4%, rgba(121, 205, 166, 0.2), transparent 27%),
+          linear-gradient(180deg, #fff3ed 0, #faf9f7 42%, #f7f8fa 100%);
+      }
+
+      .account-intro {
+        padding: 6px 2px 14px;
+      }
+
+      .account-intro .account-kicker {
+        margin: 0 0 7px;
+        color: #ff6638;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .account-intro h1 {
+        margin: 0;
+        color: #1f2329;
+        font-size: 24px;
+        line-height: 1.35;
+        font-weight: 700;
+      }
+
+      .account-intro p {
+        margin: 8px 0 0;
+        color: #7c838e;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .account-reason {
+        margin: 0 0 14px;
+        padding: 11px 12px;
+        border-left: 3px solid #ff724d;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.82);
+        color: #666d77;
+        font-size: 12px;
+        line-height: 1.65;
+      }
+
+      .account-reason strong {
+        display: block;
+        margin-bottom: 2px;
+        color: #323840;
+        font-size: 13px;
+      }
+
+      .account-options {
+        display: grid;
+        gap: 12px;
+      }
+
+      .account-option {
+        position: relative;
+        width: 100%;
+        padding: 16px;
+        display: grid;
+        grid-template-columns: 44px minmax(0, 1fr);
+        gap: 12px;
+        align-items: center;
+        text-align: left;
+        border: 1px solid #eceef1;
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 8px 24px rgba(34, 42, 54, 0.06);
+      }
+
+      .account-option:active {
+        transform: translateY(1px);
+      }
+
+      .account-option.current {
+        border-color: #ff8b67;
+        box-shadow: 0 8px 24px rgba(255, 98, 54, 0.1);
+      }
+
+      .account-option:disabled {
+        opacity: 0.48;
+        box-shadow: none;
+      }
+
+      .account-icon {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        border-radius: 8px;
+        background: #fff0ec;
+        color: #ff5a36;
+        font-size: 19px;
+        font-weight: 800;
+      }
+
+      .account-option.enterprise .account-icon {
+        background: #eef4ff;
+        color: #3977df;
+      }
+
+      .account-option-main {
+        min-width: 0;
+      }
+
+      .account-option-title {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 6px;
+      }
+
+      .account-option-title strong {
+        min-width: 0;
+        overflow: hidden;
+        color: #262b33;
+        font-size: 16px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .account-option-title em {
+        flex: 0 0 auto;
+        padding: 2px 6px;
+        border-radius: 3px;
+        background: #fff0eb;
+        color: #f04b27;
+        font-size: 10px;
+        font-style: normal;
+        font-weight: 700;
+      }
+
+      .account-option.enterprise .account-option-title em {
+        background: #edf3ff;
+        color: #366bc2;
+      }
+
+      .account-option-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 10px;
+        color: #8b929d;
+        font-size: 12px;
+      }
+
+      .account-option-total {
+        margin-top: 10px;
+        padding-top: 9px;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        border-top: 1px dashed #eceff2;
+        color: #8b929d;
+        font-size: 12px;
+      }
+
+      .account-option-total b {
+        color: #ec351d;
+        font-size: 19px;
+      }
+
+      .account-option.enterprise .account-option-total b {
+        color: #326fc4;
+      }
+
+      .account-option-action {
+        position: absolute;
+        right: 16px;
+        top: 17px;
+        color: #8a9099;
+        font-size: 11px;
+      }
+
+      .account-option-action::after {
+        content: "";
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        margin-left: 5px;
+        border-top: 1.5px solid currentColor;
+        border-right: 1.5px solid currentColor;
+        transform: rotate(45deg) translateY(-1px);
+      }
+
+      .account-option-meta b {
+        color: #4f5661;
+        font-size: 13px;
+      }
+
+      .account-option-desc {
+        margin-top: 7px;
+        color: #b36a34;
+        font-size: 12px;
+      }
+
+      .account-option.enterprise .account-option-desc {
+        color: #667b9c;
+      }
+
+      .account-note {
+        margin: 16px 2px 0;
+        color: #9aa0a9;
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      .account-confirm-page {
+        min-height: 0;
+        padding: 12px 12px 8px;
+        background: #f5f6f8;
+      }
+
+      .account-confirm-sheet {
+        max-height: 86vh;
+        overflow: auto;
+        background: #f5f6f8;
+      }
+
+      .account-confirm-summary {
+        padding: 15px 14px;
+        border-radius: 8px;
+        background: linear-gradient(118deg, #fff3ed, #fffaf7);
+        border: 1px solid #ffd8ca;
+      }
+
+      .account-confirm-summary.enterprise {
+        background: linear-gradient(118deg, #eef5ff, #f8fbff);
+        border-color: #cfdef7;
+      }
+
+      .account-confirm-summary-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .account-confirm-summary-head strong {
+        color: #262b33;
+        font-size: 16px;
+      }
+
+      .account-confirm-summary-head span {
+        flex: 0 0 auto;
+        padding: 2px 6px;
+        border-radius: 3px;
+        background: #ffebe4;
+        color: #e94d2c;
+        font-size: 10px;
+        font-weight: 700;
+      }
+
+      .account-confirm-summary.enterprise .account-confirm-summary-head span {
+        background: #e3edff;
+        color: #356cbd;
+      }
+
+      .account-confirm-total {
+        margin-top: 12px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+      }
+
+      .account-confirm-total span {
+        color: #747b85;
+        font-size: 12px;
+      }
+
+      .account-confirm-total b {
+        color: #ed321c;
+        font-size: 25px;
+        line-height: 1;
+      }
+
+      .account-confirm-summary.enterprise .account-confirm-total b {
+        color: #326fc4;
+      }
+
+      .account-confirm-rule {
+        margin: 10px 0 0;
+        padding-top: 9px;
+        border-top: 1px dashed rgba(215, 149, 122, 0.38);
+        color: #7a6260;
+        font-size: 12px;
+      }
+
+      .account-confirm-summary.enterprise .account-confirm-rule {
+        border-top-color: rgba(99, 137, 192, 0.3);
+        color: #5f6f88;
+      }
+
+      .account-waybill-section {
+        margin-top: 10px;
+        padding: 14px 12px 4px;
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .account-waybill-heading {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 2px;
+      }
+
+      .account-waybill-heading strong {
+        color: #2c3138;
+        font-size: 15px;
+      }
+
+      .account-waybill-heading span {
+        color: #969ca5;
+        font-size: 11px;
+      }
+
+      .account-waybill-item {
+        padding: 13px 0;
+        border-bottom: 1px solid #eef0f2;
+      }
+
+      .account-waybill-item:last-child {
+        border-bottom: 0;
+      }
+
+      .account-waybill-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .account-waybill-top strong {
+        min-width: 0;
+        overflow: hidden;
+        color: #30353c;
+        font-size: 14px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .account-waybill-top em {
+        flex: 0 0 auto;
+        color: #f15b37;
+        font-size: 11px;
+        font-style: normal;
+      }
+
+      .account-confirm-summary.enterprise + .account-waybill-section .account-waybill-top em {
+        color: #4478c4;
+      }
+
+      .account-waybill-no {
+        margin-top: 6px;
+        overflow: hidden;
+        color: #8a919b;
+        font-size: 11px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .account-waybill-bottom {
+        margin-top: 9px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .account-waybill-time {
+        color: #969ca5;
+        font-size: 11px;
+      }
+
+      .account-waybill-quota {
+        text-align: right;
+      }
+
+      .account-waybill-quota small {
+        display: block;
+        margin-bottom: 2px;
+        color: #969ca5;
+        font-size: 10px;
+      }
+
+      .account-waybill-quota b {
+        color: #ec351d;
+        font-size: 17px;
+      }
+
+      .account-confirm-summary.enterprise + .account-waybill-section .account-waybill-quota b {
+        color: #326fc4;
+      }
+
+      .account-confirm-tip {
+        margin: 10px 2px 0;
+        color: #969ca5;
+        font-size: 11px;
+        line-height: 1.55;
+      }
+
+      .account-confirm-bar {
+        position: sticky;
+        left: auto;
+        bottom: 0;
+        width: 100%;
+        transform: none;
+        z-index: 12;
+        min-height: 68px;
+        padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 142px;
+        align-items: center;
+        gap: 12px;
+        background: #fff;
+        box-shadow: 0 -6px 20px rgba(28, 35, 45, 0.08);
+      }
+
+      .account-confirm-bar span {
+        color: #7d848e;
+        font-size: 11px;
+      }
+
+      .account-confirm-bar b {
+        display: block;
+        margin-top: 2px;
+        color: #ed321c;
+        font-size: 18px;
+      }
+
+      .account-confirm-bar button {
+        height: 44px;
+        border-radius: 22px;
+        background: linear-gradient(90deg, #ff5c4f, #ff7d14);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .account-context-bar {
+        height: 38px;
+        margin: -4px 0 10px;
+        padding: 0 4px 0 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.78);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+      }
+
+      .account-context-name {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: #333941;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .account-context-name::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        flex: 0 0 auto;
+        border-radius: 50%;
+        background: #ff5f3b;
+      }
+
+      .enterprise-account .account-context-name::before {
+        background: #3977df;
+      }
+
+      .account-context-name span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .account-switch {
+        height: 30px;
+        padding: 0 9px;
+        color: #6f7680;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .enterprise-account .subsidy-ticker,
+      .enterprise-account .account-subsidy-only,
+      .enterprise-account .help,
+      .enterprise-account [data-account-waybill="subsidized-only"] {
+        display: none !important;
+      }
+
+      .enterprise-account .pay-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .enterprise-account .pay-grid > div:first-child {
+        border-right: 0;
+      }
+
+      .enterprise-account .effective-price b {
+        color: #e64324;
+      }
+
+      .enterprise-account .effective-price small {
+        border: 1px solid #d7e6ff;
+        background: #edf4ff;
+        color: #2f6fd2;
+      }
+
+      .way-card.account-hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="phone">
+      <div class="status" aria-label="iPhone 状态栏">
+        <time class="status-time">9:41</time>
+        <div class="status-icons">
+          <span class="cellular" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <span class="battery-shell" aria-label="电量 78%"><i class="battery-level"></i></span>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="back" type="button">‹</button>
+        <div class="nav-title">优惠加油</div>
+      </div>
+
+      <div class="app">
+        <section class="screen active" data-screen="account">
+          <div class="account-screen">
+            <div class="account-intro">
+              <h1>请选择您的油气额度账户</h1>
+              <p>系统按运单计价方式分开管理，选择后可查看账户内运单及对应油气额度。</p>
+            </div>
+            <div class="account-options">
+              <button class="account-option subsidized" type="button" data-account-select="subsidized">
+                <span class="account-icon">惠</span>
+                <span class="account-option-main">
+                  <span class="account-option-title"><strong>有补贴运单账户</strong><em>最高8%</em></span>
+                  <span class="account-option-meta"><span><b>3张</b> 可用运单</span><span>按补贴计算万联价</span></span>
+                  <span class="account-option-total"><span>油气总额度</span><b>¥2800.00</b></span>
+                </span>
+                <span class="account-option-action">查看并确认</span>
+              </button>
+              <button class="account-option enterprise" type="button" data-account-select="enterprise">
+                <span class="account-icon">企</span>
+                <span class="account-option-main">
+                  <span class="account-option-title"><strong>无补贴运单账户</strong><em>企业价</em></span>
+                  <span class="account-option-meta"><span><b>2张</b> 可用运单</span><span>按企业价格加油</span></span>
+                  <span class="account-option-total"><span>油气总额度</span><b>¥1800.00</b></span>
+                </span>
+                <span class="account-option-action">查看并确认</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="home">
+          <div class="warm-head">
+            <div class="search-row">
+              <div class="search"><span class="icon"></span><span>请输入油站名称</span></div>
+              <button class="map-btn" type="button" data-go="map"><span class="map-icon"></span>地图模式</button>
+            </div>
+            <div class="subsidy-ticker account-subsidy-only" aria-label="网货加油补贴政策">
+              <span class="ticker-badge">补贴</span>
+              <div class="ticker-mask">
+                <div class="ticker-track">
+                  <span>网货加油补贴活动进行中，柴油最高可享补贴 <b>8.5%</b>，天然气最高可享补贴 <b>6.5%</b>，实际补贴以订单可用政策为准</span>
+                  <span>网货加油补贴活动进行中，柴油最高可享补贴 <b>8.5%</b>，天然气最高可享补贴 <b>6.5%</b>，实际补贴以订单可用政策为准</span>
+                </div>
+              </div>
+            </div>
+            <div class="banner">
+              <h2>万联驿站</h2>
+              <p>轮胎、维保、零配件购买等一站式车后服务</p>
+              <span class="learn">点击了解</span>
+              <span class="truck-art"></span>
+            </div>
+          </div>
+          <div class="content">
+            <div class="filter-bar">
+              <button class="filter-pill" type="button" data-open="filter">距离最近 <span></span> 筛选 <i class="chev"></i></button>
+              <button class="pill-btn" type="button" data-open="province">省/市 <i class="chev"></i></button>
+            </div>
+            <article class="station-card" data-go="detail" data-settlement-mode="liter" data-station-price="5.52|6.00">
+              <div class="ribbon">距离最近</div>
+              <div class="station-top">
+                <div class="logo">CNPC</div>
+                <div>
+                  <div class="station-title-line"><div class="station-name">1113站点</div></div>
+                  <div class="station-meta">山东省济南市槐荫区青岛路与齐鲁大道交叉口东160米</div>
+                  <div class="station-tags"><span class="tag road-tag highway">高速</span><span class="tag channel-tag">中交</span></div>
+                </div>
+                <div class="distance"><i class="loc-arrow"></i>0.1km</div>
+              </div>
+              <div class="price-row subsidy-price-row">
+                <div class="oil-no">0#</div>
+                <div class="price-stack"><div class="effective-price"><small data-home-price-label>万联价</small><b data-home-price>¥5.52/L</b></div><div class="price-detail"><span class="line-through">油机价 ¥6.50</span></div></div>
+              </div>
+            </article>
+            <article class="station-card" data-go="qr-payment" data-station-entry="qr" data-station-price="5.80|6.00">
+              <div class="station-top">
+                <div class="logo sino">Sinopec</div>
+                <div>
+                  <div class="station-title-line"><div class="station-name">二维码测试站</div></div>
+                  <div class="station-meta">山东省济南市济阳区G2京沪高速东50米附近</div>
+                  <div class="station-tags"><span class="tag road-tag highway">高速</span><span class="tag channel-tag">运达通</span></div>
+                </div>
+                <div class="distance"><i class="loc-arrow"></i>47.0km</div>
+              </div>
+              <div class="price-row subsidy-price-row">
+                <div class="oil-no">-35#</div>
+                <div class="price-stack"><div class="effective-price"><small data-home-price-label>万联价</small><b data-home-price>¥5.80/L</b></div><div class="price-detail"><span class="line-through">油站价 ¥7.00</span></div></div>
+              </div>
+            </article>
+            <article class="station-card" data-go="detail" data-settlement-mode="amount" data-station-price="2.90|3.00">
+              <div class="station-top">
+                <div class="logo gas">LNG</div>
+                <div>
+                  <div class="station-title-line"><div class="station-name">组网新建测试油站</div></div>
+                  <div class="station-meta">G6京藏高速入口</div>
+                  <div class="station-tags"><span class="tag road-tag local">非高速</span><span class="tag channel-tag">卡世通</span></div>
+                </div>
+                <div class="distance"><i class="loc-arrow"></i>323.6km</div>
+              </div>
+              <div class="price-row subsidy-price-row">
+                <div class="oil-no">LNG</div>
+                <div class="price-stack"><div class="effective-price"><small data-home-price-label>万联价</small><b data-home-price>¥2.90/L</b></div><div class="price-detail"><span class="line-through">油站价 ¥5.00</span></div></div>
+              </div>
+            </article>
+          </div>
+          <div class="float-actions">
+            <button class="float-action" type="button" data-account-switch aria-label="切换油气额度账户"><b aria-hidden="true">↻</b>切换账户</button>
+            <button class="float-action" type="button" data-go="orders"><b>☰</b>我的订单</button>
+            <button class="float-action" type="button"><b>☏</b>联系客服</button>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="map">
+          <div class="map-canvas">
+            <div class="map-search">
+              <div class="search"><span class="icon"></span><span>请输入地址搜索</span></div>
+            </div>
+            <button class="filter-pill map-control" type="button" data-open="filter">100KM内 <span></span> 筛选 <i class="chev"></i></button>
+            <button class="pin one" type="button" data-go="detail" data-settlement-mode="liter"><span class="logo" style="width:22px;height:22px;border-radius:6px;font-size:0"></span><b>¥6.00</b>1113站点</button>
+            <button class="pin two" type="button" data-go="detail" data-settlement-mode="amount"><span class="logo sino" style="width:22px;height:22px;border-radius:6px;font-size:0"></span><b>¥6.00</b>二维码测...</button>
+            <div class="user-dot"></div>
+            <div class="map-float">
+              <button class="square" type="button" data-go="route"><b>⇅</b>路径规划</button>
+              <button class="square" type="button" data-go="home"><b>☷</b>网点列表</button>
+            </div>
+            <div class="map-toast">可拖动地图或搜索位置加载网点~</div>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="route">
+          <div class="content">
+            <div class="route-card">
+              <div class="route-inputs">
+                <div class="swap">⇅</div>
+                <div>
+                  <div class="route-line"><i class="dot"></i>请输入起点</div>
+                  <div class="route-line"><i class="dot red"></i>请输入终点</div>
+                </div>
+              </div>
+              <button class="add-way" type="button">＋ 添加途经点</button>
+            </div>
+            <div class="route-card">
+              <div class="history-item" style="border-bottom:0;padding:0">
+                <span>📍</span>
+                <div>我的位置<small>获取当前位置</small></div>
+              </div>
+            </div>
+            <div class="route-card" style="min-height:330px">
+              <div class="record-title">历史记录 <span>清除</span></div>
+              <div class="history-item"><span>◷</span><div>北京市 → 广州市</div></div>
+              <div class="history-item"><span>◷</span><div>北京市 → 广州市<small>途径：济南市</small></div></div>
+            </div>
+          </div>
+          <div class="route-actions">
+            <button class="outline" type="button" data-go="map">取消</button>
+            <button class="primary" type="button" data-go="route-map">开始规划</button>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="route-map">
+          <div class="route-map">
+            <div class="route-route"></div>
+            <div class="route-info">
+              <div class="line"><i class="dot"></i>北京市</div>
+              <div class="line"><i class="dot red"></i>广州市</div>
+              <div class="way-label">途径：济南市 <a href="#">调整地点》</a></div>
+            </div>
+            <button class="filter-pill map-control" type="button" style="top:168px" data-open="filter">筛选 <i class="chev"></i></button>
+            <button class="pin one" type="button" style="top:275px;left:180px" data-go="detail" data-settlement-mode="liter"><span class="logo" style="width:22px;height:22px;border-radius:6px;font-size:0"></span><b>¥6.00</b>1113站点</button>
+            <div class="route-summary">
+              <p class="route-total"><b>23 小时 45 分</b>2244.1km　¥1094</p>
+              <div class="route-stations">此路线沿途经过 <b>2</b> 个站点 <span>向上滑动查看︿</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="route-list">
+          <div class="route-map route-list-overlay">
+            <div class="route-info">
+              <div class="line"><i class="dot"></i>北京市</div>
+              <div class="line"><i class="dot red"></i>广州市</div>
+              <div class="way-label">途径：济南市 <a href="#">调整地点》</a></div>
+            </div>
+            <div class="route-summary" style="position:relative;bottom:auto;margin-top:0;border-radius:0;box-shadow:none">
+              <p class="route-total"><b>23 小时 45 分</b>2244.1km　¥1094</p>
+              <div class="route-stations">此路线沿途经过 <b>2</b> 个站点 <span>向上滑动查看︿</span></div>
+            </div>
+            <div class="content" style="background:#fff">
+              <article class="station-card" data-go="detail" data-settlement-mode="liter">
+                <div class="station-top">
+                  <div class="logo sino">Sinopec</div>
+                  <div>
+                    <div class="station-title-line"><span class="tag">高速</span><div class="station-name">二维码测试站</div></div>
+                    <div class="station-meta">山东省济南市济阳区G2京沪高速东50米附近</div>
+                  </div>
+                  <div class="distance"><i class="loc-arrow"></i>317.8km</div>
+                </div>
+                <div class="price-row subsidy-price-row"><div class="oil-no">-35#</div><div class="price-stack"><div class="effective-price"><small>万联价</small><b>¥5.80/L</b></div><div class="price-detail"><span class="line-through">油站价 ¥7.00</span></div></div></div>
+              </article>
+              <article class="station-card" data-go="detail" data-settlement-mode="amount">
+                <div class="station-top">
+                  <div class="logo">CNPC</div>
+                  <div>
+                    <div class="station-title-line"><span class="tag">高速</span><div class="station-name">1113站点</div></div>
+                    <div class="station-meta">山东省济南市槐荫区青岛路与齐鲁大道交叉口东...</div>
+                  </div>
+                  <div class="distance"><i class="loc-arrow"></i>361.2km</div>
+                </div>
+                <div class="price-row subsidy-price-row"><div class="oil-no">0#</div><div class="price-stack"><div class="effective-price"><small>万联价</small><b>¥5.52/L</b></div><div class="price-detail"><span class="line-through">油机价 ¥6.50</span></div></div></div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="orders">
+          <div class="order-head">
+            <div class="order-title"><button class="sub-back" type="button" data-go="home">‹</button>订单</div>
+            <div class="search-row" style="grid-template-columns:1fr auto;margin-bottom:0">
+              <div class="search"><span class="icon"></span><span>请输入油站名称搜索</span></div>
+              <button style="font-size:17px;color:#333" type="button">取消</button>
+            </div>
+            <div class="tabs">
+              <button class="active" type="button">全部</button>
+              <button type="button">待支付</button>
+              <button type="button">支付成功</button>
+              <button type="button">已退款</button>
+            </div>
+          </div>
+          <article class="order-card" data-go="success">
+            <div class="order-card-top">
+              <div><h3>1113站点</h3><p>同主体组合支付 · 3张运单</p></div>
+              <div class="status-green">支付成功</div>
+            </div>
+            <div class="pay-line">
+              <div class="spec">0#　416.66L</div>
+              <div>实扣： <b>¥2299.96</b></div>
+            </div>
+            <div class="order-extra">
+              <span>枪号<b>6号</b></span>
+              <span>万联价<b>¥5.52/L</b></span>
+              <span>结算金额<b>¥2499.96</b></span>
+            </div>
+            <div class="order-time">订单号：WYB202606011145460001　时间：2026-06-01 11:45:46</div>
+          </article>
+          <article class="order-card" data-go="success">
+            <div class="order-card-top">
+              <div><h3>二维码测试站</h3><p>万联易达天津分公司</p></div>
+              <div class="status-green">支付成功</div>
+            </div>
+            <div class="pay-line">
+              <div class="spec">0#　120.00L</div>
+              <div>实扣： <b>¥662.40</b></div>
+            </div>
+            <div class="order-extra">
+              <span>枪号<b>6号</b></span>
+              <span>补贴后价<b>¥5.52/L</b></span>
+              <span>上报金额<b>¥720.00</b></span>
+            </div>
+            <div class="order-time">订单号：WYB202606011038530002　时间：2026-06-01 10:38:53</div>
+          </article>
+          <article class="order-card" data-go="success">
+            <div class="order-card-top">
+              <div><h3>二维码测试站</h3><p>万联易达天津分公司</p></div>
+              <div class="status-green">支付成功</div>
+            </div>
+            <div class="pay-line">
+              <div class="spec">LNG　300.00kg</div>
+              <div>实扣： <b>¥841.50</b></div>
+            </div>
+            <div class="order-extra">
+              <span>枪号<b>LNG</b></span>
+              <span>补贴后价<b>¥2.805/kg</b></span>
+              <span>上报金额<b>¥900.00</b></span>
+            </div>
+            <div class="order-time">订单号：WYB202606011037560003　时间：2026-06-01 10:37:56</div>
+          </article>
+        </section>
+
+        <section class="screen" data-screen="detail">
+          <div class="station-detail-head">
+            <div class="sub-nav"><button class="sub-back" type="button" data-go="home">‹</button>油站详情</div>
+            <div class="detail-card">
+              <div class="station-top">
+                <div class="logo">CNPC</div>
+                <div>
+                  <div class="station-name-row"><div class="station-name">1113站点</div><div class="distance"><i class="loc-arrow"></i>0.1km</div></div>
+                  <div class="station-meta">山东省济南市槐荫区青岛路与齐鲁大道交叉口东160米</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="waybill-wrap detail-waybill-wrap">
+            <div class="qr-scope">
+              <div>
+                <strong data-detail-scope-title>多运单组合支付</strong>
+                <div class="qr-scope-limit"><span data-detail-way-count>3张运单</span><span>运单总额度</span><b data-detail-total-quota>¥2800.00</b><span data-detail-rate>本次8%计价</span></div>
+              </div>
+            </div>
+            <div class="way-scroll">
+              <div class="way-card combo-way" data-way-index="0" data-way-amount="¥1000.00">
+                <div class="way-head"><b>万联易达天津分公司</b><span class="plate">蒙L94581</span></div>
+                <div class="way-no">运单号：TD2026071100000901</div>
+                <div class="way-time">装货时间：2026-07-10 08:00</div>
+                <div class="way-amount"><small>油气额度</small><b>¥1000.00</b><button class="way-select" type="button" aria-label="选择万联易达天津分公司运单">选择</button></div>
+              </div>
+              <div class="way-card combo-way" data-way-index="1" data-way-amount="¥800.00">
+                <div class="way-head"><b>万联易达北京分公司</b><span class="plate">蒙L94581</span></div>
+                <div class="way-no">运单号：TD2026071000000728</div>
+                <div class="way-time">装货时间：2026-07-11 09:30</div>
+                <div class="way-amount"><small>油气额度</small><b>¥800.00</b><button class="way-select" type="button" aria-label="选择万联易达北京分公司运单">选择</button></div>
+              </div>
+              <div class="way-card combo-way" data-way-index="2" data-way-amount="¥1000.00" data-account-waybill="subsidized-only">
+                <div class="way-head"><b>万联易达山东分公司</b><span class="plate">蒙L94581</span></div>
+                <div class="way-no">运单号：TD2026070900000615</div>
+                <div class="way-time">装货时间：2026-07-12 14:00</div>
+                <div class="way-amount"><small>油气额度</small><b>¥1000.00</b><button class="way-select" type="button" aria-label="选择万联易达山东分公司运单">选择</button></div>
+              </div>
+            </div>
+          </div>
+          <div class="module">
+            <div class="module-title">车辆信息 <button class="camera-btn plate-action" type="button" data-open="ocr">重新识别</button></div>
+            <div class="plate-confirm">
+              <div><small>已识别车牌</small><b>蒙L94581</b></div>
+              <span>与当前运单一致</span>
+            </div>
+          </div>
+          <div class="module">
+            <div class="module-title">商品/枪号选择 <button class="select-trigger" type="button" data-open="product">0# <i class="chev"></i></button></div>
+            <div class="gun-grid">
+              <button class="chip active" type="button">6</button>
+              <button class="chip" type="button">9</button>
+              <button class="chip" type="button">0</button>
+              <button class="chip" type="button">6</button>
+            </div>
+            <div class="detail-price-line">
+              <div class="oil-no">0#</div>
+              <div class="price-stack"><div class="effective-price"><small data-detail-price-label>万联价</small><b data-bind="unitPrice">5.52/L</b></div><div class="price-detail"><span class="line-through">油机价 6.50/L</span></div></div>
+            </div>
+          </div>
+          <div class="module">
+            <div class="module-title">本次加注</div>
+            <div class="fuel-entry">
+              <div class="fuel-entry-main">
+                <div class="fuel-input-wrap"><input data-fuel-input type="number" value="" placeholder="请输入加油机升数" min="0.01" step="0.01" inputmode="decimal" aria-label="加油机升数" /><em data-entry-unit>L</em></div>
+              </div>
+              <div class="fuel-entry-side"><span data-entry-side-label>约为</span><b data-entry-side-value>¥0.00</b></div>
+            </div>
+            <div class="fuel-limit-row">
+              <div class="fuel-limit-copy"><span data-detail-max-label>当前运单最大可加注油机升数</span><b data-detail-max-value>507L</b></div>
+              <button class="fill-max" type="button" data-fill-max>全部加注</button>
+            </div>
+            <div class="pay-overview">
+              <div class="pay-primary"><span data-saving-title>合计优惠</span><strong data-bind="advantage">¥408.33</strong></div>
+              <div class="pay-grid">
+                <div><span>直降优惠</span><b data-bind="direct">¥208.33</b></div>
+                <div class="accent account-subsidy-only"><span>补贴金额 <button class="help" type="button" data-open="subsidy" aria-label="查看计价说明">?</button></span><b data-bind="subsidy">¥200.00</b></div>
+              </div>
+            </div>
+          </div>
+          <div class="submit-bar">
+            <div class="submit-total">
+              <div class="submit-pay"><span>实付：</span><b data-bind="paid">¥2299.96</b></div>
+              <div class="submit-meta"><span>油机：<b data-bind="machine">¥2708.29</b></span><span><i data-submit-saving-label>合计优惠</i>：<strong data-bind="advantage">¥408.33</strong></span></div>
+            </div>
+            <button class="submit" type="button" data-open="confirm">提交订单</button>
+          </div>
+        </section>
+
+        <section class="screen qr-screen" data-screen="qr-payment" data-settlement-mode="amount">
+          <div class="sub-nav" style="background:#fff"><button class="sub-back" type="button" data-go="home">‹</button>出示付款二维码</div>
+          <div class="station-detail-head qr-station-detail">
+            <div class="detail-card">
+              <div class="station-top">
+                <div class="logo sino">Sinopec</div>
+                <div>
+                  <div class="station-name-row"><div class="station-name">二维码测试站</div><div class="distance"><i class="loc-arrow"></i>47.0km</div></div>
+                  <div class="station-meta">山东省济南市济阳区G2京沪高速东50米附近</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="waybill-wrap qr-waybill-wrap">
+            <div class="qr-scope">
+              <div>
+                <strong data-qr-scope-title>多运单组合支付</strong>
+                <div class="qr-scope-limit"><span data-qr-way-count>3张运单</span><span>运单总额度</span><b data-qr-total-quota>¥2800.00</b><span data-qr-rate>本次8%计价</span></div>
+                <div class="qr-fuel-limit"><span data-qr-max-label>最大可加注油机金额</span><b data-qr-max-value>¥3297</b></div>
+              </div>
+            </div>
+            <div class="way-scroll">
+              <div class="way-card combo-way qr-way-card" data-way-index="0" data-way-amount="¥1000.00">
+                <div class="way-head"><b>万联易达天津分公司</b><span class="plate">蒙L94581</span></div>
+                <div class="way-no">运单号：TD2026071100000901</div>
+                <div class="way-time">装货时间：2026-07-10 08:00</div>
+                <div class="way-amount"><small>油气额度</small><b>¥1000.00</b><button class="way-select" type="button" aria-label="选择万联易达天津分公司运单">选择</button></div>
+              </div>
+              <div class="way-card combo-way qr-way-card" data-way-index="1" data-way-amount="¥800.00">
+                <div class="way-head"><b>万联易达北京分公司</b><span class="plate">蒙L94581</span></div>
+                <div class="way-no">运单号：TD2026071000000728</div>
+                <div class="way-time">装货时间：2026-07-11 09:30</div>
+                <div class="way-amount"><small>油气额度</small><b>¥800.00</b><button class="way-select" type="button" aria-label="选择万联易达北京分公司运单">选择</button></div>
+              </div>
+              <div class="way-card combo-way qr-way-card" data-way-index="2" data-way-amount="¥1000.00" data-account-waybill="subsidized-only">
+                <div class="way-head"><b>万联易达山东分公司</b><span class="plate">蒙L94581</span></div>
+                <div class="way-no">运单号：TD2026070900000615</div>
+                <div class="way-time">装货时间：2026-07-12 14:00</div>
+                <div class="way-amount"><small>油气额度</small><b>¥1000.00</b><button class="way-select" type="button" aria-label="选择万联易达山东分公司运单">选择</button></div>
+              </div>
+            </div>
+          </div>
+          <div class="qr-panel">
+            <p data-qr-status-desc>请向油站工作人员出示二维码</p>
+            <div class="qr-box"><img data-payment-qr src="assets/payment-qr.png" alt="油气支付二维码" /></div>
+            <div class="qr-validity"><span>二维码有效期</span><b data-qr-countdown>04:59</b><button class="qr-refresh" type="button" data-qr-refresh>刷新二维码</button></div>
+          </div>
+          <div class="qr-flow" aria-label="二维码支付流程">
+            <div><b>1</b>油站扫码</div>
+            <div><b>2</b>录入加注</div>
+            <div><b>3</b>司机确认</div>
+          </div>
+          <p class="qr-footnote">油站扫码后录入油机金额，请在支付确认页核对油品、升数、运单扣款和实际支付金额。</p>
+        </section>
+
+        <section class="screen" data-screen="success">
+          <div class="sub-nav" style="background:#fff"><button class="sub-back" type="button" data-go="orders">‹</button>订单详情</div>
+          <div class="result-head">
+            <div class="result-title">
+              <span class="check"></span>
+              <div><h2>支付成功</h2><p data-success-description>3张同主体运单已完成组合支付</p></div>
+            </div>
+          </div>
+          <div class="receipt">
+            <div class="combo-notice" style="margin:0 0 8px">
+              <div><strong data-success-payment-title>组合支付已完成</strong><span>补贴已直接体现在万联价中</span></div>
+              <span class="combo-badge" data-success-way-count>3张运单</span>
+            </div>
+            <div class="amount-success"><b data-bind="paid">¥2299.96</b><small>司机实际支付</small></div>
+            <div class="success-summary">
+              <div><span>油机金额</span><b data-bind="machine">¥2708.29</b></div>
+              <div><span>加注升数</span><b data-bind="liters">416.66L</b></div>
+              <div><span>订单结算</span><b data-bind="settlement">¥2499.96</b></div>
+              <div class="account-subsidy-only"><span>平台补贴</span><b data-bind="subsidy">¥200.00</b></div>
+            </div>
+            <div class="detail-list">
+              <h3>加油明细</h3>
+              <div class="kv"><span>网点：</span><b data-success-station-name>1113站点</b></div>
+              <div class="kv"><span>商品数量：</span><b data-bind="liters">416.66L</b></div>
+              <div class="kv"><span>商品：</span><b>0#</b></div>
+              <div class="kv"><span>枪号：</span><b>6号</b></div>
+              <div class="kv"><span>油机价：</span><b>¥6.50/L</b></div>
+              <div class="kv"><span data-success-price-label>万联价：</span><b data-bind="unitPriceWithSymbol">¥5.52/L</b></div>
+              <div class="kv account-subsidy-only"><span>平台补贴：</span><b data-bind="subsidy">¥200.00</b></div>
+              <div class="kv"><span>实扣金额：</span><b data-bind="paid" style="font-size:20px">¥2299.96</b></div>
+            </div>
+            <div class="detail-list">
+              <h3>运单扣款明细</h3>
+              <div class="success-splits">
+                <div class="success-split" data-success-child="0"><b>万联易达天津分公司</b><strong data-child-field="paid">¥1000.00</strong><small data-child-field="summary">181.1600L · 结算¥1086.96 · 补贴¥86.96</small></div>
+                <div class="success-split" data-success-child="1"><b>万联易达北京分公司</b><strong data-child-field="paid">¥800.00</strong><small data-child-field="summary">144.9283L · 结算¥869.57 · 补贴¥69.57</small></div>
+                <div class="success-split" data-success-child="2" data-account-waybill="subsidized-only"><b>万联易达山东分公司</b><strong data-child-field="paid">¥499.96</strong><small data-child-field="summary">90.5717L · 结算¥543.43 · 补贴¥43.47</small></div>
+              </div>
+            </div>
+            <div class="detail-list" style="border-bottom:0">
+              <h3>订单信息</h3>
+              <div class="kv"><span>订单编号：</span><b>WYB20260601115758526394</b></div>
+              <div class="kv"><span>支付方式：</span><b data-success-payment-method>同主体组合支付</b></div>
+              <div class="kv"><span>司机姓名：</span><b>马永晋-18519790537</b></div>
+              <div class="kv"><span>下单时间：</span><b>2026-06-01 11:57:59</b></div>
+              <div class="kv"><span>关联运单：</span><b data-success-related-count>3张</b></div>
+              <div class="kv"><span>油气系统订单号：</span><b>OG202607110001</b></div>
+              <div class="kv"><span>能源订单上报金额：</span><b data-bind="settlement">¥2499.96</b></div>
+              <div class="kv"><span>计价说明：</span><b>补贴已体现在万联价中</b></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="bottom-tabs">
+        <button class="tab active" type="button" data-go="home"><b>⌂</b>首页</button>
+        <button class="tab" type="button" data-go="map"><b>⌖</b>地图</button>
+        <button class="tab" type="button" data-go="route"><b>⇅</b>路线</button>
+        <button class="tab" type="button" data-go="orders"><b>☰</b>订单</button>
+      </div>
+
+      <div class="mask" data-mask></div>
+
+      <section class="sheet account-confirm-sheet" data-sheet="account-confirm">
+        <div class="sheet-head">确认油气额度账户 <button class="close" type="button" data-close>×</button></div>
+        <div class="account-confirm-page">
+          <div class="account-confirm-summary" data-account-confirm-summary>
+            <div class="account-confirm-summary-head"><strong data-account-confirm-name>有补贴运单账户</strong><span data-account-confirm-badge>最高8%</span></div>
+            <div class="account-confirm-total"><span>账户油气总额度</span><b data-account-confirm-total>¥2800.00</b></div>
+            <p class="account-confirm-rule" data-account-confirm-rule>账户内运单按补贴规则计算万联价</p>
+          </div>
+          <div class="account-waybill-section">
+            <div class="account-waybill-heading"><strong>账户内可用运单</strong><span data-account-confirm-count>共3张</span></div>
+            <div data-account-confirm-waybills></div>
+          </div>
+          <p class="account-confirm-tip">确认后，首页油站价格和可支付额度将按此账户计算。</p>
+        </div>
+        <div class="account-confirm-bar">
+          <span>本次选择<b data-account-confirm-footer>¥2800.00</b></span>
+          <button type="button" data-account-confirm>确认使用此账户</button>
+        </div>
+      </section>
+
+      <section class="sheet" data-sheet="filter">
+        <div class="sheet-head">排序和筛选 <button class="close" type="button" data-close>×</button></div>
+        <div class="sheet-body">
+          <div class="sheet-section"><h3>排序</h3><div class="chips"><button class="chip" type="button">综合排序</button><button class="chip active" type="button">距离最近</button><button class="chip" type="button">价格最低</button></div></div>
+          <div class="sheet-section"><h3>商品</h3><div class="chips"><button class="chip" type="button">-35#车用柴油</button><button class="chip" type="button">-20#车用柴油</button><button class="chip" type="button">-10#车用柴油</button><button class="chip" type="button">0#车用柴油</button><button class="chip" type="button">编号798</button><button class="chip" type="button">10#</button><button class="chip" type="button">LNG</button><button class="chip" type="button">92#</button><button class="chip" type="button">0#</button></div></div>
+          <div class="sheet-section"><h3>品牌</h3><div class="chips"><button class="chip active" type="button">全部</button><button class="chip" type="button">中国石油</button><button class="chip" type="button">中国海油</button><button class="chip" type="button">中化道达尔</button><button class="chip" type="button">延长石油</button><button class="chip" type="button">壳牌</button><button class="chip" type="button">中国石化</button><button class="chip" type="button">中油BP</button><button class="chip" type="button">其他</button></div></div>
+          <div class="sheet-section"><h3>是否高速</h3><div class="chips"><button class="chip active" type="button">全部</button><button class="chip" type="button">高速</button><button class="chip" type="button">非高速</button></div></div>
+          <div class="sheet-section"><h3>距离</h3><div class="chips"><button class="chip active" type="button">全部</button><button class="chip" type="button">10KM内</button><button class="chip" type="button">30KM内</button><button class="chip" type="button">50KM内</button><button class="chip" type="button">100KM内</button></div></div>
+          <div class="sheet-actions"><button class="outline" type="button">重置</button><button class="primary" type="button" data-close>确定</button></div>
+        </div>
+      </section>
+
+      <section class="sheet" data-sheet="province">
+        <div class="sheet-head">选择省市 <button class="close" type="button" data-close>×</button></div>
+        <div class="sheet-body province-list">
+          <button class="active" type="button">请选择</button>
+          <button type="button">全部</button>
+          <button type="button">北京市</button>
+          <button type="button">天津市</button>
+          <button type="button">河北省</button>
+          <button type="button">山西省</button>
+          <button type="button">内蒙古自治区</button>
+          <button type="button">辽宁省</button>
+          <button type="button">吉林省</button>
+          <button type="button">黑龙江省</button>
+        </div>
+      </section>
+
+      <section class="sheet" data-sheet="product">
+        <div class="sheet-head">选择商品/枪号 <button class="close" type="button" data-close>×</button></div>
+        <div class="sheet-body">
+          <div class="sheet-section"><h3>商品</h3><div class="chips"><button class="chip active" type="button">0#</button><button class="chip" type="button">-10#</button></div></div>
+          <div class="sheet-section"><h3>枪号</h3><div class="chips"><button class="chip active" type="button">6</button><button class="chip" type="button">9</button><button class="chip" type="button">0</button><button class="chip" type="button">6</button></div></div>
+        </div>
+      </section>
+
+      <section class="sheet" data-sheet="confirm">
+        <div class="sheet-head">支付确认 <button class="close" type="button" data-close>×</button></div>
+        <div class="sheet-body">
+          <div class="qr-confirm-source" data-qr-confirm-source hidden><span>油站扫码已录入加注信息</span><b>油机金额 <em data-bind="machine">¥2708.00</em></b></div>
+          <div class="confirm-parent">
+            <div class="confirm-mode-row"><span data-confirm-payment-title>同主体组合支付 · 最高8%计价</span><span class="confirm-way-count"><b data-bind="wayCount">3张</b>关联运单</span></div>
+            <div class="confirm-pay-hero"><small>司机实际支付</small><strong data-bind="paid">¥2299.96</strong></div>
+            <div class="confirm-fuel-brief">
+              <span>加注<b data-bind="liters">416.66L</b></span>
+              <span>油机金额<b data-bind="machine">¥2708.29</b></span>
+            </div>
+            <div class="confirm-saving-brief">
+              <div class="confirm-saving-total"><span data-confirm-saving-label>合计优惠</span><strong data-bind="advantage">¥408.33</strong></div>
+              <p><span>直降优惠 <b data-bind="direct">¥208.33</b></span><span class="account-subsidy-only"><i>+</i>平台补贴 <b data-bind="subsidy">¥200.00</b></span></p>
+            </div>
+          </div>
+          <div class="split-caption"><span>运单扣款明细</span><small>按装货时间顺序</small></div>
+          <div class="split-order-card" data-confirm-child="0">
+            <div class="split-order-head"><span class="split-order-index">运单1</span><b>万联易达天津分公司</b><strong data-child-field="paid">¥1000.00</strong></div>
+            <div class="split-order-meta">TD2026071100000901 · 2026-07-10 08:00 · 额度¥1000.00</div>
+            <div class="split-order-brief"><span><b data-child-field="liter">181.1600L</b>加注</span><span><b data-child-field="machine">¥1177.54</b>油机金额</span></div>
+            <div class="split-order-finance"><span>结算<b data-child-field="settlement">¥1086.96</b></span><span class="account-subsidy-only">补贴<b data-child-field="subsidy">¥86.96</b></span><span>剩余<b data-child-field="remaining">¥0.00</b></span></div>
+          </div>
+          <div class="split-order-card" data-confirm-child="1">
+            <div class="split-order-head"><span class="split-order-index">运单2</span><b>万联易达北京分公司</b><strong data-child-field="paid">¥800.00</strong></div>
+            <div class="split-order-meta">TD2026071000000728 · 2026-07-11 09:30 · 额度¥800.00</div>
+            <div class="split-order-brief"><span><b data-child-field="liter">144.9283L</b>加注</span><span><b data-child-field="machine">¥942.03</b>油机金额</span></div>
+            <div class="split-order-finance"><span>结算<b data-child-field="settlement">¥869.57</b></span><span class="account-subsidy-only">补贴<b data-child-field="subsidy">¥69.57</b></span><span>剩余<b data-child-field="remaining">¥0.00</b></span></div>
+          </div>
+          <div class="split-order-card" data-confirm-child="2" data-account-waybill="subsidized-only">
+            <div class="split-order-head"><span class="split-order-index">运单3</span><b>万联易达山东分公司</b><strong data-child-field="paid">¥499.96</strong></div>
+            <div class="split-order-meta">TD2026070900000615 · 2026-07-12 14:00 · 额度¥1000.00</div>
+            <div class="split-order-brief"><span><b data-child-field="liter">90.5717L</b>加注</span><span><b data-child-field="machine">¥588.72</b>油机金额</span></div>
+            <div class="split-order-finance"><span>结算<b data-child-field="settlement">¥543.43</b></span><span class="account-subsidy-only">补贴<b data-child-field="subsidy">¥43.47</b></span><span>剩余<b data-child-field="remaining">¥500.04</b></span></div>
+          </div>
+          <div class="confirm-footer">
+            <div class="sheet-actions" style="padding:0"><button class="outline" type="button" data-close>取消</button><button class="primary" type="button" data-go="success">确认提交</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="sheet" data-sheet="subsidy">
+        <div class="sheet-head">计价说明 <button class="close" type="button" data-close>×</button></div>
+        <div class="sheet-body">
+          <div class="subsidy-total"><span>本次平台补贴</span><b data-bind="subsidy">¥200.00</b></div>
+          <div class="calc-card"><h4>直接体现在万联价中</h4><p data-policy-scope>组合支付统一按实际参与运单最高8%计算</p><div class="calc-grid"><div><b>¥6.00/L</b><small>企业结算价</small></div><div><b style="color:#1f2329" data-bind="effectiveRate">8%</b><small>本次比例</small></div><div><b data-bind="unitPriceWithSymbol">¥5.52/L</b><small>万联价</small></div></div><div class="policy" data-policy-formula>预估万联价：¥6.00 × (1 - 8%) = ¥5.52/L，仅用于支付前展示。</div></div>
+          <div class="calc-card"><h4>订单金额顺序</h4><p>最终金额不使用展示单价直接相乘</p><div class="calc-grid"><div><b data-bind="settlement">¥2499.96</b><small>订单结算</small></div><div><b style="color:#1f2329" data-bind="paid">¥2299.96</b><small>司机实付</small></div><div><b data-bind="subsidy">¥200.00</b><small>平台补贴</small></div></div><div class="policy">先计算订单结算金额，再计算司机实付，最后用“订单结算 - 司机实付”得到补贴。</div></div>
+        </div>
+      </section>
+
+      <div class="dialog" data-dialog="ocr">
+        <h3>温馨提示</h3>
+        <p>当前OCR识别失败次数过多，是否使用该图片作为上传图片？</p>
+        <div class="dialog-actions"><button class="cancel" type="button" data-close>继续尝试</button><button class="ok" type="button" data-close>确认使用</button></div>
+      </div>
+
+    </main>
+
+    <script>
+      const screens = [...document.querySelectorAll("[data-screen]")];
+      const mask = document.querySelector("[data-mask]");
+      const bottomTabs = document.querySelector(".bottom-tabs");
+      const phone = document.querySelector(".phone");
+      const globalBack = document.querySelector(".nav .back");
+
+      function closeLayers() {
+        document.querySelectorAll(".sheet.active,.dialog.active,.mask.active").forEach((el) => el.classList.remove("active"));
+      }
+
+      function go(name) {
+        closeLayers();
+        screens.forEach((screen) => screen.classList.toggle("active", screen.dataset.screen === name));
+        document.querySelectorAll(".tab").forEach((tab) => tab.classList.toggle("active", tab.dataset.go === name));
+        bottomTabs.style.display = "none";
+        document.querySelector(".float-actions").style.display = name === "home" ? "grid" : "none";
+        phone.dataset.currentScreen = name;
+        if (globalBack) globalBack.style.visibility = name === "account" || name === "account-confirm" ? "hidden" : "visible";
+        window.scrollTo({ top: 0, behavior: "instant" });
+        if (name === "qr-payment") startQrCountdown();
+        else stopQrCountdown();
+      }
+
+      function openLayer(name) {
+        mask.classList.add("active");
+        const sheet = document.querySelector(`[data-sheet="${name}"]`);
+        const dialog = document.querySelector(`[data-dialog="${name}"]`);
+        if (sheet) sheet.classList.add("active");
+        if (dialog) dialog.classList.add("active");
+      }
+
+      const pricing = {
+        machinePrice: 6.5,
+        settlementPrice: 6,
+        quotas: [1000, 800, 1000],
+        rates: [0.06, 0.08, 0.05]
+      };
+      const accountConfigs = {
+        subsidized: {
+          name: "有补贴运单账户",
+          priceLabel: "万联价",
+          quotas: [1000, 800, 1000],
+          rates: [0.06, 0.08, 0.05],
+          badge: "最高8%",
+          rule: "账户内运单按补贴规则计算万联价"
+        },
+        enterprise: {
+          name: "无补贴运单账户",
+          priceLabel: "企业价",
+          quotas: [1000, 800],
+          rates: [0, 0],
+          badge: "企业价",
+          rule: "账户内运单按网货主体企业价格加油"
+        }
+      };
+      const accountWaybills = [
+        { company: "万联易达天津分公司", plate: "蒙L94581", number: "TD2026071100000901", time: "2026-07-10 08:00" },
+        { company: "万联易达北京分公司", plate: "蒙L94581", number: "TD2026071000000728", time: "2026-07-11 09:30" },
+        { company: "万联易达山东分公司", plate: "蒙L94581", number: "TD2026070900000615", time: "2026-07-12 14:00" }
+      ];
+      let selectedAccountType = null;
+      let pendingAccountType = null;
+      let pendingAccountDestination = "home";
+      let pendingInitialLayer = null;
+      let inputMode = "liter";
+      let selectedWaybillIndex = null;
+      let orderSource = "direct";
+      let qrSeconds = 299;
+      let qrTimer = null;
+      let qrExpired = false;
+      let lastOrderResult = null;
+      const comboInputBeforeSelection = { liter: "", amount: "" };
+
+      const round2 = (value) => Math.round((value + Number.EPSILON) * 100) / 100;
+      const round4 = (value) => Math.round((value + Number.EPSILON) * 10000) / 10000;
+      const floor4 = (value) => Math.floor((value + Number.EPSILON) * 10000) / 10000;
+      const money = (value) => `¥${round2(value).toFixed(2)}`;
+      const liters = (value, digits = 2) => `${Number(value).toFixed(digits)}L`;
+
+      function showAccountConfirmation(type) {
+        const config = accountConfigs[type];
+        if (!config) return;
+
+        pendingAccountType = type;
+        const total = config.quotas.reduce((sum, value) => sum + value, 0);
+        const summary = document.querySelector("[data-account-confirm-summary]");
+        summary?.classList.toggle("enterprise", type === "enterprise");
+        setText("[data-account-confirm-name]", config.name);
+        setText("[data-account-confirm-badge]", config.badge);
+        setText("[data-account-confirm-total]", money(total));
+        setText("[data-account-confirm-rule]", config.rule);
+        setText("[data-account-confirm-count]", `共${config.quotas.length}张`);
+        setText("[data-account-confirm-footer]", money(total));
+
+        const waybillContainer = document.querySelector("[data-account-confirm-waybills]");
+        if (waybillContainer) {
+          waybillContainer.innerHTML = config.quotas.map((quota, index) => {
+            const waybill = accountWaybills[index];
+            const rateText = type === "enterprise" ? "企业价" : `补贴${Math.round(config.rates[index] * 100)}%`;
+            return `<div class="account-waybill-item">
+              <div class="account-waybill-top"><strong>${waybill.company}</strong><em>${waybill.plate} · ${rateText}</em></div>
+              <div class="account-waybill-no">运单号：${waybill.number}</div>
+              <div class="account-waybill-bottom"><span class="account-waybill-time">装货时间 ${waybill.time}</span><span class="account-waybill-quota"><small>可用油气额度</small><b>${money(quota)}</b></span></div>
+            </div>`;
+          }).join("");
+        }
+        openLayer("account-confirm");
+      }
+
+      function applyAccountContext(type, destination = "home") {
+        const config = accountConfigs[type];
+        if (!config) return;
+
+        selectedAccountType = type;
+        pricing.quotas = [...config.quotas];
+        pricing.rates = [...config.rates];
+        selectedWaybillIndex = null;
+        comboInputBeforeSelection.liter = "";
+        comboInputBeforeSelection.amount = "";
+
+        phone.classList.toggle("enterprise-account", type === "enterprise");
+        phone.classList.toggle("subsidized-account", type === "subsidized");
+        document.querySelectorAll("[data-account-select]").forEach((button) => {
+          button.classList.toggle("current", button.dataset.accountSelect === type);
+        });
+        setText("[data-account-name]", config.name);
+        setText("[data-home-price-label]", config.priceLabel);
+        setText("[data-detail-price-label]", config.priceLabel);
+        setText("[data-success-price-label]", `${config.priceLabel}：`);
+        setText("[data-saving-title]", type === "enterprise" ? "直降优惠" : "合计优惠");
+        setText("[data-submit-saving-label]", type === "enterprise" ? "直降优惠" : "合计优惠");
+        setText("[data-confirm-saving-label]", type === "enterprise" ? "直降优惠" : "合计优惠");
+
+        document.querySelectorAll("[data-station-price]").forEach((card) => {
+          const [subsidizedPrice, enterprisePrice] = card.dataset.stationPrice.split("|");
+          const value = type === "enterprise" ? enterprisePrice : subsidizedPrice;
+          const target = card.querySelector("[data-home-price]");
+          if (target) target.textContent = `¥${value}/L`;
+        });
+
+        document.querySelectorAll(".way-card.combo-way").forEach((card) => {
+          card.classList.remove("selected");
+          const button = card.querySelector(".way-select");
+          if (button) {
+            button.textContent = "选择";
+            button.setAttribute("aria-pressed", "false");
+          }
+        });
+
+        const input = document.querySelector("[data-fuel-input]");
+        if (input) input.value = "";
+        updateOrder();
+        go(destination);
+        if (pendingInitialLayer) {
+          openLayer(pendingInitialLayer);
+          pendingInitialLayer = null;
+        }
+      }
+
+      function maxSettlementForQuota(quota, subsidyRate) {
+        const paidRate = 1 - subsidyRate;
+        let cents = Math.floor((quota / paidRate) * 100);
+        while (round2((cents / 100) * paidRate) > quota) cents -= 1;
+        while (round2(((cents + 1) / 100) * paidRate) <= quota) cents += 1;
+        return cents / 100;
+      }
+
+      function calculateOrder(rawValue) {
+        const entered = Math.max(0, Number(rawValue) || 0);
+        const activeWaybills = pricing.quotas
+          .map((quota, index) => ({ index, quota, rate: pricing.rates[index] }))
+          .filter(({ index }) => selectedWaybillIndex === null || selectedWaybillIndex === index);
+        const effectiveRate = Math.max(...activeWaybills.map(({ rate }) => rate));
+        const totalQuota = activeWaybills.reduce((sum, { quota }) => sum + quota, 0);
+        const maxSettlement = maxSettlementForQuota(totalQuota, effectiveRate);
+        const maxInput = inputMode === "liter"
+          ? Math.floor((maxSettlement / pricing.settlementPrice) * 100) / 100
+          : Math.floor((maxSettlement / pricing.settlementPrice) * pricing.machinePrice);
+        const input = Math.min(entered, maxInput);
+        const parentLiter = inputMode === "liter" ? round2(input) : round4(input / pricing.machinePrice);
+        const parentMachine = inputMode === "liter" ? round2(parentLiter * pricing.machinePrice) : Math.floor(input);
+        const parentSettlement = inputMode === "liter"
+          ? round2(parentLiter * pricing.settlementPrice)
+          : round2(parentMachine / pricing.machinePrice * pricing.settlementPrice);
+        const parentPaid = round2(parentSettlement * (1 - effectiveRate));
+        const parentSubsidy = round2(parentSettlement - parentPaid);
+        const direct = round2(parentMachine - parentSettlement);
+        const advantage = round2(parentMachine - parentPaid);
+        const unitPrice = round2(pricing.settlementPrice * (1 - effectiveRate));
+
+        let remainingSettlement = parentSettlement;
+        let usedLiter = 0;
+        let usedMachine = 0;
+        const children = pricing.quotas.map((quota) => ({
+          paid: 0,
+          settlement: 0,
+          subsidy: 0,
+          liter: 0,
+          machine: 0,
+          remaining: quota,
+          rate: effectiveRate
+        }));
+
+        activeWaybills.forEach(({ index, quota, rate }, activeIndex) => {
+          if (remainingSettlement <= 0) {
+            return;
+          }
+
+          const quotaSettlement = maxSettlementForQuota(quota, effectiveRate);
+          const isTail = activeIndex === activeWaybills.length - 1 || remainingSettlement <= quotaSettlement;
+          const settlement = isTail ? round2(remainingSettlement) : quotaSettlement;
+          const paid = round2(settlement * (1 - effectiveRate));
+          const subsidy = round2(settlement - paid);
+          let childLiter;
+          let childMachine;
+
+          if (isTail) {
+            childLiter = round4(parentLiter - usedLiter);
+            childMachine = round2(parentMachine - usedMachine);
+          } else if (inputMode === "liter") {
+            childLiter = floor4(settlement / pricing.settlementPrice);
+            childMachine = round2(childLiter * pricing.machinePrice);
+          } else {
+            childMachine = round2(settlement / pricing.settlementPrice * pricing.machinePrice);
+            childLiter = round4(childMachine / pricing.machinePrice);
+          }
+
+          usedLiter = round4(usedLiter + childLiter);
+          usedMachine = round2(usedMachine + childMachine);
+          remainingSettlement = round2(remainingSettlement - settlement);
+          children[index] = {
+            paid,
+            settlement,
+            subsidy,
+            liter: childLiter,
+            machine: childMachine,
+            remaining: round2(quota - paid),
+            originalRate: rate,
+            rate: effectiveRate
+          };
+        });
+
+        return {
+          input,
+          wasCapped: entered > maxInput,
+          maxInput,
+          machine: parentMachine,
+          liter: parentLiter,
+          settlement: parentSettlement,
+          paid: parentPaid,
+          subsidy: parentSubsidy,
+          direct,
+          advantage,
+          children,
+          effectiveRate,
+          wayCount: activeWaybills.length,
+          isCombo: selectedWaybillIndex === null,
+          selectedWaybillIndex,
+          unitPrice
+        };
+      }
+
+      function setBind(name, value) {
+        document.querySelectorAll(`[data-bind="${name}"]`).forEach((node) => {
+          node.textContent = value;
+        });
+      }
+
+      function updateChildCard(card, child) {
+        if (!card) return;
+        card.hidden = child.settlement <= 0;
+        const values = {
+          paid: money(child.paid),
+          liter: liters(child.liter, 4),
+          machine: money(child.machine),
+          settlement: money(child.settlement),
+          subsidy: money(child.subsidy),
+          remaining: money(child.remaining),
+          rate: `${Math.round((child.originalRate ?? child.rate) * 100)}% / ${Math.round(child.rate * 100)}%`,
+          summary: selectedAccountType === "enterprise"
+            ? `${liters(child.liter, 4)} · 结算${money(child.settlement)}`
+            : `${liters(child.liter, 4)} · 结算${money(child.settlement)} · 补贴${money(child.subsidy)}`
+        };
+        Object.entries(values).forEach(([field, value]) => {
+          card.querySelectorAll(`[data-child-field="${field}"]`).forEach((node) => {
+            node.textContent = value;
+          });
+        });
+      }
+
+      function setText(selector, value) {
+        document.querySelectorAll(selector).forEach((node) => {
+          node.textContent = value;
+        });
+      }
+
+      function updatePaymentMode(result) {
+        const rateText = `${Math.round(result.effectiveRate * 100)}%`;
+        const selectedQuota = result.selectedWaybillIndex === null ? null : pricing.quotas[result.selectedWaybillIndex];
+        const paymentMethod = result.isCombo ? "同主体组合支付" : "当前运单支付";
+        const isEnterprise = selectedAccountType === "enterprise";
+        const pricingText = isEnterprise ? "企业价计价" : `最高${rateText}计价`;
+
+        setText("[data-payment-title]", result.isCombo ? "未选择运单，按组合支付" : "已选择当前运单，单独支付");
+        setText("[data-payment-desc]", result.isCombo ? "系统按装货时间自动依次扣减" : "再次点击已选运单可恢复组合支付");
+        setText("[data-payment-badge]", result.isCombo ? "组合支付" : "当前运单");
+        setText("[data-waybill-status]", result.isCombo ? "不选择则自动组合支付" : `已选额度 ${money(selectedQuota)} · 再次点击可取消`);
+        setText("[data-confirm-payment-title]", `${paymentMethod} · ${isEnterprise ? "企业价" : result.isCombo ? `最高${rateText}计价` : `${rateText}计价`}`);
+        setText("[data-success-description]", result.isCombo ? `${result.wayCount}张同主体运单已完成组合支付` : "当前运单已完成单独支付");
+        setText("[data-success-payment-title]", orderSource === "qr" ? "二维码支付已完成" : result.isCombo ? "组合支付已完成" : "当前运单支付已完成");
+        setText("[data-success-way-count]", `${result.wayCount}张运单`);
+        setText("[data-success-payment-method]", orderSource === "qr" ? `二维码支付 · ${paymentMethod}` : paymentMethod);
+        setText("[data-success-related-count]", `${result.wayCount}张`);
+        setText("[data-policy-scope]", result.isCombo ? `组合支付统一按实际参与运单最高${rateText}计算` : `当前运单按自身${rateText}比例计算`);
+        setText("[data-policy-formula]", `预估万联价：¥6.00 × (1 - ${rateText}) = ¥${result.unitPrice.toFixed(2)}/L，仅用于支付前展示。`);
+        setText("[data-detail-rate]", pricingText);
+        setText("[data-qr-rate]", pricingText);
+        setBind("wayCount", `${result.wayCount}张`);
+      }
+
+      function updateOrder() {
+        const input = document.querySelector("[data-fuel-input]");
+        const result = calculateOrder(input?.value);
+        if (!result || !input) return;
+        lastOrderResult = result;
+        if (result.wasCapped) input.value = inputMode === "liter" ? result.maxInput.toFixed(2) : String(result.maxInput);
+
+        setBind("machine", money(result.machine));
+        setBind("liters", liters(result.liter, inputMode === "liter" ? 2 : 4));
+        setBind("settlement", money(result.settlement));
+        setBind("paid", money(result.paid));
+        setBind("subsidy", money(result.subsidy));
+        setBind("direct", money(result.direct));
+        setBind("advantage", money(result.advantage));
+        setBind("effectiveRate", `${Math.round(result.effectiveRate * 100)}%`);
+        setBind("unitPrice", `${result.unitPrice.toFixed(2)}/L`);
+        setBind("unitPriceWithSymbol", `¥${result.unitPrice.toFixed(2)}/L`);
+        updatePaymentMode(result);
+
+        const scopeQuota = result.isCombo
+          ? pricing.quotas.reduce((sum, quota) => sum + quota, 0)
+          : pricing.quotas[result.selectedWaybillIndex];
+        const qrSettlementMode = document.querySelector('[data-screen="qr-payment"]')?.dataset.settlementMode || "amount";
+        const scopeSettlement = maxSettlementForQuota(scopeQuota, result.effectiveRate);
+        const maxMachineAmount = Math.floor(scopeSettlement / pricing.settlementPrice * pricing.machinePrice);
+        const maxFuelLiters = Math.floor(scopeSettlement / pricing.settlementPrice);
+        setText("[data-qr-scope-title]", result.isCombo ? "多运单组合支付" : "当前运单支付");
+        setText("[data-qr-way-count]", `${result.wayCount}张运单`);
+        setText("[data-qr-total-quota]", money(scopeQuota));
+        setText("[data-qr-max-label]", qrSettlementMode === "liter" ? "最大可加注油机升数" : "最大可加注油机金额");
+        setText("[data-qr-max-value]", qrSettlementMode === "liter" ? `${maxFuelLiters}L` : `¥${maxMachineAmount}`);
+        setText("[data-qr-rate]", selectedAccountType === "enterprise" ? "企业价计价" : `本次${Math.round(result.effectiveRate * 100)}%计价`);
+        setText("[data-detail-scope-title]", result.isCombo ? "多运单组合支付" : "当前运单支付");
+        setText("[data-detail-way-count]", `${result.wayCount}张运单`);
+        setText("[data-detail-total-quota]", money(scopeQuota));
+        setText("[data-detail-max-label]", inputMode === "liter" ? "当前运单最大可加注油机升数" : "当前运单最大可加注油机金额");
+        setText("[data-detail-max-value]", inputMode === "liter" ? `${maxFuelLiters}L` : `¥${maxMachineAmount}`);
+        setText("[data-detail-rate]", selectedAccountType === "enterprise" ? "企业价计价" : `本次${Math.round(result.effectiveRate * 100)}%计价`);
+
+        const sideLabel = document.querySelector("[data-entry-side-label]");
+        const sideValue = document.querySelector("[data-entry-side-value]");
+        if (sideLabel) sideLabel.textContent = "约为";
+        if (sideValue) sideValue.textContent = inputMode === "liter" ? money(result.machine) : liters(result.liter, 4);
+
+        result.children.forEach((child, index) => {
+          updateChildCard(document.querySelector(`[data-confirm-child="${index}"]`), child);
+          updateChildCard(document.querySelector(`[data-success-child="${index}"]`), child);
+        });
+
+        const hint = document.querySelector("[data-entry-hint]");
+        if (hint) {
+          hint.textContent = result.wasCapped
+            ? `已按${result.wayCount}张运单可用油气额度自动调整为${inputMode === "liter" ? result.maxInput.toFixed(2) + "L" : money(result.maxInput)}。`
+            : inputMode === "liter"
+              ? result.isCombo
+                ? "输入升数最多两位小数，未选运单时系统按FIFO组合支付。"
+                : "输入升数最多两位小数，本次仅使用当前选中运单。"
+              : result.isCombo
+                ? "油机金额输入正整数，未选运单时系统按FIFO组合支付。"
+                : "油机金额输入正整数，本次仅使用当前选中运单。";
+        }
+      }
+
+      function toggleWaybillSelection(card) {
+        const index = Number(card.dataset.wayIndex);
+        const input = document.querySelector("[data-fuel-input]");
+        if (selectedWaybillIndex === index) {
+          selectedWaybillIndex = null;
+          if (input) input.value = comboInputBeforeSelection[inputMode];
+        } else {
+          if (selectedWaybillIndex === null && input) comboInputBeforeSelection[inputMode] = input.value;
+          selectedWaybillIndex = index;
+          if (input) input.value = comboInputBeforeSelection[inputMode];
+        }
+        document.querySelectorAll(".way-card.combo-way").forEach((waybill) => {
+          const selected = Number(waybill.dataset.wayIndex) === selectedWaybillIndex;
+          waybill.classList.toggle("selected", selected);
+          const selectButton = waybill.querySelector(".way-select");
+          const company = waybill.querySelector(".way-head b")?.textContent || "当前";
+          selectButton.textContent = selected ? "已选择" : "选择";
+          selectButton.setAttribute("aria-pressed", String(selected));
+          selectButton.setAttribute("aria-label", selected ? `取消选择${company}运单` : `选择${company}运单`);
+        });
+        card.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+        updateOrder();
+        if (document.querySelector('[data-screen="qr-payment"]')?.classList.contains("active")) refreshQrCode();
+      }
+
+      function switchInputMode(mode, resetInput = false) {
+        inputMode = mode;
+        document.querySelectorAll("[data-input-mode]").forEach((button) => {
+          button.classList.toggle("active", button.dataset.inputMode === mode);
+        });
+        const input = document.querySelector("[data-fuel-input]");
+        const unit = document.querySelector("[data-entry-unit]");
+        if (input) {
+          if (resetInput) comboInputBeforeSelection[mode] = "";
+          input.value = resetInput ? "" : comboInputBeforeSelection[mode];
+          input.placeholder = mode === "liter" ? "请输入加油机升数" : "请输入油机金额";
+          input.step = mode === "liter" ? "0.01" : "1";
+          input.setAttribute("aria-label", mode === "liter" ? "加油机升数" : "油机金额");
+        }
+        if (unit) unit.textContent = mode === "liter" ? "L" : "元";
+        updateOrder();
+      }
+
+      function fillMaximumFuel() {
+        const input = document.querySelector("[data-fuel-input]");
+        if (!input) return;
+        const result = calculateOrder(0);
+        input.value = String(Math.floor(result.maxInput));
+        if (selectedWaybillIndex === null) comboInputBeforeSelection[inputMode] = input.value;
+        updateOrder();
+      }
+
+      function updateQrCountdown() {
+        const minutes = String(Math.floor(qrSeconds / 60)).padStart(2, "0");
+        const seconds = String(qrSeconds % 60).padStart(2, "0");
+        setText("[data-qr-countdown]", `${minutes}:${seconds}`);
+      }
+
+      function stopQrCountdown() {
+        if (qrTimer) window.clearInterval(qrTimer);
+        qrTimer = null;
+      }
+
+      function startQrCountdown() {
+        stopQrCountdown();
+        qrSeconds = 299;
+        qrExpired = false;
+        updateQrCountdown();
+        setText("[data-qr-status-desc]", "请向油站工作人员出示二维码");
+        qrTimer = window.setInterval(() => {
+          qrSeconds -= 1;
+          updateQrCountdown();
+          if (qrSeconds <= 0) {
+            stopQrCountdown();
+            qrExpired = true;
+            setText("[data-qr-status-desc]", "二维码已过期，请刷新后重新出示");
+          }
+        }, 1000);
+      }
+
+      function refreshQrCode() {
+        const image = document.querySelector("[data-payment-qr]");
+        if (image) image.src = `assets/payment-qr.png?v=${Date.now()}`;
+        startQrCountdown();
+      }
+
+      function confirmQrPayment(scanEvent) {
+        if (qrExpired) {
+          refreshQrCode();
+          return;
+        }
+        stopQrCountdown();
+        orderSource = "qr";
+        setText("[data-qr-status-desc]", "请核对金额、升数及运单扣款明细");
+        const scannedMachineAmount = Math.max(1, Math.floor(Number(scanEvent?.detail?.machineAmount) || 2708));
+        if (inputMode !== "amount") switchInputMode("amount");
+        const input = document.querySelector("[data-fuel-input]");
+        if (input) input.value = String(scannedMachineAmount);
+        updateOrder();
+        const source = document.querySelector("[data-qr-confirm-source]");
+        if (source) source.hidden = false;
+        setText("[data-success-station-name]", "二维码测试站");
+        if (lastOrderResult) updatePaymentMode(lastOrderResult);
+        window.setTimeout(() => openLayer("confirm"), 260);
+      }
+
+      document.addEventListener("click", (event) => {
+        const accountSelect = event.target.closest("[data-account-select]");
+        const accountSwitch = event.target.closest("[data-account-switch]");
+        const goBtn = event.target.closest("[data-go]");
+        const openBtn = event.target.closest("[data-open]");
+        const closeBtn = event.target.closest("[data-close]");
+        const wayCard = event.target.closest(".way-card");
+
+        if (accountSelect) {
+          showAccountConfirmation(accountSelect.dataset.accountSelect);
+          return;
+        }
+
+        if (event.target.closest("[data-account-confirm]")) {
+          applyAccountContext(pendingAccountType, pendingAccountDestination);
+          return;
+        }
+
+        if (accountSwitch) {
+          pendingAccountDestination = "home";
+          go("account");
+          return;
+        }
+
+        if (goBtn) {
+          if (goBtn.dataset.go === "detail" && goBtn.dataset.settlementMode) {
+            switchInputMode(goBtn.dataset.settlementMode, true);
+          }
+          go(goBtn.dataset.go);
+        }
+        if (openBtn) {
+          if (openBtn.dataset.open === "confirm") {
+            orderSource = "direct";
+            const source = document.querySelector("[data-qr-confirm-source]");
+            if (source) source.hidden = true;
+            setText("[data-success-station-name]", "1113站点");
+            if (lastOrderResult) updatePaymentMode(lastOrderResult);
+          }
+          openLayer(openBtn.dataset.open);
+        }
+        if (closeBtn || event.target === mask) {
+          closeLayers();
+        }
+        if (wayCard?.classList.contains("combo-way")) {
+          toggleWaybillSelection(wayCard);
+        } else if (wayCard) {
+          document.querySelectorAll(".way-card").forEach((card) => card.classList.toggle("selected", card === wayCard));
+          wayCard.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+        }
+
+        const modeButton = event.target.closest("[data-input-mode]");
+        if (modeButton) switchInputMode(modeButton.dataset.inputMode);
+
+        if (event.target.closest("[data-fill-max]")) fillMaximumFuel();
+
+        if (event.target.closest("[data-qr-refresh]")) refreshQrCode();
+      });
+
+      window.addEventListener("wanyoubao:qr-scanned", confirmQrPayment);
+
+      document.querySelector("[data-fuel-input]")?.addEventListener("input", updateOrder);
+
+      document.querySelector(".route-summary")?.addEventListener("click", () => go("route-list"));
+
+      const initialParams = new URLSearchParams(window.location.search);
+      const initialScreen = initialParams.get("screen");
+      const initialLayer = initialParams.get("sheet") || initialParams.get("dialog");
+      pendingAccountDestination = initialScreen && initialScreen !== "account" && document.querySelector(`[data-screen="${initialScreen}"]`)
+        ? initialScreen
+        : "home";
+      pendingInitialLayer = initialLayer || null;
+      go("account");
+      updateOrder();
+    </script>
+  </body>
+</html>
