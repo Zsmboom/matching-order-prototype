@@ -208,11 +208,21 @@ tbody tr.sub-row td{padding-top:8px;padding-bottom:8px;font-size:11.5px;color:va
 td .t1{font-weight:600;letter-spacing:-.01em}
 td .t2{color:var(--muted);font-size:11px;margin-top:2px;overflow-wrap:anywhere}
 td .t1.mono,td .t2.mono,td.mono{white-space:nowrap}
-.acts{display:flex;flex-wrap:nowrap;gap:6px;justify-content:flex-end;align-items:center;min-height:1.4em;position:sticky;right:0;background:#fff;z-index:2;vertical-align:middle}
+/* 操作列：必须保持 table-cell（原先写 display:flex 使 td 失去表格单元格身份，
+   行高大于按钮高度时背景只铺到内容高度，看起来"没盖住本行"）——横向用内联+右对齐，间距靠 margin */
+.acts{white-space:nowrap;text-align:right;position:sticky;right:0;background:#fff;z-index:2;vertical-align:middle}
+.acts>*{vertical-align:middle}
+.acts>*+*{margin-left:6px}
 .btn-group{display:inline-flex;gap:6px;white-space:nowrap}
 .btn-group button{flex:none}
 .acts button{background:none;border:0;padding:0;color:var(--brand-ink);cursor:pointer;font-size:12px}
 .acts button:hover{text-decoration:underline}
+/* 操作按钮多时允许换行：只作用于显式加了 acts-wrap 的列（自营订单操作列），不影响其他页面 */
+.acts.acts-wrap{white-space:normal}
+.acts.acts-wrap>*{display:inline-block;margin:2px 0 2px 6px}
+tbody tr:hover td.acts{background:var(--surface-2)}
+tbody tr:nth-child(even) td.acts{background:var(--surface)}
+thead th.acts{box-shadow:-6px 0 8px -8px rgba(0,0,0,.28)}
 .acts button.danger{color:var(--bad)}
 .acts button.off{color:var(--muted);cursor:not-allowed;text-decoration:none}
 
@@ -1237,12 +1247,12 @@ const REFUNDS = [
   {id:'TK20260826000031', order:'CHY20260826212244890', by:'油站', byName:'沈阳浑南加油站', cust:'蒙晋通达运输有限公司',
    station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司', driver:'孙倩', plate:'蒙A2288L',
    reason:'实际未加注，油枪跳枪异常', amt:362.88, fee:4.35, apply:'2026-08-26 21:12',
-   audit:'已确认', auditBy:'张世民（运营中台）', auditAt:'2026-08-26 21:20', st:'已退款',
+   audit:'已确认', auditBy:'张世民（运营中台）', auditAt:'2026-08-26 21:20', st:'退款成功',
    done:'2026-08-26 21:31', inv:'已开票 · 已红冲'},
   {id:'TK20260827000042', order:'CHY20260827084533112', by:'运营平台', byName:'张世民（运营中台）', cust:'鲁通冷链物流有限公司',
    station:'济南章丘服务区站', stationCo:'中交兴路能源有限公司', driver:'王志刚', plate:'鲁F1234Q',
    reason:'加注量与实际不符，多计 6.2kg', amt:41.20, fee:0.49, apply:'2026-08-27 09:02',
-   audit:'已确认', auditBy:'张世民（运营中台）', auditAt:'2026-08-27 09:05', st:'审核中',
+   audit:'已确认', auditBy:'张世民（运营中台）', auditAt:'2026-08-27 09:05', st:'退款中',
    done:'—', inv:'未开票'},
   {id:'TK20260827000045', order:'CHY20260827091107021', by:'油站', byName:'津南万顺站', cust:'蒙晋通达运输有限公司',
    station:'津南万顺站', stationCo:'高灯能源科技有限公司', driver:'宿红', plate:'蒙T9U81U',
@@ -1265,7 +1275,21 @@ const REFUNDS = [
   {id:'TK20260827000063', order:'MH20260826175200000004', by:'运营平台', byName:'张世民（运营中台）', cust:'测试客户2',
    station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司', driver:'李强', plate:'京A1234Q',
    reason:'重复支付', amt:1230.00, fee:14.76, apply:'2026-08-27 11:02',
-   audit:'待确认', auditBy:'—', auditAt:'—', st:'审核中', done:'—', inv:'红冲中'}
+   audit:'待确认', auditBy:'—', auditAt:'—', st:'退款中', done:'—', inv:'红冲中'},
+
+  /* 现网退款状态 5 值补样：已驳回 / 退款失败 */
+  {id:'TK20260827000066', order:'CHY20260827092441108', by:'运营平台', byName:'张世民（运营中台）', cust:'鲁通冷链物流有限公司',
+   station:'济南历下高新站', stationCo:'高灯能源科技有限公司', driver:'王志刚', plate:'鲁F1234Q',
+   reason:'客户反馈重复扣款，经核实为两次独立加注', amt:268.40, fee:3.22, apply:'2026-08-27 13:10',
+   audit:'已驳回', auditBy:'张世民（运营中台）', auditAt:'2026-08-27 13:26', st:'已驳回',
+   done:'—', inv:'未开票', rejectNote:'核实为两笔独立加注订单，不予退款'},
+
+  {id:'TK20260827000069', order:'MH20260827094500000001', by:'油站', byName:'沈阳浑南加油站', cust:'万联易达物流科技有限公司',
+   station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司', driver:'田玲玲', plate:'辽AEK808',
+   reason:'重复开票冲红失败，退款终止', amt:795.02, fee:9.54, apply:'2026-08-27 14:02',
+   audit:'已确认', auditBy:'张世民（运营中台）', auditAt:'2026-08-27 14:15', st:'退款失败',
+   done:'—', inv:'红冲失败', redResult:'红冲失败', redFail:'乐企红冲接口返回：购方已认证抵扣，需线下沟通抵扣处理',
+   failNote:'红冲失败，退款单终止；线下抵扣处理完成后重新发起退款申请'}
 ];
 
 /* ================= 乐企开票演示数据 =================
@@ -1291,25 +1315,28 @@ const LEQI_INV = [
    drawer:'中石油天津销售分公司', buyer:'万联易达物流科技有限公司', amt:642.69, t:'2026-08-26 15:09:38',
    trigger:'自动-支付成功', file:'乐企发票_04412026082600001149.pdf'},
   {no:'04412026091200001301', order:'ZY20260912093102201', biz:'自营', type:'蓝票', rel:'—',
-   drawer:'中石化辽宁石油分公司', buyer:'万联易达物流科技有限公司', amt:1286.40, t:'2026-09-12 09:32:18',
+   drawer:'中石化辽宁石油分公司', buyer:'万联易达科技有限公司（平台）', amt:1286.40, disc:30.00, t:'2026-09-12 09:32:18',
    trigger:'自动-支付成功', file:'乐企发票_04412026091200001301.pdf'},
   {no:'04412026091100001288', order:'ZY20260911184206742', biz:'自营', type:'蓝票', rel:'—',
-   drawer:'中石油天津销售分公司', buyer:'万联易达物流科技有限公司', amt:590.46, t:'2026-09-11 18:43:07',
+   drawer:'中石油天津销售分公司', buyer:'万联易达科技有限公司（平台）', amt:590.46, t:'2026-09-11 18:43:07',
    trigger:'自动-支付成功', file:'乐企发票_04412026091100001288.pdf'},
   {no:'04412026091200001315', order:'ZY20260911184206742', biz:'自营', type:'红票', rel:'04412026091100001288',
-   drawer:'中石油天津销售分公司', buyer:'万联易达物流科技有限公司', amt:-590.46, t:'2026-09-12 10:02:51',
+   drawer:'中石油天津销售分公司', buyer:'万联易达科技有限公司（平台）', amt:-590.46, t:'2026-09-12 10:02:51',
    trigger:'退款红冲', file:'乐企发票_04412026091200001315.pdf'},
   {no:'04412026091100001264', order:'ZY20260911102209308', biz:'自营', type:'蓝票', rel:'—',
-   drawer:'中石化辽宁石油分公司', buyer:'万联易达物流科技有限公司', amt:812.30, t:'2026-09-11 10:23:40',
+   drawer:'中石化辽宁石油分公司', buyer:'万联易达科技有限公司（平台）', amt:812.30, t:'2026-09-11 10:23:40',
    trigger:'自动-支付成功', file:'乐企发票_04412026091100001264.pdf'},
   {no:'04412026091000001242', order:'ZY20260910173004233', biz:'自营', type:'蓝票', rel:'—',
-   drawer:'中石化辽宁石油分公司', buyer:'万联易达物流科技有限公司', amt:350.11, t:'2026-09-10 17:31:22',
+   drawer:'中石化辽宁石油分公司', buyer:'万联易达科技有限公司（平台）', amt:350.11, t:'2026-09-10 17:31:22',
    trigger:'自动-支付成功', file:'乐企发票_04412026091000001242.pdf'},
   {no:'04412026091000001255', order:'ZY20260910173004233', biz:'自营', type:'红票', rel:'04412026091000001242',
-   drawer:'中石化辽宁石油分公司', buyer:'万联易达物流科技有限公司', amt:-350.11, t:'2026-09-11 09:18:03',
+   drawer:'中石化辽宁石油分公司', buyer:'万联易达科技有限公司（平台）', amt:-350.11, t:'2026-09-11 09:18:03',
    trigger:'退款红冲', file:'乐企发票_04412026091000001255.pdf'},
+  {no:'04412026091200001340', order:'ZY20260912143501882', biz:'自营', type:'蓝票', rel:'—',
+   drawer:'中石化辽宁石油分公司', buyer:'万联易达科技有限公司（平台）', amt:1032.60, t:'2026-09-12 14:35:40',
+   trigger:'自动-支付成功', file:'乐企发票_04412026091200001340.pdf'},
   {no:'04412026091200001327', order:'ZY20260910173004233', biz:'自营', type:'蓝票', rel:'04412026091000001255',
-   drawer:'中石化辽宁石油分公司', buyer:'万联易达物流科技有限公司', amt:350.11, t:'2026-09-12 11:05:36',
+   drawer:'中石化辽宁石油分公司', buyer:'万联易达科技有限公司（平台）', amt:350.11, t:'2026-09-12 11:05:36',
    trigger:'手动开票', file:'乐企发票_04412026091200001327.pdf'}
 ];
 /* 发票状态由订单开票状态与票类型推导：蓝票=开票成功；蓝票所在订单已红冲→已红冲；红票=已红冲 */
@@ -1350,6 +1377,17 @@ function leqiNow(){ const d=new Date(),p=n=>String(n).padStart(2,'0');
 
 /* ================= 自营订单中心演示数据（对应现网订单中心：自营订单管理 / 自营订单退款） ================= */
 const SELFORDES = [
+  /* 退款中且开票失败：不展示手动开票、停止失败自动重试 */
+  {no:'ZY20260912150802417', time:'2026-09-12 15:08:02', co:'蒙晋通达运输有限公司', coType:'网货主体',
+   driver:'宿红', plate:'蒙T9U81U', station:'天津武清京津站', stationCo:'中石油天津销售分公司',
+   goods:'-10# 柴油', energy:'柴油', qty:88.40, amt:594.05,
+   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'开票失败', invCh:'乐企',
+   invFail:'票池可开剩余不足，未开具', refund:'退款中'},
+  /* 多子订单总单：3 条运单拆 3 张子订单，发票仍只 1 张（票对订单、不落子订单） */
+  {no:'ZY20260912143501882', time:'2026-09-12 14:35:01', co:'万联易达物流科技有限公司', coType:'自签物流公司',
+   driver:'孙倩', plate:'蒙A2288L', station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司',
+   goods:'0# 轻柴油', energy:'柴油', qty:153.72, amt:1032.60,
+   paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'开票成功', invCh:'乐企'},
   {no:'ZY20260912093102201', time:'2026-09-12 09:31:02', co:'万联易达物流科技有限公司', coType:'自签物流公司',
    driver:'田玲玲', plate:'辽AEK808', station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司',
    goods:'0# 轻柴油', energy:'柴油', qty:191.43, amt:1286.40,
@@ -1376,6 +1414,12 @@ const SELFORDES = [
    goods:'0# 轻柴油', energy:'柴油', qty:96.50, amt:642.69,
    paySt:'已支付', deductSt:'已扣款', verifySt:'已核销', inv:'开票失败', invCh:'乐企',
    invFail:'购方税号与客户认证信息不一致'},
+  /* 已退款且开票失败：同上，且该单仍计入网点公司熔断计数 */
+  {no:'ZY20260911080602533', time:'2026-09-11 08:06:02', co:'测试客户2', coType:'自签物流公司',
+   driver:'李强', plate:'京A1234Q', station:'北京大兴机场西站', stationCo:'畅油网络科技有限公司',
+   goods:'0# 轻柴油', energy:'柴油', qty:64.20, amt:431.42,
+   paySt:'已退款', deductSt:'已扣款', verifySt:'已核销', inv:'开票失败', invCh:'乐企',
+   invFail:'购方税号与客户认证信息不一致', refund:'已退款'},
   {no:'ZY20260910173004233', time:'2026-09-10 17:30:04', co:'万联易达物流科技有限公司', coType:'自签物流公司',
    driver:'田玲玲', plate:'辽AEK808', station:'沈阳浑南加油站', stationCo:'中石化辽宁石油分公司',
    goods:'0# 轻柴油', energy:'柴油', qty:52.10, amt:350.11,
@@ -1395,7 +1439,7 @@ const SELFORDES = [
   {no:'ZY20260909154409907', time:'2026-09-09 15:44:09', co:'万联易达物流科技有限公司', coType:'自签物流公司',
    driver:'赵德明', plate:'津B7788Z', station:'天津武清京津站', stationCo:'中石油天津销售分公司',
    goods:'-20# 柴油', energy:'柴油', qty:142.71, amt:977.59,
-   paySt:'已支付', deductSt:'扣款失败', verifySt:'已核销', inv:'未开票', invCh:'线下'}
+   paySt:'已支付', deductSt:'扣款失败', verifySt:'已核销', inv:'未开票', invCh:'线下'},
 ];
 
 /* 自营订单退款：客户退款/油站退款为同一次退款的资金两侧；审核状态=待审核/审核通过/审核驳回/退款失败 */
@@ -1435,7 +1479,24 @@ const SELF_REFUNDS = [
    driver:'李强', plate:'京A1234Q', goods:'CNG · 236.70 kg', amt:1420.00,
    reason:'重复下单', audit:'审核驳回',
    auditBy:'张世民（运营中台）', auditAt:'2026-09-12 16:01',
-   subs:[{no:'ZY20260910091222518001', waybill:'UD2026091000000241', driver:'李强 / 京A1234Q', amt:1420.00}]}
+   subs:[{no:'ZY20260910091222518001', waybill:'UD2026091000000241', driver:'李强 / 京A1234Q', amt:1420.00}]},
+
+  /* 客户退款（单侧）：只退客户侧，不触发红冲；平台开给客户的发票线下处理 */
+  {id:'ZRTK20260912000027', order:'ZY20260912093102201', time:'2026-09-12 16:40:08', type:'客户退款',
+   driver:'田玲玲', plate:'辽AEK808', goods:'0# 轻柴油 · 191.43 L', amt:1286.40,
+   reason:'客户侧结算差价退回（油站侧不退款）', audit:'待审核',
+   redNote:'客户退款不触发红冲：红冲只针对油站开出的票，平台开给客户的发票线下处理',
+   auditBy:'—', auditAt:'—',
+   subs:[{no:'ZY20260912093102201001', waybill:'UD2026091200000315', driver:'田玲玲 / 辽AEK808', amt:1286.40}]},
+
+  /* 多子订单总单的退款：子订单细节按运单逐行，发票仍按订单一次红冲、不拆子订单 */
+  {id:'ZRTK20260912000031', order:'ZY20260912143501882', time:'2026-09-12 17:05:22', type:'油站退款',
+   driver:'孙倩', plate:'蒙A2288L', goods:'0# 轻柴油 · 153.72 L', amt:1032.60,
+   reason:'油站侧对账差异，整单退回', audit:'待审核', redResult:'红冲成功',
+   auditBy:'—', auditAt:'—',
+   subs:[{no:'ZY20260912143501882001', waybill:'UD2026091200000331', driver:'孙倩 / 蒙A2288L', amt:344.20},
+         {no:'ZY20260912143501882002', waybill:'UD2026091200000332', driver:'孙倩 / 蒙A2288L', amt:344.20},
+         {no:'ZY20260912143501882003', waybill:'UD2026091200000333', driver:'孙倩 / 蒙A2288L', amt:344.20}]}
 ];
 
 /* ================= 网点公司管理演示数据（自动下线配置口径见页面说明） ================= */
@@ -1645,7 +1706,7 @@ TONE['生效']='ok'; TONE['停用']='mut';
 /* 乐企开票（渠道分治）：乐企渠道 7 值状态 + 线下渠道沿用旧 4 值 */
 TONE['开票成功']='ok'; TONE['开票失败']='bad'; TONE['红冲中']='info'; TONE['红冲失败']='bad'; TONE['已红冲']='ok';
 /* 退款红冲前置：退款单终止态；自营退款审核驳回 */
-TONE['退款失败']='bad'; TONE['审核驳回']='mut';
+TONE['退款失败']='bad'; TONE['审核驳回']='mut'; TONE['已驳回']='mut'; TONE['退款成功']='ok'; TONE['退款中']='warn'; TONE['已红冲']='ok';
 /* 订单发票管理：蓝票 / 红票 */
 TONE['蓝票']='ok'; TONE['红票']='bad';
 const tone = s => TONE[s] || 'mut';
@@ -1865,7 +1926,10 @@ document.addEventListener('click', e=>{
   const dl = e.target.closest('[data-download]'); if(dl){ if(dl.classList.contains('off')) return;
                                                         showToast('单张发票已开始本地下载'); return; }
   const lq = e.target.closest('[data-leqiinv]'); if(lq){ if(lq.classList.contains('off')) return;
-                                                        window._leqiInvKey = lq.dataset.leqiinv; openModal('leqiInvs'); return; }
+                                                        const invNo=lq.dataset.leqiinv;
+                                                        if(SELFORDES.some(x=>x.no===invNo)){ openSimple('selfOrder',invNo,1); }
+                                                        else { window._leqiInvKey = invNo; openModal('leqiInvs'); }
+                                                        return; }
   const ex = e.target.closest('[data-export-async]'); if(ex){ startAsyncExport(ex.dataset.exportAsync); return; }
   const mx = e.target.closest('[data-mclose]');  if(mx){ modal.classList.remove('on'); return; }
   const c = e.target.closest('[data-chip]');     if(c){ orderFilter = c.dataset.chip; paint(); return; }
@@ -1933,7 +1997,7 @@ const OPT = {
   acctName:['万联易达物流科技有限公司','蒙晋通达运输有限公司','鲁通冷链物流有限公司','中石化辽宁石油分公司','高灯能源科技有限公司','中交兴路能源有限公司','万联易达科技有限公司'],
   fundEvent:['客户资金调拨','服务费调拨','退款（资金退回）','冲正','差额调拨','差额退回'],
   refundBy:['运营平台','油站'],
-  refundSt:['待审核','审核中','已退款','退款失败'],
+  refundSt:['待审核','退款中','退款成功','已驳回','退款失败'],
   auditSt:['待确认','已确认'],
   /* 自营订单中心 / 网点公司管理（乐企开票配套演示页） */
   selfPaySt:['待支付','已支付','支付失败'],
@@ -2241,10 +2305,13 @@ function ctlHTML(o){
   const ph = o.p ? ` placeholder="${o.p}"` : '';
   const val = o.v!==undefined ? ` value="${o.v}"` : '';
   switch(o.t){
-    case 'sel':
-      return `<select size="1" class="${cls} is-empty"${id}${o.req?' required':''} data-sel>
-        <option value="">${o.p||'请选择'}</option>
-        ${(o.o||[]).map(v=>`<option${o.v===v?' selected':''}>${v}</option>`).join('')}</select>`;
+    case 'sel': {
+      const selHead = `<option value="">${o.p||'请选择'}</option>`;
+      const selOpts = o.g
+        ? selHead + o.g.map(g=>`<optgroup label="${g.label}">${g.items.map(v=>`<option${o.v===v?' selected':''}>${v}</option>`).join('')}</optgroup>`).join('')
+        : selHead + (o.o||[]).map(v=>`<option${o.v===v?' selected':''}>${v}</option>`).join('');
+      return `<select size="1" class="${cls} is-empty"${id}${o.req?' required':''} data-sel>${selOpts}</select>`;
+    }
     case 'num': case 'amt': {
       const step = o.step!==undefined?o.step:(o.t==='amt'?'0.01':'1');
       const min = o.min!==undefined?o.min:0;
@@ -2301,7 +2368,11 @@ function plainCtlHTML(o){
   const req = o.req ? ' required' : '';
   if(o.t==='sel'){
     const cur = o.selv!==undefined ? o.selv : o.v;
-    return `<select class="${cls}${cur?'':' is-empty'}"${id}${req}><option value="">${o.p||'请选择'}</option>${(o.o||[]).map(x=>`<option${x===cur?' selected':''}>${x}</option>`).join('')}</select>`;
+    const head = `<option value="">${o.p||'请选择'}</option>`;
+    const opts = o.g
+      ? head + o.g.map(g=>`<optgroup label="${g.label}">${g.items.map(x=>`<option${x===cur?' selected':''}>${x}</option>`).join('')}</optgroup>`).join('')
+      : head + (o.o||[]).map(x=>`<option${x===cur?' selected':''}>${x}</option>`).join('');
+    return `<select class="${cls}${cur?'':' is-empty'}"${id}${req}>${opts}</select>`;
   }
   if(o.t==='date') return `<input class="${cls} mono" type="date"${id}${v}${req}>`;
   if(o.t==='num'||o.t==='amt') return `<input class="${cls} mono" type="number"${id} placeholder="${o.p||''}"${v}${req}>`;
@@ -2583,8 +2654,9 @@ const ORDER_COLS = regCols('orders', [
 const qtyUnit = o => o.energy==='天然气' ? 'kg' : 'L';
 
 /* ---- 乐企开票通用小工具（撮合订单 / 自营订单共用） ---- */
-/* 手动开票可用状态：未开票 / 开票失败 / 已红冲；手动红冲可用状态：开票成功 / 红冲失败（重发），红冲完可再开票 */
-const leqiCanInvoice = o => o.invCh==='乐企' && ['未开票','开票失败','已红冲'].includes(o.inv);
+/* 手动开票可用状态：未开票 / 开票失败 / 已红冲，且订单不处于退款中/已退款；手动红冲可用状态：开票成功 / 红冲失败（重发），红冲完可再开票 */
+const leqiRefundedOrder = o => ['退款中','已退款'].includes(o.refund) || ['退款中','已退款'].includes(o.st) || o.pay==='已退款';
+const leqiCanInvoice = o => o.invCh==='乐企' && ['未开票','开票失败','已红冲'].includes(o.inv) && !leqiRefundedOrder(o);
 const leqiCanRed = o => o.invCh==='乐企' && ['开票成功','红冲失败'].includes(o.inv);
 /* 退款与开票联动：开票中/红冲中为进行中状态，不允许申请退款；未开票/开票失败/开票成功/红冲失败/已红冲（终态）可申请 */
 const leqiRefundBlocked = o => ['开票中','红冲中'].includes(o.inv);
@@ -2604,8 +2676,8 @@ function leqiOrderInvHTML(o){
       </dl>
       <dl class="kv">
         <dt>销方（油站企业）</dt><dd>${o.stationCo}</dd>
-        <dt>购方</dt><dd>${o.cust}</dd>
-        <dt>开票规则</dt><dd>易宝支付成功即自动开票，一单一票；红冲触发=退款审核通过（先红冲后退款）或运营手动红冲</dd>
+        <dt>购方</dt><dd>${o.cust || '万联易达科技有限公司（平台）'}${o.cust?'':'<div class="t2">自营：油站开给平台，故购方为平台内部主体</div>'}</dd>
+        <dt>开票规则</dt><dd>易宝支付成功即自动开票，一单一票（一张票对一张订单，不落子订单/运单）；红冲触发=涉及油站侧的退款审核通过（先红冲后退款）或运营手动红冲${o.refund?`<div class="t2">本单退款状态：${o.refund}——不展示手动开票，停止失败自动重试</div>`:''}</dd>
       </dl>
     </div>
     <div class="tablewrap" style="margin-top:10px">
@@ -2613,7 +2685,7 @@ function leqiOrderInvHTML(o){
         <thead><tr><th>发票类型</th><th>发票号码</th><th>金额（元）</th><th>开票时间</th><th>触发方式</th><th>状态</th><th style="width:90px">附件</th></tr></thead>
         <tbody>${invs.length?invs.map(i=>`<tr>
           <td>${pill(i.type)}</td><td class="mono">${i.no}</td>
-          <td class="num" style="color:${i.amt<0?'var(--bad)':'var(--oil)'}">${money(i.amt)}</td>
+          <td class="num" style="color:${i.amt<0?'var(--bad)':'var(--oil)'}">${money(i.amt)}${i.disc?`<div class="t2">含折扣行 −${money(i.disc)}</div>`:''}</td>
           <td class="mono">${i.t}</td><td>${i.trigger}</td>
           <td>${pill(leqiInvStatusOf(i))}</td>
           <td class="acts"><button data-download="invoice" data-key="${i.no}">下载</button></td>
@@ -2660,7 +2732,7 @@ function fhCardHTML(card, up){
 function fhCloseAll(){
   document.querySelectorAll('.fh-wrap.on').forEach(w=>{
     w.classList.remove('on');
-    const c=w.querySelector('.fh-card'); if(c){c.style.position='';c.style.left='';c.style.top='';c.style.bottom='';c.style.maxWidth='';}
+    const c=w.querySelector('.fh-card'); if(c){c.style.position='';c.style.left='';c.style.top='';c.style.bottom='';c.style.maxWidth='';c.style.width='';c.style.maxHeight='';c.style.overflowY='';}
   });
 }
 /* 弹层定位：视口固定定位（表格横向滚动容器 overflow-x:auto 与抽屉边缘都不裁切），左右放不下自动翻边、上下放不下翻到上方。
@@ -2671,16 +2743,33 @@ function fhPlace(wrap){
   const card=wrap.querySelector('.fh-card'), ico=wrap.querySelector('.fh-ico');
   if(!card||!ico) return;
   const r=ico.getBoundingClientRect(), vw=window.innerWidth, vh=window.innerHeight;
-  const cw=Math.min(470, vw-24);
-  card.style.maxWidth=cw+'px';
-  let left=r.right+6;
-  if(left+cw>vw-8) left=Math.max(8, r.left-cw-6);
+  /* 说明浮层不限大小：宽度按内容自适应（表格多宽就多宽），只受视口左右边界约束；高度不设上限 */
+  card.style.width='';                        /* 宽度按内容（CSS width:max-content），不强制拉伸 */
+  card.style.maxWidth=Math.min(1000, vw-16)+'px';
+  card.style.maxHeight='none';
+  card.style.overflowY='visible';
   card.style.position='fixed'; card.style.bottom='auto';
+  card.style.left='0px'; card.style.top='0px';
+  const cardW=Math.min(card.offsetWidth, vw-16);
+  let left=r.right+6;
+  if(left+cardW>vw-8) left=Math.max(8, r.left-cardW-6);
   const op=card.offsetParent;
   const cb=(op&&op!==document.body)?op.getBoundingClientRect():{left:0,top:0};
-  card.style.left=(left-cb.left)+'px'; card.style.top=(r.bottom+4-cb.top)+'px';
+  card.style.left=(left-cb.left)+'px';
+  card.style.top=(r.bottom+4-cb.top)+'px';
   const ch=card.offsetHeight;
-  if(r.bottom+4+ch>vh-8) card.style.top=Math.max(8, r.top-ch-6-cb.top)+'px';
+  const below=vh-8-(r.bottom+4);
+  const above=r.top-6-8;
+  if(ch<=below){ /* 下方放得下 */ }
+  else if(ch<=above){ card.style.top=Math.max(8, r.top-ch-6-cb.top)+'px'; }
+  else { card.style.top='8px';   /* 上下都放不下：贴顶完整显示；仅当内容高于整屏时才滚动 */
+         if(ch>vh-16){ card.style.maxHeight=(vh-16)+'px'; card.style.overflowY='auto'; } }
+  /* 兜底：定位后按实际渲染宽度再校准一次左右边界（宽度随内容变化时首次测量可能偏小） */
+  const rect=card.getBoundingClientRect();
+  let dx=0;
+  if(rect.right>vw-8) dx=(vw-8)-rect.right;
+  if(rect.left+dx<8)  dx=8-rect.left;
+  if(dx) card.style.left=(parseFloat(card.style.left||'0')+dx)+'px';
 }
 function fhOpen(wrap){
   fhCloseAll();
@@ -2805,8 +2894,8 @@ function leqiFieldHelp(kind){
   if(kind==='invCh') return fhCardHTML(
     '<h5>取值（穷举 2 值）</h5>'
     +tbl(['取值','判定口径'],[
-      ['乐企','柴油 ＋ 易宝支付 ＋ 直接与加油站结算——三条件同时满足；<b>支付成功即实时调用乐企自动开票</b>（交易与开票解耦，开票失败不影响订单交易完成）'],
-      ['线下','天然气订单（本期不自动开票、不排斥后续纳入）、三方对接站与非易宝支付订单；沿用既有线下开票流程（客户申请 ＋ 油站上传）']
+      ['乐企','柴油 ＋ 易宝支付 ＋ <b>网点一级渠道=自营</b>（平台直签站）——三条件同时满足；<b>支付成功即实时调用乐企自动开票</b>（交易与开票解耦，开票失败不影响订单交易完成）。票面：销方=油站公司；购方按业务线取——自营=平台内部主体，撮合=客户公司'],
+      ['线下','天然气订单（本期不自动开票、不排斥后续纳入）、三方渠道站（网点一级渠道≠自营）、非易宝支付订单；另：自营订单中<b>平台开给客户的销项票为线下开票后上传</b>（现网客户开票已有能力，本期不改）；沿用既有线下开票流程（客户申请 ＋ 油站上传）']
     ])
     +'<p><b>历史订单：</b>上线前历史订单不处理，按线下渠道展示。</p>'
     +'<p class="mut">与 PRD 7.2.1 同源。</p>');
@@ -2829,6 +2918,7 @@ function leqiFieldHelp(kind){
       ['已开票','「已开票」——线下发票已上传生效'],
       ['已撤销','「已撤销」——开票申请撤销；可重新发起申请']
     ])
+    +'<p><b>筛选口径：</b>列表区提供两个筛选项——<b>乐企开票状态</b>（乐企 7 值，仅匹配乐企渠道订单）与<b>开票状态</b>（线下 4 值，仅匹配线下渠道订单）。</p>'
     +'<p><b>关键规则：</b>开票中 / 红冲中（进行中）拦截退款申请与退款审核；乐企订单不进「批量申请开票」勾选池（保留给线下）。</p>'
     +'<p class="mut">与 PRD 7.2.1 同源。</p>');
   if(kind==='invFail') return fhCardHTML(
@@ -2844,8 +2934,8 @@ function leqiFieldHelp(kind){
     '<h5>操作出现条件（穷举）</h5>'
     +tbl(['操作','出现条件','说明'],[
       ['详情','恒显','订单详情抽屉（发票信息页签含全部蓝/红票与开票记录）'],
-      ['手动开票','乐企且 未开票 / 开票失败 / 已红冲','已红冲重开蓝票（换开场景）；线下渠道无此入口'],
-      ['手动红冲','乐企且 开票成功 / 红冲失败（重发）','必填红冲原因 5–200 字写入开票记录；成功→已红冲可再次开票；独立换开入口，不影响退款流程'],
+      ['手动开票','乐企且 未开票 / 开票失败 / 已红冲，且订单不处于退款中/已退款','已红冲重开蓝票（换开场景）；线下渠道无此入口；退款中/已退款订单不展示该入口，并停止开票失败自动重试'],
+      ['手动红冲','乐企且 开票成功 / 红冲失败（重发）','<b>仅乐企渠道开放</b>（线下渠道无红冲入口）；必填红冲原因 5–200 字写入开票记录；成功→已红冲可再次开票；独立换开入口，不影响退款流程'],
       ['发票查看下载','乐企且 开票成功 / 已红冲','全部蓝/红票逐张查看与下载（不限 url/pdf/ofd）'],
       ['申请退款','开票终态（未开票 / 开票失败 / 开票成功 / 红冲失败 / 已红冲）可申请','开票中 / 红冲中置灰，提示「开票/红冲进行中，暂不可申请退款」'],
       ['批量申请开票（页头）','仅线下订单进勾选池','乐企订单不进「批量申请开票」勾选池（保留给线下）']
@@ -2854,9 +2944,10 @@ function leqiFieldHelp(kind){
   if(kind==='invoiceType') return fhCardHTML(
     '<h5>取值（穷举 2 值）</h5>'
     +tbl(['类型','页面展示内容（示例）'],[
-      ['蓝票','正常开具的销项发票，金额为正；有返利消耗的订单商品行=原价金额并带 1 行负数折扣行，价税合计=实付金额'],
+      ['蓝票','正常开具的发票（销方=油站），金额为正；订单实付金额中已拆出优惠抵扣时，商品行=原价金额并带 1 行负数折扣行，价税合计=实付金额'],
       ['红票','对蓝票冲销生成的负数发票（金额红色负数展示）；按原蓝票票面<b>镜像负数</b>开具、不重算，「关联发票」指向被冲销的原蓝票']
     ])
+    +'<p><b>折扣行口径：</b>折扣行＝<b>销方（油站）给购方的优惠</b>（自营=油站给平台的优惠，撮合=油站给客户的优惠，如充值返利）。判定依据＝订单实付金额中是否已拆出优惠金额抵扣：拆出则带 1 行负数折扣行、金额=该优惠额；未拆出不带折扣行。<b>平台补贴不进折扣行</b>、不影响票面金额。</p>'
     +'<p><b>序列留痕：</b>同一订单 开票 → 红冲 → 再次开票 形成多条记录，按开票时间倒序展示（蓝 → 红 → 蓝）。</p>'
     +'<p class="mut">与 PRD 7.2.6 同源。</p>');
   if(kind==='invoiceTrigger') return fhCardHTML(
@@ -2882,7 +2973,7 @@ function leqiFieldHelp(kind){
     +tbl(['项','口径'],[
       ['配置','网点公司维度「开票配置」弹窗；开关默认关，n 默认 1（正整数）；<b>未开通易宝账户拦截保存</b>'],
       ['本列展示','「未开启」灰字；开启后显示「n=N」标签（N=配置的阈值）'],
-      ['计数口径','该网点公司当前开票状态=开票失败的<b>应开票订单数</b>（仅乐企线上订单；历史全量累计，做过红冲的订单不算「未开」）'],
+      ['计数口径','该网点公司当前开票状态=开票失败的<b>应开票订单数</b>（仅乐企线上订单；历史全量累计，做过红冲的订单不算「未开」；<b>已退款订单若仍处开票失败，仍计入，不排除已退款订单</b>）'],
       ['触发动作','累计达 n 笔 → <b>自动下线</b>：启用状态置停用并<b>下透网点</b>——名下上线中网点全部联动下线（不可加注、不可产生新订单）；站内信/短信预警；操作记录记「自动下线」（与人工停用区分）'],
       ['恢复','手动「启用」后重新上线：被联动下线的网点<b>恢复上线</b>（网点自身原为下线的不动），<b>开票失败计数清零</b>、从 0 重新累计']
     ])
@@ -2926,12 +3017,11 @@ VIEWS.orders = () => {
   <div class="card">
     <div class="card-h"><h2>能源订单</h2>
       <span class="title-stat">共 <b>${list.length}</b> 笔 · 合计 <b class="num-bad">¥${money(totalAmt)}</b></span>
-      <span class="spacer"></span>
       <button class="btn sm" data-modal="backfill">订单补录</button>
       <button class="btn sm" onclick="batchDownloadLeqiInvoices()">批量下载发票</button>
+      <button class="btn sm" data-modal="export">导出</button>
       <button class="btn sm primary" onclick="batchOrderInvoice()">批量申请开票</button>
-      ${colCfgBtn('orders')}
-      <button class="btn sm" data-modal="export">导出</button></div>
+      <span class="spacer"></span></div>
     ${dataTable('orders', list, '2600px', '暂无订单')}
     ${pagerHTML(list.length)}
   </div>
@@ -2964,22 +3054,22 @@ VIEWS.orders = () => {
         ['加油金额','金额','客户实际支付给油站的油款：核销前=下单预估金额，核销后=实际金额'],
         ['订单状态','待确认 / 已完成 / 已取消 / 退款中 / 已退款','管业务进度'],
         ['支付状态','待支付 / 支付中 / 已支付 / 支付失败 / 已退款','管资金到账，与订单状态互不阻塞'],
-        ['开票渠道','乐企 / 线下','乐企=易宝支付+平台自营站柴油订单（支付成功即自动开票）；其余订单为线下渠道（客户申请+油站上传）'],
+        ['开票渠道','乐企 / 线下','乐企=柴油＋易宝支付＋网点一级渠道=自营（直签站）三条件同时满足（支付成功即自动开票）；线下=天然气、三方渠道站（一级渠道≠自营）、非易宝支付订单，以及自营中平台开给客户的销项票（线下开票后上传，现网已有能力）'],
         ['开票状态（渠道分治）','乐企渠道：未开票/开票中/开票失败/开票成功/红冲中/红冲失败/已红冲；线下渠道：未开票/开票中/已开票/已撤销','同一列按订单开票渠道显示对应值集；展示最新一次开票（蓝票+红票）的结果'],
         ['失败原因','开票失败 / 红冲失败时展示','乐企接口返回的失败原因；开票失败自动重试每分钟 1 次×3 次，仍失败转人工'],
 
       ])) +
     nb('乐企开票：支付即开票（渠道分治）',
-      '<p><b>开票渠道=乐企</b>的订单（易宝支付 + 平台自营站柴油），支付成功后系统实时调用乐企自动开票，交易与开票解耦：开票失败不影响订单交易完成。</p>' +
+      '<p><b>开票渠道=乐企</b>的订单（柴油 ＋ 易宝支付 ＋ 网点一级渠道=自营），支付成功后系统实时调用乐企自动开票，交易与开票解耦：开票失败不影响订单交易完成。票面销方=油站公司，购方按业务线取（自营=平台内部主体，撮合=客户公司）。</p>' +
       tbl(['场景','口径'],[
-        ['开票触发','易宝支付成功即触发（乐企发票开具），不再校验分账处理完成；一单一票，票面无折扣行'],
+        ['开票触发','易宝支付成功即触发（乐企发票开具），不再校验分账处理完成；一单一票（一张票对一张订单，不按子订单/运单拆分）；订单实付金额中已拆出优惠抵扣时，票面带 1 行负数折扣行（金额=该优惠额）'],
         ['开票状态','乐企渠道 7 值：未开票/开票中/开票失败/开票成功/红冲中/红冲失败/已红冲；线下渠道订单沿用 4 值不变，同列分治展示'],
         ['开票失败','自动重试每分钟 1 次×3 次（重试开具），仍失败停留「开票失败」并展示失败原因，转人工手动开票或技术排查'],
-        ['手动开票','可用状态=未开票/开票失败/已红冲；已红冲重开蓝票用于「换开」等需要再次开票的场景（红冲完成后即可发起）'],
-        ['红冲','退款红冲：退款审核通过触发，红冲失败→退款单终止为「退款失败」，线下抵扣处理完成后重新发起退款申请；手动红冲：可用状态=开票成功/红冲失败（重发），必填红冲原因（5–200 字，写入开票记录），成功→已红冲（原蓝票冲销），失败→红冲失败＋乐企原因可重发；红冲中拦截退款审核'],
+        ['手动开票','可用状态=未开票/开票失败/已红冲，且订单不处于退款中/已退款；已红冲重开蓝票用于「换开」等需要再次开票的场景（红冲完成后即可发起）；退款中/已退款订单不展示入口并停止失败自动重试'],
+        ['红冲','只红冲油站开出的这张乐企票（客户侧发票线下处理，不在本链路）；退款红冲：退款审核通过触发，红冲失败→退款单终止为「退款失败」，线下抵扣处理完成后重新发起退款申请；手动红冲：仅乐企渠道，可用状态=开票成功/红冲失败（重发），必填红冲原因（5–200 字，写入开票记录），成功→已红冲（原蓝票冲销），失败→红冲失败＋乐企原因可重发；红冲中拦截退款审核'],
         ['红冲后再开票','已红冲订单可再次手动开票重开蓝票；发票序列按发生顺序展示（蓝票→红票→新蓝票），各票独立关联'],
         ['退款与开票联动','开票中/红冲中（进行中）不允许申请退款，操作列退款按钮置灰；未开票/开票失败/开票成功/红冲失败/已红冲（终态）可申请退款；红冲中同时拦截退款审核'],
-        ['发票附件','详情抽屉展示全部蓝红票+开票记录；操作列「发票查看下载」仅开票成功/已红冲可见（弹窗展示该订单全部蓝/红票，逐张查看/下载，不限格式 url/pdf/ofd）']
+        ['发票附件','详情抽屉展示全部蓝红票+开票记录；操作列「发票查看下载」仅开票成功/已红冲可见，点击直达订单详情页「开票信息（乐企）」页签，全部蓝/红票逐张查看/下载（不限格式 url/pdf/ofd）']
       ])) +
     nb('业务规则',
       '\u003cp\u003e\u003cb\u003e订单全链路流转：\u003c/b\u003e\u003c/p\u003e' +
@@ -2991,8 +3081,8 @@ VIEWS.orders = () => {
         ['详情','任何时候','打开抽屉，展示订单信息 / 资金流水 / 支付凭证三个页签'],
         ['退款','支付状态为"已支付"','发起整单退款申请，进入退款审核流程'],
         ['订单补录','任何时候','补录线下已发生交易，不冻结额度，提交后状态直接为"已完成"，正常发起两笔调拨'],
-        ['手动开票','开票渠道=乐企，且开票状态为「未开票/开票失败/已红冲」时亮','确认后调乐企发票开具，订单开票状态置为「开票中」并写入开票记录；已红冲订单重开蓝票（换开场景）'],
-        ['手动红冲','开票渠道=乐企，且开票状态为「开票成功/红冲失败」时亮（开票中/红冲中/已红冲/开票失败/未开票置灰）','弹窗核对原蓝票信息并必填红冲原因（5–200 字）；确认后调乐企发票冲红，状态置「红冲中」；成功→已红冲（原蓝票冲销），失败→红冲失败展示原因可重发；红冲完成后可再次手动开票重开蓝票'],
+        ['手动开票','开票渠道=乐企，开票状态为「未开票/开票失败/已红冲」，且订单不处于退款中/已退款时亮','确认后调乐企发票开具，订单开票状态置为「开票中」并写入开票记录；已红冲订单重开蓝票（换开场景）；退款中/已退款订单不展示入口并停止失败自动重试'],
+        ['手动红冲','开票渠道=乐企，且开票状态为「开票成功/红冲失败」时亮（开票中/红冲中/已红冲/开票失败/未开票/线下渠道置灰）','仅乐企渠道开放；弹窗核对原蓝票信息并必填红冲原因（5–200 字）；确认后调乐企发票冲红，状态置「红冲中」；成功→已红冲（原蓝票冲销），失败→红冲失败展示原因可重发；红冲完成后可再次手动开票重开蓝票'],
         ['批量下载发票','勾选行中存在「开票成功/已红冲」订单（乐企渠道）','仅下载各订单最新 1 次发票，支持单选/多选格式；非该状态的订单自动跳过，任务完成后在下载中心获取'],
         ['批量申请开票','订单主状态、支付状态满足可开票值，且分账处理完成（乐企渠道订单自动开票，不进入本入口）','按开票方+受票方+能源类型拆分申请单；提交前按申请单展示对应订单，每组超过5笔可独立翻页；提交后申请单与订单开票状态均为"开票中"'],
         ['导出','任何时候','导出当前筛选（或已勾选）结果，字段与列表列一一对应']
@@ -3056,7 +3146,9 @@ VIEWS.group = () => {
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
   </div>
   <div class="card">
-    <div class="card-h"><h2>总分订单列表</h2><span class="hint" style="margin-left:10px;color:var(--muted);font-size:12px">一个总单 = 一次真实加注；子单行只记录该运单的额度扣减，不含服务费</span><span class="spacer"></span><button class="btn sm">导出</button></div>
+    <div class="card-h"><h2>总分订单列表</h2><span class="hint" style="margin-left:10px;color:var(--muted);font-size:12px">一个总单 = 一次真实加注；子单行只记录该运单的额度扣减，不含服务费</span>
+      <button class="btn sm">导出</button>
+      <span class="spacer"></span></div>
     <div class="tablewrap">
       <table style="min-width:1280px">
         <thead><tr><th style="width:58px"></th><th>总订单号 / 子订单号</th><th>客户 / 运单号</th><th>司机 / 占用前可用额度</th><th>油站 / 本次扣减额度</th><th>加油金额 / 剩余可用额度</th><th>状态</th><th>支付状态</th><th style="width:200px">操作</th></tr></thead>
@@ -3222,7 +3314,9 @@ VIEWS.quota = () => {
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
   </div>
   <div class="card">
-    <div class="card-h"><h2>额度扣减流水</h2><span class="spacer"></span>${colCfgBtn('quota')}<button class="btn sm">导出</button></div>
+    <div class="card-h"><h2>额度扣减流水</h2>
+      <button class="btn sm">导出</button>
+      <span class="spacer"></span></div>
     ${dataTable('quota', QUOTA, '1180px', '暂无额度变动')}
     ${pagerHTML(QUOTA.length)}
   </div>
@@ -3293,7 +3387,9 @@ VIEWS.flow = () => {
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
   </div>
   <div class="card">
-    <div class="card-h"><h2>三方资金账户变动明细</h2><span class="spacer"></span><button class="btn sm">导出对账文件</button></div>
+    <div class="card-h"><h2>三方资金账户变动明细</h2>
+      <button class="btn sm">导出对账文件</button>
+      <span class="spacer"></span></div>
     <div class="tablewrap">
       <table style="min-width:1640px">
         <thead><tr><th style="width:34px"><input type="checkbox" data-all="flow"></th><th>资金流水号</th><th>发生时间</th><th>账户类型</th><th>账户名称 / ID</th><th>交易类型</th><th>变动金额</th><th>上次余额</th><th>当前余额</th><th>发生事件</th><th>订单号</th><th>易宝流水号</th><th style="width:200px">操作</th></tr></thead>
@@ -3388,7 +3484,9 @@ VIEWS.refund = () => {
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
   </div>
   <div class="card">
-    <div class="card-h"><h2>退款申请列表</h2><span class="spacer"></span>${colCfgBtn('refund')}<button class="btn sm">导出</button></div>
+    <div class="card-h"><h2>退款申请列表</h2>
+      <button class="btn sm">导出</button>
+      <span class="spacer"></span></div>
     ${dataTable('refund', REFUNDS, '2000px', '暂无退款申请')}
     ${pagerHTML(REFUNDS.length)}
   </div>
@@ -3408,11 +3506,12 @@ VIEWS.refund = () => {
         ['审核状态','待确认','已提交，等运营点「确认退款」'],
         ['','已确认','已确认，退款开始执行；记录确认人与确认时间'],
         ['退款状态','待审核','单子刚提交，还没确认，钱一分没动'],
-        ['','审核中','已确认，两笔反向转账执行中（乐企订单此时处于红冲环节）'],
-        ['','已退款','油款、服务费、额度回补全部完成'],
-        ['','退款失败','终态：乐企订单红冲失败时退款单终止；线下抵扣处理完成后重新发起退款申请']
+        ['','退款中','已确认，两笔反向转账执行中（乐企订单此时处于红冲环节）'],
+        ['','退款成功','油款、服务费、额度回补全部完成'],
+        ['','已驳回','平台驳回退款申请，退款单终止；驳回原因随单记录'],
+        ['','退款失败','终态：乐企订单红冲失败或资金侧退款失败时退款单终止；线下抵扣处理完成后重新发起退款申请']
       ]) +
-      '<p style="margin-top:10px">两个字段是<b>联动的</b>：审核状态是「操作走到哪」，退款状态是「钱走到哪」。确认这个动作同时把审核状态推到「已确认」、把退款状态从「待审核」推到「审核中」。</p>') +
+      '<p style="margin-top:10px">两个字段是<b>联动的</b>：审核状态是「操作走到哪」，退款状态是「钱走到哪」。确认这个动作同时把审核状态推到「已确认」、把退款状态从「待审核」推到「退款中」。</p>') +
     nb('乐企开票订单的退款：先红冲后退款',
       '<p>开票渠道=<b>乐企</b>的订单（开票成功），退款审核通过后<b>必须先红冲原蓝票</b>（乐企发票冲红，由退款审核通过触发），红冲成功后才执行退款。手动红冲为运营主动换开场景的独立入口，不影响退款流程。</p>' +
       tbl(['退款审核后的三种结果','提示口径','后续动作'],[
@@ -3420,7 +3519,8 @@ VIEWS.refund = () => {
         ['红冲成功 + 退款失败（资金侧）','红冲成功，但油款或服务费转账失败','退款单标「退款失败」，转运营人工工单处理'],
         ['红冲失败 + 退款失败','红冲失败：展示乐企返回的失败原因；退款单<b>终止为「退款失败」</b>','线下抵扣处理完成后<b>重新发起退款申请</b>再走审核；审核通过后再次触发红冲']
       ]) +
-      '<p style="margin-top:8px">红冲进行中的订单<b>拦截确认退款</b>；已红冲的订单退款不再触发红冲。线下渠道订单不受影响，发票状态维持现状不联动。</p>') +
+      '<p style="margin-top:8px">红冲进行中的订单<b>拦截确认退款</b>；已红冲的订单退款不再触发红冲。线下渠道订单不受影响，发票状态维持现状不联动。</p>' +
+      '<p style="margin-top:6px"><b>红冲范围：</b>只红冲油站开出的这张乐企票；平台开给客户的发票在线下渠道处理，不在本链路上红冲。撮合退款＝油站退客户，属油站侧退款，因此走「先红冲后退款」。</p>') +
     nb('什么情况下能发起退款',
       '<p>能不能退、怎么退，完全取决于这笔订单的<b>支付状态</b>：</p>' +
       branch([
@@ -3460,7 +3560,7 @@ VIEWS.refund = () => {
       '<li>乐企开票订单：先调乐企冲红原蓝票（红冲失败→退款单终止为「退款失败」并拦截执行）。</li>' +
       '<li>发起两笔反向转账：油款从油站公司退回客户；服务费从平台退回原支付方。</li>' +
       '<li>把额度回补到原运单。</li>' +
-      '<li>退款状态从「审核中」更新为「已退款」。</li></ol>') +
+      '<li>退款状态从「退款中」更新为「退款成功」。</li></ol>') +
     RULE_COMMON
   )}`;
 };
@@ -3469,19 +3569,19 @@ VIEWS.refund = () => {
 /* ================= 自营订单管理（订单中心） =================
    现网订单中心自营订单页简化复刻；开票渠道/开票状态口径与撮合订单一致（渠道分治）。 */
 const SELFORDES_COLS = regCols('selfOrders', [
-  {k:'no',      t:'订单流水号', w:'200px', td:o=>`<span class="mono">${o.no}</span><div class="t2">${o.time}</div>`},
-  {k:'co',      t:'所属公司',   td:o=>`<div class="t1">${o.co}</div><div class="t2">${o.coType}</div>`},
-  {k:'customer',t:'客户信息',   w:'150px', td:o=>`${o.driver}<div class="t2 mono">${o.plate}</div>`},
-  {k:'station', t:'油站信息',   td:o=>`<div class="t1">${o.station}</div><div class="t2">${o.stationCo}</div>`},
-  {k:'goods',   t:'油品 / 数量', w:'140px', td:o=>`${o.goods}<div class="t2 num">${o.qty.toFixed(2)} ${qtyUnit(o)}</div>`},
-  {k:'amt',     t:'实付金额',   w:'110px', cls:'num', td:o=>`<b class="num" style="color:var(--oil)">${money(o.amt)}</b>`},
-  {k:'paySt',   t:'司机支付状态', w:'110px', td:o=>pill(o.paySt)},
-  {k:'deductSt',t:'油站扣款状态', w:'110px', td:o=>pill(o.deductSt)},
-  {k:'verifySt',t:'订单核销状态', w:'110px', td:o=>pill(o.verifySt)},
-  {k:'invCh',   t:'开票渠道',   w:'92px', help:'invCh', td:o=>invChTag(o)},
-  {k:'inv',     t:'开票状态',   w:'116px', help:'invStatus', td:o=>pill(o.inv)},
-  {k:'invFail', t:'失败原因',   w:'180px', help:'invFail', td:o=>o.invFail?`<span style="color:var(--bad);font-size:12px">${o.invFail}</span>`:'—'},
-  {k:'ops',     t:'操作',       w:'360px', cls:'acts', help:'orderOps', td:o=>selfOrderOps(o)}
+  {k:'no',      t:'订单流水号', w:'150px', td:o=>`<span class="mono">${o.no}</span><div class="t2">${o.time}</div>`},
+  {k:'co',      t:'所属公司',   w:'130px', td:o=>`<div class="t1">${o.co}</div><div class="t2">${o.coType}</div>`},
+  {k:'customer',t:'客户信息',   w:'105px', td:o=>`${o.driver}<div class="t2 mono">${o.plate}</div>`},
+  {k:'station', t:'油站信息',   w:'130px', td:o=>`<div class="t1">${o.station}</div><div class="t2">${o.stationCo}</div>`},
+  {k:'goods',   t:'油品 / 数量', w:'105px', td:o=>`${o.goods}<div class="t2 num">${o.qty.toFixed(2)} ${qtyUnit(o)}</div>`},
+  {k:'amt',     t:'实付金额',   w:'92px', cls:'num', td:o=>`<b class="num" style="color:var(--oil)">${money(o.amt)}</b>`},
+  {k:'paySt',   t:'司机支付状态', w:'96px', td:o=>pill(o.paySt)},
+  {k:'deductSt',t:'油站扣款状态', w:'96px', td:o=>pill(o.deductSt)},
+  {k:'verifySt',t:'订单核销状态', w:'96px', td:o=>pill(o.verifySt)},
+  {k:'invCh',   t:'开票渠道',   w:'84px', help:'invCh', td:o=>invChTag(o)},
+  {k:'inv',     t:'开票状态',   w:'100px', help:'invStatus', td:o=>pill(o.inv)},
+  {k:'invFail', t:'失败原因',   w:'100px', help:'invFail', td:o=>o.invFail?`<span style="color:var(--bad);font-size:12px">${o.invFail}</span>`:'—'},
+  {k:'ops',     t:'操作',       w:'200px', cls:'acts acts-wrap', help:'orderOps', td:o=>selfOrderOps(o)}
 ]);
 /* 行操作：详情 + 手动开票（乐企可用状态）+ 操作下拉（整体/客户/油站退款、网点支付、修改结算信息） */
 function selfOrderOps(o){
@@ -3490,7 +3590,7 @@ function selfOrderOps(o){
     <button data-sdetail="${o.no}">详情</button>
     ${leqiCanInvoice(o)?`<button data-confirm="leqiInvoice" data-key="${o.no}">手动开票</button>`:''}
     ${leqiCanRed(o)?`<button class="danger" data-confirm="leqiRed" data-key="${o.no}" title="对当前开票成功的蓝票发起冲红">手动红冲</button>`:''}
-    ${hasInv?`<button data-leqiinv="${o.no}" title="该订单全部蓝/红票查看与下载">发票查看下载</button>`:''}
+    ${hasInv?`<button data-leqiinv="${o.no}" title="发票查看下载：该订单全部蓝/红票查看与下载">发票</button>`:''}
     <button class="${leqiRefundBlocked(o)?'off':''}" data-selfmenu="${o.no}" title="${leqiRefundBlocked(o)?'开票/红冲进行中，暂不可申请退款':''}">操作 ▾</button></span>`;
 }
 /* 全局唯一操作菜单：body 级 fixed 定位，避免被表格冻结列/后续行的层叠上下文遮盖 */
@@ -3533,11 +3633,6 @@ function handleSelfAction(act, no){
 VIEWS.selfOrders = () => {
   return `
   <div class="card">
-    <div class="card-h"><h2>自营订单列表</h2><div class="spacer"></div>
-      <button class="btn sm" onclick="batchDownloadLeqiInvoices()">批量下载发票</button>
-      <button class="btn sm" data-export-async="selfOrders">导出</button>
-      ${colCfgBtn('selfOrders')}
-    </div>
     <div class="filters collapsed" id="selfOrderFilters">
       ${filterRow([
         {l:'订单流水号',t:'code',p:'ZY 开头，字母数字',max:32},
@@ -3547,7 +3642,8 @@ VIEWS.selfOrders = () => {
         {l:'油站扣款状态',t:'sel',o:OPT.selfDeductSt,w2:1},
         {l:'订单核销状态',t:'sel',o:OPT.selfVerifySt,w2:1},
         {l:'开票渠道',t:'sel',o:OPT.invChannel,w2:1},
-        {l:'开票状态',t:'sel',o:OPT.leqiInvSt,w2:1},
+        {l:'乐企开票状态',t:'sel',o:OPT.leqiInvSt,w2:1},
+        {l:'开票状态',t:'sel',o:OPT.invFlowSt,w2:1},
         {l:'油站名称',t:'text',p:'油站名称模糊查询',max:30,w2:1},
         {l:'车牌号',t:'plate',p:'如 辽AEK808'}
       ])}
@@ -3557,30 +3653,46 @@ VIEWS.selfOrders = () => {
   </div>
 
   <div class="card">
+    <div class="card-h">
+      <button class="btn sm" onclick="batchDownloadLeqiInvoices()">批量下载发票</button>
+      <button class="btn sm" data-export-async="selfOrders">导出</button>
+      <span class="spacer"></span></div>
     <div class="card-b">
-      ${dataTable('selfOrders', SELFORDES, '2080px', '暂无自营订单')}
+      ${dataTable('selfOrders', SELFORDES, '1522px', '暂无自营订单')}
       ${pagerHTML(SELFORDES.length)}
     </div>
   </div>
   ${notes(
     nb('这个页面是做什么的',
-      '<p>对应现网「订单中心 → 自营订单管理」（oms.wanyoutong.cn#/orderCenter/selfOrderInfo，原型做字段级简化）。自营订单 = 平台自营站成交、资金走自营清分链路的订单。本需求在本页落地<b>乐企开票渠道分治</b>的展示与操作。</p>') +
+      '<p>对应现网「<b>订单中心 → 订单管理</b>」（oms.wanyoutong.cn#/orderInfo/orderInfo，原型页名用「自营订单管理」、现网菜单名为「订单管理」，同指一页；原型做字段级简化）。</p>' +
+      '<p style="margin-top:6px"><b>自营＝业务场景</b>：客户合作模式=电子卡模式，特征是平台过资金、过票——客户付款给平台、平台付款给油站，油站开票给平台（进项）、平台开票给客户（销项）。注意与「网点一级渠道=自营（平台直签站）」区分，后者是油站资源属性，与业务线是两个维度。</p>' +
+      '<p style="margin-top:6px">本需求在本页落地<b>乐企开票渠道分治</b>的展示与操作。</p>') +
     nb('关键规则',
       tbl(['列 / 操作','口径'],[
-        ['开票渠道','乐企 / 线下。乐企=易宝支付+平台自营站柴油订单；天然气订单不接乐企、不可乐企手动开票，按线下渠道口径处理'],
+        ['开票渠道','乐企 / 线下。乐企=柴油＋易宝支付＋网点一级渠道=自营（直签站）三条件同时满足；线下=天然气订单、三方渠道站（一级渠道≠自营）、非易宝支付订单（含记账扣款类订单）'],
         ['开票状态','按渠道分治：乐企=未开票/开票中/开票失败/开票成功/红冲中/红冲失败/已红冲；线下=未开票/开票中/已开票/已撤销。同列显示，展示最新一次开票（蓝票+红票）的结果'],
+        ['本页开票口径（重要）','本页开票渠道/状态显示的是<b>油站开给平台的进项票</b>（销方=油站公司、购方=平台内部主体）；<b>平台开给客户的销项票为线下开票后上传</b>（现网「客户开票」已有能力），本页不体现'],
         ['失败原因','乐企「开票失败/红冲失败」时展示接口原因；开票失败自动重试每分钟 1 次×3 次'],
-        ['手动开票','乐企渠道且状态为 未开票/开票失败/已红冲 时亮；已红冲可重开蓝票（换开场景）'],
-        ['手动红冲','乐企渠道且状态为 开票成功/红冲失败（重发）时亮；必填红冲原因 5–200 字写入开票记录；成功→已红冲（原蓝票冲销）可再次手动开票，失败→红冲失败展示乐企原因；红冲中拦截退款审核'],
+        ['手动开票','乐企渠道且状态为 未开票/开票失败/已红冲 时亮；<b>订单处于退款中/已退款时不展示该入口，并停止开票失败自动重试</b>；已红冲可重开蓝票（换开场景）'],
+        ['手动红冲','<b>仅乐企渠道</b>且状态为 开票成功/红冲失败（重发）时亮；必填红冲原因 5–200 字写入开票记录；成功→已红冲（原蓝票冲销）可再次手动开票，失败→红冲失败展示乐企原因；红冲中拦截退款审核'],
+        ['票与订单关系','<b>一张票对一张订单（总单）</b>，不按子订单/运单拆分；红冲按订单一次。子订单只作为退款业务明细展示'],
+        ['红冲范围','只红冲<b>油站开出的这张乐企票</b>；平台开给客户的发票在线下渠道处理，不在本链路上红冲'],
         ['操作下拉','整体退款=同时生成客户退款+油站退款两张退款单（同一次退款的资金两侧）；客户退款/油站退款单发其一；网点支付、修改结算信息为现网既有能力；开票中/红冲中不可发起退款（菜单置灰拦截）'],
         ['退款与开票联动','开票中/红冲中（进行中）不允许申请退款；未开票/开票失败/开票成功/红冲失败/已红冲（终态）可申请退款'],
         ['批量下载发票','勾选「开票成功/已红冲」订单，仅下载各单最新 1 次发票，异步任务到下载中心获取']
       ])) +
+    nb('票池：进项入池、销项消耗',
+      tbl(['环节','口径'],[
+        ['进项入池','油站开给平台的进项票（乐企自动开）按<b>货物名称 + 规格</b>记入票池库存数量'],
+        ['销项消耗','平台开给客户的销项票（线下开票后上传）开票时消耗对应品类的库存数量——<b>只有收到发票后才给客户开票</b>，避免多开'],
+        ['红冲回退','进项票红冲后回退票池库存，不产生负数记录，已开销项不追溯'],
+        ['品类一致性','进项与销项的项目名称、规格必须一致（按「发票进项油品映射」字典取值）']
+      ])) +
     nb('校验与提示',
       '<ul style="margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px">' +
-      '<li>「客户退款 / 油站退款」生成的退款单进入<b>自营订单退款</b>页审核；审核通过后乐企蓝票先红冲（红冲失败拦截退款）。</li>' +
+      '<li>「客户退款 / 油站退款」生成的退款单进入<b>自营订单退款</b>页审核；<b>整体退款、油站退款</b>审核通过后先红冲油站的乐企蓝票（红冲失败拦截退款）；<b>客户退款</b>只退客户侧、不红冲（客户发票线下处理）。</li>' +
       '<li>支付成功即自动开票（交易与开票解耦），开票失败不影响订单交易完成。</li>' +
-      '<li>操作列「发票查看下载」入口仅开票成功/已红冲可见，弹窗展示该订单全部蓝/红票，支持逐张查看与下载（不限格式 url/pdf/ofd）。</li></ul>')
+      '<li>操作列「发票查看下载」入口仅开票成功/已红冲可见，点击直达订单详情页「开票信息（乐企）」页签，展示该订单全部蓝/红票，支持逐张查看与下载（不限格式 url/pdf/ofd）。</li></ul>')
   )}`;
 };
 
@@ -3599,10 +3711,6 @@ const SELFRF_COLS = regCols('selfRefund', [
 VIEWS.selfRefund = () => {
   return `
   <div class="card">
-    <div class="card-h"><h2>自营订单退款列表</h2><div class="spacer"></div>
-      <button class="btn sm" data-export-async="selfRefund">导出</button>
-      ${colCfgBtn('selfRefund')}
-    </div>
     <div class="filters collapsed" id="selfRefundFilters">
       ${filterRow([
         {l:'退款单号',t:'code',p:'ZRTK 开头',max:32},
@@ -3617,6 +3725,9 @@ VIEWS.selfRefund = () => {
   </div>
 
   <div class="card">
+    <div class="card-h">
+      <button class="btn sm" data-export-async="selfRefund">导出</button>
+      <span class="spacer"></span></div>
     <div class="card-b">
       ${dataTable('selfRefund', SELF_REFUNDS, '1590px', '暂无退款单')}
       ${pagerHTML(SELF_REFUNDS.length)}
@@ -3630,12 +3741,13 @@ VIEWS.selfRefund = () => {
         ['退款类型','客户退款 / 油站退款'],
         ['审核状态','待审核 / 审核通过 / 审核驳回 / 退款失败（终态）'],
         ['审核','待审核单点「审核」：弹窗核对子订单明细后选择通过 / 驳回'],
-        ['红冲前置','乐企渠道订单（开票成功）审核通过后先红冲原蓝票：红冲成功→继续退款；红冲失败→退款单终止为「退款失败」，线下抵扣处理完成后重新发起退款申请；红冲进行中→拦截审核']
+        ['红冲前置（按退款类型）','整体退款、油站退款：乐企渠道订单（开票成功）审核通过后先红冲油站开出的原蓝票——红冲成功→继续退款；红冲失败→退款单终止为「退款失败」，线下抵扣处理完成后重新发起退款申请；红冲进行中→拦截审核。<b>客户退款：只退客户侧，不触发红冲</b>（平台开给客户的发票线下处理）']
       ])) +
     nb('校验与提示',
       '<ul style="margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px">' +
       '<li>退款金额只读，等于该订单实付金额（整单退款）。</li>' +
-      '<li>审核弹窗展示子订单明细（拆单场景按子单逐行）。</li>' +
+      '<li>审核弹窗展示子订单明细（拆单场景按子单逐行）；<b>子订单只是退款业务明细，发票按订单一次红冲、不按子订单拆分</b>。</li>' +
+      '<li><b>红冲只针对油站开出的乐企票</b>：整体退款/油站退款触发红冲；客户退款不红冲。</li>' +
       '<li>「退款失败」为终态：详情页展示失败原因与重新发起路径，不提供原地重试。</li></ul>')
   )}`;
 };
@@ -3649,8 +3761,9 @@ function processSelfRefundAudit(decision){
     showToast('已驳回该退款申请'); paint(); return;
   }
   const o = SELFORDES.find(x=>x.no===r.order);
-  if(o && o.invCh==='乐企' && o.inv==='红冲中'){ showToast('红冲进行中，暂不能通过审核'); return; }
-  if(o && o.invCh==='乐企' && (o.inv==='开票成功'||o.inv==='红冲失败')){
+  const needRed = r.type !== '客户退款';   /* 客户退款只退客户侧，不红冲油站的票 */
+  if(needRed && o && o.invCh==='乐企' && o.inv==='红冲中'){ showToast('红冲进行中，暂不能通过审核'); return; }
+  if(needRed && o && o.invCh==='乐企' && (o.inv==='开票成功'||o.inv==='红冲失败')){
     if(r.redResult==='红冲失败'){
       r.audit='退款失败'; r.auditBy='张世民（运营中台）'; r.auditAt=leqiNow().slice(0,16);
       r.failNote = r.failNote || '乐企红冲接口失败';
@@ -3661,7 +3774,7 @@ function processSelfRefundAudit(decision){
       o.inv='已红冲';
       const blue = leqiInvOfOrder(o.no).find(i=>i.type==='蓝票');
       LEQI_INV.push({no:'0441202609120000'+String(1330+LEQI_INV.length).padStart(4,'0'), order:o.no, biz:'自营', type:'红票',
-        rel:blue?blue.no:'—', drawer:o.stationCo, buyer:o.co, amt:-o.amt, t:leqiNow(), trigger:'退款红冲',
+        rel:blue?blue.no:'—', drawer:o.stationCo, buyer:'万联易达科技有限公司（平台）', amt:-o.amt, t:leqiNow(), trigger:'退款红冲',
         file:`乐企发票_红冲_${o.no}.pdf`});
       LEQI_LOGS.push({order:o.no, t:leqiNow(), way:'退款红冲', act:'发票冲红', result:'成功', note:'红冲成功，原蓝票已冲销'});
       r.audit='审核通过'; r.auditBy='张世民（运营中台）'; r.auditAt=leqiNow().slice(0,16);
@@ -3695,9 +3808,6 @@ const SITECO_COLS = regCols('siteCompany', [
 VIEWS.siteCompany = () => {
   return `
   <div class="card">
-    <div class="card-h"><h2>网点公司列表</h2><div class="spacer"></div>
-      <button class="btn sm" data-export-async="siteCompany">导出</button>
-    </div>
     <div class="filters collapsed" id="siteCoFilters">
       ${filterRow([
         {l:'客户名称',t:'text',p:'名称模糊查询',max:40},
@@ -3711,6 +3821,9 @@ VIEWS.siteCompany = () => {
   </div>
 
   <div class="card">
+    <div class="card-h">
+      <button class="btn sm" data-export-async="siteCompany">导出</button>
+      <span class="spacer"></span></div>
     <div class="card-b">
       ${dataTable('siteCompany', SITE_COS, '1600px', '暂无网点公司', true)}
       ${pagerHTML(SITE_COS.length)}
@@ -3723,7 +3836,7 @@ VIEWS.siteCompany = () => {
       tbl(['项','口径'],[
         ['配置载体','网点公司（油站公司）维度，「开票配置」弹窗；默认关闭，n 默认 1'],
         ['开启前置','该网点公司<b>已开通易宝账户</b>——未开通时保存拦截并提示'],
-        ['计数口径','该网点当前开票状态=开票失败的<b>应开票订单数</b>（仅乐企线上订单；历史全量累计，做过红冲的订单不算「未开」）'],
+        ['计数口径','该网点当前开票状态=开票失败的<b>应开票订单数</b>（仅乐企线上订单；历史全量累计，做过红冲的订单不算「未开」；<b>已退款订单若仍处开票失败，仍计入，不排除已退款订单</b>）'],
         ['触发动作','累计达 n 笔 → 自动下线：启用状态置<b>停用</b>，并<b>下透到网点维度</b>——名下「上线中」的网点全部联动下线（列表不展示、不可加注、不可产生新订单）；同时站内信/短信预警（现有能力）并在操作记录留痕'],
         ['恢复','手动「启用」后重新上线：被联动下线的网点<b>恢复上线</b>（网点自身原为下线的不动），<b>开票失败计数清零</b>、从 0 重新累计']
       ])) +
@@ -3769,7 +3882,7 @@ const LEQIINV_COLS = regCols('orderInvoices', [
   {k:'biz',   t:'业务线', w:'80px', td:i=>`<span class="tag ${i.biz==='自营'?'o':'b'}">${i.biz}</span>`},
   {k:'drawer',t:'销方', td:i=>i.drawer},
   {k:'buyer', t:'购方', td:i=>i.buyer},
-  {k:'amt',   t:'金额（元）', w:'120px', cls:'num', td:i=>`<span class="num" style="color:${i.amt<0?'var(--bad)':'var(--oil)'}">${money(i.amt)}</span>`},
+  {k:'amt',   t:'金额（元）', w:'120px', cls:'num', td:i=>`<span class="num" style="color:${i.amt<0?'var(--bad)':'var(--oil)'}">${money(i.amt)}</span>${i.disc?`<div class="t2">含折扣行 −${money(i.disc)}</div>`:''}`},
   {k:'t',     t:'开票时间', w:'150px', cls:'mono', td:i=>i.t},
   {k:'trigger', t:'触发方式', w:'120px', help:'invoiceTrigger', td:i=>i.trigger},
   {k:'rel',   t:'关联发票', w:'180px', cls:'mono', td:i=>i.rel},
@@ -3779,10 +3892,6 @@ const LEQIINV_COLS = regCols('orderInvoices', [
 VIEWS.orderInvoices = () => {
   return `
   <div class="card">
-    <div class="card-h"><h2>订单发票列表</h2><div class="spacer"></div>
-      <button class="btn sm" data-export-async="orderInvoices">导出</button>
-      ${colCfgBtn('orderInvoices')}
-    </div>
     <div class="filters collapsed" id="orderInvFilters">
       ${filterRow([
         {l:'订单流水号',t:'code',p:'MH / ZY 开头',max:32},
@@ -3797,6 +3906,9 @@ VIEWS.orderInvoices = () => {
   </div>
 
   <div class="card">
+    <div class="card-h">
+      <button class="btn sm" data-export-async="orderInvoices">导出</button>
+      <span class="spacer"></span></div>
     <div class="card-b">
       ${dataTable('orderInvoices', LEQI_INV, '2200px', '暂无发票')}
       ${pagerHTML(LEQI_INV.length)}
@@ -3804,10 +3916,13 @@ VIEWS.orderInvoices = () => {
   </div>
   ${notes(
     nb('这个页面是做什么的',
-      '<p>发票中心新增菜单。<b>撮合 + 自营的乐企订单发票全量历史</b>：每张发票一行（蓝票 / 红票逐张），完整呈现开票 → 红冲 → 再次开票的多轮记录。</p>') +
+      '<p>发票中心「订单发票管理」菜单（现网开票中心下已有同名菜单、当前为空页，本次落地其内容）。<b>撮合 + 自营的乐企订单发票全量历史</b>：每张发票一行（蓝票 / 红票逐张），完整呈现开票 → 红冲 → 再次开票的多轮记录。</p>' +
+      '<p style="margin-top:6px"><b>业务线定义：</b>撮合 / 自营按客户合作模式区分——自营=电子卡模式（平台过资金过票），撮合=撮合模式。</p>') +
     nb('关键规则',
       tbl(['列 / 口径','说明'],[
         ['每张发票一行','蓝票与红票各自一行；红票金额为负数，「关联发票」指向被冲销的原蓝票'],
+        ['票与订单','<b>一张票对一张订单</b>（订单流水号精确匹配），不按子订单/运单拆分；红冲也按订单一次'],
+        ['销方 / 购方','销方=油站公司（乐企开的是油站开出的票）；购方按业务线取——自营=平台内部主体，撮合=客户公司'],
         ['业务线','撮合 / 自营，来自订单归属'],
         ['触发方式','自动-支付成功 / 退款红冲 / 手动开票 / 手动红冲（红票）；同一订单红冲后再次开票会形成新的蓝票行，按开票时间倒序'],
         ['开票结果状态','蓝票=开票成功；红票=已红冲'],
@@ -3858,7 +3973,10 @@ VIEWS.voucher = () => {
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
   </div>
   <div class="card">
-    <div class="card-h"><h2>支付凭证（易宝电子回单）</h2><span class="spacer"></span><button class="btn sm">批量下载回单</button><button class="btn sm">导出</button></div>
+    <div class="card-h"><h2>支付凭证（易宝电子回单）</h2>
+      <button class="btn sm">批量下载回单</button>
+      <button class="btn sm">导出</button>
+      <span class="spacer"></span></div>
     <div class="tablewrap">
       <table style="min-width:1620px">
         <thead><tr><th style="width:34px"><input type="checkbox" data-all="voucher"></th><th>请求号 / 时间</th><th>请求接口</th><th>关联订单</th><th>付款方</th><th>收款方</th><th>金额</th><th>用途</th><th>调拨状态</th><th>易宝流水号</th><th>回单</th><th style="width:200px">操作</th></tr></thead>
@@ -4178,10 +4296,11 @@ VIEWS.fee = () => {
   </div>
 
   <div class="card">
-    <div class="card-h"><h2>服务费订单 <span class="title-stat">共 <b>${FEES.length}</b> 笔 · 合计 <b class="num-fee">¥${money(total)}</b></span> <span id="autoInvStatusTag" style="margin-left:10px"><span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:2px 8px;border-radius:10px;background:#e8f7ee;color:#28a745"><span style="width:6px;height:6px;border-radius:50%;background:#28a745"></span>自动开票已启用</span></span></h2><span class="spacer"></span>
-      <button class="btn sm primary" onclick="batchFeeInvoice()">批量申请开票</button>
+    <div class="card-h"><h2>服务费订单 <span class="title-stat">共 <b>${FEES.length}</b> 笔 · 合计 <b class="num-fee">¥${money(total)}</b></span> <span id="autoInvStatusTag" style="margin-left:10px"><span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:2px 8px;border-radius:10px;background:#e8f7ee;color:#28a745"><span style="width:6px;height:6px;border-radius:50%;background:#28a745"></span>自动开票已启用</span></span></h2>
       <button class="btn sm" data-modal="autoInvoiceConfig">自动开票配置</button>
-      ${colCfgBtn('fee')}<button class="btn sm" data-modal="export">导出</button></div>
+      <button class="btn sm" data-modal="export">导出</button>
+      <button class="btn sm primary" onclick="batchFeeInvoice()">批量申请开票</button>
+      <span class="spacer"></span></div>
     ${dataTable('fee', list, '2100px', '暂无服务费订单')}
     ${pagerHTML(list.length)}
   </div>
@@ -4355,11 +4474,10 @@ VIEWS._legacyEnergyInvApply = () => {
 
   <div class="card">
     <div class="card-h"><h2>能源发票管理</h2>
-      <span class="spacer"></span>
-      ${colCfgBtn('energyInvApply')}
       <button class="btn sm" data-go="orders">去订单列表勾选开票</button>
       <button class="btn sm" onclick="batchDownloadEnergyInv()">批量下载发票</button>
-      <button class="btn sm" data-modal="export">导出</button></div>
+      <button class="btn sm" data-modal="export">导出</button>
+      <span class="spacer"></span></div>
     ${dataTable('energyInvApply', APPLIES, '2160px', '暂无开票申请单')}
     ${pagerHTML(APPLIES.length)}
   </div>
@@ -4450,9 +4568,11 @@ VIEWS._legacyFeeInvApply = () => {
   </div>
 
   <div class="card">
-    <div class="card-h"><h2>服务费发票管理 <span class="title-stat">共 <b>${eligibleApplies.length}</b> 笔 · 合计 <b class="num-fee">¥${money(totalAmt)}</b></span></h2><span class="spacer"></span>
-      <button class="btn sm" onclick="batchDownloadFeeInv()">批量下载发票</button><button class="btn sm primary" data-go="fee">去订单列表勾选开票</button>
-      ${colCfgBtn('feeInvApply')}<button class="btn sm" data-modal="export">导出</button></div>
+    <div class="card-h"><h2>服务费发票管理 <span class="title-stat">共 <b>${eligibleApplies.length}</b> 笔 · 合计 <b class="num-fee">¥${money(totalAmt)}</b></span></h2>
+      <button class="btn sm" onclick="batchDownloadFeeInv()">批量下载发票</button>
+      <button class="btn sm" data-modal="export">导出</button>
+      <button class="btn sm primary" data-go="fee">去订单列表勾选开票</button>
+      <span class="spacer"></span></div>
     ${dataTable('feeInvApply', feeInvList, '2000px', '暂无服务费发票管理单')}
     ${pagerHTML(feeInvList.length)}
   </div>
@@ -4541,9 +4661,10 @@ VIEWS._legacyStationFeeInv = () => {
   </div>
 
   <div class="card">
-    <div class="card-h"><h2>服务费发票列表 <span class="title-stat">共 <b>${stationAll.length}</b> 笔 · 合计 <b class="num-fee">¥${money(totalAmt)}</b></span></h2><span class="spacer"></span>
+    <div class="card-h"><h2>服务费发票列表 <span class="title-stat">共 <b>${stationAll.length}</b> 笔 · 合计 <b class="num-fee">¥${money(totalAmt)}</b></span></h2>
       <button class="btn sm" onclick="batchDownloadFeeInv()">批量下载发票</button>
-      ${colCfgBtn('stationFeeInv')}<button class="btn sm" data-modal="export">导出</button></div>
+      <button class="btn sm" data-modal="export">导出</button>
+      <span class="spacer"></span></div>
     ${dataTable('stationFeeInv', list, '1600px', '暂无服务费发票')}
     ${pagerHTML(list.length)}
   </div>
@@ -4624,8 +4745,8 @@ VIEWS._legacyStationInv = () => {
   <div class="card">
     <div class="card-h"><h2>发票管理</h2>
       <span class="title-stat">共 <b>${list.length}</b> 笔申请 · 开票中 <b class="num-bad">${pending}</b> · 部分开票 <b class="num-warn">${partial}</b></span>
-      <span class="spacer"></span>
-      ${colCfgBtn('stationInv')}<button class="btn sm" data-modal="export">导出</button></div>
+      <button class="btn sm" data-modal="export">导出</button>
+      <span class="spacer"></span></div>
     ${dataTable('stationInv', list, '2400px', '暂无开票申请')}
     ${pagerHTML(list.length)}
   </div>
@@ -4714,10 +4835,11 @@ VIEWS.invFee = () => {
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
   </div>
   <div class="card">
-    <div class="card-h"><h2>服务费账单与发票</h2><span class="spacer"></span>
+    <div class="card-h"><h2>服务费账单与发票</h2>
       <button class="btn sm">生成账单</button>
+      <button class="btn sm" data-modal="export">导出</button>
       <button class="btn sm primary" data-confirm="feeInvBatchDownload">批量下载</button>
-      <button class="btn sm" data-modal="export">导出</button></div>
+      <span class="spacer"></span></div>
     <div class="tablewrap">
       <table style="min-width:1420px">
         <thead><tr><th style="width:34px"><input type="checkbox" data-all="invFee"></th><th>账单号 / 生成时间</th><th>油站公司</th><th>账期</th><th>订单笔数</th><th>服务费合计</th><th>费率</th><th>油站确认</th><th>开票状态</th><th>发票编号</th><th style="width:150px">操作</th></tr></thead>
@@ -4843,8 +4965,10 @@ VIEWS.cOrders = () => {
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button><button class="btn link" onclick="const f=document.getElementById('cOrderFilters');f.classList.toggle('collapsed');f.style.maxHeight=f.classList.contains('collapsed')?'180px':'1000px';this.textContent=f.classList.contains('collapsed')?'展开更多筛选':'收起筛选'">展开更多筛选</button></div>
   </div>
   <div class="card">
-    <div class="card-h"><h2>订单列表 <span class="title-stat">共 <b>${CORDERS.length}</b> 笔 · 合计 <b class="num-bad">¥${money(sumAmt)}</b></span></h2><span class="spacer"></span>
-      <button class="btn sm primary" onclick="batchOrderInvoice()">批量申请开票</button>${colCfgBtn('cOrders')}<button class="btn sm" data-modal="export">导出</button></div>
+    <div class="card-h"><h2>订单列表 <span class="title-stat">共 <b>${CORDERS.length}</b> 笔 · 合计 <b class="num-bad">¥${money(sumAmt)}</b></span></h2>
+      <button class="btn sm" data-modal="export">导出</button>
+      <button class="btn sm primary" onclick="batchOrderInvoice()">批量申请开票</button>
+      <span class="spacer"></span></div>
     ${dataTable('cOrders', list, '2100px', '没有符合条件的订单')}
     ${pagerHTML(list.length)}
   </div>
@@ -4939,7 +5063,10 @@ VIEWS.cQuota = () => {
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
   </div>
   <div class="card">
-    <div class="card-h"><h2>余额与额度流水</h2><span class="spacer"></span><button class="btn sm primary">充值</button>${colCfgBtn('cQuota')}<button class="btn sm">导出</button></div>
+    <div class="card-h"><h2>余额与额度流水</h2>
+      <button class="btn sm">导出</button>
+      <button class="btn sm primary">充值</button>
+      <span class="spacer"></span></div>
     ${dataTable('cQuota', CQUOTA, '1200px', '暂无流水')}
     ${pagerHTML(CQUOTA.length)}
   </div>
@@ -5020,8 +5147,10 @@ VIEWS.cFund = () => {
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
   </div>
   <div class="card">
-    <div class="card-h"><h2>我的支付流水</h2><span class="spacer"></span>
-      <button class="btn sm">批量下载回单</button><button class="btn sm">导出对账文件</button></div>
+    <div class="card-h"><h2>我的支付流水</h2>
+      <button class="btn sm">批量下载回单</button>
+      <button class="btn sm">导出对账文件</button>
+      <span class="spacer"></span></div>
     <div class="tablewrap">
       <table style="min-width:1200px">
         <thead><tr><th style="width:34px"><input type="checkbox" data-all="cFund"></th><th>发生时间</th><th>交易类型</th><th>变动金额</th><th>上次余额</th><th>当前余额</th><th>发生事件</th><th>关联订单</th><th>收款方</th><th>操作</th></tr></thead>
@@ -5126,8 +5255,10 @@ VIEWS._legacyCApply = () => {
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
   </div>
   <div class="card">
-    <div class="card-h"><h2>发票列表 <span class="title-stat">共 <b>${CAPPLIES.length}</b> 笔 · 合计 <b class="num-brand">¥${money(totalAmt)}</b></span></h2><span class="spacer"></span>
-      <button class="btn sm primary" data-go="cOrders">去订单列表申请开票</button>${colCfgBtn('cApply')}<button class="btn sm" onclick="showToast('已选择发票打包下载中')">批量下载发票</button></div>
+    <div class="card-h"><h2>发票列表 <span class="title-stat">共 <b>${CAPPLIES.length}</b> 笔 · 合计 <b class="num-brand">¥${money(totalAmt)}</b></span></h2>
+      <button class="btn sm" onclick="showToast('已选择发票打包下载中')">批量下载发票</button>
+      <button class="btn sm primary" data-go="cOrders">去订单列表申请开票</button>
+      <span class="spacer"></span></div>
     ${dataTable('cApply', CAPPLIES, '1700px', '暂无开票申请')}
     ${pagerHTML(CAPPLIES.length)}
   </div>
@@ -5202,8 +5333,10 @@ VIEWS.cRefund = () => `
     <div class="kpi ok"><div class="l">已退款</div><div class="v num">${CREFUNDS.filter(r=>r.st==='已退款').length}</div></div>
   </div>
   <div class="card">
-    <div class="card-h"><h2>我的退款申请</h2><span class="spacer"></span>
-      <button class="btn sm primary" data-go="cOrders">查看订单列表</button>${colCfgBtn('cRefund')}<button class="btn sm">导出</button></div>
+    <div class="card-h"><h2>我的退款申请</h2>
+      <button class="btn sm">导出</button>
+      <button class="btn sm primary" data-go="cOrders">查看订单列表</button>
+      <span class="spacer"></span></div>
     ${dataTable('cRefund', CREFUNDS, '1420px', '暂无退款申请')}
     ${pagerHTML(CREFUNDS.length)}
   </div>
@@ -5485,7 +5618,9 @@ function openBillOrderDrawer(period,index){
   main.removeAttribute('aria-labelledby');
   main.innerHTML = `
     <div class="banner"><div><b>账单交易 ${bill.txCount} 笔 · 加油量 ${bill.qty.toFixed(2)}(L/kg) · 加油金额 ¥${money(bill.oilAmt)}${period==='month'?` · 已开票金额 ¥${money(bill.invoiced)}`:''}</b></div></div>
-    <div class="card"><div class="card-h"><h2>能源订单明细</h2><span class="spacer"></span><button class="btn sm" type="button" onclick="billOrdersExport()">导出</button></div><div id="billOrdersBody"></div></div>`;
+    <div class="card"><div class="card-h"><h2>能源订单明细</h2>
+      <button class="btn sm" type="button" onclick="billOrdersExport()">导出</button>
+      <span class="spacer"></span></div><div id="billOrdersBody"></div></div>`;
   renderBillOrdersBody();
   showDrawer(true);
 }
@@ -5522,7 +5657,9 @@ VIEWS.daily = () => {
   </div>
 
   <div class="card">
-    <div class="card-h"><h2>日账单 <span class="title-stat">共 <b>${dailyDays}</b> 天 · 消费合计 <b class="num-ok">¥${money(dailyTotal)}</b></span></h2><span class="spacer"></span><button class="btn sm">导出</button></div>
+    <div class="card-h"><h2>日账单 <span class="title-stat">共 <b>${dailyDays}</b> 天 · 消费合计 <b class="num-ok">¥${money(dailyTotal)}</b></span></h2>
+      <button class="btn sm">导出</button>
+      <span class="spacer"></span></div>
     <div class="tablewrap">
       <table style="min-width:1100px">
         <thead><tr><th>日期</th><th>能源类型</th><th>交易笔数</th><th>加油量(L/kg)</th><th>加油金额(元)</th><th>消费合计(元)</th><th>涉及油站</th><th>开票状态</th><th>操作</th></tr></thead>
@@ -5605,7 +5742,9 @@ VIEWS.monthly = () => {
   </div>
 
     <div class="card">
-    <div class="card-h"><h2>月账单</h2><span class="spacer"></span><button class="btn sm">导出</button></div>
+    <div class="card-h"><h2>月账单</h2>
+      <button class="btn sm">导出</button>
+      <span class="spacer"></span></div>
     <div class="tablewrap">
       <table style="min-width:1300px">
         <thead><tr><th>月份</th><th>能源类型</th><th>交易笔数</th><th>加油量(L/kg)</th><th>加油金额(元)</th><th>消费合计(元)</th><th>充值(元)</th><th>退款(元)</th><th>已开票(元)</th><th>开票状态</th><th>操作</th></tr></thead>
@@ -5703,7 +5842,9 @@ VIEWS.txns = () => {
   </form>
 
   <div class="card">
-    <div class="card-h"><h2>账户资金流水 <span class="title-stat">共 <b>${ENTERPRISE_FUND_FLOWS.length}</b> 笔</span></h2><span class="spacer"></span><button class="btn sm" data-modal="export">导出</button></div>
+    <div class="card-h"><h2>账户资金流水 <span class="title-stat">共 <b>${ENTERPRISE_FUND_FLOWS.length}</b> 笔</span></h2>
+      <button class="btn sm" data-modal="export">导出</button>
+      <span class="spacer"></span></div>
     <div class="tablewrap">
       <table style="min-width:2260px">
         <caption class="visually-hidden">企业账户资金流水数据</caption>
@@ -5817,7 +5958,9 @@ VIEWS.stationAcct = () => {
   </div>
 
   <div class="card">
-    <div class="card-h"><h2>油站账户列表</h2><span class="spacer"></span><button class="btn sm" data-modal="export">导出</button></div>
+    <div class="card-h"><h2>油站账户列表</h2>
+      <button class="btn sm" data-modal="export">导出</button>
+      <span class="spacer"></span></div>
     <div class="tablewrap">
       <table style="min-width:1480px">
         <thead><tr><th>油站公司</th><th>能源类型</th><th>易宝账户 ID</th><th>可提现余额(元)</th><th>累计收入(元)</th><th>已提现(元)</th><th>账户状态</th><th>提现方式</th><th>提现类型</th><th>最近提现</th><th style="width:270px">操作</th></tr></thead>
@@ -5908,7 +6051,9 @@ VIEWS.stationFlow = () => {
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div>
   </div>
   <div class="card">
-    <div class="card-h"><h2>油站资金流水</h2><span class="spacer"></span><button class="btn sm" data-modal="export">导出对账文件</button></div>
+    <div class="card-h"><h2>油站资金流水</h2>
+      <button class="btn sm" data-modal="export">导出对账文件</button>
+      <span class="spacer"></span></div>
     <div class="tablewrap">
       <table style="min-width:1400px">
         <thead><tr><th>资金流水号</th><th>发生时间</th><th>油站公司 / 账户 ID</th><th>交易类型</th><th>变动金额(元)</th><th>上次余额(元)</th><th>当前余额(元)</th><th>订单号</th><th>易宝流水号</th><th style="width:140px">操作</th></tr></thead>
@@ -6005,7 +6150,9 @@ VIEWS.serviceFee = () => {
   </div>
 
   <div class="card">
-    <div class="card-h"><h2>服务费流水明细</h2><span class="spacer"></span><button class="btn sm" data-modal="export">导出</button></div>
+    <div class="card-h"><h2>服务费流水明细</h2>
+      <button class="btn sm" data-modal="export">导出</button>
+      <span class="spacer"></span></div>
     <div class="tablewrap">
       <table style="min-width:1320px">
         <thead><tr><th>易宝流水号</th><th>发生时间</th><th>来源公司</th><th>交易类型</th><th>变动金额(元)</th><th>上次余额(元)</th><th>当前余额(元)</th><th>订单号</th><th style="width:90px">操作</th></tr></thead>
@@ -6068,7 +6215,7 @@ const MODALS = {
     foot:'<button class="btn" data-mclose="1">关闭</button>',
     body:()=>{
       const os = leqiInvOfOrder(window._leqiInvKey) || [];
-      const o = SELFORDES.find(x=>x.no===window._leqiInvKey) || ORDERS.find(x=>x.no===window._leqiInvKey) || {};
+      const o = SELFORDES.find(x=>x.no===window._leqiInvKey) || ORDERS.find(x=>x.no===window._leqiInvKey) || (window.LIVE?LIVE.orders.find(x=>x.no===window._leqiInvKey):null) || {};
       return `
       <p class="t2" style="margin-top:-4px">订单 <b class="mono">${window._leqiInvKey}</b>（${(o.invCh||'线下')==='乐企'?'乐企渠道':'线下渠道'}）名下全部乐企发票，支持逐张查看与下载（不限格式 url/pdf/ofd）。</p>
       <div class="card" style="box-shadow:none;margin:12px 0"><div class="card-b">
@@ -6086,7 +6233,9 @@ const MODALS = {
     body:()=>{
       const r = SELF_REFUNDS.find(x=>x.id===window._selfAuditKey) || SELF_REFUNDS[0];
       return `
-      <div class="banner warn"><div><b>红冲前置</b><span class="txt">乐企渠道订单（开票成功）审核通过后<b>先红冲原蓝票</b>：红冲成功→继续退款；红冲失败→本退款单终止为「退款失败」，线下抵扣处理完成后重新发起退款申请；红冲进行中→拦截审核。</span></div></div>
+      ${r.type==='客户退款'
+        ? '<div class="banner info"><div><b>本单为「客户退款」</b><span class="txt">只退客户侧资金，<b>不触发红冲</b>：红冲只针对油站开出的票；平台开给客户的发票在线下渠道处理。</span></div></div>'
+        : '<div class="banner warn"><div><b>红冲前置</b><span class="txt">乐企渠道订单（开票成功）审核通过后<b>先红冲油站开出的原蓝票</b>：红冲成功→继续退款；红冲失败→本退款单终止为「退款失败」，线下抵扣处理完成后重新发起退款申请；红冲进行中→拦截审核。<b>发票按订单一次红冲，不按子订单拆分。</b></span></div></div>'}
       <div class="card" style="box-shadow:none;margin:12px 0"><div class="card-b">
         <div class="sec-title">退款信息</div>
         <dl class="cf-kv" style="margin-top:10px">
@@ -8206,8 +8355,8 @@ CINVTAB.cInvFiles = a => {
   ${applySumHead(a)}
   <div class="card">
     <div class="card-h"><h2>发票文件 <span class="title-stat">共 <b>${invCount}</b> 张发票 · 已开票 <b class="num-ok">¥${money(a.invoiced)}</b></span></h2>
-      <span class="spacer"></span>
-      <button class="btn sm primary ${hasFiles?'':'off'}" onclick="showToast('打包下载中...')">打包下载全部</button></div>
+      <button class="btn sm primary ${hasFiles?'':'off'}" onclick="showToast('打包下载中...')">打包下载全部</button>
+      <span class="spacer"></span></div>
     ${hasFiles ? `
     <div class="tablewrap">
       <table>
@@ -8394,7 +8543,7 @@ function invoiceApplicationDetail(kind,key){
 }
 
 /* 其他抽屉 */
-function openSimple(kind,key){
+function openSimple(kind,key,tabIndex=0){
   if(['apply','feeInvApply','stationFeeInv'].includes(kind)){
     const title = kind==='apply' ? '能源发票申请单详情' : '服务费发票申请单详情';
     document.getElementById('drawerTitle').textContent=title;
@@ -8716,7 +8865,7 @@ function openSimple(kind,key){
       const o = ORDERS.find(x=>x.no===r.order) || {};
       const done = r.st==='已退款';
       const failed = r.st==='退款失败';
-      const step = r.st==='待审核' ? 0 : (r.st==='审核中' ? 1 : 3);
+      const step = r.st==='待审核' ? 0 : (r.st==='退款中' ? 1 : 3);
       const leqiRed = o.invCh==='乐企';
       document.getElementById('drawerTitle').textContent='退款申请详情';
       return `
@@ -9134,6 +9283,7 @@ function openSimple(kind,key){
     }
   };
   renderSimpleDrawerTabs(map[kind](),kind);
+  if(tabIndex>0&&simpleDrawerTabs[tabIndex]) activateSimpleDrawerTab(simpleDrawerTabs[tabIndex].id);
   showDrawer(true);
 }
 
@@ -9180,10 +9330,11 @@ function renderEnergyInvoiceList(scope){
   return `
   <div class="card"><div class="filters">${energyInvoiceFilters()}</div>
     <div class="filter-actions"><button class="btn primary">搜索</button><button class="btn">重置</button></div></div>
-  <div class="card"><div class="card-h"><h2>${title}<span class="title-stat">共 <b>${list.length}</b> 笔</span></h2><span class="spacer"></span>
-    ${scope!=='station'?`<button class="btn sm primary" data-go="${scope==='enterprise'?'cOrders':'orders'}">去订单列表申请开票</button>`:''}
-    <button class="btn sm" onclick="batchDownloadEnergyInv()">批量下载</button>
-    ${colCfgBtn(tableId)}<button class="btn sm" data-export-async="${exportId}">导出</button></div>
+  <div class="card"><div class="card-h"><h2>${title}<span class="title-stat">共 <b>${list.length}</b> 笔</span></h2>
+      <button class="btn sm" onclick="batchDownloadEnergyInv()">批量下载</button>
+      <button class="btn sm" data-export-async="${exportId}">导出</button>
+      <button class="btn sm primary" data-go="${scope==='enterprise'?'cOrders':'orders'}">去订单列表申请开票</button>
+      <span class="spacer"></span></div>
     <div class="banner" style="margin:0 14px 12px"><div><b>数据范围</b><span class="txt">${scopeText}</span></div></div>
     ${dataTable(tableId,list,'1800px','暂无能源发票申请单')}${pagerHTML(list.length)}
   </div>${invoiceListNotes('energy')}`;
@@ -9201,10 +9352,11 @@ function renderServiceInvoiceList(scope){
   <div class="card" style="border:0;background:none;box-shadow:none"><div class="chips" style="padding:0;justify-content:flex-start">
     ${['全部','开票中','已开票','已撤销'].map(s=>`<button class="${filter===s?'on':''}" ${scope==='station'?`data-station-feeinvchip="${s}"`:`data-feeinvchip="${s}"`}>${s} <b>${s==='全部'?all.length:all.filter(a=>a.st===s).length}</b></button>`).join('')}
   </div></div>
-  <div class="card"><div class="card-h"><h2>服务费发票管理<span class="title-stat">共 <b>${all.length}</b> 笔</span></h2><span class="spacer"></span>
-    ${scope==='station'?'':'<button class="btn sm primary" data-go="fee">去订单列表申请开票</button>'}
-    <button class="btn sm" onclick="batchDownloadFeeInv()">批量下载</button>
-    ${colCfgBtn(tableId)}<button class="btn sm" data-export-async="${tableId}">导出</button></div>
+  <div class="card"><div class="card-h"><h2>服务费发票管理<span class="title-stat">共 <b>${all.length}</b> 笔</span></h2>
+      <button class="btn sm" onclick="batchDownloadFeeInv()">批量下载</button>
+      <button class="btn sm" data-export-async="${tableId}">导出</button>
+      <button class="btn sm primary" data-go="fee">去订单列表申请开票</button>
+      <span class="spacer"></span></div>
     ${scope==='station'?'<div class="banner" style="margin:0 14px 12px"><div><b>数据范围</b><span class="txt">按油站公司隔离，可查看本公司下全部油站的数据。</span></div></div>':''}
     ${dataTable(tableId,list,'1450px','暂无服务费发票申请单')}${pagerHTML(list.length)}
   </div>${invoiceListNotes('service')}`;
@@ -9232,8 +9384,10 @@ VIEWS.fee = () => {
   <div class="card" style="border:0;background:none;box-shadow:none"><div class="chips" style="padding:0;justify-content:flex-start">
     ${FEE_CHIPS.map(x=>`<button class="${feeFilter===x.k?'on':''}" data-feechip="${x.k}">${x.k} <b>${searched.filter(x.f).length}</b></button>`).join('')}
   </div></div>
-  <div class="card"><div class="card-h"><h2>服务费订单<span class="title-stat">共 <b>${list.length}</b> 笔</span></h2><span class="spacer"></span>
-    <button class="btn sm primary" onclick="batchFeeInvoice()">批量申请开票</button>${colCfgBtn('fee')}<button class="btn sm" data-modal="export">导出</button></div>
+  <div class="card"><div class="card-h"><h2>服务费订单<span class="title-stat">共 <b>${list.length}</b> 笔</span></h2>
+      <button class="btn sm" data-modal="export">导出</button>
+      <button class="btn sm primary" onclick="batchFeeInvoice()">批量申请开票</button>
+      <span class="spacer"></span></div>
     ${dataTable('fee',list,'2400px','暂无服务费订单')}${pagerHTML(list.length)}
   </div>
   ${notes(
@@ -9468,12 +9622,11 @@ VIEWS.freightLock = () => {
 
   <div class="card live-list-card live-list-freightLock">
     <div class="card-h">
-      <h2>货主锁站规则</h2><span class="spacer"></span>
-      <button class="btn sm primary" type="button" onclick="openLockEditor()">新建规则</button>
+      <h2>货主锁站规则</h2>
       <button class="btn sm" type="button" onclick="lockBatch('toggle')">批量停用</button>
       <button class="btn sm" type="button" onclick="lockExport()">导出</button>
-      ${colCfgBtn('freightLock')}
-    </div>
+      <button class="btn sm primary" type="button" onclick="openLockEditor()">新建规则</button>
+      <span class="spacer"></span></div>
     ${dataTable('freightLock', list, 1280, '暂无符合条件的锁站规则', false)}
     ${pagerHTML(list.length)}
   </div>
@@ -10408,10 +10561,10 @@ VIEWS.oilWangHuoCustomerInfo = () => {
 
   <div class="card live-list-card live-list-oilWangHuoCustomerInfo">
     <div class="card-h">
-      <h2>网货货主</h2><span class="spacer"></span>
-      <button class="btn sm primary" type="button" onclick="openModal('whOwnerImport')">导入</button>
+      <h2>网货货主</h2>
       <button class="btn sm" type="button" onclick="whExport()">导出</button>
-    </div>
+      <button class="btn sm primary" type="button" onclick="openModal('whOwnerImport')">导入</button>
+      <span class="spacer"></span></div>
     ${dataTable('oilWangHuoCustomerInfo', pageRows, 1200, '暂无符合条件的网货货主', true)}
     ${lockPagerHTML(list.length, whState.page, whState.pageSize, 'whPageGo', 'whPageSize', [10,20,30,50,100,200,500])}
   </div>
