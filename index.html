@@ -2057,7 +2057,7 @@ document.addEventListener('click', e=>{
   const sa = e.target.closest('[data-selfact]'); if(sa){ handleSelfAction(sa.dataset.selfact, sa.dataset.no); return; }
   const sd = e.target.closest('[data-sdetail]'); if(sd){ openSimple('selfOrder', sd.dataset.sdetail); return; }
   const sr = e.target.closest('[data-srefdetail]'); if(sr){ openSimple('selfRefund', sr.dataset.srefdetail); return; }
-  const sau = e.target.closest('[data-selfaudit]'); if(sau){ window._selfAuditKey = sau.dataset.selfaudit; showDrawer('selfRefund', sau.dataset.selfaudit); return; }
+  const sau = e.target.closest('[data-selfaudit]'); if(sau){ window._selfAuditKey = sau.dataset.selfaudit; openSimple('selfRefund', sau.dataset.selfaudit); return; }
   const sao = e.target.closest('[data-selfaudit-ok]'); if(sao){ window._selfAuditKey = sao.dataset.selfauditId || window._selfAuditKey; processSelfRefundAudit(sao.dataset.selfauditOk); return; }
   const slc = e.target.closest('[data-siteline]'); if(slc){ window._siteLineKey = slc.dataset.siteline; openModal('siteLineConf'); return; }
   const sls = e.target.closest('[data-siteline-save]'); if(sls){ saveSiteLineConf(); return; }
