@@ -3073,6 +3073,7 @@ function leqiFieldHelp(kind){
       ['手动红冲','乐企且 开票成功 / 红冲失败（重发）','<b>仅乐企渠道开放</b>（线下渠道无红冲入口）；必填红冲原因 5–200 字写入开票记录；成功→已红冲可再次开票；独立换开入口，不影响退款流程'],
       ['发票查看下载','乐企且 开票成功 / 已红冲','全部蓝/红票逐张查看与下载（不限 url/pdf/ofd）'],
       ['申请退款','开票终态（未开票 / 开票失败 / 开票成功 / 红冲失败 / 已红冲）可申请','开票中 / 红冲中置灰，提示「开票/红冲进行中，暂不可申请退款」'],
+      ['修改结算信息（操作下拉）','乐企且 未开票 / 开票失败 / 已红冲（无有效蓝票）时可操作','乐企渠道已开出蓝票（开票中/开票成功/红冲中/红冲失败）时该项<b>置灰不可点</b>，点击提示「乐企发票已开具或开具中，不可修改结算信息；需先红冲，已红冲后可修改」；<b>线下渠道不受此限制</b>'],
       ['批量申请开票（页头）','仅线下订单进勾选池','乐企订单不进「批量申请开票」勾选池（保留给线下）']
     ])
     +'<p class="mut">与 PRD 7.2.1 同源。</p>');
@@ -3719,6 +3720,12 @@ const SELFORDES_COLS = regCols('selfOrders', [
   {k:'ops',     t:'操作',       w:'200px', cls:'acts acts-wrap', help:'orderOps', td:o=>selfOrderOps(o)}
 ]);
 /* 行操作：详情 + 手动开票（乐企可用状态）+ 操作下拉（整体/客户/油站退款、网点支付、修改结算信息） */
+
+/* 修改结算信息可用性：乐企渠道且已存在有效蓝票（开票中/开票成功/红冲中/红冲失败）时不可改；线下不限制 */
+function selfSettleBlocked(o){
+  if(!o || (o.invCh||'线下')!=='乐企') return false;
+  return ['开票中','开票成功','红冲中','红冲失败'].includes(o.inv);
+}
 function selfOrderOps(o){
   const hasInv = (o.invCh||'线下')==='乐企' && (o.inv==='开票成功'||o.inv==='已红冲') && !!leqiLatestInv(o.no);
   return `<span class="btn-group">
@@ -3737,6 +3744,13 @@ function toggleSelfMenu(no, btn){
   closeSelfMenus();
   if(wasHidden){
     m.querySelectorAll('button').forEach(b=>b.dataset.no = no);
+    const settleBtn = m.querySelector('[data-selfact="修改结算信息"]');
+    if(settleBtn){
+      const blocked = _so && selfSettleBlocked(_so);
+      settleBtn.classList.toggle('off', !!blocked);
+      settleBtn.disabled = !!blocked;
+      settleBtn.title = blocked ? '乐企发票已开具或开具中（开票中/开票成功/红冲中/红冲失败），不可修改结算信息；需先红冲，已红冲后可修改' : '';
+    }
     m.hidden = false;
     const r = btn.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
     let left = Math.max(8, Math.min(r.right - mw, window.innerWidth - mw - 8));
@@ -3765,7 +3779,10 @@ function handleSelfAction(act, no){
     else { SELF_REFUNDS.unshift(mk(act,'C')); showToast(`已生成「${act}」退款单，待审核`); }
     paint();
   } else if(act==='网点支付'){ showToast('演示：进入网点支付流程'); }
-  else { showToast('演示：进入修改结算信息流程'); }
+  else if(act==='修改结算信息'){
+    if(selfSettleBlocked(o)){ showToast('乐企发票已开具或开具中（'+o.inv+'），不可修改结算信息；需先红冲，已红冲后可修改'); return; }
+    showToast('演示：进入修改结算信息流程');
+  } else { showToast('演示：进入修改结算信息流程'); }
 }
 VIEWS.selfOrders = () => {
   return `
