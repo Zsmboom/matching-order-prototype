@@ -77,9 +77,47 @@ const LIVE_FILTERS = {
   energyInvApply:[['开票日期','time','range',''],['发票状态','status','select',['开票中','已开票','已撤销']],['申请单号','no','text','KP 开头，字母数字'],['提交批次号','batch','text','BAT 开头，字母数字'],['油站公司','stationCo','text','输入油站公司'],['能源类型','energy','select',['柴油','天然气','尿素']],['申请金额','amount','amountRange','']],
   feeInvApply:[['申请单号','no','text','FZK 开头，字母数字'],['申请时间','time','range',''],['申请状态','status','select',['开票中','已开票','已撤销']],['支付方','payer','select',['油站承担','企业承担']],['申请金额','amount','amountRange',''],['支付方名称','payerName','text','油站公司或客户企业']],
   serviceFee:[['交易类型','type','select',['客户费入账','油站费入账','客户费退款','油站费退款','提现']],['来源公司','company','text','输入公司名称关键词'],['易宝流水号','no','text','输入易宝流水号'],['订单号','order','text','输入订单号'],['发生时间','time','range','']],
-  withdrawRecord:[['提现单号','no','text','输入提现单号'],['网点公司','company','select',['示例能源有限公司']],['账户名称','accountName','text','输入账户名称'],['账号','account','text','输入账号'],['能源类型','energy','select',['柴油','天然气','尿素']],['提现状态','status','select',['提现成功','提现失败','处理中']],['提现时间','time','range','']]
+  withdrawRecord:[['提现单号','no','text','输入提现单号'],['网点公司','company','select',['示例能源有限公司']],['账户名称','accountName','text','输入账户名称'],['账号','account','text','输入账号'],['能源类型','energy','select',['柴油','天然气','尿素']],['提现状态','status','select',['提现成功','提现失败','处理中']],['提现时间','time','range','']],
+  /* 4PL 端 · 充电订单管理 */
+  chargeOrders:[['订单状态','status','select',['充电中','充电结束','待支付','已支付','已挂单','已退款']],['司机姓名','driver','text','输入司机姓名'],['手机号','phone','text','输入手机号'],['车牌号','plate','text','输入车牌号'],['关联运单号','waybill','text','输入运单号'],['能源订单号','no','text','输入能源订单号'],['云快充订单号','ckcNo','text','输入云快充订单号'],['是否追回','recover','select',['未追回','已追回','恢复正常支付']],['创建时间','createTime','range','']],
+  /* 4PL 端 · 司机能源管理 / 能源账户管理 / 变更日志 */
+  driverOil:[['司机姓名','name','text','输入司机姓名'],['司机手机号','phone','text','输入手机号']],
+  oilAccount:[['网货主体名称','subj','text','输入主体名称'],['能源类型','etype','select',['油气','电']]],
+  driverOilLog:[['操作时间','time','range',''],['能源类型','energy','select',['油气','电']],['变更类型','type','select',['分配','加注','圈回','订单取消','恢复','分电','冻结','解冻','实扣','回收','手动分配']],['运单号','wb','text','输入运单号'],['能源订单号','order','text','输入能源订单号']],
+  /* 4PL 端 · 能源运单管理 / 能源规则配置 / 司机补贴规则配置 / 货主能源返利配置 */
+  driverWaybills:[['运单号','wb','text','输入运单号'],['车牌号','plate','text','输入车牌号'],['司机姓名','driver','text','输入司机姓名'],['司机手机号','phone','text','输入手机号'],['网络货运主体','whSubj','text','输入主体名称'],['客户名称','customer','text','输入客户名称'],['运单状态','status','select',['装货/在途','已卸货','已取消','取消装货/在途','取消-待支付','取消-已卸货']],['派发状态','splitStatus','select',['未派发','已派发','已回收']],['运单预审状态','audit','select',['未申请','待审核','审核不通过','审核通过','待处理','已保存','转结算','待预审','预审不通过']],['车辆能源类型','etype','select',['柴油','天然气','电','油']],['能源类型','energy','select',['油气','电']],['派发时间','splitTime','range',''],['运单创建时间','createTime','range','']],
+  oilRules:[['规则名称','name','text','输入规则名称'],['适用网货主体','subj','text','输入主体名称'],['货主企业','owner','text','输入货主企业'],['能源类型','etype','select',['油气','电']],['状态','status','select',['启用','停用']],['派发节点','grantNode','select',['装车','货主结算后（一笔付）']],['回收节点','recycleNode','select',['卸货后','卸货后结算前','货主结算后N天']],['规则时间范围','range','range','']],
+  wljRules:[['网货主体','subj','text','输入主体名称'],['货主企业','owner','text','输入货主企业'],['状态','status','select',['正常','停用']]],
+  ownerRebates:[['货主企业','owner','text','输入货主企业'],['网货主体','subj','text','输入主体名称'],['返利规则','rule','select',['按能源额度','按费率']],['状态','status','select',['启用','停用']],['规则时间范围','range','range','']]
 };
 const liveQuery = {};
+/* 4PL 端 · 充电订单演示数据（17 条：订单状态 6 值全覆盖、是否追回 3 值全覆盖；金额自洽 实付=万联价×充电量、补贴=订单金额−实付） */
+LIVE.chargeOrders = [
+ {no:'CD20261028000001', ckcNo:'CKC202610280915001', waybill:'W20261028000011', driver:'王建国', phone:'138****4021', plate:'辽A·D81K2', status:'充电中', operator:'特来电', station:'特来电·万联物流园充电站', pile:'A03-01枪', startSoc:32, endSoc:'', startTime:'2026-10-28 09:15:00', endTime:'', kwh:36.4, orderAmt:60.98, wlj:1.20, payAmt:43.68, subsidy:17.30, deduct:'未扣减', frozen:520.00, whSubj:'万联易达物流科技有限公司', settleSubj:'万联易达物流科技有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '未付款', waybillAbn: '无异常', abnTime: '—', ocr: '未通过', recover:'未追回', fake:'否', createTime:'2026-10-28 09:10:22', syncTime:'2026-10-28 09:15:03', stationAddr:'辽宁省沈阳市苏家屯区丁香街 186 号 万联物流园 A 区', locAddr:'辽宁省沈阳市苏家屯区丁香街 186 号 万联物流园 A 区 充电站入口东侧', locType:'GPS', locTime:'2026-10-28 09:15:00', distKm:'0.06', shipper:'沈阳长鑫冷链物流有限公司', goods:'冷链产品', weight:'28.50', fromAddr:'沈阳市于洪区沈大路 88 号', toAddr:'长春市绿园区青冈路 45 号', loadTime:'2026-10-28 07:32:10', unloadTime:'', freightAmt:'4,180.00'},
+ {no:'CD20261028000002', ckcNo:'CKC202610281032002', waybill:'W20261028000012', driver:'刘志强', phone:'139****8834', plate:'辽A·F52R9', status:'充电中', operator:'星星充电', station:'星星充电·沈北新区枢纽站', pile:'B12-02枪', startSoc:41, endSoc:'', startTime:'2026-10-28 10:32:00', endTime:'', kwh:12.8, orderAmt:21.40, wlj:1.15, payAmt:14.72, subsidy:6.68, deduct:'未扣减', frozen:356.00, whSubj:'鲁通冷链物流有限公司', settleSubj:'鲁通冷链物流有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '未付款', waybillAbn: '无异常', abnTime: '—', ocr: '未通过', recover:'未追回', fake:'否', createTime:'2026-10-28 10:28:07', syncTime:'2026-10-28 10:32:04', stationAddr:'辽宁省沈阳市沈北新区辉山大街 123 号 枢纽货运站西侧', locAddr:'辽宁省沈阳市沈北新区辉山大街 123 号 枢纽货运站西侧 3 号桩区', locType:'GPS', locTime:'2026-10-28 10:32:00', distKm:'0.03', shipper:'沈阳鲜达供应链有限公司', goods:'生鲜冻品', weight:'16.20', fromAddr:'沈阳市大东区东望街 20 号', toAddr:'哈尔滨市香坊区电碳路 18 号', loadTime:'2026-10-28 08:15:44', unloadTime:'', freightAmt:'3,260.00'},
+ {no:'CD20261027000003', ckcNo:'CKC202610271846003', waybill:'W20261027000008', driver:'赵德海', phone:'137****2260', plate:'辽A·G19P6', status:'充电结束', operator:'特来电', station:'特来电·万联物流园充电站', pile:'A01-01枪', startSoc:28, endSoc:86, startTime:'2026-10-27 18:46:00', endTime:'2026-10-27 20:12:00', kwh:52.3, orderAmt:87.61, wlj:1.20, payAmt:62.76, subsidy:24.85, deduct:'已扣减', frozen:0, whSubj:'万联易达物流科技有限公司', settleSubj:'万联易达物流科技有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '未付款', waybillAbn: '无异常', abnTime: '—', ocr: '通过', recover:'未追回', fake:'否', createTime:'2026-10-27 18:40:11', syncTime:'2026-10-27 20:13:26', stationAddr:'辽宁省沈阳市苏家屯区丁香街 186 号 万联物流园 A 区', locAddr:'辽宁省沈阳市苏家屯区丁香街 186 号 万联物流园 A 区 充电站入口东侧', locType:'GPS', locTime:'2026-10-27 18:46:00', distKm:'0.06', shipper:'沈阳长鑫冷链物流有限公司', goods:'冷链产品', weight:'28.50', fromAddr:'长春市绿园区青冈路 45 号', toAddr:'沈阳市于洪区沈大路 88 号', loadTime:'2026-10-27 09:20:33', unloadTime:'2026-10-27 21:48:02', freightAmt:'4,180.00'},
+ {no:'CD20261027000004', ckcNo:'CKC202610271509004', waybill:'W20261027000007', driver:'孙国庆', phone:'136****7712', plate:'辽A·H73T4', status:'充电结束', operator:'小桔充电', station:'小桔充电·铁西工业路站', pile:'C05-01枪', startSoc:55, endSoc:92, startTime:'2026-10-27 15:09:00', endTime:'2026-10-27 16:02:00', kwh:30.6, orderAmt:51.30, wlj:1.18, payAmt:36.11, subsidy:15.19, deduct:'已扣减', frozen:0, whSubj:'鲁通冷链物流有限公司', settleSubj:'鲁通冷链物流有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '未付款', waybillAbn: '无异常', abnTime: '—', ocr: '通过', recover:'未追回', fake:'否', createTime:'2026-10-27 15:02:44', syncTime:'2026-10-27 16:03:19', stationAddr:'辽宁省沈阳市铁西区开发大路 22 号 工业路停车场', locAddr:'辽宁省沈阳市铁西区开发大路 22 号 工业路停车场 5 号桩区', locType:'GPS', locTime:'2026-10-27 15:09:00', distKm:'0.08', shipper:'铁岭恒通货运有限公司', goods:'普通货物', weight:'22.00', fromAddr:'铁岭市银州区广裕街 135 号', toAddr:'沈阳市铁西区开发大路 66 号', loadTime:'2026-10-27 08:05:17', unloadTime:'2026-10-27 18:22:40', freightAmt:'3,050.00'},
+ {no:'CD20261027000005', ckcNo:'CKC202610271120005', waybill:'W20261027000006', driver:'李长顺', phone:'135****3391', plate:'辽A·J26M8', status:'待支付', operator:'星星充电', station:'星星充电·沈北新区枢纽站', pile:'B03-03枪', startSoc:19, endSoc:64, startTime:'2026-10-27 11:20:00', endTime:'2026-10-27 12:35:00', kwh:44.1, orderAmt:73.86, wlj:1.20, payAmt:52.92, subsidy:20.94, deduct:'未扣减', frozen:486.00, whSubj:'万联易达物流科技有限公司', settleSubj:'万联易达物流科技有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '未付款', waybillAbn: '无异常', abnTime: '—', ocr: '未通过', recover:'未追回', fake:'否', createTime:'2026-10-27 11:14:38', syncTime:'2026-10-27 12:36:02', stationAddr:'辽宁省沈阳市沈北新区辉山大街 123 号 枢纽货运站西侧', locAddr:'辽宁省沈阳市沈北新区辉山大街 123 号 枢纽货运站西侧 3 号桩区', locType:'GPS', locTime:'2026-10-27 11:20:00', distKm:'0.03', shipper:'沈阳鲜达供应链有限公司', goods:'生鲜冻品', weight:'16.20', fromAddr:'沈阳市大东区东望街 20 号', toAddr:'哈尔滨市香坊区电碳路 18 号', loadTime:'2026-10-27 06:48:29', unloadTime:'', freightAmt:'3,260.00'},
+ {no:'CD20261026000006', ckcNo:'CKC202610262001006', waybill:'W20261026000005', driver:'马春林', phone:'134****5527', plate:'辽A·K84V3', status:'已支付', operator:'特来电', station:'特来电·浑南产业新城站', pile:'A08-02枪', startSoc:36, endSoc:79, startTime:'2026-10-26 20:01:00', endTime:'2026-10-26 21:18:00', kwh:23.4, orderAmt:39.04, wlj:1.20, payAmt:28.08, subsidy:10.96, deduct:'已扣减', frozen:431.00, whSubj:'鲁通冷链物流有限公司', settleSubj:'鲁通冷链物流有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '已支付', waybillAbn: '无异常', abnTime: '—', ocr: '通过', recover:'未追回', fake:'否', createTime:'2026-10-26 19:55:26', syncTime:'2026-10-26 21:19:07', stationAddr:'辽宁省沈阳市浑南区全运五路 35 号 产业新城配套楼', locAddr:'辽宁省沈阳市浑南区全运五路 35 号 产业新城配套楼北侧', locType:'基站', locTime:'2026-10-26 20:01:00', distKm:'0.15', thawList:[{no:'W20261026000015',amt:'186.40'},{no:'W20261026000016',amt:'110.32'},{no:'W20261026000017',amt:'87.60'}], shipper:'盘锦禹王粮油物流部', goods:'粮油制品', weight:'30.80', fromAddr:'盘锦市双台子区中华北路 52 号', toAddr:'沈阳市皇姑区黄河北大街 96 号', loadTime:'2026-10-26 12:10:05', unloadTime:'', freightAmt:'2,890.00'},
+ {no:'CD20261026000013', ckcNo:'CKC202610262001006', waybill:'W20261026000014', driver:'马春林', phone:'134****5527', plate:'辽A·K84V3', status:'已支付', operator:'特来电', station:'特来电·浑南产业新城站', pile:'A08-02枪', startSoc:36, endSoc:79, startTime:'2026-10-26 20:01:00', endTime:'2026-10-26 21:18:00', kwh:15.5, orderAmt:26.03, wlj:1.20, payAmt:18.60, subsidy:7.43, deduct:'部分扣减', frozen:431.00, whSubj:'鲁通冷链物流有限公司', settleSubj:'鲁通冷链物流有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '已支付', waybillAbn: '无异常', abnTime: '—', ocr: '通过', recover:'未追回', fake:'否', createTime:'2026-10-26 19:55:26', syncTime:'2026-10-26 21:19:07', stationAddr:'辽宁省沈阳市浑南区全运五路 35 号 产业新城配套楼', locAddr:'辽宁省沈阳市浑南区全运五路 35 号 产业新城配套楼北侧', locType:'GPS', locTime:'2026-10-26 20:01:00', distKm:'0.15', thawList:[{no:'W20261026000015',amt:'186.40'},{no:'W20261026000016',amt:'110.32'},{no:'W20261026000017',amt:'87.60'}], shipper:'沈阳鲜达供应链有限公司', goods:'生鲜冻品', weight:'16.20', fromAddr:'沈阳市大东区东望街 20 号', toAddr:'哈尔滨市香坊区电碳路 18 号', loadTime:'2026-10-26 12:10:05', unloadTime:'', freightAmt:'3,260.00'},
+ {no:'CD20261026000007', ckcNo:'CKC202610260947007', waybill:'W20261026000004', driver:'周永康', phone:'133****9903', plate:'辽A·L37N5', status:'已支付', operator:'小桔充电', station:'小桔充电·铁西工业路站', pile:'C02-01枪', startSoc:22, endSoc:88, startTime:'2026-10-26 09:47:00', endTime:'2026-10-26 11:23:00', kwh:61.7, orderAmt:103.24, wlj:1.20, payAmt:74.04, subsidy:29.20, deduct:'已扣减', frozen:0, whSubj:'万联易达物流科技有限公司', settleSubj:'万联易达物流科技有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '已支付', waybillAbn: '无异常', abnTime: '—', ocr: '通过', recover:'未追回', fake:'否', createTime:'2026-10-26 09:41:53', syncTime:'2026-10-26 11:24:40', stationAddr:'辽宁省沈阳市铁西区开发大路 22 号 工业路停车场', locAddr:'辽宁省沈阳市铁西区开发大路 22 号 工业路停车场 5 号桩区', locType:'GPS', locTime:'2026-10-26 09:47:00', distKm:'0.08', shipper:'铁岭恒通货运有限公司', goods:'普通货物', weight:'22.00', fromAddr:'铁岭市银州区广裕街 135 号', toAddr:'沈阳市铁西区开发大路 66 号', loadTime:'2026-10-26 05:55:41', unloadTime:'2026-10-26 15:31:18', freightAmt:'3,050.00'},
+ {no:'CD20261025000008', ckcNo:'CKC202610251612008', waybill:'W20261025000003', driver:'吴建军', phone:'132****4468', plate:'辽A·M92Q7', status:'已支付', operator:'星星充电', station:'星星充电·沈北新区枢纽站', pile:'B07-01枪', startSoc:47, endSoc:95, startTime:'2026-10-25 16:12:00', endTime:'2026-10-25 17:36:00', kwh:42.5, orderAmt:71.18, wlj:1.15, payAmt:48.88, subsidy:22.30, deduct:'已扣减', frozen:0, whSubj:'鲁通冷链物流有限公司', settleSubj:'鲁通冷链物流有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '已支付', waybillAbn: '无异常', abnTime: '—', ocr: '通过', recover:'未追回', fake:'否', createTime:'2026-10-25 16:06:19', syncTime:'2026-10-25 17:38:02', stationAddr:'辽宁省沈阳市沈北新区辉山大街 123 号 枢纽货运站西侧', locAddr:'辽宁省沈阳市沈北新区辉山大街 123 号 枢纽货运站西侧 3 号桩区', locType:'GPS', locTime:'2026-10-25 16:12:00', distKm:'0.03', shipper:'抚顺同益商贸物流中心', goods:'日用百货', weight:'18.40', fromAddr:'抚顺市顺城区新华大街 61 号', toAddr:'沈阳市沈北新区道义大街 128 号', loadTime:'2026-10-25 10:22:56', unloadTime:'2026-10-25 20:40:33', freightAmt:'2,540.00'},
+ {no:'CD20261025000009', ckcNo:'CKC202610251058009', waybill:'W20261025000002', driver:'郑卫东', phone:'131****6642', plate:'辽A·N48S1', status:'已挂单', operator:'特来电', station:'特来电·万联物流园充电站', pile:'A05-02枪', startSoc:30, endSoc:'', startTime:'2026-10-25 10:58:00', endTime:'', kwh:18.2, orderAmt:30.51, wlj:1.20, payAmt:21.84, subsidy:8.67, deduct:'未扣减', frozen:398.00, whSubj:'万联易达物流科技有限公司', settleSubj:'万联易达物流科技有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '未付款', waybillAbn: '无异常', abnTime: '—', ocr: '未通过', recover:'未追回', fake:'否', createTime:'2026-10-25 10:52:31', syncTime:'2026-10-25 11:40:15', stationAddr:'辽宁省沈阳市苏家屯区丁香街 186 号 万联物流园 A 区', locAddr:'辽宁省沈阳市苏家屯区丁香街 186 号 万联物流园 A 区 充电站入口东侧', locType:'GPS', locTime:'2026-10-25 10:58:00', distKm:'0.06', shipper:'沈阳长鑫冷链物流有限公司', goods:'冷链产品', weight:'28.50', fromAddr:'沈阳市于洪区沈大路 88 号', toAddr:'锦州市太和区解放路 33 号', loadTime:'2026-10-25 06:30:12', unloadTime:'', freightAmt:'3,970.00'},
+ {no:'CD20261024000010', ckcNo:'CKC202610241423010', waybill:'W20261024000001', driver:'冯玉梅', phone:'130****2285', plate:'辽A·P63U9', status:'已挂单', operator:'小桔充电', station:'小桔充电·铁西工业路站', pile:'C09-02枪', startSoc:26, endSoc:'', startTime:'2026-10-24 14:23:00', endTime:'', kwh:9.6, orderAmt:16.08, wlj:1.18, payAmt:11.33, subsidy:4.75, deduct:'未扣减', frozen:287.00, whSubj:'鲁通冷链物流有限公司', settleSubj:'鲁通冷链物流有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '未付款', waybillAbn: '无异常', abnTime: '—', ocr: '未通过', recover:'未追回', fake:'否', createTime:'2026-10-24 14:17:48', syncTime:'2026-10-24 15:05:22', stationAddr:'辽宁省沈阳市铁西区开发大路 22 号 工业路停车场', locAddr:'辽宁省沈阳市铁西区开发大路 22 号 工业路停车场 5 号桩区', locType:'GPS', locTime:'2026-10-24 14:23:00', distKm:'0.08', shipper:'本溪北台钢材物流园', goods:'钢材制品', weight:'34.60', fromAddr:'本溪市平山区北台路 17 号', toAddr:'沈阳市苏家屯区雪松路 85 号', loadTime:'2026-10-24 09:12:38', unloadTime:'', freightAmt:'4,520.00'},
+ {no:'CD20261023000011', ckcNo:'CKC202610230836011', waybill:'W20261023000009', driver:'何永强', phone:'159****3374', plate:'辽A·R17W6', status:'已退款', operator:'星星充电', station:'星星充电·沈北新区枢纽站', pile:'B10-01枪', startSoc:'', endSoc:'', startTime:'2026-10-23 08:36:00', endTime:'', kwh:0, orderAmt:0, wlj:1.20, payAmt:0, subsidy:0, deduct:'未扣减', frozen:0, whSubj:'万联易达物流科技有限公司', settleSubj:'万联易达物流科技有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '已支付', waybillAbn: '取消运单', abnTime: '2026-10-23 08:30:12', ocr: '未通过', recover:'未追回', fake:'否', createTime:'2026-10-23 08:30:12', syncTime:'2026-10-23 08:38:55', stationAddr:'辽宁省沈阳市沈北新区辉山大街 123 号 枢纽货运站西侧', locAddr:'辽宁省沈阳市沈北新区辉山大街 123 号 枢纽货运站西侧 3 号桩区', locType:'GPS', locTime:'2026-10-23 08:36:00', distKm:'0.03', shipper:'鞍山百汇商贸物流部', goods:'日用百货', weight:'18.40', fromAddr:'鞍山市铁东区胜利南路 40 号', toAddr:'沈阳市浑南区全运路 109 号', loadTime:'2026-10-23 05:40:27', unloadTime:'', freightAmt:'2,540.00'},
+ {no:'CD20261022000012', ckcNo:'CKC202610222014012', waybill:'W20261022000010', driver:'段成林', phone:'158****7719', plate:'辽A·S52X3', status:'已退款', operator:'特来电', station:'特来电·浑南产业新城站', pile:'A11-01枪', startSoc:'', endSoc:'', startTime:'2026-10-22 20:14:00', endTime:'', kwh:0.32, orderAmt:0.54, wlj:1.20, payAmt:0.38, subsidy:0.16, deduct:'已扣减', frozen:0, whSubj:'鲁通冷链物流有限公司', settleSubj:'鲁通冷链物流有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '已支付', waybillAbn: '取消运单', abnTime: '2026-10-22 20:08:39', ocr: '未通过', recover:'未追回', fake:'是', createTime:'2026-10-22 20:08:39', syncTime:'2026-10-22 20:22:47', stationAddr:'辽宁省沈阳市浑南区全运五路 35 号 产业新城配套楼', locAddr:'辽宁省沈阳市浑南区全运五路 35 号 产业新城配套楼北侧', locType:'基站', locTime:'2026-10-22 20:14:00', distKm:'0.15', shipper:'营口港丰物流有限公司', goods:'化工原料', weight:'26.10', fromAddr:'营口市西市区滨海路 188 号', toAddr:'沈阳市于洪区沈大路 88 号', loadTime:'2026-10-22 11:05:53', unloadTime:'', freightAmt:'3,680.00'},
+ /* 追回相关演示数据：已追回 ×2（取消运单 / 终止结算）、恢复正常支付 ×1（运单异常已撤销）、未追回 ×1（终止结算） */
+ {no:'CD20261021000017', ckcNo:'CKC202610210931017', waybill:'W20261021000018', driver:'李春生', phone:'137****5093', plate:'辽A·T24B8', status:'已支付', operator:'特来电', station:'特来电·万联物流园充电站', pile:'A07-03枪', startSoc:24, endSoc:81, startTime:'2026-10-21 09:31:00', endTime:'2026-10-21 10:42:00', kwh:52.0, orderAmt:87.36, wlj:1.20, payAmt:62.40, subsidy:24.96, deduct:'已扣减', frozen:0, whSubj:'万联易达物流科技有限公司', settleSubj:'万联易达物流科技有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '已支付', waybillAbn: '取消运单', abnTime: '2026-10-21 09:26:38', ocr: '通过', recover:'已追回', fake:'否', createTime:'2026-10-21 09:26:38', syncTime:'2026-10-21 10:44:12', stationAddr:'辽宁省沈阳市苏家屯区丁香街 186 号 万联物流园 A 区', locAddr:'辽宁省沈阳市苏家屯区丁香街 186 号 万联物流园 A 区 3 号桩区', locType:'GPS', locTime:'2026-10-21 09:31:00', distKm:'0.04', shipper:'沈阳长鑫冷链物流有限公司', goods:'冷链产品', weight:'31.20', fromAddr:'沈阳市于洪区沈大路 88 号', toAddr:'哈尔滨市香坊区化四路 22 号', loadTime:'2026-10-21 06:58:14', unloadTime:'', freightAmt:'5,260.00'},
+ {no:'CD20261020000018', ckcNo:'CKC202610201548018', waybill:'W20261020000016', driver:'高志伟', phone:'135****7781', plate:'辽A·W61C3', status:'已支付', operator:'星星充电', station:'星星充电·沈北新区枢纽站', pile:'B05-02枪', startSoc:38, endSoc:90, startTime:'2026-10-20 15:48:00', endTime:'2026-10-20 16:55:00', kwh:44.8, orderAmt:74.82, wlj:1.15, payAmt:51.52, subsidy:23.30, deduct:'已扣减', frozen:0, whSubj:'鲁通冷链物流有限公司', settleSubj:'鲁通冷链物流有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '已支付', waybillAbn: '终止结算', abnTime: '2026-10-20 15:42:19', ocr: '通过', recover:'已追回', fake:'否', createTime:'2026-10-20 15:42:19', syncTime:'2026-10-20 16:58:40', stationAddr:'辽宁省沈阳市沈北新区辉山大街 123 号 枢纽货运站西侧', locAddr:'辽宁省沈阳市沈北新区辉山大街 123 号 枢纽货运站西侧 2 号桩区', locType:'GPS', locTime:'2026-10-20 15:48:00', distKm:'0.05', shipper:'营口港丰物流有限公司', goods:'化工原料', weight:'22.80', fromAddr:'营口市西市区滨海路 188 号', toAddr:'沈阳市铁西区北一西路 26 号', loadTime:'2026-10-20 12:20:07', unloadTime:'', freightAmt:'3,180.00'},
+ {no:'CD20261019000019', ckcNo:'CKC202610191022019', waybill:'W20261019000021', driver:'宋晓峰', phone:'136****2245', plate:'辽A·Y98D5', status:'已支付', operator:'小桔充电', station:'小桔充电·铁西工业路站', pile:'C01-02枪', startSoc:44, endSoc:87, startTime:'2026-10-19 10:22:00', endTime:'2026-10-19 11:28:00', kwh:38.6, orderAmt:64.86, wlj:1.18, payAmt:45.55, subsidy:19.31, deduct:'已扣减', frozen:0, whSubj:'万联易达物流科技有限公司', settleSubj:'万联易达物流科技有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '已支付', waybillAbn: '无异常', abnTime: '2026-10-19 10:16:05', ocr: '通过', recover:'恢复正常支付', fake:'否', createTime:'2026-10-19 10:16:05', syncTime:'2026-10-19 11:30:22', stationAddr:'辽宁省沈阳市铁西区开发大路 22 号 工业路停车场', locAddr:'辽宁省沈阳市铁西区开发大路 22 号 工业路停车场 6 号桩区', locType:'GPS', locTime:'2026-10-19 10:22:00', distKm:'0.11', shipper:'本溪北台钢材物流园', goods:'钢材制品', weight:'29.40', fromAddr:'本溪市平山区北台路 17 号', toAddr:'沈阳市浑南区全运路 109 号', loadTime:'2026-10-19 07:41:56', unloadTime:'', freightAmt:'4,020.00'},
+ {no:'CD20261018000020', ckcNo:'CKC202610180913020', waybill:'W20261018000024', driver:'崔明亮', phone:'138****6630', plate:'辽A·Z15F7', status:'已支付', operator:'特来电', station:'特来电·浑南产业新城站', pile:'A09-01枪', startSoc:29, endSoc:76, startTime:'2026-10-18 09:13:00', endTime:'2026-10-18 10:20:00', kwh:41.2, orderAmt:68.80, wlj:1.20, payAmt:49.44, subsidy:19.36, deduct:'已扣减', frozen:0, whSubj:'鲁通冷链物流有限公司', settleSubj:'鲁通冷链物流有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '已支付', waybillAbn: '终止结算', abnTime: '2026-10-18 09:08:41', ocr: '通过', recover:'未追回', fake:'否', createTime:'2026-10-18 09:08:41', syncTime:'2026-10-18 10:22:35', stationAddr:'辽宁省沈阳市浑南区全运五路 35 号 产业新城配套楼', locAddr:'辽宁省沈阳市浑南区全运五路 35 号 产业新城配套楼南侧', locType:'GPS', locTime:'2026-10-18 09:13:00', distKm:'0.07', shipper:'沈阳长鑫冷链物流有限公司', goods:'冷链产品', weight:'25.60', fromAddr:'沈阳市于洪区沈大路 88 号', toAddr:'大连市金州区东北大街 66 号', loadTime:'2026-10-18 05:12:30', unloadTime:'', freightAmt:'3,860.00'}
+];
+/* 4PL 端 · 追回记录（一行＝一次追回登记：追回凭证张数 + 备注 + 操作动作/操作人/操作时间，与油气口径一致） */
+LIVE.chargeRecovers = {
+  CD20261021000017:{resume:false, opr:'新增', by:'张世民（运营中台）', time:'2026-10-21 15:42:10', remark:'已与云快充核对并线下追缴，款项已退回平台账户', files:2},
+  CD20261020000018:{resume:false, opr:'新增', by:'李静（运营中台）', time:'2026-10-20 18:05:33', remark:'终止结算运单已撤回，充电费用由司机账户扣回', files:1},
+  CD20261019000019:{resume:true, opr:'恢复正常支付', by:'张世民（运营中台）', time:'2026-10-19 14:20:07', remark:'', files:0}
+};
 function liveFilters(page){
   return '<div class="card"><div class="filters">'+LIVE_FILTERS[page].map(([label,key,type,opt])=>{
     const id='live-'+page+'-'+key, value=liveQuery[page]?.[key]||'';
@@ -107,7 +145,7 @@ function liveSearch(page){
 }
 function liveReset(page){delete liveQuery[page];paint();}
 function liveRows(page){
-  const name={orders:'orders',fee:'fees',refund:'refunds',energyInvApply:'energyInvoices',feeInvApply:'feeInvoices',serviceFee:'feeFlows',withdrawRecord:'withdrawals'}[page];
+  const name={orders:'orders',fee:'fees',refund:'refunds',energyInvApply:'energyInvoices',feeInvApply:'feeInvoices',serviceFee:'feeFlows',withdrawRecord:'withdrawals',chargeOrders:'chargeOrders',driverOil:'driverOil',oilAccount:'oilAccounts',driverOilLog:'oilLogs',driverWaybills:'driverWaybills',oilRules:'oilRules',wljRules:'wljRules',ownerRebates:'ownerRebates'}[page];
   const q=liveQuery[page]||{};
   return LIVE[name].filter(r=>Object.entries(q).every(([key,value])=>{
     if(Array.isArray(value)){
@@ -141,6 +179,196 @@ const liveBadge=s=>pill(s);
 function liveExport(page){showToast('已按当前筛选条件提交导出任务，请在下载中心查看');}
 function liveSection(title,rows){
   return '<div class="card"><div class="card-b"><div class="sec-title">'+title+'</div><dl class="kv oms-live-kv">'+rows.map(([k,v])=>'<div class="oms-live-field"><dt>'+k+'</dt><dd>'+v+'</dd></div>').join('')+'</dl></div></div>';
+}
+/* —— 4PL 编辑/详情页：独立新页面，UI 对齐现网 wk-editform（面包屑 + 分组 header 卡 + 两列表单 + 底部按钮条） —— */
+const ENUMS={
+  netSubjects:['万联易达物流科技有限公司','太原万联易达供应链管理有限公司霍林郭勒分公司','芜湖万联易达物流发展有限公司','北京万联易达信息科技有限公司','太原万联易达供应链管理有限公司-','鲁通冷链物流有限公司','八通物流-'],
+  owners:['北京小桔科技集团有限公司','宁波智赋科技','（其他全部货主）','天地华宇汽车租赁(上海)有限公司','西安市临潼区梦甜电子商务商行（个体工商户）','山东鲁冰花物流有限公司','合肥颀中科技股份有限公司','宁波市鄞州姜山物流有限公司','淘宝（中国）软件有限公司'],
+  ownersSub:['北京小桔科技集团有限公司','宁波智赋科技','天地华宇汽车租赁(上海)有限公司','西安市临潼区梦甜电子商务商行（个体工商户）','淘宝（中国）软件有限公司','景德镇市景川物流有限公司','北京智者天下科技有限公司','（其他全部货主）通用补贴配置']
+};
+const liveSel=(opts,cur)=>'<select class="sel">'+opts.map(o=>'<option'+(o===cur?' selected':'')+'>'+o+'</option>').join('')+'</select>';
+const liveCrumb=(listPage,listName,cur)=>'<div class="crumbbar"><a onclick="go(\''+listPage+'\')">能源对接管理</a><span class="sep">/</span><a onclick="go(\''+listPage+'\')">'+listName+'</a><span class="sep">/</span><b>'+cur+'</b></div>';
+const liveEditCard=(title,sub,tips,inner)=>'<div class="editcard"><div class="editcard-h"><span>'+title+'</span>'+(sub?'<span class="hsub">'+sub+'</span>':'')+'</div>'+(tips?'<div class="editcard-tips">'+tips+'</div>':'')+'<div class="editcard-b"><div class="formgrid">'+inner+'</div></div></div>';
+const liveFi=(label,inner,hint,cls,help)=>{
+  const req=/✱/.test(label);
+  return '<div class="fi'+(cls==='full'?' full':'')+'">'
+    +'<div class="fi-l"><label>'+(req?'<span class="req">✱</span>':'')+label.replace('✱','')+'</label>'+(help?leqiFieldHelp(help):'')+'</div>'
+    +'<div class="fi-c">'+inner+'</div>'
+    +(hint?'<div class="fi-h">'+hint+'</div>':'')
+    +'</div>';
+};
+const liveUnit=(input,unit)=>'<span class="fi-inline">'+input+'<span>'+unit+'</span></span>';
+const liveEditBtns=(page,save)=>'<div class="editbtns"><button type="button" class="btn" onclick="go(\''+page+'\')">取消</button><button type="button" class="btn primary" onclick="showToast(\'已'+(save?'保存':'提交')+'（演示）\');go(\''+page+'\')">'+(save?'保存':'确认')+'</button></div>';
+
+/* 能源规则编辑页（现网 addOliRule 全字段 + 能源类型 + 电比率上限 25%） */
+VIEWS.oilRuleEdit=()=>{
+  const d=liveEditCurrent.oilRule||{name:'',subj:'',owner:'',etype:'油气',rate:'',gnode:'装车',rnode:'卸货后',sub:'司机补贴',fence:'',st:'启用'};
+  const edit=!!liveEditCurrent.oilRule;
+  return liveCrumb('oilRules','能源规则配置',edit?'编辑能源规则':'新增能源规则')
+    +liveEditCard('基本信息','',null,
+       liveFi('✱能源配置规则名称','<input class="inp" value="'+(d.name||'')+'" maxlength="20" placeholder="0/20">')
+      +liveFi('能源类型','<label class="rb"><input type="radio" name="fr-etype" '+(d.etype==='油气'?'checked':'')+'> 油气</label><label class="rb"><input type="radio" name="fr-etype" '+(d.etype==='电'?'checked':'')+'> 电</label>','电规则＝分电规则；同一「网货主体＋货主企业＋能源类型」三维唯一',null,'etypeTip')
+      +liveFi('✱网货主体',liveSel(ENUMS.netSubjects, d.subj))
+      +liveFi('货主企业',liveSel(ENUMS.owners, d.owner))
+      +liveFi('起止时间','<input class="inp grow" placeholder="开始日期"><span class="range-sep">至</span><input class="inp grow" placeholder="结束日期">'))
+    +liveEditCard('派发规则','',null,
+       liveFi('✱能源派发方式','<select class="sel"><option>按运费比例</option></select>')
+      +liveFi('派发比例','<input class="inp" value="'+d.rate+'" style="max-width:120px">','能源类型=电 时不得超过「分电上限比例配置」上限（当前 '+liveCapElec.toFixed(2)+'%）；油气规则沿用「分油上限比例配置」（当前 '+liveCapOil.toFixed(2)+'%）；超出保存拦截',null,'eRateCap')
+      +liveFi('是否有补贴','<label class="rb"><input type="checkbox" '+(String(d.sub).includes('货主')?'checked':'')+'> 货主补贴</label><label class="rb"><input type="checkbox" '+(String(d.sub).includes('司机')?'checked':'')+'> 司机补贴</label>')
+      +liveFi('能源派发节点','<label class="rb"><input type="radio" name="fr-gn" '+(d.gnode==='装车'?'checked':'')+'> 装车</label><label class="rb"><input type="radio" name="fr-gn" '+(d.gnode!=='装车'?'checked':'')+'> 货主结算后（一笔付）</label>','电规则派发节点=装车：装车即按分电规则派发电额度','full')
+      +liveFi('能源回收节点','<label class="rb"><input type="radio" name="fr-rn" '+(d.rnode==='卸货后'?'checked':'')+'> 卸货后</label><label class="rb"><input type="radio" name="fr-rn" '+(String(d.rnode).startsWith('卸货后结算前')?'checked':'')+'> 卸货后结算前</label><label class="rb"><input type="radio" name="fr-rn" '+(String(d.rnode).startsWith('货主结算后')?'checked':'')+'> 货主结算后N天</label>','电额度回收同口径；挂单结束后自动回收司机电余额到运费','full'))
+    +liveEditCard('合规配置','',null,
+       liveFi('电子围栏',liveUnit('<input class="inp" value="'+d.fence+'" style="max-width:140px">','米'))
+      +liveFi('车辆定位校验要求','<label class="rb"><input type="radio" name="fr-loc" checked> 校验北斗定位</label><label class="rb"><input type="radio" name="fr-loc"> 不校验北斗定位</label>','','full')
+      +liveFi('拍照证明要求','<label class="rb"><input type="radio" name="fr-photo" checked> 全部要求</label><label class="rb"><input type="radio" name="fr-photo"> 车辆获取不到要求</label>','','full')
+      +liveFi('一天加注上限（油）',liveUnit('<input class="inp" value="" style="max-width:110px">','L'))
+      +liveFi('一天加注上限（气）',liveUnit('<input class="inp" value="" style="max-width:110px">','m³'))
+      +liveFi('一天加注次数上限',liveUnit('<input class="inp" value="" style="max-width:110px">','次'),'电充电走云快充订单管控（可充度数＝冻结额度÷万联价），不适用加注上限','full'))
+    +liveEditBtns('oilRules');
+};
+/* 司机补贴规则编辑页（现网 addDriverSubsidyRule + 电补贴比例；底部按钮=保存） */
+VIEWS.wljRuleEdit=()=>{
+  const d=liveEditCurrent.wljRule||{subj:'',owner:'',oil:'',gas:'',elec:''};
+  const edit=!!liveEditCurrent.wljRule;
+  return liveCrumb('wljRules','司机补贴规则配置',edit?'编辑司机补贴规则':'新增司机补贴规则')
+    +liveEditCard('基本信息','',null,
+       liveFi('✱适用网货主体',liveSel(ENUMS.netSubjects, d.subj))
+      +liveFi('✱生效时间','<input class="inp grow" placeholder="开始日期"><span class="range-sep">至</span><input class="inp grow" placeholder="结束日期">'))
+    +liveEditCard('货主补贴配置','',null,
+       liveFi('选择货主企业','<div class="fi-stack">'+liveSel(ENUMS.ownersSub, d.owner)+'<button type="button" class="btn sm">添加货主企业</button></div>','按组合配置，支持（其他全部货主）通用配置'))
+    +liveEditCard('司机补贴规则','',null,
+       liveFi('天然气补贴比例(%)','<input class="inp" value="'+(d.gas||'')+'" style="max-width:120px">')
+      +liveFi('柴油补贴比例(%)','<input class="inp" value="'+(d.oil||'')+'" style="max-width:120px">')
+      +liveFi('电补贴比例(%)','<input class="inp" value="'+(d.elec==='—'?'':d.elec)+'" style="max-width:120px">','0–10，最多两位小数（与柴油/天然气同规则）；用于计算电的万联价（订单创建时快照）：司机扣款＝万联价×实际充电度数，补贴金额＝云快充金额−万联价扣款',null,'eRateTip'))
+    +liveEditBtns('wljRules',true);
+};
+/* 货主油气返利编辑页（对齐现网 addOwnerOliConfig：以货主为主 → N 个网货主体块 → 每块 N 段占比区间；本期区间新增电费率）
+   编辑态：货主企业、网货主体置灰只读；返利规则可切换；新增态可选。 */
+const REBATE_RULES=['按费率','按能源额度'];
+const rebateEmptyRange=()=>({from:'',to:'',diesel:'',gas:'',elec:''});
+const rebateEmptyBlock=()=>({subj:'',rule:'按费率',bindTip:false,ranges:[rebateEmptyRange()]});
+let liveRebate=null, liveRebateErr=null;
+function rebateFromOwner(owner){
+  const rows=(LIVE.ownerRebates||[]).filter(r=>r.owner===owner);
+  const first=rows[0]||{};
+  const parts=String(first.range||'——').split('——');
+  return {owner,start:parts[0]||'',end:parts[1]||'',by:first.by||'',ut:first.ut||'',
+    blocks:rows.map(r=>({subj:r.subj,rule:r.rule,bindTip:!!r.bindTip,ranges:(r.ranges||[rebateEmptyRange()]).map(x=>({...x}))}))};
+}
+function openRebateEdit(owner){
+  liveRebate=owner?rebateFromOwner(owner):{owner:'',start:'',end:'',by:'',ut:'',blocks:[rebateEmptyBlock()]};
+  liveRebateErr=null; go('ownerRebateEdit');
+}
+function rebateSetTop(k,v){liveRebate[k]=v;}
+function rebateSet(i,j,k,v){liveRebate.blocks[i].ranges[j][k]=v;}
+function rebateSetRule(i,v){liveRebate.blocks[i].rule=v;paint();}
+function rebateSetSubj(i,v){liveRebate.blocks[i].subj=v;paint();}
+function rebateAddBlock(){liveRebate.blocks.push(rebateEmptyBlock());paint();}
+function rebateDelBlock(i){liveRebate.blocks.splice(i,1);paint();}
+function rebateAddRange(i){liveRebate.blocks[i].ranges.push(rebateEmptyRange());paint();}
+function rebateDelRange(i,j){liveRebate.blocks[i].ranges.splice(j,1);paint();}
+function rebateValidate(d){
+  const errs={owner:!d.owner,time:!(d.start&&d.end),blocks:[]}, seen={};
+  d.blocks.forEach(b=>{
+    const be={subj:!b.subj,dup:!!(b.subj&&seen[b.subj]),ranges:[]};
+    if(b.subj) seen[b.subj]=true;
+    b.ranges.forEach(r=>{
+      const e={}, a=String(r.from).trim(), z=String(r.to).trim();
+      if(!a||!z) e.empty=true;
+      if((a&&(Number(a)<0||Number(a)>100))||(z&&(Number(z)<0||Number(z)>100))) e.range=true;
+      if(a&&z&&Number(a)>=Number(z)) e.order=true;
+      ['diesel','gas','elec'].forEach(k=>{
+        const v=String(r[k]).trim();
+        if(!v) e[k]='empty'; else if(Number(v)<0||Number(v)>100) e[k]='range';
+      });
+      be.ranges.push(e);
+    });
+    for(let x=0;x<b.ranges.length;x++)for(let y=x+1;y<b.ranges.length;y++){
+      const p=b.ranges[x],q=b.ranges[y];
+      if(p.from!==''&&p.to!==''&&q.from!==''&&q.to!==''&&Number(p.from)<Number(q.to)&&Number(q.from)<Number(p.to)){be.ranges[x].overlap=true;be.ranges[y].overlap=true;}
+    }
+    errs.blocks.push(be);
+  });
+  return errs;
+}
+const rebateAnyErr=e=>!e?false:(e.owner||e.time||(e.blocks||[]).some(b=>b.subj||b.dup||b.ranges.some(r=>r.empty||r.range||r.order||r.overlap||r.diesel||r.gas||r.elec)));
+function rebateSave(){
+  const errs=rebateValidate(liveRebate);
+  if(rebateAnyErr(errs)){liveRebateErr=errs;paint();showToast('请先修正标红的配置项');return;}
+  liveRebateErr=null;showToast('已保存（演示）');go('ownerRebates');
+}
+const REBATE_LOGS={
+  '北京小桔科技集团有限公司':[
+    {act:'修改',by:'平台超级管理员',at:'2026-10-29 13:53',note:'网货主体【芜湖万联易达物流发展有限公司】修改后：能源占比区间1~40，柴油优惠费率4%，天然气优惠费率5%，电优惠费率3%'},
+    {act:'新增',by:'平台超级管理员',at:'2026-10-29 13:53',note:'网货主体【万联易达物流科技有限公司】返利规则按能源额度：能源占比区间0~30，柴油返利比例3%，天然气返利比例4%，电返利比例2%'},
+    {act:'新增',by:'平台超级管理员',at:'2026-10-29 13:41',note:'网货主体【太原万联易达供应链管理有限公司霍林郭勒分公司】新增3段区间：0~10 / 10~25 / 25~40'}
+  ]
+};
+function rebateLogRows(owner){
+  const rows=REBATE_LOGS[owner]||[{act:'修改',by:liveRebate&&liveRebate.by||'平台超级管理员',at:(liveRebate&&liveRebate.ut||'2026-10-29 13:53').slice(0,16),note:'网货主体【'+(liveRebate&&liveRebate.blocks[0]&&liveRebate.blocks[0].subj||'—')+'】修改后：能源占比区间1~40，柴油优惠费率4%，天然气优惠费率5%，电优惠费率3%'}];
+  return rows.map((r,i)=>'<tr><td class="num">'+(i+1)+'</td><td>'+r.act+'</td><td>'+r.by+'</td><td class="mono">'+r.at+'</td><td>'+r.note+'</td></tr>').join('');
+}
+VIEWS.ownerRebateEdit=()=>{
+  if(!liveRebate||!liveRebate.blocks) liveRebate={owner:'',start:'',end:'',by:'',ut:'',blocks:[rebateEmptyBlock()]};
+  const d=liveRebate;
+  const E=liveRebateErr||{blocks:[]};
+  const edit=!!d.owner;
+  const rateNameOf=rule=>rule==='按能源额度'?'返利比例':'优惠费率';
+  const field=(label,inner,x)=>{
+    x=x||{};
+    return '<div class="fi'+(x.full?' full':'')+'">'
+      +'<div class="fi-l"><label>'+(/✱/.test(label)?'<span class="req">✱</span>':'')+label.replace('✱','')+'</label></div>'
+      +'<div class="fi-c">'+inner+'</div>'
+      +(x.hint?'<div class="fi-h">'+x.hint+'</div>':'')
+      +(x.err?'<div class="err">'+x.err+'</div>':'')
+      +'</div>';
+  };
+  const numInput=(i,j,k,v)=>'<input class="inp rb-num" inputmode="decimal" value="'+String(v==null?'':v)+'" oninput="rebateSet('+i+','+j+',\''+k+'\',this.value)">';
+  const rateErr=(e,k)=>{const x=e&&e[k];return x==='range'?'须在 0–100 之间':x==='empty'?'请输入':'';};
+  const blocks=d.blocks.map((b,i)=>{
+    const be=(E.blocks&&E.blocks[i])||{ranges:[]};
+    const rateName=rateNameOf(b.rule);
+    const head='<div class="rb-block-h"><span>网货主体：</span>'+(d.blocks.length>1?'<button type="button" class="link-danger" onclick="rebateDelBlock('+i+')">删除网货主体配置</button>':'')+'</div>';
+    const base='<div class="formgrid rb-grid">'
+      +field('✱网货主体', edit
+          ? '<input class="inp" value="'+b.subj+'" disabled>'
+          : '<select class="sel" onchange="rebateSetSubj('+i+',this.value)">'+['请选择网货主体'].concat(ENUMS.netSubjects).map(o=>'<option'+(o===b.subj?' selected':'')+'>'+o+'</option>').join('')+'</select>',
+          {hint:b.bindTip?'企业和网货主体没有关联关系，请确认是否有误':'',err:be.subj?'请选择网货主体':be.dup?'该网货主体已添加，请勿重复配置':''})
+      +field('✱返利规则','<select class="sel" onchange="rebateSetRule('+i+',this.value)">'+REBATE_RULES.map(o=>'<option'+(o===b.rule?' selected':'')+'>'+o+'</option>').join('')+'</select>')
+      +'</div>';
+    const ranges=b.ranges.map((r,j)=>{
+      const e=(be.ranges&&be.ranges[j])||{};
+      const rangeErr=e.empty?'请输入占比范围':e.range?'占比范围须在 0–100 之间':e.order?'起点须小于终点':e.overlap?'区间不能重叠':'';
+      return '<div class="formgrid rb-range">'
+        +field('✱能源占比范围',numInput(i,j,'from',r.from)+'<span class="range-sep">—</span>'+numInput(i,j,'to',r.to)+'<span class="unit">%</span>',{err:rangeErr})
+        +field('✱柴油'+rateName,numInput(i,j,'diesel',r.diesel)+'<span class="unit">%</span>',{err:rateErr(e,'diesel')})
+        +field('✱天然气'+rateName,numInput(i,j,'gas',r.gas)+'<span class="unit">%</span>',{err:rateErr(e,'gas')})
+        +field('✱电'+rateName,numInput(i,j,'elec',r.elec)+'<span class="unit">%</span>',{err:rateErr(e,'elec')})
+        +'<div class="rb-range-op">'+(b.ranges.length>1?'<button type="button" class="link-danger" onclick="rebateDelRange('+i+','+j+')">删除</button>':'')+'</div>'
+        +'</div>';
+    }).join('');
+    return '<div class="rb-block">'+head+base
+      +'<div class="rb-sub">返利配置：</div>'+ranges
+      +'<button type="button" class="btn sm" onclick="rebateAddRange('+i+')">添加范围</button></div>';
+  }).join('');
+  return liveCrumb('ownerRebates','货主能源返利配置',edit?'编辑货主能源返利配置':'新增货主能源返利配置')
+    +liveEditCard('主要信息','',null,
+       field('✱选择货主企业', edit
+           ? '<input class="inp" value="'+d.owner+'" disabled>'
+           : '<select class="sel" onchange="rebateSetTop(\'owner\',this.value)">'+['请选择货主企业'].concat(ENUMS.owners).map(o=>'<option'+(o===d.owner?' selected':'')+'>'+o+'</option>').join('')+'</select>',
+           {err:E.owner?'请选择货主企业':''})
+      +field('✱起止时间','<input class="inp grow" value="'+d.start+'" placeholder="开始日期时间" oninput="rebateSetTop(\'start\',this.value)"><span class="range-sep">至</span><input class="inp grow" value="'+d.end+'" placeholder="结束日期时间" oninput="rebateSetTop(\'end\',this.value)">',{err:E.time?'请选择起止时间':''}))
+    +'<div class="editcard"><div class="editcard-h"><span>网货主体</span><span class="hsub">按货主配置多个网货主体，每个网货主体可分别设置返利规则与多段占比区间</span></div>'
+      +'<div class="editcard-b"><div class="editcard-tips" style="padding:0 0 10px">能源占比比例为能源费用占总运费的比例：【按能源额度】按实际使用能源金额×比例进行返利；【按费率】按货主实际支付运费＝司机运费 /（1−（客户实际费率−配置的优惠费率））。电订单同口径：按电优惠费率计算货主返利，复用能源返利链路</div>'
+      +'<button type="button" class="btn sm primary" onclick="rebateAddBlock()">添加网货主体配置</button>'+blocks+'</div></div>'
+    +(edit?'<div class="editcard"><div class="editcard-h"><span>操作记录</span><span class="hsub">新增 / 修改 / 启用 / 停用均留痕</span></div>'
+      +'<div class="editcard-b">'+liveTable(['序号','操作动作','操作人姓名','操作时间','备注'],[rebateLogRows(d.owner)],'1000px')+pagerHTML((REBATE_LOGS[d.owner]||[1]).length)+'</div></div>':'')
+    +'<div class="editbtns"><button type="button" class="btn" onclick="go(\'ownerRebates\')">取消</button><button type="button" class="btn primary" onclick="rebateSave()">保存</button></div>';
+};
+const LIVE_EDIT_KEY={oilRule:'oilRules',wljRule:'wljRules',ownerRebate:'ownerRebates'};
+const liveEditCurrent={oilRule:null,wljRule:null,ownerRebate:null};
+function openRuleEdit(page,pageKey,key){
+  liveEditCurrent[pageKey] = key ? (LIVE[LIVE_EDIT_KEY[pageKey]]||[]).find(r=>r.name===key||r.owner===key) : null; go(page);
 }
 function liveHead(title,subtitle,status,amount,label){
   return '<div class="sumhead"><div class="no mono">'+title+'</div><div class="sec">'+subtitle+'</div><div class="pills">'+liveBadge(status)+'</div><div class="money"><div class="oilv"><div class="l">'+label+'</div><div class="v num">'+liveMoney(amount)+'</div></div></div></div>';
@@ -552,6 +780,19 @@ function liveModal(kind,key){
       liveSection('申请对象',[['能源订单号',o.no],['商品本金',liveMoney(o.amount)],['双方服务费影响',liveMoney(o.customerFee+o.stationFee)]])+
       reason('请输入操作原因');
     primary='确认提交';requireField=true;
+  }else if(kind==='wbBack'||kind==='wbBackBatch'){
+    heading=kind==='wbBack'?'能源圈回':'批量能源圈回';
+    content=kind==='wbBack'
+      ?'<p>确认圈回运单 <b class="mono">'+key+'</b> 的可用额度吗？圈回金额按该运单的<b>能源类型</b>计入对应账户（油气 / 电）。</p><p class="note">圈回后额度记「已圈回额度」，司机可用额度相应减少；能源类型=电写入电变更日志，油气写入能源变更日志。</p>'
+      :'<p>请先在列表勾选需要圈回的运单，圈回金额按各运单的<b>能源类型</b>分别计入油气 / 电账户。</p><p class="note">圈回的额度记「已圈回额度」并写入对应变更日志（油气 / 电）。</p>';
+    primary='确认圈回';
+  }else if(kind==='oilRecover'||kind==='elecRecover'){
+    const elec=kind==='elecRecover';
+    heading=elec?'回收电额度':'回收油气额度';
+    content='<p>该操作会将该司机的当前所有'+(elec?'<b>电</b>':'<b>油气</b>')+'额度转成运费，确认回收吗？</p>'
+      +(elec?'<p class="note">只圈回当前可使用的电额度；司机名下有充电中/挂单订单时不拦截，冻结部分不受影响。回收金额记「圈回」，写入能源变更日志（能源类型=电）。</p>'
+            :'<p class="note">回收金额记「圈回」，写入能源变更日志（能源类型=油气）。</p>');
+    primary='确认回收';
   }else if(kind==='refundReject'||kind==='refundApprove'){
     const r=LIVE.refunds.find(x=>x.no===key);
     heading=kind==='refundReject'?'确认拒绝退款申请':'确认通过并退款';
@@ -619,6 +860,13 @@ function liveModal(kind,key){
       '<div class="fi"><label for="live-modal-reason">红冲原因 <span class="req">*</span></label><textarea id="live-modal-reason" class="inp" maxlength="200" minlength="5" placeholder="必填，5–200 字，写入开票记录留痕（如：开票信息有误需换开 / 购方要求重开…）"></textarea><span class="t2">5–200 字</span></div>'+
       '<div><div class="sec-title">确认前请知悉</div><ul class="cf-list" style="margin-top:8px"><li>可用状态：开票成功 / 红冲失败（重发）。</li><li>红冲成功后原蓝票冲销，订单开票状态置「已红冲」，可再次手动开票重开蓝票；红冲失败展示乐企原因，可重新发起；红冲中拦截退款审核。</li></ul></div>';
     primary='确认红冲';requireField=true;okCls=' danger';
+  }else if(kind==='oilCap'||kind==='elecCap'){
+    const elec=kind==='elecCap';
+    heading=elec?'分电上限比例配置':'分油上限比例配置';
+    content='<div class="fi"><label for="live-cap">'+(elec?'分电上限比例':'分油上限比例')+' <span class="req">*</span></label>'
+      +'<div class="fi-c"><input id="live-cap" class="inp" inputmode="decimal" value="'+(elec?liveCapElec.toFixed(2):liveCapOil.toFixed(2))+'" placeholder="请输入0-40之间的数字" style="max-width:200px"><span class="unit">%</span></div>'
+      +'<span class="t2">0–40，最多两位小数；'+(elec?'电规则派发比例按此上限校验':'油气规则派发比例按此上限校验')+'</span></div>';
+    primary='确认';
   }else if(kind==='leqiDownload'){
     const nos=liveSelected('.live-order-check').map(no=>LIVE.orders.find(x=>x.no===no)).filter(o=>o&&(o.invCh||'线下')==='乐企'&&(o.invoice==='开票成功'||o.invoice==='已红冲'));
     if(!nos.length){showToast('请先勾选「开票成功/已红冲」的乐企订单');return;}
@@ -631,6 +879,45 @@ function liveModal(kind,key){
     heading='确认提交撮合订单补单';
     content='<p>请核对订单资料和支付金额。提交后会进入支付执行。</p>';
     primary='确认提交';
+  }else if(kind==='cgRecover'){
+    const o=LIVE.chargeOrders.find(x=>x.no===key);
+    if(!o||o.recover!=='未追回'){showToast('仅「未追回」的订单可执行追回');return;}
+    heading='追回操作';
+    content='<dl class="cf-kv" style="margin-top:2px">'
+      +'<dt>能源订单号</dt><dd><span class="mono">'+o.no+'</span></dd>'
+      +'<dt>关联运单号</dt><dd><span class="mono">'+o.waybill+'</span></dd>'
+      +'<dt>司机姓名</dt><dd>'+o.driver+'</dd>'
+      +'<dt>订单金额</dt><dd class="num">'+cgMoney(o.orderAmt)+'</dd></dl>'
+      +'<div class="fi" style="margin-top:14px"><label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer"><input type="checkbox" id="live-rec-resume" onchange="cgRecoverToggle(this.checked)">恢复正常支付</label>'
+      +'<span class="t2">勾选＝该订单无需追回（运单已恢复正常支付），追回凭证转为选填；提交后「是否追回」置为「恢复正常支付」</span></div>'
+      +'<div class="fi" style="margin-top:10px"><label for="live-rec-files">追回凭证 <span class="req" id="live-rec-req">*</span></label>'
+      +'<input id="live-rec-files" class="inp" type="file" accept=".jpg,.jpeg,.png" multiple onchange="cgRecoverFiles(this)">'
+      +'<span class="t2">最多 5 张图片，图片格式为 jpg / png / jpeg，单张 ≤5MB；勾选「恢复正常支付」后选填</span>'
+      +'<div id="live-rec-files-tip" style="margin-top:4px"></div></div>'
+      +'<div class="fi" style="margin-top:10px"><label for="live-modal-reason">追回备注</label>'
+      +'<textarea id="live-modal-reason" class="inp" rows="3" maxlength="200" placeholder="请输入追回备注" style="min-height:76px"></textarea>'
+      +'<span class="t2">0–200 字，选填</span></div>';
+    primary='确认提交';
+  }else if(kind==='cgRecoverView'){
+    const o=LIVE.chargeOrders.find(x=>x.no===key);
+    if(!o||(o.recover!=='已追回'&&o.recover!=='恢复正常支付')){showToast('该订单暂无追回记录');return;}
+    const rec=LIVE.chargeRecovers[key]||{};
+    const imgs=(rec.files||0)
+      ?Array.from({length:rec.files},(_,i)=>'<img src="'+cgProofImg(o.no,money(o.orderAmt),rec.time||'')+'" alt="追回凭证 '+(i+1)+'" style="width:104px;height:70px;object-fit:cover;border:1px solid var(--line);border-radius:8px">').join('')
+      :'<span class="t2">--</span>';
+    const remark=rec.remark||(rec.resume?'恢复正常支付':'')||'--';
+    heading='查看追回';
+    content='<dl class="cf-kv" style="margin-top:2px">'
+      +'<dt>能源订单号</dt><dd><span class="mono">'+o.no+'</span></dd>'
+      +'<dt>关联运单号</dt><dd><span class="mono">'+o.waybill+'</span></dd>'
+      +'<dt>司机姓名</dt><dd>'+o.driver+'</dd>'
+      +'<dt>订单金额</dt><dd class="num">'+cgMoney(o.orderAmt)+'</dd></dl>'
+      +(rec.resume?'<div style="margin-top:12px;padding:8px 12px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);font-size:13px;color:var(--ink-2)">恢复正常支付</div>':'')
+      +'<div class="sec-title" style="margin-top:14px">追回凭证</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">'+imgs+'</div>'
+      +'<div class="sec-title" style="margin-top:14px">追回备注</div><p style="margin-top:4px;font-size:13px">'+remark+'</p>'
+      +'<div class="sec-title" style="margin-top:14px">操作记录</div>'
+      +tbl(['序号','操作动作','操作人','操作时间','备注'],[['1',rec.opr||'新增',rec.by||'—',rec.time||'—',rec.remark||'—']]);
+    primary='关闭';
   }
   title.textContent=heading;
   body.innerHTML=content;
@@ -651,6 +938,33 @@ function liveFinish(kind,key,requireField){
     }
   }
   modal.classList.remove('on');
+  if(kind==='cgRecoverView'){ return; }
+  if(kind==='cgRecover'&&key){
+    const o=LIVE.chargeOrders.find(x=>x.no===key);
+    if(!o) return;
+    const resume=!!(document.getElementById('live-rec-resume')||{}).checked;
+    const inp=document.getElementById('live-rec-files');
+    const files=[...((inp&&inp.files)||[])];
+    if(!resume){
+      if(!files.length){modal.classList.add('on');inp&&inp.focus();showToast('请上传追回凭证');return;}
+      if(files.length>5){modal.classList.add('on');inp&&inp.focus();showToast('追回凭证最多上传 5 张');return;}
+      if(files.some(f=>f.size>5*1024*1024)){modal.classList.add('on');inp&&inp.focus();showToast('单张追回凭证需小于 5MB');return;}
+    }
+    const rm=document.getElementById('live-modal-reason');
+    const remark=rm?rm.value.trim():'';
+    o.recover=resume?'恢复正常支付':'已追回';
+    LIVE.chargeRecovers[o.no]={resume:!!resume, opr:resume?'恢复正常支付':'新增', by:'张世民（运营中台）', time:leqiNow(), remark:remark, files:resume?0:files.length};
+    showToast('追回操作提交成功');
+    paint();
+    return;
+  }
+  if(kind==='oilCap'||kind==='elecCap'){
+    const el=document.getElementById('live-cap');
+    const v=String(el&&el.value||'').trim();
+    if(!/^\d{1,2}(\.\d{1,2})?$/.test(v)||Number(v)>40){modal.classList.add('on');el&&el.focus();showToast('请输入 0–40 之间的数字（最多两位小数）');return;}
+    if(kind==='elecCap') liveCapElec=Number(v); else liveCapOil=Number(v);
+    showToast((kind==='elecCap'?'分电':'分油')+'上限比例已保存为 '+Number(v).toFixed(2)+'%（演示）'); paint(); return;
+  }
   if(kind==='leqiInvoice'&&key){
     const o=LIVE.orders.find(x=>x.no===key);
     if(o){o.invoice='开票中';o.invFail='';LEQI_LOGS.push({order:o.no,t:leqiNow(),way:'手动开票',act:'发票开具',result:'处理中',note:'已提交乐企，开具结果查询中'});showToast('已发起乐企开票，订单开票状态置为「开票中」');paint();return;}
@@ -721,6 +1035,715 @@ function liveRefundApprove(no){
   r.status='退款成功';
   showToast('审核通过，退款执行成功');paint();
 }
+
+/* ================= 4PL 端 · 充电订单管理 ================= */
+/* 订单状态徽标色：充电中=进行蓝、充电结束/待支付=待办橙、已支付=成功绿、已挂单=暂停紫、已退款=灰 */
+const cgStatusBadge = s=>({'充电中':'<span class="tag f">充电中</span>','充电结束':'<span class="tag warn">充电结束</span>','待支付':'<span class="tag warn">待支付</span>','已支付':'<span class="tag ok">已支付</span>','已挂单':'<span class="tag">已挂单</span>','已退款':'<span class="tag">已退款</span>'}[s]||s);
+const cgMoney = n=>n===0?'¥0.00':'¥'+money(n);
+const cgDeductBadge = s=>s==='已扣减'?'<span class="tag ok">已扣减</span>':s==='部分扣减'?'<span class="tag warn">部分扣减</span>':'<span class="tag">未扣减</span>';
+/* 是否追回徽标：未追回=待处理橙、已追回=闭环绿、恢复正常支付=无需追回灰（与油气能源订单一致） */
+const cgRecoverBadge = s=>s==='已追回'?'<span class="tag ok">已追回</span>':s==='恢复正常支付'?'<span class="tag">恢复正常支付</span>':s==='未追回'?'<span class="tag warn">未追回</span>':'<span class="tag">'+(s||'未追回')+'</span>';
+/* 追回凭证演示图（内联 SVG 转账回单，不依赖外部图片） */
+function cgProofImg(no, amount, time){
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="240" height="160" viewBox="0 0 240 160"><rect width="240" height="160" fill="#eef3fb"/><rect x="9" y="9" width="222" height="142" rx="9" fill="#fff" stroke="#d7e1f0"/><text x="20" y="34" font-size="13" font-family="sans-serif" fill="#225bb5">转账回单（演示）</text><text x="20" y="60" font-size="10.5" font-family="sans-serif" fill="#5b6475">能源订单号：'+no+'</text><text x="20" y="80" font-size="10.5" font-family="sans-serif" fill="#5b6475">追回金额：¥'+amount+'</text><text x="20" y="100" font-size="10.5" font-family="sans-serif" fill="#5b6475">回单时间：'+time+'</text><text x="20" y="132" font-size="9.5" font-family="sans-serif" fill="#8992a4">原型演示占位图，非真实凭证</text></svg>';
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+/* 追回弹窗：勾选「恢复正常支付」后追回凭证由必填转选填 */
+function cgRecoverToggle(checked){
+  const req=document.getElementById('live-rec-req');
+  if(req) req.style.display=checked?'none':'';
+  const tip=document.getElementById('live-rec-files-tip');
+  if(tip&&checked) tip.innerHTML='';
+}
+/* 追回弹窗：凭证选择回显与数量/大小提示（校验仍以提交时为准） */
+function cgRecoverFiles(input){
+  const tip=document.getElementById('live-rec-files-tip');
+  if(!tip) return;
+  const files=[...(input.files||[])];
+  if(!files.length){tip.innerHTML='';return;}
+  const tooMany=files.length>5;
+  const tooBig=files.filter(f=>f.size>5*1024*1024).map(f=>f.name);
+  tip.innerHTML=(tooMany?'<span style="color:var(--bad);font-size:12px">最多上传 5 张，当前已选 '+files.length+' 张</span> ':'')
+    +(tooBig.length?'<span style="color:var(--bad);font-size:12px">超出 5MB：'+tooBig.join('、')+'</span> ':'')
+    +'<span class="t2">已选 '+files.length+' 张：'+files.map(f=>f.name).join('、')+'</span>';
+}
+
+VIEWS.chargeOrders=()=>{
+  const list=liveRows('chargeOrders');
+  const rows=list.map(o=>'<tr>'
+    +'<td><b class="mono">'+o.no+'</b></td>'
+    +'<td class="mono">'+o.ckcNo+'</td>'
+    +'<td class="mono">'+o.waybill+'</td>'
+    +'<td>'+o.driver+'</td>'
+    +'<td class="mono">'+o.phone+'</td>'
+    +'<td class="mono">'+o.plate+'</td>'
+    +'<td>'+cgStatusBadge(o.status)+leqiFieldHelp('cgStatus')+'</td>'
+    +'<td>'+o.operator+'</td>'
+    +'<td>'+o.station+'<div class="t2">'+o.pile+'</div></td>'
+    +'<td class="mono">'+(o.startTime||'—')+'</td>'
+    +'<td class="num">'+(o.kwh?o.kwh.toFixed(2):'—')+'</td>'
+    +'<td class="num">'+cgMoney(o.orderAmt)+'</td>'
+    +'<td class="num" style="white-space:nowrap">'+o.wlj.toFixed(2)+' 元/度'+leqiFieldHelp('cgWlj')+'</td>'
+    +'<td class="num">'+cgMoney(o.subsidy)+leqiFieldHelp('cgSubsidy')+'</td>'
+    +'<td class="num">'+cgMoney(o.payAmt)+leqiFieldHelp('cgPayAmt')+'</td>'
+    +'<td>'+o.shipper+'</td>'
+    +'<td>'+o.whSubj+'</td>'
+    +'<td>'+o.belongCo+'</td>'
+    +'<td>'+o.settleSubj+'</td>'
+    +'<td style="min-width:160px">'+(o.fromAddr||'—')+'</td>'
+    +'<td style="min-width:160px">'+(o.toAddr||'—')+'</td>'
+    +'<td>'+(o.waybillPay==='已支付'?'<span class="tag ok">已支付</span>':'<span class="tag warn">未付款</span>')+'</td>'
+    +'<td>'+(o.waybillAbn==='无异常'?'<span class="t2">无异常</span>':'<span style="color:#c0483c">'+o.waybillAbn+'</span>')+'</td>'
+    +'<td class="mono">'+(o.abnTime||'—')+'</td>'
+    +'<td>'+cgRecoverBadge(o.recover)+'</td>'
+    +'<td>'+(o.ocr==='通过'?'<span class="tag ok">通过</span>':'<span class="tag warn">未通过</span>')+'</td>'
+    +'<td class="acts"><button type="button" onclick="openChargeOrder(\''+o.no+'\')">详情</button>'
+      +(o.recover==='未追回'?'<button type="button" onclick="liveModal(\'cgRecover\',\''+o.no+'\')">追回</button>':'')
+      +((o.recover==='已追回'||o.recover==='恢复正常支付')?'<button type="button" onclick="liveModal(\'cgRecoverView\',\''+o.no+'\')">查看追回</button>':'')
+    +'</td>'
+    +'</tr>');
+  return liveFilters('chargeOrders')
+    +liveListCard('充电订单管理','<button class="btn sm" onclick="liveExport(\'chargeOrders\')">导出</button>',
+      ['能源订单号','云快充订单号','关联运单号','司机姓名','手机号'+leqiFieldHelp('cgPhone'),'车牌号','订单状态'+leqiFieldHelp('cgStatus'),'运营商名称','站点名称','启动时间','充电量(度)','订单金额','万联价(元/度)'+leqiFieldHelp('cgWlj'),'补贴金额'+leqiFieldHelp('cgSubsidy'),'实付金额'+leqiFieldHelp('cgPayAmt'),'货主企业','网货主体','业务归属公司','结算主体','发货地','卸货地','运单支付状态','运单异常','异常发生时间','是否追回'+leqiFieldHelp('cgRecover'),'OCR识别状态','操作'],
+      rows,'4200px')
+    +notes(
+      nb('子订单口径','<p>充电订单按<b>运单维度拆分子订单</b>同步 4PL（本列表一行＝一个运单的子订单）：司机启动充电即冻结组内全部匹配运单总额度，<b>建单时按冻结池运单逐单生成子订单</b>并同步（状态跟随总订单）；完成后按运单时间先进先出扣款，实际扣款子订单更新最终数据，<b>未扣款运单的子订单撤回</b>、解冻运单在实际扣款子订单详情附带展示。云快充 15 秒过程数据（电量/费用/SOC）只在万油通侧消费，不同步给 4PL——4PL 仅展示开始与结束的数据。</p>')+
+      nb('金额口径','<p>子订单金额均为<b>本运单承担部分</b>：订单金额＝该运单承担的云快充金额（电费＋服务费）；万联价＝按司机补贴规则电补贴比例计算的电单价（订单创建时快照）；实付金额＝万联价×本单实际充电度数（司机扣款）；补贴金额＝订单金额−实付金额。充电中冻结组内所有匹配运单的总额度，完成按扣款解冻返还剩余。</p>'));
+};
+
+/* ===== 充电订单详情 · 独立页面（4PL 端详情均为新页面展示，非抽屉） ===== */
+let chargeOrderCurrent = '';
+function openChargeOrder(no){ chargeOrderCurrent = no; go('chargeOrderDetail'); }
+
+/* 演示时段拆分（按订单金额比例拆尖峰平谷，仅演示） */
+function chargePeriodsOf(o){
+  if(o.no==='CD20261027000003') return [{range:'2026-10-27 18:46 ~ 19:30（峰）',kwh:31.4,efee:36.02,sfee:14.13},{range:'2026-10-27 19:30 ~ 20:12（平）',kwh:20.9,efee:18.81,sfee:9.40}];
+  if(o.no==='CD20261027000004') return [{range:'2026-10-27 15:09 ~ 16:02（平）',kwh:30.6,efee:27.54,sfee:13.77}];
+  if(o.no==='CD20261027000005') return [{range:'2026-10-27 11:20 ~ 12:02（尖）',kwh:22.3,efee:28.32,sfee:10.03},{range:'2026-10-27 12:02 ~ 12:35（谷）',kwh:21.8,efee:15.26,sfee:9.81}];
+  if(o.no==='CD20261026000006') return [{range:'2026-10-26 20:01 ~ 20:40（谷）',kwh:14.2,efee:11.93,sfee:11.68},{range:'2026-10-26 20:40 ~ 21:18（谷）',kwh:9.2,efee:7.73,sfee:7.70}];
+  if(o.no==='CD20261026000013') return [{range:'2026-10-26 20:01 ~ 21:18（谷）',kwh:15.5,efee:12.51,sfee:13.52}];
+  if(o.no==='CD20261026000007') return [{range:'2026-10-26 09:47 ~ 10:40（峰）',kwh:36.2,efee:41.51,sfee:16.29},{range:'2026-10-26 10:40 ~ 11:23（平）',kwh:25.5,efee:22.95,sfee:11.48}];
+  if(o.no==='CD20261025000008') return [{range:'2026-10-25 16:12 ~ 17:36（平）',kwh:42.5,efee:38.25,sfee:17.88}];
+  return [{range:'—',kwh:o.kwh||0,efee:+(o.orderAmt*0.6).toFixed(2),sfee:+(o.orderAmt*0.4).toFixed(2)}];
+}
+/* 定位信息块：车辆实时定位（地图+地址+时间+方式）＋充电站位置 */
+function cgMapBlock(o){
+  return '<div class="card"><div class="card-b"><div class="sec-title">定位信息'+leqiFieldHelp('cgLoc')+'</div>'
+    +'<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px;align-items:stretch">'
+      +'<div class="cg-map">'
+        +'<span class="cg-road" style="left:8%;top:12%">丁香街</span>'
+        +'<span class="cg-road" style="left:58%;top:70%">开发大路</span>'
+        +'<span class="cg-dash" style="left:63%;top:44%;width:96px;transform:rotate(-24deg)"></span>'
+        +'<div class="cg-pin car" style="left:62%;top:44%"><span class="dot"></span><span class="lbl">车辆定位</span></div>'
+        +'<div class="cg-pin station" style="left:70%;top:34%"><span class="dot"></span><span class="lbl">'+o.station+'</span></div>'
+        +'<span class="cg-tag">演示地图占位 · 实际接入高德地图</span>'
+      +'</div>'
+      +'<dl class="kv oms-live-kv" style="margin:0">'
+        +'<div class="oms-live-field"><dt>定位地址</dt><dd>'+o.locAddr+'</dd></div>'
+        +'<div class="oms-live-field"><dt>定位时间</dt><dd><span class="mono">'+o.locTime+'</span></dd></div>'
+        +'<div class="oms-live-field"><dt>定位方式</dt><dd>'+o.locType+'</dd></div>'
+        +'<div class="oms-live-field"><dt>距充电站</dt><dd>'+o.distKm+' km</dd></div>'
+        +'<div class="oms-live-field"><dt>充电站地址</dt><dd>'+o.stationAddr+'</dd></div>'
+      +'</dl>'
+    +'</div></div></div>';
+}
+
+/* 充电信息分组小组（3 列 kv，dd 可带 span2） */
+function cgGrp(title, fields){
+  return '<div class="cg-grp"><div class="cg-grp-t">'+title+'</div><dl>'
+    + fields.map(([k,v])=>'<div class="oms-live-field"><dt>'+k+'</dt><dd>'+v+'</dd></div>').join('')
+    + '</dl></div>';
+}
+
+/* 顶部条：能源订单号 + 状态标签（对齐 4PL 充电订单详情页顶部） */
+function cgHeadBar(o){
+  return '<div class="card"><div class="card-b" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
+    +'<span class="t2">能源订单号：</span><b class="mono" style="font-size:15px">'+o.no+'</b>'
+    +cgStatusBadge(o.status)
+    +cgDeductBadge(o.deduct)
+  +'</div></div>';
+}
+
+/* 充电位置信息块（对齐油气「加注位置信息」：司机定位＋车牌定位＋充电站位置＋地图） */
+function cgMapBlock(o){
+  return '<div class="card"><div class="card-b"><div class="sec-title">充电位置信息'+leqiFieldHelp('cgLoc')+'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1.3fr;gap:14px;align-items:stretch">'
+      +'<dl class="kv oms-live-kv" style="margin:0">'
+        +'<div class="oms-live-field"><dt>司机：'+o.driver+'</dt><dd>定位信息：'+o.locAddr+'</dd></div>'
+        +'<div class="oms-live-field"><dt>车牌号：'+o.plate+'</dt><dd>定位信息：'+o.locAddr.split(' 充电站')[0]+'</dd></div>'
+        +'<div class="oms-live-field"><dt>充电站名称：'+o.station+'</dt><dd>位置：'+o.stationAddr+'</dd></div>'
+        +'<div class="oms-live-field"><dt>定位时间</dt><dd><span class="mono">'+o.locTime+'</span>（'+o.locType+' · 距充电站 '+o.distKm+' km）</dd></div>'
+      +'</dl>'
+      +'<div class="cg-map">'
+        +'<span class="cg-road" style="left:8%;top:12%">丁香街</span>'
+        +'<span class="cg-road" style="left:58%;top:70%">开发大路</span>'
+        +'<span class="cg-dash" style="left:63%;top:44%;width:96px;transform:rotate(-24deg)"></span>'
+        +'<div class="cg-pin car" style="left:62%;top:44%"><span class="dot"></span><span class="lbl">司机 / 车辆</span></div>'
+        +'<div class="cg-pin station" style="left:70%;top:34%"><span class="dot"></span><span class="lbl">'+o.station+'</span></div>'
+        +'<span class="cg-tag">司机·油气·电车辆 © 演示地图占位 · 实际接入高德地图</span>'
+      +'</div>'
+    +'</div></div></div>';
+}
+
+/* 详情页：分块上下排布（充电信息 → 充电位置信息 → 关联运单信息 → 充电与时段明细 → 组合支付明细 → 异常标识），页尾返回列表 */
+VIEWS.chargeOrderDetail=()=>{
+  const o = LIVE.chargeOrders.find(x=>x.no===chargeOrderCurrent) || LIVE.chargeOrders[0];
+  chargeOrderCurrent = o.no;
+  const periods=o.status==='充电中'||o.status==='已挂单'||o.status==='已退款'
+    ? '<p class="t2">时段充电明细为订单完成后的结束数据，当前订单未完成，暂无时段明细。</p>'
+    : liveTable(['时段','电量(度)','电费(元)','服务费(元)','小计(元)'],
+        chargePeriodsOf(o).map(p=>'<tr><td class="mono">'+p.range+'</td><td class="num">'+p.kwh.toFixed(2)+'</td><td class="num">'+cgMoney(p.efee)+'</td><td class="num">'+cgMoney(p.sfee)+'</td><td class="num"><b>'+cgMoney(p.efee+p.sfee)+'</b></td></tr>'),'760px');
+  const thaw = (o.thawList&&o.thawList.length)
+    ? liveTable(['序号','解冻运单号','处理结果','解冻金额(元)'],
+        o.thawList.map((t,i)=>'<tr><td>'+(i+1)+'</td><td class="mono">'+t.no+'</td><td>解冻返还（未参与本次扣款）</td><td class="num">'+cgMoney(parseFloat(t.amt))+'</td></tr>'),'760px')
+    : '<p class="t2">本单为单运单额度充电（冻结 1 个运单、全额扣款），无解冻运单。</p>';
+  const waybillRow = '<tr><td>1</td><td class="mono">'+o.waybill+'</td><td>'+o.shipper+'</td><td>'+o.goods+'</td><td class="num">'+o.weight+'</td><td>'+o.fromAddr+'</td><td>'+o.toAddr+'</td><td>'+o.driver+'</td><td class="mono">'+o.phone+'</td><td class="mono">'+o.plate+'</td><td class="mono">'+(o.loadTime||'—')+'</td><td class="mono">'+(o.unloadTime||'—')+'</td><td>'+o.whSubj+'</td><td class="num">'+o.freightAmt+'</td><td>'+(o.waybillPay==='已支付'?'<span class="tag ok">已支付</span>':'<span class="tag warn">未付款</span>')+'</td><td>'+(o.waybillAbn==='无异常'?'<span class="t2">无异常</span>':'<span style="color:#c0483c">'+o.waybillAbn+'</span>')+'</td><td class="mono">'+(o.abnTime||'—')+'</td><td>'+cgRecoverBadge(o.recover)+'</td></tr>';
+  return cgHeadBar(o)
+    + '<div class="card"><div class="card-b"><div class="sec-title">充电信息</div>'
+      + cgGrp('司机与车辆',[
+          ['充电司机',o.driver],['司机手机号','<span class="mono">'+o.phone+'</span>'],['充电车牌号','<span class="mono">'+o.plate+'</span>'],['充电品类','电（云快充）']
+        ])
+      + cgGrp('充电过程',[
+          ['充电量(度)','<b class="num">'+(o.kwh?o.kwh.toFixed(2):'—')+'</b>'],['桩枪编号','<span class="mono">'+o.pile+'</span>'],
+          ['启动时间','<span class="mono">'+(o.startTime||'—')+'</span>'],['结束时间','<span class="mono">'+(o.endTime||'—')+'</span>'],
+          ['停止原因',o.status==='已退款'?'启动失败关单（冻结全额解冻退回）':(o.endTime?'达到停止阈值/手动停止':'充电中/挂单')]
+        ])
+      + cgGrp('金额信息',[
+          ['订单金额','<b class="num">'+cgMoney(o.orderAmt)+'</b>'],
+          ['万联价(元/度)','<b class="num">'+o.wlj.toFixed(2)+'</b>'+leqiFieldHelp('cgWlj')],
+          ['司机实付金额','<b class="num">'+cgMoney(o.payAmt)+'</b>'+leqiFieldHelp('cgPayAmt')],
+          ['补贴金额','<b class="num">'+cgMoney(o.subsidy)+'</b>'+leqiFieldHelp('cgSubsidy')],
+          ['扣减状态',cgDeductBadge(o.deduct)+leqiFieldHelp('cgDeduct')],
+          ['冻结金额（运单维度）','<b class="num">'+cgMoney(o.frozen)+'</b>'+leqiFieldHelp('cgFrozen')]
+        ])
+      + cgGrp('站点与主体',[
+          ['充电站名称',o.station],['站点地址','<span class="span2">'+o.stationAddr+'</span>'],
+          ['运营商名称',o.operator],['货主企业',o.shipper],['业务归属公司',o.belongCo],['网货主体',o.whSubj],['结算主体',o.settleSubj]
+        ])
+      + cgGrp('时间与同步',[
+          ['创建时间','<span class="mono">'+o.createTime+'</span>'],
+          ['最近同步时间','<span class="mono">'+o.syncTime+'</span>'+leqiFieldHelp('cgSync')]
+        ])
+    + '</div></div>'
+    + cgMapBlock(o)
+    + '<div class="card"><div class="card-b"><div class="sec-title">关联运单信息</div>'
+      + liveTable(['序号','运单号','货主企业','货品名称','承运重量(吨)','发货地','卸货地','司机姓名','司机手机号','车牌号','装车时间','卸车时间','网货主体','运费总金额(元)','运单支付状态','运单异常','异常发生时间','是否追回'],[waybillRow],'2800px')
+    + '</div></div>'
+    + '<div class="card"><div class="card-b"><div class="sec-title">充电与时段明细<span class="t2" style="margin-left:10px;font-weight:400">充电时段按云快充最终订单拆分（尖/峰/平/谷）</span></div>' + periods + '</div></div>'
+    + '<div class="card"><div class="card-b"><div class="sec-title">额度冻结与解冻'+leqiFieldHelp('cgThaw')+'<span class="t2" style="margin-left:10px;font-weight:400">充电即冻结组内全部匹配运单总额度，完成后按运单时间先进先出扣款，未扣款运单解冻返还并撤回子订单</span></div>'
+      + '<dl class="cg-grp" style="margin:10px 0 12px"><div class="oms-live-field"><dt>本次冻结运单数</dt><dd><b class="num">'+((o.thawList&&o.thawList.length)?o.thawList.length+1:1)+'</b> 个</dd></div>'
+      + '<div class="oms-live-field"><dt>冻结总额度</dt><dd><b class="num">'+cgMoney(o.frozen)+'</b></dd></div>'
+      + '<div class="oms-live-field"><dt>本单扣款（本运单）</dt><dd><b class="num">'+cgMoney(o.payAmt)+'</b></dd></div></dl>'
+      + '<div class="cg-grp-t">解冻运单</div>' + thaw
+    + '</div></div>'
+    + liveSection('异常标识',[
+        ['OCR 识别状态',(o.ocr==='通过'?'<span class="tag ok">通过</span>':'<span class="tag warn">未通过</span>')],
+        ['是否追回',cgRecoverBadge(o.recover)+leqiFieldHelp('cgRecover')],
+        ['假充电标记',o.fake==='是'?'<span class="tag warn">是</span>':'<span class="tag">否</span>'+leqiFieldHelp('cgFake')],
+        ['假充电判定口径',o.fake==='是'?'充电 5 分钟累计充电量＜0.5 度，打标并短信通知司机':'—']
+      ])
+    + '<div style="padding:6px 2px 18px"><button type="button" class="btn" onclick="go(\'chargeOrders\')">返回列表</button></div>';
+    + '<div style="padding:6px 2px 18px"><button type="button" class="btn" onclick="go(\'chargeOrders\')">返回列表</button></div>';
+};
+
+/* 充电订单字段说明（与 PRD 7.2 同源） */
+const _cgFh = leqiFieldHelp;
+leqiFieldHelp = function(kind){
+  const dot=c=>'<span class="fh-dot'+(c?' '+c:'')+'"></span>';
+  if(kind==='cgStatus') return fhCardHTML(
+    '<h5>充电订单状态（穷举 6 值 · 全生命周期同步）</h5>'
+    +tbl(['状态','页面展示','出现条件 → 后续流转'],[
+      ['充电中',dot('run')+'「充电中」——蓝色标签','云快充启动成功后出现 → 停止充电后转「充电结束」或「待支付」；异常时经关单转「已退款」'],
+      ['充电结束',dot('pend')+'「充电结束」——橙色标签','充电停止、订单账单生成中 → 支付完成后转「已支付」'],
+      ['待支付',dot('pend')+'「待支付」——橙色标签','充电结束待结算扣款 → 扣款完成转「已支付」'],
+      ['已支付',dot('ok')+'「已支付」——绿色标签','终态：扣款完成（万联价×实际度数已扣减、剩余额度解冻返还）'],
+      ['已挂单',dot('warn')+'「已挂单」——灰色标签','充电中订单进入挂单（金额＝(挂单时间×功率/60×时段电价＋累计总金额)×(1+X)，跨时段取最高电价）→ 挂单结束后自动结算回收，转「已支付」'],
+      ['已退款',dot('fail')+'「已退款」——灰色标签','启动卡单关单（90 秒未收到启动成功→查询→关单）：冻结全额解冻退回，终态']
+    ])
+    +'<p><b>子订单状态＝总订单状态：</b>订单按运单维度拆分子订单同步 4PL（建单即按冻结池全部运单生成），子订单无独立状态机，状态跟随总订单同步更新；完成后未扣款运单的子订单撤回（详见「额度冻结与解冻」）。</p>'
+    +'<p><b>同步口径：</b>建单即同步（开始数据）→ 状态流转同步更新 → 完成后更新最终子订单；15 秒过程数据不同步给 4PL。</p>'
+    +'<p class="mut">与 PRD 7.2 / 流程二同源。</p>');
+  if(kind==='cgWlj') return fhCardHTML(
+    '<h5>万联价（元/度）</h5>'
+    +'<p>按司机补贴规则的<b>电补贴比例</b>计算的电单价，订单创建时记录快照。</p>'
+    +tbl(['口径','说明'],[
+      ['司机扣款','实付金额＝万联价 × 实际充电度数'],
+      ['补贴差额','补贴金额＝订单金额 − 实付金额'],
+      ['停止阈值','可充度数＝冻结额度 ÷ 万联价，到达阈值下发停止充电'],
+      ['计价配置','司机补贴规则（万联价计算配置）维护电补贴比例；公式以配置页最终口径为准']
+    ])
+    +'<p class="mut">与 PRD 7.2 / 数据定义同源。</p>');
+  if(kind==='cgSubsidy') return fhCardHTML(
+    '<h5>补贴金额</h5>'
+    +'<p>补贴金额＝<b>订单金额 − 实付金额</b>（自然差额，不做独立拆分计算）。</p>'
+    +tbl(['场景','展示'],[
+      ['正常订单','订单金额（云快充电费＋服务费）− 万联价×度数；如 87.61 − 62.76 ＝ 24.85'],
+      ['关单退款','0.00（无有效充电）'],
+      ['假充电','按实际度数计算（0.32 度 → 补贴 0.16），同时打标假充电']
+    ])
+    +'<p class="mut">与 PRD 7.2 同源。</p>');
+  if(kind==='cgPayAmt') return fhCardHTML(
+    '<h5>实付金额（司机扣款）</h5>'
+    +'<p>实付金额＝<b>万联价 × 实际充电度数</b>，为司机侧实际扣款金额；充电中按冻结额度预计，完成按实际度数结算。</p>'
+    +'<p class="mut">与 PRD 7.2 同源。</p>');
+  if(kind==='cgDeduct') return fhCardHTML(
+    '<h5>扣减状态（穷举 3 值）</h5>'
+    +tbl(['状态','页面展示','出现条件'],[
+      ['未扣减',dot('pend')+'「未扣减」——灰色标签','订单未完成（充电中/待支付/已挂单），额度处于冻结占用'],
+      ['已扣减',dot('ok')+'「已扣减」——绿色标签','订单完成：按万联价×实际度数扣减，剩余冻结解冻返还'],
+      ['部分扣减',dot('warn')+'「部分扣减」——橙色标签','组合支付多运单分摊时部分运单完成扣减的中间态']
+    ])
+    +'<p class="mut">与 PRD 数据定义同源。</p>');
+  if(kind==='cgRecover') return fhCardHTML(
+    '<h5>是否追回（穷举 3 值 · 追回闭环）</h5>'
+    +tbl(['取值','页面展示','出现条件','由谁处理 → 后续流转'],[
+      ['未追回',dot('warn')+'「未追回」——橙色标签','取消运单 / 终止结算等运单异常触发时对已有订单打标：有完成订单（已实扣）允许取消并打标；仅未完成订单停止充电＋回收后打标；仅有挂单待结束自动回收后打标','运营在列表操作列点「追回」→ 提交后转「已追回」或「恢复正常支付」'],
+      ['已追回',dot('ok')+'「已追回」——绿色标签','运营提交追回操作（追回凭证 1–5 张 ＋ 追回备注）后置该值，同时写 1 条追回记录，操作动作＝「新增」','终态：操作列变「查看追回」，弹层展示追回凭证、追回备注与操作记录（序号 / 操作动作 / 操作人 / 操作时间 / 备注）'],
+      ['恢复正常支付',dot('')+'「恢复正常支付」——灰色标签','运营提交追回时勾选「恢复正常支付」：运单异常已撤销、该订单无需追回，追回凭证转为选填','终态：操作列变「查看追回」，弹层多一条「恢复正常支付」标识条；追回凭证显示 --、追回备注显示「恢复正常支付」、操作记录操作动作＝「恢复正常支付」']
+    ])
+    +'<h5>页面展示示例</h5>'
+    +tbl(['位置','展示'],[
+      ['列表「是否追回」列 / 详情「异常标识」','未追回＝橙色「未追回」；已追回＝绿色「已追回」；恢复正常支付＝灰色「恢复正常支付」；无追回语义的正常订单同为「未追回」（码值默认 1）'],
+      ['列表操作列','未追回：详情 / 追回；已追回、恢复正常支付：详情 / 查看追回（两个按钮互斥）'],
+      ['追回操作弹层','头部 4 项示例如「能源订单号 CD20261021000017 · 关联运单号 W20261021000018 · 司机姓名 李春生 · 订单金额 87.36元」；勾选框「恢复正常支付」；追回凭证（最多 5 张，jpg / png / jpeg，单张 ≤5MB，未勾选恢复正常支付时必填，缺凭证提示「请上传追回凭证」）；追回备注 0–200 字选填；提交成功提示「追回操作提交成功」'],
+      ['查看追回弹层','操作记录示例：1 ｜ 新增 ｜ 张世民（运营中台）｜ 2026-10-21 15:42:10 ｜ 已与云快充核对并线下追缴，款项已退回平台账户']
+    ])
+    +'<p class="mut">追回只落追回记录与状态：不动司机电额度 / 运单额度、不写能源变更日志、不触发资金；与油气能源订单的追回口径一致，与 PRD 7.2 同源。</p>');
+  if(kind==='cgFake') return fhCardHTML(
+    '<h5>假充电标记</h5>'
+    +tbl(['取值','页面展示','判定口径'],[
+      ['否',dot('')+'「否」','正常充电'],
+      ['是',dot('fail')+'「是」——橙色标签','充电 5 分钟累计充电量＜0.5 度，打标并短信通知司机；随订单同步 4PL']
+    ])
+    +'<p class="mut">与 PRD 数据定义同源。</p>');
+  if(kind==='cgLoc') return fhCardHTML(
+    '<h5>定位信息（车辆定位＋充电站位置）</h5>'
+    +tbl(['字段','页面展示','口径'],[
+      ['定位地址','车辆最近一次上报的定位地址（含方位描述）','车辆 GPS/基站定位逆地址解析；充电中订单随充电过程刷新，完成订单展示充电开始前最后一次定位'],
+      ['定位时间','<b>最近定位时间</b>（如 2026-10-26 09:47:00）','订单维度取最近一次上报时间；地图标注点即该定位'],
+      ['定位方式','GPS / 基站（穷举 2 值）','GPS=车载定位设备上报；基站=无 GPS 信号时按基站定位（精度较低）'],
+      ['距充电站','定位点与充电站的直线距离（km）','用于判断车辆是否在站内充电'],
+      ['充电站地址','充电站完整地址（运营商侧同步）','与「充电站点」块站点地址一致']
+    ])
+    +'<p><b>地图：</b>实际接入高德地图 SDK，展示车辆定位点＋充电站点位及连线；原型为占位示意。</p>'
+    +'<p class="mut">与 4PL 端油气订单详情页定位展示一致。</p>');
+  if(kind==='etypeTip') return fhCardHTML(
+    '<h5>车辆能源类型 / 能源类型</h5>'
+    +tbl(['场景','展示'],[
+      ['能源运单管理','装车时按车辆档案写入；枚举：柴油 / 天然气 / 电 / 油，标签样式：柴油·天然气灰、电绿、油橙'],
+      ['能源规则配置','规则的能源类型：油气 / 电——电规则即分电规则，与油气规则三维唯一分开校验'],
+      ['能源类型与额度','能源类型=油气/电 决定额度归属：「分配/已使用/可用/已圈回额度」为同一套字段，按能源类型取油气或电账本的金额']
+    ])
+    +'<p class="mut">展示口径：电=绿标、油=橙标、柴油/天然气=灰标；同列名按能源类型区分含义。</p>');
+  if(kind==='eRateTip') return fhCardHTML(
+    '<h5>电补贴比例</h5>'
+    +'<p>司机补贴规则的新增字段（y）：用于计算电的万联价——订单创建时按司机补贴规则记录万联价快照。</p>'
+    +tbl(['口径','说明'],[
+      ['司机扣款','万联价×实际充电度数'],
+      ['补贴金额','云快充金额−万联价扣款（差额）'],
+      ['未配置','该组合电运单不参与分电与补贴计算，列表显示「—」'],
+      ['公式','万联价＝按司机补贴规则补贴比例计算的电单价；公式以万联价计算配置页最终口径为准']
+    ]));
+  if(kind==='eRateCap') return fhCardHTML(
+    '<h5>分电上限比例配置（本期新增入口）</h5>'
+    +'<p>与「分油上限比例配置」并列的独立配置项：配置分电比率上限，输入 <b>0–40、最多两位小数</b>（演示值 25.00%）。能源类型=电 的规则，派发比例不得超过该上限。</p>'
+    +tbl(['场景','展示'],[
+      ['不超过上限','正常保存（绿色数值）'],
+      ['超过上限','添加/编辑保存拦截；列表中超限的存量规则派发比例显示红色（演示：小桔-太原电规则(超限停用) 30%）']
+    ])
+    +'<p>油气规则仍按「分油上限比例配置」（演示值 25.55%）校验，两者互不影响。</p>');
+  if(kind==='ownerERate') return fhCardHTML(
+    '<h5>电优惠费率</h5>'
+    +'<p>货主返利规则为「按费率」时的新增字段：货主返利按电优惠费率计算（电费金额×电优惠费率），<b>复用能源返利链路</b>（返利随充电订单同步 4PL 记录）。</p>'
+    +tbl(['场景','展示'],[
+      ['按费率+已配置','显示费率值（加粗）'],
+      ['按费率+未配置','显示「—」，该组合电订单不计算货主返利'],
+      ['按能源额度','无费率概念，油气/电费率列均显示「—」']
+    ]));
+  if(kind==='oilFrozenTip') return fhCardHTML(
+    '<h5>油气-冻结额度</h5>'
+    +tbl(['场景','展示'],[
+      ['加注预冻结','司机扫码加油时按预计加注金额冻结（加注完成按实扣解冻返还剩余）'],
+      ['回收冻结','到达回收节点且司机有未完结订单时冻结电/油气余额（干预矩阵），订单完结后自动回收']
+    ])
+    +'<p class="mut">油气账本口径；电账本冻结见「电-冻结额度」。</p>');
+  if(kind==='eFrozenTip') return fhCardHTML(
+    '<h5>电-冻结额度</h5>'
+    +tbl(['场景','展示'],[
+      ['充电预冻结','充电即冻结组内<b>全部匹配运单</b>的总额度（跨主体合并、全额冻结）；可充度数＝冻结额度 ÷ 万联价，到达阈值下发停止充电'],
+      ['挂单追加冻结','挂单时追加部分冻结：挂单金额＝(挂单时间×功率/60×时段电价＋累计总金额)×(1+X)，跨时段取最高电价'],
+      ['完成','按万联价×实际度数扣减，剩余冻结解冻返还（运单维度明细见充电订单详情「额度冻结与解冻」）'],
+      ['启动失败关单','冻结全额解冻退回（已退款）']
+    ])
+    +'<p><b>输入金额冻结：</b>当前为全额冻结（无输入金额方式）；后续支持按输入金额冻结时按输入金额冻结。</p>'
+    +'<p class="mut">与 PRD 流程一/数据定义同源。</p>');
+  if(kind==='cgThaw') return fhCardHTML(
+    '<h5>额度冻结与解冻（子订单口径）</h5>'
+    +tbl(['节点','口径'],[
+      ['建单（充电启动成功）','冻结组内<b>全部匹配运单</b>的总额度（跨主体合并、全额冻结）；同时按冻结池运单<b>逐单生成子订单</b>同步 4PL，状态跟随总订单（充电中）'],
+      ['充电中','子订单展示开始数据；4PL 可见全部子订单（每个运单一条）'],
+      ['完成（已支付）','按<b>运单时间先进先出</b>扣款：实际扣款运单的子订单更新最终数据（本页）；<b>未扣款运单的子订单撤回</b>（4PL 列表不再展示），解冻运单在本块附带展示'],
+      ['启动失败关单','冻结全额解冻退回（已退款），子订单全量撤回']
+    ])
+    +'<p><b>本单扣款＝本运单承担金额</b>（订单金额/实付金额均为本运单维度）；解冻金额＝该运单冻结额度（未参与扣款，全额返还）。</p>'
+    +'<p><b>输入金额冻结：</b>当前为全额冻结（无输入金额方式）；后续支持按输入金额冻结时按输入金额冻结。</p>'
+    +'<p class="mut">与 PRD 6.2 流程一/7.2 充电订单管理同源。</p>');
+  if(kind==='cgSync') return fhCardHTML(
+    '<h5>最近同步时间（同步口径）</h5>'
+    +tbl(['同步节点','同步内容'],[
+      ['建单即同步','开始数据：启动时间、站点、桩枪'],
+      ['状态流转同步','订单状态每次变化（充电中→充电结束→待支付→已支付/已挂单/已退款）即更新'],
+      ['完成更新','订单完成后更新最终子订单（结束数据：充电量、金额、SOC、时段明细）']
+    ])
+    +'<p><b>15 秒过程数据不同步：</b>云快充充电过程中约 15 秒推送一次的过程数据（电量/费用/SOC）只在万油通侧消费，不同步给 4PL——4PL 仅展示开始与结束的数据。</p>'
+    +'<p class="mut">与 PRD 6.1/6.2 同源。</p>');
+  if(kind==='cgFrozen') return fhCardHTML(
+    '<h5>冻结金额（运单维度）</h5>'
+    +tbl(['场景','展示'],[
+      ['充电中','冻结组内所有匹配运单的总额度（跨主体合并、全额冻结）；可充度数＝冻结额度 ÷ 万联价，到达阈值下发停止充电'],
+      ['挂单','挂单时追加部分冻结：挂单金额＝(挂单时间×功率/60×时段电价＋累计总金额)×(1+X)，跨时段取最高电价'],
+      ['完成','按万联价×实际度数扣减，剩余冻结解冻返还'],
+      ['启动失败关单','冻结全额解冻退回（已退款）']
+    ])
+    +'<p><b>输入金额冻结：</b>当前充电即全额冻结（无输入金额方式）；后续支持按输入金额冻结时按输入金额冻结。</p>'
+    +'<p class="mut">与 PRD 流程一/数据定义同源。</p>');
+  if(kind==='cgPhone') return fhCardHTML(
+    '<h5>手机号展示口径</h5>'
+    +'<p>列表脱敏展示（138****4021）；详情抽屉展示完整手机号。与司机能源管理展示一致。</p>');
+  return _cgFh(kind);
+};
+
+
+
+/* ==================== 4PL 司机能源管理模块 ==================== */
+
+/* 演示数据：司机油气/电账户（12 司机，穷举：双账户/仅油气/仅电/有冻结/零额度） */
+LIVE.driverOil=[
+  {name:'王建国', phone:'138****4021', oilAvail:76278.00, oilUsed:324098.00, oilTotal:400376.00, oilFrozen:0, eAvail:428.60, eUsed:2871.40, eTotal:3300.00, eFrozen:0},
+  {name:'刘志强', phone:'139****8834', oilAvail:0, oilUsed:90947.59, oilTotal:90947.59, oilFrozen:0, eAvail:0, eUsed:14.72, eTotal:356.00, eFrozen:356.00},
+  {name:'赵德海', phone:'137****2260', oilAvail:55178.00, oilUsed:8735.77, oilTotal:63913.77, oilFrozen:0, eAvail:0, eUsed:87.61, eTotal:87.61, eFrozen:0},
+  {name:'马春林', phone:'134****5527', oilAvail:16892.00, oilUsed:13026.77, oilTotal:29918.77, oilFrozen:0, eAvail:402.75, eUsed:46.68, eTotal:449.43, eFrozen:431.00},
+  {name:'孙晓峰', phone:'136****9917', oilAvail:11632.61, oilUsed:16353.77, oilTotal:27986.38, oilFrozen:186.40, eAvail:0, eUsed:0, eTotal:0, eFrozen:0},
+  {name:'周永康', phone:'133****9903', oilAvail:8445.80, oilUsed:58316.80, oilTotal:66762.60, oilFrozen:0, eAvail:96.40, eUsed:103.24, eTotal:199.64, eFrozen:0},
+  {name:'吴天佑', phone:'135****7742', oilAvail:0, oilUsed:0, oilTotal:0, oilFrozen:0, eAvail:318.20, eUsed:37.80, eTotal:356.00, eFrozen:0},
+  {name:'郑立群', phone:'150****3358', oilAvail:7439.00, oilUsed:0, oilTotal:7439.00, oilFrozen:0, eAvail:186.00, eUsed:52.40, eTotal:238.40, eFrozen:52.40},
+  {name:'冯长海', phone:'188****6602', oilAvail:7058.93, oilUsed:8068.47, oilTotal:15127.40, oilFrozen:0, eAvail:0, eUsed:128.46, eTotal:128.46, eFrozen:0},
+  {name:'许志远', phone:'159****8821', oilAvail:6731.84, oilUsed:174.16, oilTotal:6906.00, oilFrozen:0, eAvail:64.10, eUsed:0, eTotal:64.10, eFrozen:0},
+  {name:'陈国栋', phone:'131****4409', oilAvail:0, oilUsed:20420.12, oilTotal:20420.12, oilFrozen:0, eAvail:0, eUsed:0, eTotal:0, eFrozen:0},
+  {name:'林万成', phone:'186****2251', oilAvail:23186.50, oilUsed:44310.22, oilTotal:67496.72, oilFrozen:0, eAvail:228.90, eUsed:214.55, eTotal:443.45, eFrozen:0}
+];
+
+/* 能源变更日志演示（类型 5 值穷举） */
+LIVE.oilLogs=[
+  {type:'分配', amt:'+8,000.00', wb:'W20261028000011', order:'—', avail:'84,278.00', used:'324,098.00', op:'系统（规则派发）', time:'2026-10-28 07:35:12'},
+  {type:'加注', amt:'-81.33', wb:'W2026103100000019', order:'WYB20261031181748540778', avail:'76,278.00', used:'324,098.00', op:'系统（订单扣款）', time:'2026-10-31 18:17:52'},
+  {type:'加注', amt:'-45.87', wb:'W2026103000000011', order:'WYB20261030160138549619', avail:'76,359.33', used:'324,016.67', op:'系统（订单扣款）', time:'2026-10-30 16:02:10'},
+  {type:'圈回', amt:'-5,000.00', wb:'W2026102000000036', order:'—', avail:'71,278.00', used:'324,016.67', op:'张世民', time:'2026-10-26 14:20:33'},
+  {type:'订单取消', amt:'+81.33', wb:'W2026103100000019', order:'WYB20261031181748540778', avail:'81,359.33', used:'323,935.34', op:'系统（退款返还）', time:'2026-11-01 09:12:04'},
+  {type:'恢复', amt:'+3,000.00', wb:'W2026101500000008', order:'—', avail:'84,359.33', used:'323,935.34', op:'李文静', time:'2026-10-24 10:05:47'},
+  {type:'分配', amt:'+12,000.00', wb:'W20261027000008', order:'—', avail:'96,359.33', used:'323,935.34', op:'系统（规则派发）', time:'2026-10-27 09:20:33'},
+  {type:'加注', amt:'-97.60', wb:'W2026103000000006', order:'WYB20261030132936648964', avail:'84,261.73', used:'324,032.94', op:'系统（订单扣款）', time:'2026-10-30 13:30:02'}
+];
+
+/* 电变更日志演示（类型 8 值穷举） */
+LIVE.elecLogs=[
+  {type:'分电', amt:'+330.00', wb:'W20261028000011', order:'—', avail:'758.60', used:'2,871.40', op:'系统（分电规则）', time:'2026-10-28 07:35:12'},
+  {type:'冻结', amt:'-356.00', wb:'W20261028000012', order:'CKC202610281032002', avail:'402.60', used:'2,871.40', op:'系统（充电预冻结）', time:'2026-10-28 10:32:04'},
+  {type:'冻结', amt:'-431.00', wb:'W20261026000005', order:'CKC202610262001006', avail:'833.60', used:'2,871.40', op:'系统（充电预冻结）', time:'2026-10-26 20:01:02'},
+  {type:'解冻', amt:'+186.40', wb:'W20261026000015', order:'CKC202610262001006', avail:'1,020.00', used:'2,871.40', op:'系统（完成解冻返还）', time:'2026-10-26 21:19:07'},
+  {type:'解冻', amt:'+110.32', wb:'W20261026000016', order:'CKC202610262001006', avail:'1,130.32', used:'2,871.40', op:'系统（完成解冻返还）', time:'2026-10-26 21:19:07'},
+  {type:'实扣', amt:'-28.08', wb:'W20261026000005', order:'CD20261026000006', avail:'1,102.24', used:'2,899.48', op:'系统（万联价扣款）', time:'2026-10-26 21:19:08'},
+  {type:'实扣', amt:'-18.60', wb:'W20261026000014', order:'CD20261026000013', avail:'1,083.64', used:'2,918.08', op:'系统（万联价扣款）', time:'2026-10-26 21:19:08'},
+  {type:'圈回', amt:'-200.00', wb:'W2026102000000036', order:'—', avail:'883.64', used:'2,918.08', op:'张世民', time:'2026-10-25 15:44:21'},
+  {type:'回收', amt:'-64.10', wb:'W2026101500000009', order:'—', avail:'819.54', used:'2,918.08', op:'系统（回收节点）', time:'2026-10-22 00:30:00'},
+  {type:'恢复', amt:'+64.10', wb:'W2026101500000009', order:'—', avail:'883.64', used:'2,918.08', op:'李文静', time:'2026-10-23 11:08:15'},
+  {type:'解冻', amt:'+356.00', wb:'W2026102500000002', order:'CKC202610250830010', avail:'1,239.64', used:'2,918.08', op:'系统（启动失败全额退回）', time:'2026-10-25 08:32:40'},
+  {type:'分电', amt:'+128.00', wb:'W20261029000007', order:'—', avail:'1,367.64', used:'2,918.08', op:'系统（分电规则）', time:'2026-10-29 06:12:30'}
+];
+
+/* 能源账户管理演示（网货主体 × 油气/电 两行） */
+LIVE.oilAccounts=[
+  {subj:'万联易达物流科技有限公司', etype:'油气', granted:'6,876,859.02', used:'200,178.62'},
+  {subj:'万联易达物流科技有限公司', etype:'电', granted:'128,400.00', used:'17,302.46'},
+  {subj:'鲁通冷链物流有限公司', etype:'油气', granted:'291,260.82', used:'85,673.64'},
+  {subj:'鲁通冷链物流有限公司', etype:'电', granted:'42,300.00', used:'6,845.19'},
+  {subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', etype:'油气', granted:'642,900.00', used:'416,660.00'},
+  {subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', etype:'电', granted:'8,600.00', used:'0.00'},
+  {subj:'沈阳长鑫冷链物流有限公司', etype:'油气', granted:'13,502.00', used:'0.00'},
+  {subj:'沈阳长鑫冷链物流有限公司', etype:'电', granted:'3,560.00', used:'356.00'},
+  {subj:'盘锦禹王粮油物流部', etype:'油气', granted:'0.00', used:'0.00'},
+  {subj:'盘锦禹王粮油物流部', etype:'电', granted:'2,890.00', used:'1,102.24'}
+];
+
+const amtColor=s=>String(s).startsWith('-')?'#c0483c':'#1a7f4b';
+let driverLogCurrent={page:'driverOilLog',name:'',phone:''};
+function openDriverLog(page,name,phone){ driverLogCurrent={page,name,phone}; go(page); }
+
+/* —— 司机能源管理（一个司机一条记录；油气额度与电额度并排字段，冻结仅电有） —— */
+VIEWS.driverOil=()=>{
+  const list=liveRows('driverOil');
+  const rows=list.map((d,i)=>'<tr>'
+    +'<td class="num">'+(i+1)+'</td>'
+    +'<td>'+d.name+'</td>'
+    +'<td class="mono">'+d.phone+'</td>'
+    +'<td class="num">'+money(d.oilAvail)+'</td>'
+    +'<td class="num">'+money(d.oilUsed)+'</td>'
+    +'<td class="num">'+money(d.oilTotal)+'</td>'
+    +'<td class="num">'+money(d.eAvail)+'</td>'
+    +'<td class="num">'+money(d.eUsed)+'</td>'
+    +'<td class="num">'+money(d.eTotal)+'</td>'
+    +'<td class="num">'+(d.eFrozen?'<b style="color:#d46b08">'+money(d.eFrozen)+'</b>':money(d.eFrozen))+leqiFieldHelp('eFrozenTip')+'</td>'
+    +'<td class="acts">'
+      +'<button type="button" onclick="liveModal(\'oilRecover\',\''+d.phone+'\')">回收油气额度</button>'
+      +'<button type="button" onclick="liveModal(\'elecRecover\',\''+d.phone+'\')">回收电额度</button>'
+      +'<button type="button" onclick="openDriverLog(\'driverOilLog\',\''+d.name+'\',\''+d.phone+'\')">变更日志</button>'
+    +'</td></tr>');
+  return liveFilters('driverOil')
+    +liveListCard('司机能源管理','<button class="btn sm" onclick="liveExport(\'driverOil\')">导出</button>',
+      ['序号','司机姓名','司机手机号','油气-当前可使用额度(元)','油气-累计使用额度(元)','油气-总派发额度(元)','电-当前可使用额度(元)','电-累计使用额度(元)','电-总派发额度(元)','电-冻结额度(元)','操作'],
+      rows,'1320px')
+    +notes(
+      nb('记录粒度与额度字段','<p><b>一个司机一条记录</b>：油气额度与电额度以<b>并排字段</b>展示（两块独立账本、额度互不占用）。油气额度三列：当前可使用额度、累计使用额度、总派发额度；电额度四列：当前可使用额度、累计使用额度、总派发额度、<b>冻结额度</b>。</p><p><b>冻结额度仅电有</b>（充电中/挂单订单冻结的金额，充电即冻结组内全部匹配运单的总额度、跨主体合并，挂单时追加部分冻结）；油气不存在冻结状态，因此不设冻结列。</p>')+
+      nb('回收与日志','<p>回收<b>按能源类型分别操作</b>：<b>回收油气额度</b>圈回该司机全部油气可用额度转成运费；<b>回收电额度</b>圈回该司机全部电可用额度转成运费——司机名下有充电中/挂单订单时不拦截，冻结部分不受影响、只圈回可用额度。</p><p>【变更日志】进入<b>能源变更日志</b>单页，按能源类型（油气/电）列展示与筛选该司机的全部额度变动记录。</p>'));
+};
+
+/* —— 能源变更日志（油气 / 电合并单页；能源类型列 + 筛选；司机信息固定头跳转页） —— */
+function driverLogPage(pageId, preset){
+  const d=driverLogCurrent;
+  const all=[].concat(
+    (LIVE.oilLogs||[]).map(r=>({...r,energy:'油气'})),
+    (LIVE.elecLogs||[]).map(r=>({...r,energy:'电'}))
+  );
+  if(preset) liveQuery[pageId]={...(liveQuery[pageId]||{}),energy:preset};
+  const q=liveQuery[pageId]||{};
+  const logs=all.filter(r=>{
+    if(q.energy&&r.energy!==q.energy) return false;
+    if(q.type&&r.type!==q.type) return false;
+    if(q.wb&&!String(r.wb||'').includes(q.wb)) return false;
+    if(q.order&&!String(r.order||'').includes(q.order)) return false;
+    if(Array.isArray(q.time)){
+      const day=String(r.time||'').slice(0,10);
+      if(q.time[0]&&day<q.time[0]) return false;
+      if(q.time[1]&&day>q.time[1]) return false;
+    }
+    return true;
+  });
+  const rows=logs.map(r=>'<tr>'
+    +'<td><span class="tag'+(String(r.amt).startsWith('-')?'':' ok')+'">'+r.type+'</span></td>'
+    +'<td>'+energyTag(r.energy)+'</td>'
+    +'<td class="num" style="color:'+amtColor(r.amt)+'"><b>'+r.amt+'</b></td>'
+    +'<td class="mono">'+r.wb+'</td>'
+    +'<td class="mono">'+r.order+'</td>'
+    +'<td class="num">'+r.avail+'</td>'
+    +'<td class="num">'+r.used+'</td>'
+    +'<td>'+r.op+'</td>'
+    +'<td class="mono">'+r.time+'</td></tr>');
+  return '<div class="card"><div class="card-b" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
+    +'<button type="button" class="btn" onclick="go(\'driverOil\')">← 返回列表</button>'
+    +'<span class="t2">司机姓名：</span><b>'+d.name+'</b>'
+    +'<span class="t2">手机号：</span><b class="mono">'+d.phone+'</b>'
+    +'</div></div>'
+    + liveFilters('driverOilLog')
+    + liveListCard('能源变更日志','<button class="btn sm" onclick="liveExport(\'driverOilLog\')">导出</button>',
+      ['变更类型','能源类型','金额(元)','运单号','关联能源订单号','可用额度(元)','已使用额度(元)','操作人','操作时间'],
+      rows,'1600px')
+    +notes(nb('变更类型口径','<p><b>能源类型=油气</b> 5 值：<b>分配</b>（规则/充值派发，+）、<b>加注</b>（加油订单扣款，−）、<b>圈回</b>（额度回收/回收节点自动回收，−）、<b>订单取消</b>（退款返还，+）、<b>恢复</b>（人工恢复额度，+）。</p><p><b>能源类型=电</b> 8 值：<b>分电</b>（分电规则派发，+）、<b>冻结</b>（充电预冻结/挂单追加冻结，占用）、<b>解冻</b>（完成解冻返还/启动失败全额退回，+）、<b>实扣</b>（万联价扣款，−）、<b>圈回</b>（电额度回收，−）、<b>恢复</b>（人工恢复额度，+）、<b>回收</b>（回收节点自动回收，−）、<b>手动分配</b>（人工补分，+；功能后续开放，枚举预留）。</p>')+
+      nb('记账口径','<p>全部额度变动记账至额度流水并汇总到账户；每行展示变动后余额（可用额度/已使用额度）与操作人；本页仅查看，不发起操作。能源类型筛选：油气 / 电，默认全部。</p>'));
+}
+VIEWS.driverOilLog=()=>driverLogPage('driverOilLog','');
+
+/* —— 能源账户管理（网货主体 × 能源类型，两行数据） —— */
+VIEWS.oilAccount=()=>{
+  const list=liveRows('oilAccount');
+  const rows=list.map((d,i)=>'<tr>'
+    +'<td class="num">'+(i+1)+'</td>'
+    +'<td>'+d.subj+'</td>'
+    +'<td>'+(d.etype==='油气'?'<span class="tag">油气</span>':'<span class="tag ok">电</span>')+'</td>'
+    +'<td class="num">'+d.granted+'</td>'
+    +'<td class="num">'+d.used+'</td></tr>');
+  return liveFilters('oilAccount')
+    +liveListCard('能源账户管理','<button class="btn sm" onclick="liveExport(\'oilAccount\')">导出</button>',
+      ['序号','网货主体名称','能源类型','已派发额度(元)','已使用额度(元)'],
+      rows,'1100px')
+    +notes(nb('账户粒度','<p>账户按<b>网货主体 × 能源类型</b>建账：同一网货主体的油气账户与电账户为<b>两行数据</b>（油气一行、电一行），额度互不占用；已派发＝规则/充值累计派发，已使用＝订单累计扣款。</p>'));
+};
+
+/* —— 4PL 能源运单管理 / 三个配置页 演示数据 —— */
+
+/* 油气运单：14 条（车辆能源类型 4 值 × 派发状态 × 异常；能源类型=油气/电 决定额度归属，额度四列同一套字段） */
+LIVE.driverWaybills=[
+  {wb:'UD2026110200000027', status:'取消-待支付', audit:'已保存', abn:'取消运单', plate:'粤HRE371', etype:'柴油', energy:'油气', driver:'付迪', phone:'18310804245', cust:'西安市临潼区梦甜电子商务商行（个体工商户）', subj:'万联易达物流科技有限公司', freight:111.00, sb:'未启用', oilRate:'5%', gasRate:'5%', eRate:'—', splitRate:'30%', node:'装货', splitTime:'2026-11-02 13:43:45', grant:31.00, used:0.00, avail:0.00, back:31.00, splitStatus:'已回收', ctime:'2026-11-02 13:33:06', op:false},
+  {wb:'UD2026110200000014', status:'已卸货', audit:'待处理', abn:'无异常', plate:'粤HRE371', etype:'柴油', energy:'油气', driver:'付迪', phone:'18310804245', cust:'宁波智赋科技', subj:'万联易达物流科技有限公司', freight:400.00, sb:'启用', oilRate:'5%', gasRate:'5%', eRate:'—', splitRate:'30%', node:'装货', splitTime:'2026-11-02 10:56:04', grant:120.00, used:0.00, avail:120.00, back:0.00, splitStatus:'已派发', ctime:'2026-11-02 10:55:03', op:true},
+  {wb:'UD2026110200000010', status:'已卸货', audit:'待处理', abn:'无异常', plate:'黑TV15BG', etype:'柴油', energy:'油气', driver:'孙飞朋', phone:'18061914733', cust:'西安市临潼区梦甜电子商务商行（个体工商户）', subj:'万联易达物流科技有限公司', freight:2.00, sb:'未启用', oilRate:'5%', gasRate:'5%', eRate:'—', splitRate:'30%', node:'装货', splitTime:'2026-11-02 10:45:34', grant:0.00, used:0.00, avail:0.00, back:0.00, splitStatus:'已回收', ctime:'2026-11-02 10:45:02', op:false},
+  {wb:'UD2026103100000019', status:'已卸货', audit:'待处理', abn:'无异常', plate:'甘G20Y4G', etype:'柴油', energy:'油气', driver:'石广川', phone:'18037252735', cust:'宁波智赋科技', subj:'万联易达物流科技有限公司', freight:500.00, sb:'启用', oilRate:'5%', gasRate:'5%', eRate:'—', splitRate:'30%', node:'装货', splitTime:'2026-10-31 18:17:13', grant:150.00, used:81.33, avail:68.67, back:0.00, splitStatus:'已回收', ctime:'2026-10-31 18:16:50', op:false},
+  {wb:'UD2026103100000020', status:'装货/在途', audit:'待处理', abn:'无异常', plate:'甘G20Y4G', etype:'柴油', energy:'油气', driver:'石广川', phone:'18037252735', cust:'宁波智赋科技', subj:'万联易达物流科技有限公司', freight:400.00, sb:'启用', oilRate:'5%', gasRate:'5%', eRate:'—', splitRate:'30%', node:'装货', splitTime:'2026-10-31 18:20:44', grant:120.00, used:0.00, avail:120.00, back:0.00, splitStatus:'已派发', ctime:'2026-10-31 18:20:15', op:true},
+  {wb:'UD2026103000000087', status:'已卸货', audit:'转结算', abn:'无异常', plate:'冀F87653', etype:'柴油', energy:'油气', driver:'肖红', phone:'13683230971', cust:'宁波智赋科技', subj:'万联易达物流科技有限公司', freight:10.00, sb:'未启用', oilRate:'2%', gasRate:'2%', eRate:'—', splitRate:'30%', node:'货主结算后', splitTime:'—', grant:2.00, used:0.00, avail:0.00, back:0.00, splitStatus:'未派发', ctime:'2026-10-30 22:03:03', op:false},
+  {wb:'UD2026103000000085', status:'已卸货', audit:'待处理', abn:'无异常', plate:'赣CC91N6', etype:'柴油', energy:'油气', driver:'颜芬', phone:'17614513940', cust:'北京小桔科技集团有限公司', subj:'万联易达物流科技有限公司', freight:222.00, sb:'未启用', oilRate:'6%', gasRate:'10%', eRate:'—', splitRate:'30%', node:'装货', splitTime:'2026-10-30 21:46:27', grant:62.00, used:0.00, avail:62.00, back:0.00, splitStatus:'已派发', ctime:'2026-10-30 21:46:12', op:true},
+  {wb:'UD2026102900000031', status:'已卸货', audit:'审核通过', abn:'无异常', plate:'鲁QE5T64', etype:'天然气', energy:'油气', driver:'苗朝外', phone:'15321952156', cust:'北京小桔科技集团有限公司', subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', freight:488.00, sb:'启用', oilRate:'—', gasRate:'8%', eRate:'—', splitRate:'25%', node:'装货', splitTime:'2026-10-29 16:02:11', grant:122.00, used:45.87, avail:76.13, back:0.00, splitStatus:'已派发', ctime:'2026-10-29 15:58:40', op:true},
+  {wb:'UD2026102800000012', status:'装货/在途', audit:'待审核', abn:'无异常', plate:'冀A8D32L', etype:'天然气', energy:'油气', driver:'高伟', phone:'13905318872', cust:'北京小桔科技集团有限公司', subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', freight:520.00, sb:'启用', oilRate:'—', gasRate:'8%', eRate:'—', splitRate:'25%', node:'装货', splitTime:'2026-10-28 09:12:30', grant:130.00, used:0.00, avail:130.00, back:0.00, splitStatus:'已派发', ctime:'2026-10-28 09:10:05', op:true},
+  {wb:'UD2026102600000005', status:'已卸货', audit:'审核通过', abn:'无异常', plate:'辽A·K84V3', etype:'电', energy:'电', driver:'马春林', phone:'134****5527', cust:'宁波智赋科技', subj:'万联易达物流科技有限公司', freight:356.00, sb:'启用', oilRate:'—', gasRate:'—', eRate:'12%', splitRate:'25%', node:'装货', splitTime:'2026-10-26 08:02:10', grant:89.00, used:46.68, avail:42.32, back:0.00, splitStatus:'已派发', ctime:'2026-10-26 07:58:33', op:true},
+  {wb:'UD2026102600000014', status:'已卸货', audit:'审核通过', abn:'无异常', plate:'辽A·K84V3', etype:'电', energy:'电', driver:'马春林', phone:'134****5527', cust:'宁波智赋科技', subj:'万联易达物流科技有限公司', freight:356.00, sb:'启用', oilRate:'—', gasRate:'—', eRate:'12%', splitRate:'25%', node:'装货', splitTime:'2026-10-26 08:02:10', grant:89.00, used:18.60, avail:70.40, back:0.00, splitStatus:'已派发', ctime:'2026-10-26 07:58:33', op:true},
+  {wb:'UD2026102500000002', status:'已取消', audit:'—', abn:'取消运单', plate:'晋A·7D2R9', etype:'电', energy:'电', driver:'刘志强', phone:'139****8834', cust:'宁波智赋科技', subj:'万联易达物流科技有限公司', freight:356.00, sb:'启用', oilRate:'—', gasRate:'—', eRate:'12%', splitRate:'25%', node:'装货', splitTime:'2026-10-25 08:30:02', grant:89.00, used:0.00, avail:0.00, back:89.00, splitStatus:'已回收', ctime:'2026-10-25 08:22:18', op:false},
+  {wb:'UD2026102400000009', status:'已卸货', audit:'审核通过', abn:'无异常', plate:'豫P·6F8K1', etype:'电', energy:'电', driver:'吴天佑', phone:'135****7742', cust:'北京小桔科技集团有限公司', subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', freight:420.00, sb:'未启用', oilRate:'—', gasRate:'—', eRate:'—', splitRate:'—', node:'—', splitTime:'—', grant:0.00, used:0.00, avail:0.00, back:0.00, splitStatus:'未派发', ctime:'2026-10-24 19:40:51', op:false},
+  {wb:'UD2026102300000018', status:'已卸货', audit:'审核通过', abn:'无异常', plate:'苏N·3M5T8', etype:'油', energy:'油气', driver:'陈国栋', phone:'131****4409', cust:'宁波市鄞州姜山物流有限公司', subj:'万联易达物流科技有限公司', freight:310.00, sb:'启用', oilRate:'4%', gasRate:'—', eRate:'—', splitRate:'20%', node:'装货', splitTime:'2026-10-23 11:32:40', grant:62.00, used:62.00, avail:0.00, back:0.00, splitStatus:'已派发', ctime:'2026-10-23 11:28:12', op:false}
+];
+
+/* 能源规则配置（油气/电规则并存；电规则派发比例 ≤25%） */
+LIVE.oilRules=[
+  {name:'合肥欣中', subj:'万联易达物流科技有限公司', owner:'合肥颀中科技股份有限公司', etype:'油气', rate:'3%', gnode:'装车', rnode:'卸货后', way:'按运费比例', sub:'—', fence:'999999999', st:'启用', range:'2026-10-01 00:00:00——2026-11-30 23:59:59', ut:'2026-10-21 19:56:04', by:'平台超级管理员'},
+  {name:'宁波智赋-电规则', subj:'万联易达物流科技有限公司', owner:'宁波智赋科技', etype:'电', rate:'25%', gnode:'装车', rnode:'卸货后', way:'按运费比例', sub:'司机补贴', fence:'99999999', st:'启用', range:'2026-10-01 00:00:00——2027-10-31 23:59:59', ut:'2026-10-26 20:01:02', by:'平台超级管理员'},
+  {name:'小桔-太原电规则', subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', owner:'北京小桔科技集团有限公司', etype:'电', rate:'20%', gnode:'装车', rnode:'卸货后结算前', way:'按运费比例', sub:'司机补贴', fence:'99999999', st:'启用', range:'2026-10-15 00:00:00——2027-10-15 23:59:59', ut:'2026-10-15 10:22:31', by:'李文静'},
+  {name:'小桔-太原电规则(超限停用)', subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', owner:'北京小桔科技集团有限公司', etype:'电', rate:'30%', gnode:'装车', rnode:'卸货后', way:'按运费比例', sub:'司机补贴', fence:'99999999', st:'停用', range:'2026-09-01 00:00:00——2026-09-30 23:59:59', ut:'2026-09-30 18:40:12', by:'李文静'},
+  {name:'太原-无企业', subj:'太原万联易达供应链管理有限公司- ', owner:'（其他全部货主）', etype:'油气', rate:'30%', gnode:'装车', rnode:'货主结算后(7天)', way:'按运费比例', sub:'司机补贴', fence:'999999999', st:'启用', range:'2026-09-01 00:00:00——2027-10-07 23:59:59', ut:'2026-10-15 17:52:00', by:'平台超级管理员'},
+  {name:'滴滴-芜湖', subj:'芜湖万联易达物流发展有限公司', owner:'北京小桔科技集团有限公司', etype:'油气', rate:'25%', gnode:'货主结算后（一笔付）', rnode:'货主结算后(7天)', way:'按运费比例', sub:'司机补贴', fence:'99999999', st:'启用', range:'2026-08-26 00:00:00——2027-10-31 23:59:59', ut:'2026-10-29 13:55:01', by:'平台超级管理员'},
+  {name:'西安-太原', subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', owner:'西安市临潼区梦甜电子商务商行（个体工商户）', etype:'油气', rate:'20%', gnode:'装车', rnode:'卸货后', way:'按运费比例', sub:'司机补贴，货主补贴', fence:'999999', st:'停用', range:'2026-08-01 00:00:00——2028-09-29 23:59:59', ut:'2026-10-21 20:07:34', by:'平台超级管理员'},
+  {name:'宁波+太原', subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', owner:'宁波智赋科技', etype:'油气', rate:'30%', gnode:'装车', rnode:'卸货后结算前(2天)', way:'按运费比例', sub:'司机补贴，货主补贴', fence:'99999999', st:'启用', range:'2026-08-01 00:00:00——2026-09-30 23:59:59', ut:'2026-08-13 09:55:04', by:'平台超级管理员'},
+  {name:'鲁通冷链-电规则', subj:'鲁通冷链物流有限公司', owner:'山东鲁冰花物流有限公司', etype:'电', rate:'15%', gnode:'装车', rnode:'卸货后', way:'按运费比例', sub:'司机补贴', fence:'500', st:'启用', range:'2026-10-20 00:00:00——2027-10-20 23:59:59', ut:'2026-10-20 11:05:47', by:'张世民'},
+  {name:'无货主企业+太原', subj:'八通物流- ', owner:'（其他全部货主）', etype:'油气', rate:'35%', gnode:'—', rnode:'货主结算后(2天)', way:'按运费比例', sub:'司机补贴', fence:'99999999', st:'停用', range:'2026-07-01 00:00:00——2027-08-27 23:59:59', ut:'2026-08-25 09:47:03', by:'平台超级管理员'}
+];
+
+/* 万联价计算配置（司机补贴规则）：柴油/天然气/电补贴比例（列表对齐现网 7 列，比例在编辑抽屉） */
+LIVE.wljRules=[
+  {subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', owner:'淘宝（中国）软件有限公司', oil:'5%', gas:'8%', elec:'12%', by:'平台超级管理员', ut:'2026-10-19 10:32:59', st:'正常'},
+  {subj:'万联易达物流科技有限公司', owner:'宁波智赋科技', oil:'5%', gas:'6%', elec:'12%', by:'平台超级管理员', ut:'2026-10-26 09:15:40', st:'正常'},
+  {subj:'芜湖万联易达物流发展有限公司', owner:'北京小桔科技集团有限公司', oil:'6%', gas:'10%', elec:'—', by:'平台超级管理员', ut:'2026-08-26 17:21:53', st:'正常'},
+  {subj:'万联易达物流科技有限公司', owner:'天地华宇汽车租赁(上海)有限公司', oil:'5%', gas:'8%', elec:'—', by:'平台超级管理员', ut:'2026-08-18 18:16:18', st:'正常'},
+  {subj:'万联易达物流科技有限公司', owner:'北京智者天下科技有限公司', oil:'4%', gas:'6%', elec:'10%', by:'苗丽娇', ut:'2026-07-31 09:49:02', st:'正常'},
+  {subj:'万联易达物流科技有限公司', owner:'西安市临潼区梦甜电子商务商行（个体工商户）', oil:'5%', gas:'8%', elec:'—', by:'平台超级管理员', ut:'2026-09-07 13:18:08', st:'正常'},
+  {subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', owner:'（其他全部货主）通用补贴配置', oil:'3%', gas:'5%', elec:'8%', by:'平台超级管理员', ut:'2026-07-31 19:04:19', st:'停用'},
+  {subj:'北京便利蜂连锁商业有限公司', owner:'景德镇市景川物流有限公司', oil:'6%', gas:'—', elec:'—', by:'苗丽娇', ut:'2026-07-03 15:51:18', st:'停用'},
+  {subj:'古交市骏马煤业有限公司', owner:'（其他全部货主）通用补贴配置', oil:'4%', gas:'6%', elec:'—', by:'平台超级管理员', ut:'2026-06-16 20:34:02', st:'正常'},
+  {subj:'福鼎市路人传媒有限公司', owner:'（其他全部货主）通用补贴配置', oil:'5%', gas:'8%', elec:'—', by:'平台超级管理员', ut:'2026-06-04 21:06:01', st:'正常'}
+];
+
+/* 货主能源返利配置：以货主为主，一行=货主+N 个网货主体（每块含返利规则与多段占比区间）；本期区间新增电费率 */
+LIVE.ownerRebates=[
+  {owner:'北京小桔科技集团有限公司', subj:'芜湖万联易达物流发展有限公司', rule:'按费率', ranges:[{from:'1',to:'40',diesel:'4',gas:'5',elec:'3'}], range:'2026-10-29 00:00:00——2027-11-12 23:59:59', by:'平台超级管理员', ut:'2026-10-29 13:53:08', st:'启用'},
+  {owner:'北京小桔科技集团有限公司', subj:'万联易达物流科技有限公司', rule:'按能源额度', ranges:[{from:'0',to:'30',diesel:'3',gas:'4',elec:'2'}], range:'2026-10-29 00:00:00——2027-11-12 23:59:59', by:'平台超级管理员', ut:'2026-10-29 13:53:08', st:'启用'},
+  {owner:'北京小桔科技集团有限公司', subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', rule:'按费率', bindTip:true, ranges:[{from:'0',to:'10',diesel:'10',gas:'1.2',elec:'4'},{from:'10',to:'25',diesel:'3.67',gas:'4.89',elec:'2.5'},{from:'25',to:'40',diesel:'5.67',gas:'5.89',elec:'3'}], range:'2026-10-29 00:00:00——2027-11-12 23:59:59', by:'平台超级管理员', ut:'2026-10-29 13:53:08', st:'启用'},
+  {owner:'宁波智赋科技', subj:'万联易达物流科技有限公司', rule:'按费率', ranges:[{from:'1',to:'40',diesel:'1.5',gas:'2',elec:'2'}], range:'2026-10-20 00:00:00——2027-10-20 23:59:59', by:'张世民', ut:'2026-10-20 14:02:11', st:'启用'},
+  {owner:'途达同城货运有限公司测试', subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', rule:'按费率', ranges:[{from:'1',to:'40',diesel:'2',gas:'1.2',elec:'1.5'}], range:'2026-10-25 00:00:00——2026-10-31 23:59:59', by:'合同中台', ut:'2026-10-27 14:59:34', st:'启用'},
+  {owner:'途达同城货运有限公司测试', subj:'芜湖万联易达物流发展有限公司', rule:'按费率', ranges:[{from:'1',to:'40',diesel:'2',gas:'1.2',elec:'1.5'}], range:'2026-10-01 00:00:00——2026-10-15 23:59:59', by:'平台超级管理员', ut:'2026-10-27 11:10:07', st:'停用'},
+  {owner:'浙江车车多智慧物流有限公司', subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', rule:'按费率', ranges:[{from:'0',to:'20',diesel:'4',gas:'5',elec:'3'},{from:'20',to:'40',diesel:'3',gas:'6',elec:'2'}], range:'2026-08-25 00:00:00——2027-09-29 23:59:59', by:'平台超级管理员', ut:'2026-10-14 19:44:14', st:'启用'},
+  {owner:'浙江车车多智慧物流有限公司', subj:'万联易达物流科技有限公司', rule:'按能源额度', ranges:[{from:'0',to:'30',diesel:'3',gas:'4',elec:'2'}], range:'2026-08-25 00:00:00——2027-09-29 23:59:59', by:'平台超级管理员', ut:'2026-10-14 19:44:14', st:'启用'},
+  {owner:'北京抖音科技有限公司', subj:'北京万联易达信息科技有限公司', rule:'按费率', ranges:[{from:'1',to:'40',diesel:'2.5',gas:'1.5',elec:'1'}], range:'2026-08-24 00:00:00——2027-09-23 23:59:59', by:'平台超级管理员', ut:'2026-08-24 21:28:38', st:'启用'},
+  {owner:'天地华宇汽车租赁(上海)有限公司', subj:'万联易达物流科技有限公司', rule:'按费率', ranges:[{from:'1',to:'40',diesel:'2',gas:'1.2',elec:'1.5'}], range:'2026-08-18 00:00:00——2026-09-30 23:59:59', by:'平台超级管理员', ut:'2026-08-18 18:07:18', st:'启用'},
+  {owner:'西安市临潼区梦甜电子商务商行（个体工商户）', subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', rule:'按费率', ranges:[{from:'1',to:'40',diesel:'2',gas:'1.2',elec:'1.5'}], range:'2026-04-01 00:00:00——2028-04-30 23:59:59', by:'平台超级管理员', ut:'2026-08-13 09:29:02', st:'启用'},
+  {owner:'芜湖万联易达物流发展有限公司', subj:'万联易达物流科技有限公司', rule:'按费率', ranges:[{from:'1',to:'40',diesel:'2',gas:'1.2',elec:'1.5'}], range:'2026-06-01 00:00:00——2027-06-30 23:59:59', by:'平台超级管理员', ut:'2026-07-15 14:18:05', st:'启用'}
+];
+
+const etypeTag=t=>t==='电'?'<span class="tag ok">电</span>':t==='油'?'<span class="tag f">油</span>':'<span class="tag">'+t+'</span>';
+const energyTag=t=>t==='电'?'<span class="tag ok">电</span>':'<span class="tag f">油气</span>';
+
+/* —— 能源运单管理（列表：现网 31 列 + 电补贴比例） —— */
+VIEWS.driverWaybills=()=>{
+  const list=liveRows('driverWaybills');
+  const rows=list.map((d,i)=>'<tr>'
+    +'<td class="num">'+(i+1)+'</td>'
+    +'<td><b class="mono">'+d.wb+'</b></td>'
+    +'<td>'+d.status+'</td>'
+    +'<td>'+d.audit+'</td>'
+    +'<td>'+(d.abn==='无异常'?'<span class="t2">无异常</span>':'<span style="color:#c0483c">'+d.abn+'</span>')+'</td>'
+    +'<td class="mono">'+d.plate+'</td>'
+    +'<td>'+etypeTag(d.etype)+leqiFieldHelp('etypeTip')+'</td>'
+    +'<td>'+energyTag(d.energy)+'</td>'
+    +'<td>'+d.driver+'</td>'
+    +'<td class="mono">'+d.phone+'</td>'
+    +'<td>'+d.cust+'</td>'
+    +'<td>'+d.subj+'</td>'
+    +'<td class="num">'+money(d.freight)+'</td>'
+    +'<td>'+d.sb+'</td>'
+    +'<td class="num">'+d.oilRate+'</td>'
+    +'<td class="num">'+d.gasRate+'</td>'
+    +'<td class="num">'+(d.eRate==='—'?'<span class="t2">—</span>':d.eRate)+leqiFieldHelp('eRateTip')+'</td>'
+    +'<td class="num">'+(d.splitRate==='—'?'<span class="t2">—</span>':d.splitRate)+'</td>'
+    +'<td>'+d.node+'</td>'
+    +'<td class="mono">'+d.splitTime+'</td>'
+    +'<td class="num">'+money(d.grant)+'</td>'
+    +'<td class="num">'+money(d.used)+'</td>'
+    +'<td class="num"><b>'+money(d.avail)+'</b></td>'
+    +'<td class="num">'+money(d.back)+'</td>'
+    +'<td>'+d.splitStatus+'</td>'
+    +'<td class="mono">'+d.ctime+'</td>'
+    +'<td class="acts">'+(d.op?'<button type="button" onclick="liveModal(\'wbBack\',\''+d.wb+'\')">能源圈回</button>':'<span class="t2">—</span>')+'</td></tr>');
+  return liveFilters('driverWaybills')
+    +liveListCard('能源运单管理','<button class="btn sm" onclick="liveModal(\'wbBackBatch\',\'\')">批量能源圈回</button><button class="btn sm" onclick="liveExport(\'driverWaybills\')">导出</button>',
+      ['序号','运单号','运单状态','运单预审状态','运单异常类型','车牌号','车辆能源类型'+leqiFieldHelp('etypeTip'),'能源类型','司机姓名','手机号','客户名称','网络货运主体','应付司机总运费(元)','司机补贴状态','柴油补贴比例','天然气补贴比例','电补贴比例'+leqiFieldHelp('eRateTip'),'派发比例','派发节点','派发时间','分配额度(元)','已使用额度(元)','可用额度(元)','已圈回额度(元)','派发状态','运单创建时间','操作'],
+      rows,'3300px')
+    +notes(
+      nb('能源类型与能源额度','<p><b>车辆能源类型</b>装车时按车辆档案写入（枚举：柴油/天然气/电/油）；<b>能源类型</b>是额度账本口径（枚举：油气/电）——柴油、天然气、油 → 油气；电 → 电。</p><p><b>额度字段不再区分油气/电</b>：「分配额度 / 已使用额度 / 可用额度 / 已圈回额度」为同一套字段，按运单能源类型取对应账本金额：能源类型=电取电账本，能源类型=油气取油气账本。</p>')+
+      nb('装车判断','<p>装车时按「<b>车辆能源类型＋网货主体＋货主企业</b>」匹配生效的派发规则：匹配到才生成运单额度数据，未匹配到不生成（额度列显示 0 或 —，派发状态=未派发）；能源类型=电走电规则（在能源规则配置页维护）。</p>'));
+};
+
+/* —— 能源规则配置（现网字段 + 本期新增能源类型/分电上限比例配置；三维唯一） —— */
+let liveCapOil=25.55, liveCapElec=25.00;   /* 分油/分电上限比例（演示值，0–40 两位小数） */
+VIEWS.oilRules=()=>{
+  const list=liveRows('oilRules');
+  const rows=list.map((d,i)=>'<tr>'
+    +'<td class="num">'+(i+1)+'</td>'
+    +'<td>'+d.name+'</td>'
+    +'<td>'+d.subj+'</td>'
+    +'<td>'+d.owner+'</td>'
+    +'<td>'+etypeTag(d.etype)+leqiFieldHelp('etypeTip')+'</td>'
+    +'<td class="num">'+(d.etype==='电'&&d.rate!=='—'?'<b style="color:'+(parseFloat(d.rate)>liveCapElec?'#c0483c':'#1a7f4b')+'">'+d.rate+'</b>':d.rate)+leqiFieldHelp('eRateCap')+'</td>'
+    +'<td>'+d.gnode+'</td>'
+    +'<td>'+d.rnode+'</td>'
+    +'<td>'+d.way+'</td>'
+    +'<td>'+d.sub+'</td>'
+    +'<td class="num">'+d.fence+'</td>'
+    +'<td>'+(d.st==='启用'?'<span class="tag ok">启用</span>':'<span class="tag">停用</span>')+'</td>'
+    +'<td class="mono">'+d.range+'</td>'
+    +'<td class="mono">'+d.ut+'</td>'
+    +'<td>'+d.by+'</td>'
+    +'<td class="acts"><button type="button" onclick="openRuleEdit(\'oilRuleEdit\',\'oilRule\',\''+d.name+'\')">编辑</button><button type="button" onclick="showToast(\'已'+(d.st==='启用'?'停用':'启用')+'（演示）\')">'+(d.st==='启用'?'停用':'启用')+'</button></td></tr>');
+  return liveFilters('oilRules')
+    +liveListCard('能源规则配置','<button class="btn sm primary" onclick="openRuleEdit(\'oilRuleEdit\',\'oilRule\',null)">添加规则</button><button class="btn sm" onclick="showToast(\'特殊规则配置（演示入口）\')">特殊规则配置</button><button class="btn sm" onclick="liveModal(\'oilCap\',\'\')">分油上限比例配置</button><button class="btn sm" onclick="liveModal(\'elecCap\',\'\')">分电上限比例配置</button><button class="btn sm" onclick="liveExport(\'oilRules\')">导出</button>',
+      ['序号','规则名称','适用网货主体','货主企业','能源类型'+leqiFieldHelp('etypeTip'),'派发比例'+leqiFieldHelp('eRateCap'),'派发节点','回收节点','能源派发方式','是否有补贴','电子围栏范围(米)','状态','规则时间范围','更新时间','操作人','操作'],
+      rows,'2600px')
+    +notes(
+      nb('三维唯一','<p>「<b>网货主体＋货主企业＋能源类型</b>」组合至多一条生效规则（油气与电分开校验：同一组合可并存一条油气规则和一条电规则）；保存与启用均校验组合冲突，冲突拦截提示。</p>')+
+      nb('分电上限比例配置','<p>本期新增「<b>分电上限比例配置</b>」入口（与「分油上限比例配置」并列）：配置分电比率上限，输入 0–40、最多两位小数，当前演示值 '+liveCapElec.toFixed(2)+'%。能源类型=电 的规则派发比例不得超过该上限，添加/编辑保存时校验，超过拦截；列表中超限的存量规则比例显示红色。油气规则沿用「分油上限比例配置」（当前演示值 '+liveCapOil.toFixed(2)+'%）。</p>'));
+};
+
+/* —— 万联价计算配置（司机补贴规则：现网 7 列，比例在编辑抽屉） —— */
+VIEWS.wljRules=()=>{
+  const list=liveRows('wljRules');
+  const rows=list.map((d,i)=>'<tr>'
+    +'<td class="num">'+(i+1)+'</td>'
+    +'<td>'+d.subj+'</td>'
+    +'<td>'+d.owner+'</td>'
+    +'<td>'+d.by+'</td>'
+    +'<td class="mono">'+d.ut+'</td>'
+    +'<td>'+(d.st==='正常'?'<span class="tag ok">正常</span>':'<span class="tag">停用</span>')+'</td>'
+    +'<td class="acts"><button type="button" onclick="openRuleEdit(\'wljRuleEdit\',\'wljRule\',\''+d.owner+'\')">编辑</button><button type="button" onclick="showToast(\'已'+(d.st==='正常'?'停用':'启用')+'（演示）\')">'+(d.st==='正常'?'停用':'启用')+'</button></td></tr>');
+  return liveFilters('wljRules')
+    +liveListCard('万联价计算配置','<button class="btn sm primary" onclick="openRuleEdit(\'wljRuleEdit\',\'wljRule\',null)">添加司机补贴规则</button>',
+      ['序号','网货主体','货主企业','操作人','更新时间','状态','操作'],
+      rows,'1500px')
+    +notes(
+      nb('电补贴比例','<p>司机补贴规则在柴油/天然气补贴比例之外增加<b>电补贴比例（y）</b>（编辑抽屉内配置）：用于计算电的万联价——订单创建时按司机补贴规则记录万联价快照，司机扣款＝万联价×实际充电度数，补贴金额＝云快充金额−万联价扣款（差额）。未配置电补贴比例的组合，电运单不参与分电与补贴计算。</p>')+
+      nb('万联价公式','<p>万联价＝按司机补贴规则补贴比例计算的电单价（订单创建时快照）；计算公式以本配置页最终口径为准（公式更新后以此处展示为准）。</p>'));
+};
+
+/* —— 货主能源返利配置（现网 9 列，费率在编辑抽屉） —— */
+VIEWS.ownerRebates=()=>{
+  const list=liveRows('ownerRebates');
+  const rows=list.map((d,i)=>'<tr>'
+    +'<td class="num">'+(i+1)+'</td>'
+    +'<td>'+d.owner+'</td>'
+    +'<td>'+d.subj+'</td>'
+    +'<td>'+d.rule+'</td>'
+    +'<td class="mono">'+d.range+'</td>'
+    +'<td>'+d.by+'</td>'
+    +'<td class="mono">'+d.ut+'</td>'
+    +'<td>'+(d.st==='启用'?'<span class="tag ok">启用</span>':'<span class="tag">停用</span>')+'</td>'
+    +'<td class="acts"><button type="button" onclick="openRebateEdit(\''+d.owner+'\')">编辑</button><button type="button" onclick="showToast(\'已'+(d.st==='启用'?'停用':'启用')+'（演示）\')">'+(d.st==='启用'?'停用':'启用')+'</button></td></tr>');
+  return liveFilters('ownerRebates')
+    +liveListCard('货主能源返利配置','<button class="btn sm primary" onclick="openRebateEdit(null)">添加货主配置</button><button class="btn sm" onclick="liveExport(\'ownerRebates\')">导出</button>',
+      ['序号','货主企业名称','网货主体','返利规则','规则时间','操作人','更新时间','状态','操作'],
+      rows,'1700px')
+    +notes(nb('电费率与区间配置','<p>货主返利按「网货主体 + 占比区间」配置：每个网货主体可配置多段能源占比区间，<b>每段区间分别配置柴油、天然气、电</b>三项比例。返利规则为「按费率」时名称＝柴油/天然气/电<b>优惠费率</b>；为「按能源额度」时名称＝柴油/天然气/电<b>返利比例</b>，均必填（0–100）。电返利按「电费金额×电优惠费率」计算，<b>复用能源返利链路</b>（返利随充电订单同步 4PL 记录）。同一网货主体下多段区间的起点须小于终点、且互不重叠。</p>'));
+};
 
 /* 用覆盖后的页面重新渲染当前页。旧版企业端日/月账单继续使用原有实现。 */
 go(current);

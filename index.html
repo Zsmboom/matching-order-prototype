@@ -91,6 +91,38 @@ button{font:inherit;color:inherit}
 .nav a .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.45;flex:none}
 .nav a.on .dot{opacity:1}
 .nav a.dis{opacity:.42;cursor:not-allowed}
+.platform-switch{display:flex;gap:2px;margin:10px 14px 0;padding:3px;border-radius:9px;background:var(--surface-3);border:1px solid var(--line-2)}
+.platform-switch button{flex:1;border:0;background:transparent;color:var(--text-2);font:600 12px/1.6 var(--sans);padding:5px 4px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.platform-switch button:hover{color:var(--text-1)}
+.platform-switch button.on{background:var(--surface-1);color:var(--text-1);box-shadow:0 1px 3px rgba(15,23,42,.14)}
+/* 4PL 充电订单详情 · 充电信息分组多列布局（页面态，非抽屉） */
+/* 紧凑版：字段名：值同行、3 列流式、行距收紧 */
+.cg-grp{margin-top:9px}
+.cg-grp:first-of-type{margin-top:0}
+.cg-grp-t{font:600 12.5px/1.4 var(--sans);color:var(--text-3);margin:0 0 6px;padding-left:8px;border-left:3px solid #d8deea}
+.cg-grp dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:22px;row-gap:8px;margin:0}
+.cg-grp dl .oms-live-field{display:flex;gap:6px;align-items:baseline;min-width:0}
+.cg-grp dl dt{font-size:12.5px;color:#9098a6;margin:0;flex:none;white-space:nowrap}
+.cg-grp dl dd{font-size:13px;color:#303744;overflow-wrap:anywhere;margin:0}
+.cg-grp dl .span2{grid-column:span 2}
+/* 4PL 充电订单详情 · 地图占位（实际接入高德地图 SDK） */
+.cg-map{position:relative;height:280px;border-radius:10px;border:1px solid var(--line-2);overflow:hidden;
+  background:
+    linear-gradient(90deg,rgba(148,163,184,.14) 1px,transparent 1px),
+    linear-gradient(rgba(148,163,184,.14) 1px,transparent 1px),
+    linear-gradient(24deg,transparent 46%,rgba(125,211,252,.30) 47%,rgba(125,211,252,.30) 53%,transparent 54%),
+    linear-gradient(-38deg,transparent 41%,rgba(148,163,184,.26) 42%,rgba(148,163,184,.26) 45%,transparent 46%),
+    radial-gradient(circle at 62% 44%,rgba(74,222,128,.10),transparent 40%),
+    var(--surface-2);
+  background-size:26px 26px,26px 26px,100% 100%,100% 100%,100% 100%,100% 100%}
+.cg-map .cg-tag{position:absolute;right:10px;bottom:8px;font:500 11px/1.5 var(--sans);color:var(--text-3);background:var(--surface-1);border:1px solid var(--line-2);border-radius:6px;padding:2px 8px;opacity:.85}
+.cg-map .cg-road{position:absolute;font:600 11px/1 var(--sans);color:var(--text-3);background:var(--surface-1);border-radius:5px;padding:2px 7px;border:1px solid var(--line-2)}
+.cg-pin{position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px;transform:translate(-50%,-100%);font:600 11px/1.4 var(--sans)}
+.cg-pin .dot{width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 6px rgba(15,23,42,.35)}
+.cg-pin.car .dot{background:var(--brand,#2563eb)}
+.cg-pin.station .dot{background:#f59e0b}
+.cg-pin .lbl{background:var(--surface-1);border:1px solid var(--line-2);border-radius:6px;padding:2px 7px;white-space:nowrap;box-shadow:0 1px 4px rgba(15,23,42,.10)}
+.cg-dash{position:absolute;border-top:2px dashed rgba(37,99,235,.45);transform-origin:0 0}
 .site-switch{display:flex;gap:2px;margin:0 14px 8px;padding:3px;border-radius:9px;background:var(--surface-3);border:1px solid var(--line-2)}
 .site-switch button{flex:1;min-width:0;border:0;background:none;padding:6px 4px;border-radius:7px;font-size:12px;color:var(--ink-2);cursor:pointer;white-space:nowrap}
 .site-switch button:hover{color:var(--ink)}
@@ -238,6 +270,8 @@ thead th.acts{box-shadow:-6px 0 8px -8px rgba(0,0,0,.28)}
 .tag.f{border-color:color-mix(in srgb,var(--fee) 35%,transparent);color:var(--fee);background:var(--fee-soft)}
 .tag.o{border-color:color-mix(in srgb,var(--oil) 35%,transparent);color:var(--oil);background:var(--oil-soft)}
 .tag.info{border-color:color-mix(in srgb,var(--info,#3b7ddd) 35%,transparent);color:var(--brand-ink);background:var(--brand-soft)}
+.tag.warn{border-color:color-mix(in srgb,var(--warn) 35%,transparent);color:var(--warn);background:var(--warn-soft)}
+.tag.ok{border-color:color-mix(in srgb,var(--ok) 35%,transparent);color:var(--ok);background:var(--ok-soft)}
 .form-tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
 .form-tbl th{width:110px;text-align:left;font-weight:500;color:var(--muted);background:var(--bg2);padding:9px 12px;border:1px solid var(--line-2);white-space:nowrap}
 .form-tbl td{padding:9px 12px;border:1px solid var(--line-2);color:var(--ink);overflow-wrap:anywhere}
@@ -653,11 +687,61 @@ body.drawer-foot-on:not(.live-surface) .oms-drawer-footer .btn{min-width:92px;ju
 @media(max-height:1040px){.driver-phone{zoom:.8}}
 @media(max-height:920px){.driver-phone{zoom:.72}}
 @media(max-height:820px){.driver-phone{zoom:.64}}
+/* 4PL 编辑/详情页（对齐现网 wk-editform：面包屑 + 分组 header 卡 + 两列表单 + 底部按钮条；紧凑版） */
+.crumbbar{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-2);padding:7px 12px;background:var(--surface);border:1px solid var(--line);border-radius:8px;margin-bottom:8px;flex-wrap:wrap}
+.crumbbar a{color:var(--ink-2);text-decoration:none;cursor:pointer}
+.crumbbar a:hover{color:var(--ink)}
+.crumbbar .sep{color:var(--line-2)}
+.crumbbar b{color:var(--ink);font-weight:600}
+.editcard{background:var(--surface);border:1px solid var(--line);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.editcard-h{display:flex;justify-content:space-between;align-items:center;width:100%;padding:8px 12px;font-size:13px;font-weight:600;color:var(--ink);border-bottom:1px solid var(--line-2);background:var(--surface-2)}
+.editcard-h .hsub{font-weight:400;font-size:11px;color:var(--muted)}
+.editcard-tips{padding:7px 12px 0;font-size:11.5px;color:#8992a4;line-height:1.6}
+.editcard-b{padding:10px 12px 12px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 22px}
+.formgrid .full{grid-column:1 / -1}
+.formgrid .fi{display:flex;flex-direction:column;gap:4px;min-width:0}
+.formgrid .fi-l{display:flex;align-items:center;gap:1px;min-height:17px}
+.formgrid .fi-l label{font-size:12.5px;color:var(--ink);font-weight:500;line-height:1.4}
+.formgrid .fi-l label .req{color:var(--bad);margin-right:2px;font-weight:400}
+.formgrid .fi-c{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;min-width:0}
+.formgrid .fi-h{font-size:11.5px;color:#8992a4;line-height:1.6}
+.formgrid .fi .hint{font-size:11px;color:var(--muted);line-height:1.6}
+.formgrid .rb{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--ink);white-space:nowrap;cursor:pointer}
+.formgrid .rb input{accent-color:var(--brand);margin:0;flex:none}
+.formgrid .fi .inp,.formgrid .fi .sel{height:30px;font-size:12.5px;padding:0 9px;color:var(--ink);background:var(--surface);width:100%}
+.formgrid .fi .inp::placeholder{color:var(--muted)}
+.formgrid .fi .inp.grow{flex:1 1 120px;width:auto;min-width:0}
+.formgrid .fi .range-sep{font-size:12px;color:var(--muted);flex:none}
+.formgrid .fi-inline{display:inline-flex;align-items:center;gap:6px;width:100%;min-width:0}
+.formgrid .fi-inline .inp{flex:1 1 0;width:auto;min-width:0}
+.formgrid .fi-inline>span{font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.formgrid .fi-stack{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;min-width:0}
+.formgrid .fi-stack .sel{width:100%}
+/* 货主能源返利编辑页：网货主体块 + 多段占比区间（沿用 formgrid 字段样式） */
+.rb-block{border:1px solid var(--line);border-radius:8px;background:var(--surface-2);padding:10px 12px 12px;margin-top:10px}
+.rb-block-h{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:600;color:var(--ink)}
+.rb-grid{grid-template-columns:1fr 1fr;gap:12px 22px;margin:8px 0 2px}
+.rb-sub{font-size:12.5px;font-weight:600;color:var(--ink);margin:12px 0 0}
+.rb-range{grid-template-columns:1.7fr 1fr 1fr 1fr 48px;gap:12px 16px;align-items:start;padding:10px 0 8px;margin-top:10px;border-top:1px dashed var(--line-2)}
+.rb-range .fi .inp.rb-num{max-width:96px}
+.rb-range-op{display:flex;align-items:center;justify-content:flex-end;padding-top:21px;min-height:30px}
+.rb-block>.btn.sm{margin-top:12px}
+.formgrid .fi .unit{font-size:12.5px;color:var(--ink-2);flex:none}
+.formgrid .fi .err{font-size:11px;color:var(--bad);line-height:1.5}
+.formgrid .fi .inp[disabled],.formgrid .fi .sel[disabled]{background:var(--surface-3);color:var(--ink-2);cursor:not-allowed}
+.link-danger{border:0;background:none;color:var(--bad);font-size:12px;cursor:pointer;padding:0;font-family:inherit}
+.link-danger:hover{text-decoration:underline}
+.live-list-driverOil .tablewrap th{font-size:11px;line-height:1.35;white-space:normal;padding:10px 8px}
+.live-list-driverOil .tablewrap td{padding:10px 8px}
+.live-list-driverOil .tablewrap td.num{white-space:nowrap}
+.editbtns{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px;text-align:center;display:flex;justify-content:center;gap:10px}
 </style>
 <link rel="stylesheet" href="live-alignment.css">
 
 <div class="app">
   <aside class="rail">
+    <div class="platform-switch" id="platformSwitch" role="group" aria-label="切换平台"></div>
     <div class="brand">
       <div class="mark">万</div>
       <div><b>运营中台</b><small>Matching</small></div>
@@ -1906,6 +1990,19 @@ const PAGES = [
   /* ---- 司机端 · 网货 App 内嵌 H5（独立文件 driver-h5.html，iframe 承载） ---- */
   {id:'driverH5', name:'优惠加油', sub:'司机端网货 H5 · 油站列表 / 加油计价 / 订单（演示数据，本期未与锁站规则联动）', side:'司机端', grp:'司机端'},
 
+  /* ---- 4PL 端 · 网货运营平台（用电业务，逐模块补全） ---- */
+  {id:'chargeOrders', name:'充电订单管理', sub:'云快充充电子订单 · 全生命周期同步展示', side:'4PL端', grp:'充电订单'},
+  {id:'chargeOrderDetail', name:'充电订单详情', sub:'列表详情跳转页 · 不进菜单', side:'4PL端', grp:'充电订单'},
+  {id:'driverOil', name:'司机能源管理', sub:'司机 × 能源类型 · 额度回收与变更日志', side:'4PL端', grp:'司机能源'},
+  {id:'oilAccount', name:'能源账户管理', sub:'网货主体账户 · 油气 / 电各一行', side:'4PL端', grp:'司机能源'},
+  {id:'driverOilLog', name:'能源变更日志', sub:'司机能源额度变更明细跳转页 · 不进菜单', side:'4PL端', grp:'司机能源'},
+  {id:'driverWaybills', name:'能源运单管理', sub:'能源额度（油气 / 电）· 装车判断', side:'4PL端', grp:'能源运单'},
+  {id:'oilRules', name:'能源规则配置', sub:'油气 / 电派发规则 · 三维唯一 · 分电上限比例配置', side:'4PL端', grp:'能源配置'},
+  {id:'wljRules', name:'万联价计算配置', sub:'司机补贴规则 · 柴油 / 天然气 / 电补贴比例', side:'4PL端', grp:'能源配置'},
+  {id:'ownerRebates', name:'货主能源返利配置', sub:'按能源额度 / 按费率 · 电优惠费率', side:'4PL端', grp:'能源配置'},
+  {id:'oilRuleEdit', name:'能源规则编辑', sub:'规则编辑跳转页 · 不进菜单', side:'4PL端', grp:'能源配置'},
+  {id:'wljRuleEdit', name:'司机补贴规则编辑', sub:'补贴规则编辑跳转页 · 不进菜单', side:'4PL端', grp:'能源配置'},
+  {id:'ownerRebateEdit', name:'货主能源返利编辑', sub:'货主配置编辑跳转页 · 不进菜单', side:'4PL端', grp:'能源配置'},
 ];
 
 
@@ -1933,6 +2030,20 @@ const SITES = {
   '企业端':  {brand:'企业客户端', home:'cOrders'},
   '司机端':  {brand:'司机端 H5', home:'driverH5'},
 };
+/* 平台级一级切换：万油通（运营中台四端） / 4PL 端（网货运营平台，用电业务） */
+const PLATFORMS = ['万油通','4PL端'];
+let currentPlatform = '万油通';
+const PLAT_META = {
+  '万油通':{brand:'运营中台', home:'orders'},
+  '4PL端' :{brand:'4PL 运营平台', home:'chargeOrders'},
+};
+/* 4PL 端页面集合与菜单分组（后续模块在 PLAT4_PAGES / PLAT4_NAV 中追加） */
+const PLAT4_PAGES = ['chargeOrders','chargeOrderDetail','driverOil','oilAccount','driverOilLog','driverWaybills','oilRules','wljRules','ownerRebates','oilRuleEdit','wljRuleEdit','ownerRebateEdit'];   /* 4PL 端页面集合（含详情跳转页） */
+const PLAT4_EDIT_TO_LIST = {oilRuleEdit:'oilRules',wljRuleEdit:'wljRules',ownerRebateEdit:'ownerRebates'};   /* 编辑页归属的列表页（导航/页签高亮） */
+const PLAT4_TAB_PAGES = ['chargeOrders','driverOil','oilAccount','driverWaybills','oilRules','wljRules','ownerRebates'];   /* 顶部页签只列业务列表页，详情/日志跳转页不进页签 */
+const PLAT4_NAV = [
+  ['能源对接管理','⚡',['chargeOrders','driverOil','oilAccount','driverWaybills','oilRules','wljRules','ownerRebates']],
+];
 const siteLast = {};
 const navOpen = new Set();
 let current = 'orders';
@@ -1940,13 +2051,24 @@ let orderFilter = '全部';
 
 function sideOf(id){ return (PAGES.find(p=>p.id===id)||PAGES[0]).side; }
 function renderSiteSwitch(side){
-  document.querySelector('.brand b').textContent = SITES[side].brand;
+  document.querySelector('.brand b').textContent = PLAT_META[currentPlatform].brand;
+  document.getElementById('platformSwitch').innerHTML = PLATFORMS.map(p=>
+    `<button type="button" class="${p===currentPlatform?'on':''}" data-platform="${p}" aria-pressed="${p===currentPlatform}">${p==='4PL端'?'4PL 端':p}</button>`).join('');
+  if(currentPlatform==='4PL端'){ document.getElementById('siteSwitch').innerHTML=''; return; }
   document.getElementById('siteSwitch').innerHTML = SIDES.map(s=>
     `<button type="button" class="${s===side?'on':''}" data-site="${s}" aria-pressed="${s===side}">${s}</button>`).join('');
 }
 function renderNav(){
   const side = sideOf(current);
   renderSiteSwitch(side);
+  if(PLAT4_PAGES.includes(current)){
+    const activeId = (PLAT4_EDIT_TO_LIST[current]||current);
+    const entry=id=>`<a href="#${id}" class="oms-entry oms-child ${id===activeId?'on':''}" data-go="${id}"><span class="oms-entry-icon" aria-hidden="true">▫</span>${PAGES.find(p=>p.id===id).name}</a>`;
+    const grp = PLAT4_NAV.find(g=>g[2].includes(activeId));
+    document.getElementById('nav').innerHTML = PLAT4_NAV.map(([label,icon,ids])=>
+      `<div class="oms-group ${navOpen.has(label)||label===grp?.[0]?'expanded':''}"><div class="oms-group-title" data-nav-toggle="${label}"><span class="oms-entry-icon" aria-hidden="true">${icon}</span>${label}<span class="oms-chevron">⌄</span></div><div class="oms-children">${ids.map(entry).join('')}</div></div>`).join('');
+    return;
+  }
   if(OMS_NAV_PAGES.includes(current) && side==='运营平台'){
     const entry=id=>`<a href="#${id}" class="oms-entry oms-child ${id===current?'on':''}" data-go="${id}"><span class="oms-entry-icon" aria-hidden="true">▫</span>${PAGES.find(p=>p.id===id).name}</a>`;
     const grp = LIVE_NAV.find(g=>g[2].includes(current));
@@ -1968,6 +2090,10 @@ function renderNav(){
   document.getElementById('nav').innerHTML = html;
 }
 function renderTabs(){
+  if(PLAT4_PAGES.includes(current)){
+    document.getElementById('tabstrip').innerHTML='<span class="oms-tab-arrow">‹</span><button class="oms-home-tab" data-go="'+PLAT_META['4PL端'].home+'">首页</button>'+PLAT4_TAB_PAGES.map(id=>`<button class="${id===(PLAT4_EDIT_TO_LIST[current]||current)?'on':''}" data-go="${id}">${PAGES.find(p=>p.id===id).name}<span class="oms-tab-close" aria-hidden="true">×</span></button>`).join('')+'<span class="oms-tab-arrow oms-tab-last">›</span>';
+    return;
+  }
   if(OMS_NAV_PAGES.includes(current)){
     document.getElementById('tabstrip').innerHTML='<span class="oms-tab-arrow">‹</span><button class="oms-home-tab" data-go="orders">首页</button>'+OMS_NAV_PAGES.map(id=>`<button class="${id===current?'on':''}" data-go="${id}">${PAGES.find(p=>p.id===id).name}<span class="oms-tab-close" aria-hidden="true">×</span></button>`).join('')+'<span class="oms-tab-arrow oms-tab-last">›</span>';
     return;
@@ -1985,9 +2111,10 @@ function renderTabs(){
 function isCust(id){ return (PAGES.find(x=>x.id===id)||{}).side === '企业端'; }
 function go(id){
   current = id;
-  /* 皮肤覆盖全部 OMS 菜单外壳页面（7 个已对齐运营页 + 货主锁站锁价）；
+  currentPlatform = PLAT4_PAGES.includes(id) ? '4PL端' : '万油通';
+  /* 皮肤覆盖全部 OMS 菜单外壳页面（7 个已对齐运营页 + 货主锁站锁价）与 4PL 端页面；
      油站端、企业端仍走原型基础皮肤 */
-  const live = OMS_NAV_PAGES.includes(id);
+  const live = OMS_NAV_PAGES.includes(id) || PLAT4_PAGES.includes(id);
   if(document.body.classList.contains('live-surface') !== live){
     /* 两套外壳的抽屉停靠方向不同，切换时不播放滑动动画 */
     const drawer = document.getElementById('drawer');
@@ -2007,6 +2134,7 @@ function go(id){
   if(p.side==='企业端'){ mode.textContent = '企业端 · ' + CUST_ME; mode.classList.add('cust'); mode.classList.remove('station'); }
   else if(p.side==='油站端'){ mode.textContent = '油站端 · 中石化辽宁石油分公司'; mode.classList.add('station'); mode.classList.remove('cust'); }
   else if(p.side==='司机端'){ mode.textContent = '司机端 · 网货 App 内嵌 H5'; mode.classList.remove('cust'); mode.classList.remove('station'); }
+  else if(p.side==='4PL端'){ mode.textContent = '4PL 运营平台 · 网货用电业务'; mode.classList.remove('cust'); mode.classList.remove('station'); }
   else { mode.textContent = '撮合模式 · 平台不进货不垫资'; mode.classList.remove('cust'); mode.classList.remove('station'); }
   renderNav(); renderTabs();
   paint();
@@ -2020,6 +2148,7 @@ function paint(){
 document.addEventListener('click', e=>{
   const ap = e.target.closest('[data-application-order-page]'); if(ap){ changeApplicationOrderPage(ap); return; }
   const bill = e.target.closest('[data-bill-orders]'); if(bill){ openBillOrderDrawer(bill.dataset.billOrders,Number(bill.dataset.billIndex)); return; }
+  const pt = e.target.closest('[data-platform]'); if(pt){ go(PLAT_META[pt.dataset.platform].home); return; }
   const st = e.target.closest('[data-site]');    if(st){ go(siteLast[st.dataset.site] || SITES[st.dataset.site].home); return; }
   const nt = e.target.closest('[data-nav-toggle]'); if(nt){ const k = nt.dataset.navToggle;
                                                         navOpen.has(k) ? navOpen.delete(k) : navOpen.add(k);
