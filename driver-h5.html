@@ -6825,6 +6825,12 @@
         : "home";
       pendingInitialLayer = initialLayer || null;
       go("account");
+      /* 原型接入（司机端逐页目录）：带 &auto=1 时以「有补贴运单账户」直奔 ?screen= 指定屏；
+         不带该参数时行为完全不变（手机演示仍先选账户）。*/
+      if (initialParams.get("auto") === "1" && initialScreen && initialScreen !== "account" &&
+          document.querySelector(`[data-screen="${initialScreen}"]`)) {
+        applyAccountContext("subsidized", initialScreen);
+      }
       updateOrder();
       renderPaymentQr();
       filterOrders("all");

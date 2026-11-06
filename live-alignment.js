@@ -198,6 +198,11 @@ const liveFi=(label,inner,hint,cls,help)=>{
     +'</div>';
 };
 const liveUnit=(input,unit)=>'<span class="fi-inline">'+input+'<span>'+unit+'</span></span>';
+/* 能源规则合规配置：一天上限类字段按能源类型互斥显示（电＝充电上限/度，油气＝加注上限/油·气） */
+const ruleLimitFi=(g,label,inner,hint,show,help)=>liveFi(label,inner,hint,undefined,help).replace('<div class="fi">','<div class="fi" data-limit="'+g+'"'+(show?'':' style="display:none"')+'>');
+function liveRuleEtype(v){
+  document.querySelectorAll('[data-limit]').forEach(el=>{ el.style.display=(el.getAttribute('data-limit')===v)?'':'none'; });
+}
 const liveEditBtns=(page,save)=>'<div class="editbtns"><button type="button" class="btn" onclick="go(\''+page+'\')">取消</button><button type="button" class="btn primary" onclick="showToast(\'已'+(save?'保存':'提交')+'（演示）\');go(\''+page+'\')">'+(save?'保存':'确认')+'</button></div>';
 
 /* 能源规则编辑页（现网 addOliRule 全字段 + 能源类型 + 电比率上限 25%） */
@@ -207,7 +212,7 @@ VIEWS.oilRuleEdit=()=>{
   return liveCrumb('oilRules','能源规则配置',edit?'编辑能源规则':'新增能源规则')
     +liveEditCard('基本信息','',null,
        liveFi('✱能源配置规则名称','<input class="inp" value="'+(d.name||'')+'" maxlength="20" placeholder="0/20">')
-      +liveFi('能源类型','<label class="rb"><input type="radio" name="fr-etype" '+(d.etype==='油气'?'checked':'')+'> 油气</label><label class="rb"><input type="radio" name="fr-etype" '+(d.etype==='电'?'checked':'')+'> 电</label>','电规则＝分电规则；同一「网货主体＋货主企业＋能源类型」三维唯一',null,'etypeTip')
+      +liveFi('能源类型','<label class="rb"><input type="radio" name="fr-etype" '+(d.etype==='油气'?'checked':'')+' onchange="liveRuleEtype(\'油气\')"> 油气</label><label class="rb"><input type="radio" name="fr-etype" '+(d.etype==='电'?'checked':'')+' onchange="liveRuleEtype(\'电\')"> 电</label>','电规则＝分电规则；同一「网货主体＋货主企业＋能源类型」三维唯一',null,'etypeTip')
       +liveFi('✱网货主体',liveSel(ENUMS.netSubjects, d.subj))
       +liveFi('货主企业',liveSel(ENUMS.owners, d.owner))
       +liveFi('起止时间','<input class="inp grow" placeholder="开始日期"><span class="range-sep">至</span><input class="inp grow" placeholder="结束日期">'))
@@ -221,9 +226,11 @@ VIEWS.oilRuleEdit=()=>{
        liveFi('电子围栏',liveUnit('<input class="inp" value="'+d.fence+'" style="max-width:140px">','米'))
       +liveFi('车辆定位校验要求','<label class="rb"><input type="radio" name="fr-loc" checked> 校验北斗定位</label><label class="rb"><input type="radio" name="fr-loc"> 不校验北斗定位</label>','','full')
       +liveFi('拍照证明要求','<label class="rb"><input type="radio" name="fr-photo" checked> 全部要求</label><label class="rb"><input type="radio" name="fr-photo"> 车辆获取不到要求</label>','','full')
-      +liveFi('一天加注上限（油）',liveUnit('<input class="inp" value="" style="max-width:110px">','L'))
-      +liveFi('一天加注上限（气）',liveUnit('<input class="inp" value="" style="max-width:110px">','m³'))
-      +liveFi('一天加注次数上限',liveUnit('<input class="inp" value="" style="max-width:110px">','次'),'电充电走云快充订单管控（可充度数＝冻结额度÷万联价），不适用加注上限','full'))
+      +ruleLimitFi('油气','一天加注上限（油）',liveUnit('<input class="inp" value="'+(d.limitOil||'')+'" placeholder="0–9999，两位小数，空＝不限" style="max-width:150px">','L'),'',d.etype!=='电')
+      +ruleLimitFi('油气','一天加注上限（气）',liveUnit('<input class="inp" value="'+(d.limitGas||'')+'" placeholder="0–9999，两位小数，空＝不限" style="max-width:150px">','m³'),'',d.etype!=='电')
+      +ruleLimitFi('油气','一天加注次数上限',liveUnit('<input class="inp" value="'+(d.limitTimes||'')+'" style="max-width:110px">','次'),'',d.etype!=='电')
+      +ruleLimitFi('电','一天充电上限（电）',liveUnit('<input class="inp" value="'+(d.limitElec||'')+'" placeholder="0–9999，两位小数，空＝不限" style="max-width:150px">','度'),'按司机当天累计充电度数限制；0–9999、最多两位小数；不填＝不限',d.etype==='电','dayChargeLimit')
+      +ruleLimitFi('电','一天充电次数上限',liveUnit('<input class="inp" value="'+(d.limitTimes||'')+'" style="max-width:110px">','次'),'电充电走云快充订单管控（可充度数＝冻结额度÷万联价），次数上限同时生效',d.etype==='电'))
     +liveEditBtns('oilRules');
 };
 /* 司机补贴规则编辑页（现网 addDriverSubsidyRule + 电补贴比例；底部按钮=保存） */
@@ -1251,6 +1258,17 @@ VIEWS.chargeOrderDetail=()=>{
 const _cgFh = leqiFieldHelp;
 leqiFieldHelp = function(kind){
   const dot=c=>'<span class="fh-dot'+(c?' '+c:'')+'"></span>';
+  if(kind==='dayChargeLimit') return fhCardHTML(
+    '<h5>一天充电上限（电）</h5>'
+    +'<p>按<b>同一司机当天累计充电度数</b>限制的用电上限，只在能源类型=电 的规则出现；油气规则显示「一天加注上限（油）/（气）」。</p>'
+    +tbl(['口径','说明'],[
+      ['限制对象','同一司机当天累计充电度数（度）'],
+      ['输入范围','0–9999、最多两位小数'],
+      ['空值','不填＝不限'],
+      ['生效条件','能源类型=电 的能源规则；与「一天充电次数上限」同时生效'],
+      ['与云快充管控的关系','电充电走云快充订单管控（可充度数＝冻结额度÷万联价，到达阈值下发停止充电），本上限是当天累计度数的额外限制']
+    ])
+    +'<p class="mut">与 PRD 7.2.6 同源。</p>');
   if(kind==='cgStatus') return fhCardHTML(
     '<h5>充电订单状态（穷举 5 值 · 全生命周期同步）</h5>'
     +tbl(['状态','页面展示','出现条件 → 后续流转'],[
@@ -1612,8 +1630,8 @@ LIVE.driverWaybills=[
 
 /* 能源规则配置（油气/电规则并存；电规则派发比例 ≤25%） */
 LIVE.oilRules=[
-  {name:'合肥欣中', subj:'万联易达物流科技有限公司', owner:'合肥颀中科技股份有限公司', etype:'油气', rate:'3%', gnode:'装车', rnode:'卸货后', way:'按运费比例', sub:'—', fence:'999999999', st:'启用', range:'2026-10-01 00:00:00——2026-11-30 23:59:59', ut:'2026-10-21 19:56:04', by:'平台超级管理员'},
-  {name:'宁波智赋-电规则', subj:'万联易达物流科技有限公司', owner:'宁波智赋科技', etype:'电', rate:'25%', gnode:'装车', rnode:'卸货后', way:'按运费比例', sub:'司机补贴', fence:'99999999', st:'启用', range:'2026-10-01 00:00:00——2027-10-31 23:59:59', ut:'2026-10-26 20:01:02', by:'平台超级管理员'},
+  {name:'合肥欣中', subj:'万联易达物流科技有限公司', owner:'合肥颀中科技股份有限公司', etype:'油气', limitOil:'100.00', limitGas:'80.00', limitTimes:'2', rate:'3%', gnode:'装车', rnode:'卸货后', way:'按运费比例', sub:'—', fence:'999999999', st:'启用', range:'2026-10-01 00:00:00——2026-11-30 23:59:59', ut:'2026-10-21 19:56:04', by:'平台超级管理员'},
+  {name:'宁波智赋-电规则', subj:'万联易达物流科技有限公司', owner:'宁波智赋科技', etype:'电', limitElec:'200.00', limitTimes:'3', rate:'25%', gnode:'装车', rnode:'卸货后', way:'按运费比例', sub:'司机补贴', fence:'99999999', st:'启用', range:'2026-10-01 00:00:00——2027-10-31 23:59:59', ut:'2026-10-26 20:01:02', by:'平台超级管理员'},
   {name:'小桔-太原电规则', subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', owner:'北京小桔科技集团有限公司', etype:'电', rate:'20%', gnode:'装车', rnode:'卸货后结算前', way:'按运费比例', sub:'司机补贴', fence:'99999999', st:'启用', range:'2026-10-15 00:00:00——2027-10-15 23:59:59', ut:'2026-10-15 10:22:31', by:'李文静'},
   {name:'小桔-太原电规则(超限停用)', subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', owner:'北京小桔科技集团有限公司', etype:'电', rate:'30%', gnode:'装车', rnode:'卸货后', way:'按运费比例', sub:'司机补贴', fence:'99999999', st:'停用', range:'2026-09-01 00:00:00——2026-09-30 23:59:59', ut:'2026-09-30 18:40:12', by:'李文静'},
   {name:'太原-无企业', subj:'太原万联易达供应链管理有限公司- ', owner:'（其他全部货主）', etype:'油气', rate:'30%', gnode:'装车', rnode:'货主结算后(7天)', way:'按运费比例', sub:'司机补贴', fence:'999999999', st:'启用', range:'2026-09-01 00:00:00——2027-10-07 23:59:59', ut:'2026-10-15 17:52:00', by:'平台超级管理员'},
@@ -1768,6 +1786,15 @@ VIEWS.ownerRebates=()=>{
       rows,'1700px')
     +notes(nb('电费率与区间配置','<p>货主返利按「网货主体 + 占比区间」配置：每个网货主体可配置多段能源占比区间（最多 35 段，达到上限后不再展示「添加范围」），<b>每段区间分别配置柴油、天然气、电</b>三项比例。返利规则为「按费率」时名称＝柴油/天然气/电<b>优惠费率</b>；为「按能源额度」时名称＝柴油/天然气/电<b>返利比例</b>，均必填（0–100）。电返利按「电费金额×电优惠费率」计算，<b>复用能源返利链路</b>（返利随充电订单同步 4PL 记录）。同一网货主体下多段区间的起点须小于终点、且互不重叠。</p>'));
 };
+
+/* ============ 万油通 · 运营平台 · 充电业务 ============
+   12 个页面原样接入独立原型 charging.html：每页一个 iframe（?embed=1&page=<key>），
+   该文件在嵌入模式下隐藏自带左侧菜单与顶栏、按 page 直达；页面内的筛选/抽屉/弹层/多页签表单
+   全部在该文件内完成，接入层不改写任何业务逻辑。后续逐页原生化时只替换对应 VIEWS 实现。 */
+CHG_PAGES.forEach(id=>{
+  const chgName = PAGES.find(p=>p.id===id).name;
+  VIEWS[id] = () => `<div class="chg-wrap"><iframe class="chg-frame" src="charging.html?embed=1&page=${CHG_PAGE_KEY[id]}" title="${chgName}" loading="eager"></iframe></div>`;
+});
 
 /* 用覆盖后的页面重新渲染当前页。旧版企业端日/月账单继续使用原有实现。 */
 go(current);
