@@ -8,26 +8,45 @@ window.addEventListener('message',e=>{const d=e.data;if(!d||!['oil','charge'].so
 for(const s of ['oil','charge'])frame(s).srcdoc=new TextDecoder().decode(Uint8Array.from(atob(docs[s]),c=>c.charCodeAt(0)));
 let saved;try{saved=localStorage.getItem('wanyoutong.h5.lastService')}catch(e){}const requested=new URLSearchParams(location.search).get('service');if(['oil','charge'].includes(requested))saved=requested;if(['oil','charge'].includes(saved))enter(saved);
 </script><script>
-/* 深链启动段（原型接入时追加，业务逻辑不改）：?page=<源文件页面 id> 时把指定页顶上去。
-   做法是向源文件自己的 iframe 发它本就支持的 energy-command 消息（e.source 必须是该帧的父级，所以只能在这里发）；
-   等 charge 帧回报 energy-state 后按需推送，最多 5 次、6 秒后停止，避免与页内操作打架。 */
+/* 深链启动段（原型接入时追加，业务逻辑不改）：
+     ?page=<源文件页面 id>   直达指定页（缺省 home）
+     ?sheet=<源文件弹层 id>  到达页面后打开该弹层（由接入层调源文件自己的 showSheet）
+   页面切换沿用源文件本就支持的 energy-command 消息（e.source 必须是该帧父级，只能在这一层发）；
+   等 charge 帧回报 energy-state 后按需重推、最多 5 次、6 秒后停止，避免与页内操作打架。
+   例外：「充电价格有变化」只能在启动那一刻出现，这里按源文件自带的「启动前变价」演示流重放
+   （切场景 → 拍照核验通过 → 勾选协议 → 点启动），不改源文件任何业务逻辑。 */
 (function(){
-  var q=new URLSearchParams(location.search),want=q.get('page');
-  if(!want)return;
-  var svc=q.get('service')==='oil'?'oil':'charge',pushes=0,done=false;
+  var q=new URLSearchParams(location.search),want=q.get('page')||'home',sheet=q.get('sheet');
+  if(!q.get('page')&&!sheet)return;
+  var svc=q.get('service')==='oil'?'oil':'charge',pushes=0,done=false,opened=false;
+  function frameEl(){return document.getElementById(svc);}
   function push(){
-    var f=document.getElementById(svc);
+    var f=frameEl();
     if(done||pushes>=5||!f||!f.contentWindow)return;
     pushes++;
     f.contentWindow.postMessage({kind:'energy-command',action:'page',id:want},'*');
   }
+  function openSheet(){
+    if(opened||!sheet)return;
+    var f=frameEl(); if(!f||!f.contentWindow)return;
+    var w=f.contentWindow; opened=true;
+    try{
+      if(sheet==='priceChanged'){
+        w.resetScenario('priceChanged'); w.previewPage('confirm'); w.applyEvent('photoPassed');
+        var cb=w.document.getElementById('chargeAgreement'); if(cb&&!cb.checked)cb.click();
+        var sb=w.document.getElementById('startButton'); if(sb&&!sb.disabled)sb.click();
+        return;
+      }
+      w.showSheet(sheet);
+    }catch(e){}
+  }
   window.addEventListener('message',function(e){
     var d=e.data;
     if(!d||d.kind!=='energy-state'||d.service!==svc)return;
-    if(d.page===want){done=true;return;}
+    if(d.page===want){ if(!done){ done=true; if(sheet)setTimeout(openSheet,120); } return; }
     push();
   });
   setTimeout(push,1200);
-  setTimeout(function(){done=true;},6000);
+  setTimeout(function(){ if(done)return; done=true; if(sheet)setTimeout(openSheet,0); },6000);
 })();
 </script></body></html>

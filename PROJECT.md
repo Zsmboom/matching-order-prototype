@@ -312,9 +312,10 @@
 - **适用场景**：评审/演示时在「万油通 → 司机端-电」手机壳内浏览电的司机端全流程；也可从充电首页右上「加油气」切到新版油 H5（含「选择补能类型」入口）、再从油那份「去充电」切回电。
 - **方案要点**：
   - 接入方式：新增独立文件 `driver-h5-elec.html` ＝交付文件（735KB / 9 行）**原样搬运、零改动**（`diff` 为空）。该文件是容器：内嵌「油」「电」两份 base64 文档，用 `srcdoc` 装进两个 iframe，`?service=oil|charge` 决定进入哪一份，页内切换由源文件自己的 postMessage（`energy-switch`/`energy-command`/`energy-state`）完成。**不做嵌入模式改造**——交付版已是纯 H5（第二段 `<style>` 把工作台面板 `display:none!important`、device 拉满容器），工作台面板在本文件中已不存在。
-  - 端与菜单：万油通「端切换」新增第 5 个端「司机端-电」，排在「司机端」之后；端内**按源文件自带 18 页目录逐页注册**（左侧菜单 5 组、顺序照源文件）：找站与账户（附近电站 / 选择额度分组 / 地图与沿途 / 路线规划 / 电站详情 / 进站指引）、扫码与启动（扫码识别 / 启动确认）、充电与结果（启动中 / 充电中 / 停止中 / 状态待核查）、账单与订单（已结束待结算 / 支付待处理 / 已支付与账单 / 我的充电订单 / 能源额度）、异常与恢复（启动失败）；`ELEC_PAGE_KEY` = 本原型页面 id（`elecHome`…`elecFailed`）→ 源文件页面 key，`ELEC_PAGES` 顺序即菜单与页签顺序；顶部页签只列当前分组的页面（6/2/4/5/1）；深链 `#elecHome`…`#elecFailed` 直达。
+  - 端与菜单：万油通「端切换」新增第 5 个端「司机端-电」，排在「司机端」之后；端内**按源文件自带 18 页目录逐页注册**（左侧菜单 5 组、顺序照源文件）：找站与账户（附近电站 / 选择额度分组 / 地图与沿途 / 路线规划 / 电站详情 / 进站指引）、扫码与启动（扫码识别 / 启动确认）、充电与结果（启动中 / 充电中 / 停止中 / 状态待核查）、账单与订单（已结束待结算 / 支付待处理 / 已支付与账单 / 我的充电订单 / 能源额度）、异常与恢复（启动失败）；`ELEC_PAGE_KEY` = 本原型页面 id（`elecHome`…`elecFailed`）→ 源文件页面 key，`ELEC_PAGES` 顺序即菜单与页签顺序；顶部页签只列当前分组的页面（6/2/4/5/1/17）；深链 `#elecHome`…`#elecFailed` 直达。
+  - 弹层入库：另设一组「弹层与提示」共 **17 个弹层**（联系场站与平台 / 了解运单电额度 / 筛选电站 / 电站排序 / 选择城市 / 全部时段价格 / 本单历史资费快照 / 本组电运单 / 本次额度使用规则 / 核对充电车辆 / 车牌拍照核验 / 场站位置核验 / 充电价格有变化 / 确认结束本次充电 / 订单处理轨迹 / 完整优惠账单 / 更多订单信息），`ELEC_LAYER_KEY` = 页面 id → [宿主页 key, 源文件弹层 id]，菜单项点开即在宿主页上弹出该弹层。
   - 页面主体：18 页共用一套手机壳 + iframe（`driver-h5-elec.html?service=charge&page=<源文件页面 key>`），复用既有 `.driver-frame-wrap/.driver-phone/.driver-frame`（机身 432×924，窗口高度不足按 `zoom` 整机缩放）；手机壳用 `.driver-phone.no-notch` 隐藏机身刘海——交付版 H5 窄屏不画状态栏（`sim-status` 被隐藏），保留刘海会遮住页头；「司机端」页的刘海与提示条保持原样。
-  - 深链实现：`driver-h5-elec.html` 末尾追加 12 行启动段，把 `?page=` 转成源文件本就支持的 `energy-command` 消息推给它自己的 iframe（`e.source` 必须是该帧父级，只能在这一层发），收到 `energy-state` 后按需重推、最多 5 次、6 秒后停止；源文件业务函数、数据、样式一行不改。
+  - 深链实现：`driver-h5-elec.html` 末尾追加约 40 行启动段（含注释），把 `?page=` 转成源文件本就支持的 `energy-command` 消息推给它自己的 iframe（`e.source` 必须是该帧父级，只能在这一层发），收到 `energy-state` 后按需重推、最多 5 次、6 秒后停止；`?sheet=` 在页面到位后调用源文件自己的 `showSheet(<key>)` 弹层；「充电价格有变化」按源文件自带的「启动前变价」演示流重放（切场景 → 拍照核验通过 → 勾选协议 → 点启动），源文件业务函数、数据、样式一行不改。
   - 端切换换行：`SIDES` 到 5 个后，`renderSiteSwitch` 在 `SIDES.length>4` 时给端切换条挂 `wrap` 类（`.site-switch.wrap{flex-wrap:wrap}` + `button{flex:1 1 auto}`）；4 个端时不挂类，按钮宽度与既有完全一致。
 - **业务流程**：选端「司机端-电」→ 充电首页（有补贴/无补贴额度组、额度信息条、附近充电站、地图/沿途找站）→ 电站详情（当前价与电费服务费拆分、快慢充枪口）→ 扫码充电 → 启动确认（车牌、插枪、拍照/围栏、最新资费、本组可用额度与全部电额度冻结）→ 充电中 → 结束/扣款回执 → 我的充电订单。异常分支由源文件自带场景覆盖：游客浏览、无有效电运单、定位未授权、枪口状态缺失、资费缺失、启动前变价、尚未插枪、实时数据延迟、SOC 未返回、最终扣款失败、最终明细缺失。页内「加油气」→ 新版油 H5（选择补能类型 → 加油加气站点列表/地图/路线/订单/二维码支付），顶部「去充电」切回。
 - **改动概要**：
@@ -343,13 +344,14 @@
   - 菜单：按使用流程分 3 组 10 页——账户与选站（账户选择 `#driverH5`、油站列表 `#oilHome`）、地图与路线（地图找站 `#oilMap`、路线规划 `#oilRoute`、路线地图 `#oilRouteMap`、沿途油站 `#oilRouteList`）、订单与支付（油站详情 `#oilDetail`、二维码支付 `#oilQr`、支付成功 `#oilSuccess`、订单列表 `#oilOrders`）；顶部页签只列当前分组的页面（2 / 4 / 4）。
   - 深链：iframe 固定 `driver-h5.html?screen=<屏 key>&auto=1`；源文件启动段追加 5 行——仅当 `auto=1` 且屏 key 合法时以「有补贴运单账户」调 `applyAccountContext('subsidized', screen)` 直奔目标屏；不带该参数时启动仍是 `go("account")`（手机演示行为不变），`?sheet=<弹层>` 照旧可用。`OIL_PAGE_KEY`（本原型 id → 源文件屏 key）与 `OIL_PAGES` 声明在 `PAGES` 之前。
   - 手机壳：沿用 `.driver-frame-wrap` + 页头提示条 + `.driver-phone`（保留机身刘海——这份 H5 自带 9:41 状态栏）；不套 `.no-notch`。
+  - 弹层入库：另设一组「弹层与提示」共 **7 个弹层**（确认油气额度账户 / 排序和筛选 / 选择省市 / 选择商品·枪号 / 计价说明 / 支付确认 / 温馨提示·OCR 失败），`OIL_LAYER_KEY` = 页面 id → [宿主屏 key, 源文件弹层 id]；菜单项点开即在宿主屏上弹出该弹层（`?sheet=` 由启动段在 `auto=1` 时打开，账户屏的确认弹层单独调 `showAccountConfirmation`）。
   - 账户口径：直达一律用「有补贴运单账户」（万联价口径）；要看「无补贴运单账户」从「账户选择」页进。
 - **业务流程**：账户选择 → 油站列表（账户额度 / 搜索 / 地图 / 筛选）→ 油站详情（多运单组合支付、车辆 OCR、商品枪号、按升数或按金额、合计优惠）→ 支付成功（加油明细 + 运单扣款明细）；或走二维码支付（出示付款码 → 油站扫码录入 → 司机确认）。地图与路线组：地图找站、路线规划（起点 + 终点 + 途经点）、路线地图、沿途油站；订单列表按全部 / 待支付 / 支付成功 / 已退款分栏。
 - **改动概要**：
-  - `index.html` 4 处：新增常量 `OIL_PAGE_KEY` / `OIL_PAGES`；`PAGES` 的单条 `driverH5` 换成 10 条（`side:'司机端'`，3 个分组）；`VIEWS.driverH5` 换成 `OIL_PAGES.forEach` 注册的 10 个 `VIEWS`（手机壳 + 提示条 + 按 key 拼 `screen=` 的 iframe）；`SITES['司机端'].home` 保持 `driverH5`（账户选择）。`SIDES`、`ELEC_*`、对齐层与 4PL 页面零改动。
+  - `index.html` 4 处：新增常量 `OIL_PAGE_KEY` / `OIL_PAGES` 与 `OIL_LAYER_KEY` / `OIL_LAYERS`；`PAGES` 的单条 `driverH5` 换成 10 条页面（3 个流程分组）+ 7 条弹层（「弹层与提示」组），并把「支付成功」改名为「订单详情（支付成功）」；`VIEWS` 由 `OIL_PAGES.forEach` / `OIL_LAYERS.forEach` 注册 17 个（手机壳 + 提示条 + 按 key 拼 `screen=`/`sheet=` 的 iframe）；`SITES['司机端'].home` 保持 `driverH5`（账户选择）。`SIDES`、`ELEC_*`、对齐层与 4PL 页面零改动。
   - `driver-h5.html` 追加 5 行启动判断（`auto=1` 分支），其余不动。
   - 文档：`README.md` 司机端章节与端清单；本文件 3.24 + 结构要点 + 全局口径。
-- **关键裁定**：①按流程分 3 组而非平铺；②直达账户固定「有补贴运单账户」；③只加 `auto=1` 分支、不改源文件默认行为（手机演示不变）；④只列 10 屏，6 个底部弹层与 OCR 提示框不进菜单（仍可在页内打开）；⑤本次不出 PRD（只搬运不改业务规则，同 3.21/3.22 口径）。
+- **关键裁定**：①按流程分 3 组而非平铺；②直达账户固定「有补贴运单账户」；③只加 `auto=1` 与 `sheet` 支持、不改源文件默认行为（手机演示不变）；④10 屏 + 7 个弹层都进菜单（弹层单独一组），弹层点开即弹出；⑤本次不出 PRD（只搬运不改业务规则，同 3.21/3.22 口径）。
 - **未决事项**：无。
 
 ## 4. 全局口径速查（跨需求既定口径）
@@ -415,14 +417,15 @@
 | 2026-11-06 | 电业务运营后台（充电业务）以**独立文件 `charging.html` + iframe 单页承载**接入：`?embed=1&page=<key>` 隐藏其自带菜单与顶栏，不带参数仍是完整「运营中台 · 电业务」；运营平台一级菜单「充电业务」平铺 12 页（末位）、页签只列本域 12 页、待建 4 页不进菜单；后续逐页原生化只替换 `VIEWS.chgXxx`，菜单与深链 `#chgXxx` 不变 | 与 `driver-h5.html` 同口径（同域 iframe 隔离两套类名，零重写零分叉）；页面交互体系（6 页签详情 / 4 页签表单 / 开户流）与原文件保持一致，避免重写造成口径漂移 |
 | 2026-11-06 | 万油通「端切换」新增第 5 个端**「司机端-电」**（排在司机端之后），承载油气电纯 H5：独立文件 `driver-h5-elec.html`（交付文件 + 12 行深链启动段），电的 **18 页按源文件目录逐页入菜单**（5 组、顺序照源文件），页面 `#elecHome`…`#elecFailed` 以手机壳 + iframe（`?service=charge&page=<key>`）承载，页内可切加油气；旧「司机端」（旧版优惠加油 H5）保持原样不替换；端切换只在端数 >4 时换行（`.site-switch.wrap`），4 个端时不换行、按钮宽度不变 | 新旧两个司机端 H5 并存、互不影响，避免回归；4 端布局保持不变 |
 | 2026-11-06 | 油气司机端同样按屏逐页入菜单：10 屏分 3 组（账户与选站 / 地图与路线 / 订单与支付），页面 `#driverH5`…`#oilOrders`，iframe 固定 `driver-h5.html?screen=<key>&auto=1`——`auto=1` 时以「有补贴运单账户」直达目标屏，不带该参数仍是先选账户（手机演示不变）；6 个底部弹层不进菜单 | 与「司机端-电」18 页目录对称；避免评审在手机壳里逐屏点 |
+| 2026-11-06 | 两端目录都含「弹层与提示」组：司机端-电 17 个弹层（`#elecLayer*`）、油气司机端 7 个弹层（`#oilLayer*`），菜单项点开即在对应宿主页上弹出该弹层；深链参数＝页面 `?page=`/`?screen=` + 弹层 `&sheet=` | 评审要看到弹层本身，不能只在页内一步步点 |
 | 2026-11-06 | 网货分油（285.4）：分油计算基数＝司机总运费−司机购买保险金额（仅保险购买方＝司机时扣；货主购买、未购买不扣）；分油金额公式不变（有司机补贴＝基数×分油比例×(1−司机补贴比例)，无补贴＝基数×分油比例）；装车分油（发货分油）、结算后分油、电的装车分电同一取数逻辑；按分油执行时点取保费、完成后不重算；不落新字段（实时取运单保险信息），历史已分油不重算 | 与星链上报口径统一（上报司机运费不含司机购买保费）；司机实际到手运费不应含自己购买的保费 |
 
 ## 5. 原型结构要点
 
 - `index.html` 单文件（约 10700 行），JS 模板字符串渲染；页面注册在 `PAGES`（含 `side`/`grp` 字段），视图函数为 `VIEWS.<页面ID>`，支持 `#页面ID` 深链直达。
 - 左侧顶部切换运营平台/油站端/企业端/司机端/司机端-电；`live-alignment.js/css` 为运营页对齐层，必须与 `index.html` 同目录；freightLock 已进对齐层（`OMS_NAV_PAGES = LIVE_PAGES + PHASE2_PAGES`，`go()` 据此挂 live-surface；`driverH5` 不在其中）。
-- 司机端：独立文件 `driver-h5.html`（约 6800 行，10 屏 / 6 弹层 / 1 对话框），`PAGES` 有 10 条（`side:'司机端'`、3 个流程分组），`OIL_PAGE_KEY`/`OIL_PAGES` 定义在 `PAGES` 之前，`OIL_PAGES.forEach` 注册 10 个 `VIEWS`（手机壳 + 页头提示条 + `iframe[src="driver-h5.html?screen=<key>&auto=1"]`；机身 432×924 → 内可视区 420×912＝H5 设计宽度，窗口高度不足时按 `@media` 用 `zoom` 整机缩放，不改 iframe 内部布局）；`auto=1` 是原型加的分支（源文件启动段 5 行），让无头直达某屏时先以「有补贴运单账户」`applyAccountContext` 再 go 目标屏；不带该参数仍是 `go("account")`；`?sheet=` 深链照旧；演示二维码为内联 SVG（`renderPaymentQr()`），不依赖外部图片。
-- 司机端-电：独立文件 `driver-h5-elec.html`（交付文件 + 末尾 12 行深链启动段；容器内装「油」「电」两份 base64 文档 + 两个 `srcdoc` iframe，`?service=oil|charge` 决定入口、`&page=<key>` 直达源文件某页，页内切换走源文件自己的 postMessage）。`SIDES` 含「司机端-电」，`PAGES` 有 18 条（`side:'司机端-电'`、`grp` 为源文件 5 个分组），`ELEC_PAGE_KEY`/`ELEC_PAGES` 定义在 `PAGES` 之前，`ELEC_PAGES.forEach` 注册 18 个 `VIEWS`（手机壳 + `iframe[src="driver-h5-elec.html?service=charge&page=<key>"]`）；手机壳用 `.driver-phone.no-notch`（交付版 H5 窄屏不画状态栏，保留刘海会遮页头）。`renderSiteSwitch` 在 `SIDES.length>4` 时给端切换条挂 `.site-switch.wrap` 换行。
+- 司机端：独立文件 `driver-h5.html`（约 6800 行，10 屏 / 6 弹层 / 1 对话框），`PAGES` 有 10 条（`side:'司机端'`、3 个流程分组），`OIL_PAGE_KEY`/`OIL_PAGES` 定义在 `PAGES` 之前，`OIL_PAGES.forEach` / `OIL_LAYERS.forEach` 注册 17 个 `VIEWS`（手机壳 + 页头提示条 + `iframe[src="driver-h5.html?screen=<key>&auto=1[&sheet=<layer>]"]`，弹层映射在 `OIL_LAYER_KEY`；机身 432×924 → 内可视区 420×912＝H5 设计宽度，窗口高度不足时按 `@media` 用 `zoom` 整机缩放，不改 iframe 内部布局）；`auto=1` 是原型加的分支（源文件启动段 5 行），让无头直达某屏时先以「有补贴运单账户」`applyAccountContext` 再 go 目标屏；不带该参数仍是 `go("account")`；`?sheet=` 深链照旧；演示二维码为内联 SVG（`renderPaymentQr()`），不依赖外部图片。
+- 司机端-电：独立文件 `driver-h5-elec.html`（交付文件 + 末尾 12 行深链启动段；容器内装「油」「电」两份 base64 文档 + 两个 `srcdoc` iframe，`?service=oil|charge` 决定入口、`&page=<key>` 直达源文件某页，页内切换走源文件自己的 postMessage）。`SIDES` 含「司机端-电」，`PAGES` 有 18 条（`side:'司机端-电'`、`grp` 为源文件 5 个分组），`ELEC_PAGE_KEY`/`ELEC_PAGES` 定义在 `PAGES` 之前，`ELEC_PAGES.forEach` / `ELEC_LAYERS.forEach` 注册 35 个 `VIEWS`（手机壳 + `iframe[src="driver-h5-elec.html?service=charge&page=<key>[&sheet=<layer>]"]`），弹层映射在 `ELEC_LAYER_KEY`；手机壳用 `.driver-phone.no-notch`（交付版 H5 窄屏不画状态栏，保留刘海会遮页头）。`renderSiteSwitch` 在 `SIDES.length>4` 时给端切换条挂 `.site-switch.wrap` 换行。
 - 共享控件工厂：`dataTable`（第 5 参 noSelect 控制勾选列）、`filterRow`、`regCols`/`colCfgBtn`（列设置）、`notes()/nb()`（可折叠页面说明条）、`openConfirm`/`CONFIRMS`/`CONFIRM_ACTIONS`（二次确认）、`showDrawer`（停靠式宽抽屉）、`MODALS`（弹层）、`lockPagerHTML`（分页，freightLock 内）。
 - freightLock 专属代码集中两段：演示数据（`FREIGHT_ENTITIES`/`FREIGHT_OWNERS`/`LOCK_STATIONS`/`LOCK_RULES` 及补量种子）与页面实现（`LOCK_*` 函数群，约 7900 行起）。
 - 演示数据规模：300 油站（约 600 行油品明细，含无合同演示站 ST0009 锦州凌海物流站、已下线演示站 ST0010 沈阳新民物流站）、520 货主企业、8 条规则（含 500 货主、全量 593 行明细、多网货主体等验证用规则；0001/0005 同组合「一生效一停用」演示对，0005 明细含 ST0010 演示失效油站拦截）；网货货主页演示 520 条主数据（seedFreightOwners 补量）。

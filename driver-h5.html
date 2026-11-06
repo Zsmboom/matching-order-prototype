@@ -6831,6 +6831,10 @@
           document.querySelector(`[data-screen="${initialScreen}"]`)) {
         applyAccountContext("subsidized", initialScreen);
       }
+      /* 选账户那屏的弹层（确认油气额度账户）：账户屏不走 applyAccountContext，单独弹一次 */
+      if (initialParams.get("auto") === "1" && initialLayer === "account-confirm" && initialScreen === "account") {
+        showAccountConfirmation("subsidized");
+      }
       updateOrder();
       renderPaymentQr();
       filterOrders("all");

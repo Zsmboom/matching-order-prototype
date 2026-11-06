@@ -1970,6 +1970,29 @@ const OIL_PAGE_KEY = {
 };
 const OIL_PAGES = Object.keys(OIL_PAGE_KEY);
 
+/* 油气司机端弹层：OIL_LAYER_KEY = 页面 id → [宿主屏 key, 源文件弹层 id]（弹层在宿主屏上点开，直达用 ?screen=&auto=1&sheet=） */
+const OIL_LAYER_KEY = {
+  oilLayerAccountConfirm:['account','account-confirm'], oilLayerFilter:['home','filter'],
+  oilLayerProvince:['home','province'],                 oilLayerProduct:['detail','product'],
+  oilLayerSubsidy:['detail','subsidy'],                 oilLayerConfirm:['detail','confirm'],
+  oilLayerOcr:['detail','ocr']
+};
+const OIL_LAYERS = Object.keys(OIL_LAYER_KEY);
+
+/* 司机端-电弹层：ELEC_LAYER_KEY = 页面 id → [宿主页 key, 源文件弹层 id]（直达用 ?service=charge&page=&sheet=） */
+const ELEC_LAYER_KEY = {
+  elecLayerService:['home','service'],          elecLayerAccess:['accounts','access'],
+  elecLayerFilters:['home','filters'],          elecLayerSort:['home','sort'],
+  elecLayerCity:['home','city'],                elecLayerTariffs:['detail','tariffs'],
+  elecLayerOrderTariffs:['paid','orderTariffs'],elecLayerBills:['home','bills'],
+  elecLayerFreezeRules:['confirm','freezeRules'],elecLayerPlate:['confirm','plate'],
+  elecLayerPhoto:['confirm','photo'],           elecLayerLocation:['confirm','location'],
+  elecLayerPriceChanged:['confirm','priceChanged'], elecLayerStopConfirm:['charging','stopConfirm'],
+  elecLayerTimeline:['paid','timeline'],        elecLayerBill:['paid','bill'],
+  elecLayerOrderDetails:['paid','orderDetails']
+};
+const ELEC_LAYERS = Object.keys(ELEC_LAYER_KEY);
+
 const PAGES = [
   /* ---- 运营平台 · 撮合订单 ---- */
   {id:'orders',  name:'能源订单管理', sub:'列表 / 详情 / 撮合订单补单 / 开票申请', side:'运营平台', grp:'撮合订单'},
@@ -2029,7 +2052,15 @@ const PAGES = [
   {id:'oilRouteList',  name:'沿途油站',   sub:'沿途站点列表 · 按距离排序', side:'司机端', grp:'地图与路线'},
   {id:'oilDetail',     name:'油站详情',   sub:'多运单组合支付 · 商品枪号 · 按升数 / 按金额 · 合计优惠', side:'司机端', grp:'订单与支付'},
   {id:'oilQr',         name:'二维码支付', sub:'出示付款码 · 油站扫码录入 · 4 分 59 秒倒计时', side:'司机端', grp:'订单与支付'},
-  {id:'oilSuccess',    name:'支付成功',   sub:'支付结果 · 加油明细 · 运单扣款明细', side:'司机端', grp:'订单与支付'},
+  {id:'oilSuccess',    name:'订单详情（支付成功）', sub:'支付结果 · 加油明细 · 运单扣款明细', side:'司机端', grp:'订单与支付'},
+  /* ---- 司机端 · 弹层（点开即弹出对应弹层，宿主屏见 OIL_LAYER_KEY） ---- */
+  {id:'oilLayerAccountConfirm', name:'确认油气额度账户', sub:'账户选择 · 选账户后弹出的确认弹层', side:'司机端', grp:'弹层与提示'},
+  {id:'oilLayerFilter',  name:'排序和筛选', sub:'油站列表 · 排序 / 商品 / 品牌 / 是否高速', side:'司机端', grp:'弹层与提示'},
+  {id:'oilLayerProvince',name:'选择省市',   sub:'油站列表 · 省市筛选', side:'司机端', grp:'弹层与提示'},
+  {id:'oilLayerProduct', name:'选择商品/枪号', sub:'油站详情 · 商品与枪号选择', side:'司机端', grp:'弹层与提示'},
+  {id:'oilLayerSubsidy', name:'计价说明',   sub:'油站详情 · 企业价 → 万联价与补贴口径', side:'司机端', grp:'弹层与提示'},
+  {id:'oilLayerConfirm', name:'支付确认',   sub:'油站详情 · 油站扫码录入后的支付确认', side:'司机端', grp:'弹层与提示'},
+  {id:'oilLayerOcr',     name:'温馨提示',   sub:'油站详情 · OCR 识别失败提示（对话框）', side:'司机端', grp:'弹层与提示'},
   {id:'oilOrders',     name:'订单列表',   sub:'全部 / 待支付 / 支付成功 / 已退款 分栏筛选', side:'司机端', grp:'订单与支付'},
 
   /* ---- 司机端-电 · 油气电 H5（独立文件 driver-h5-elec.html，iframe 承载）：按源文件自带 18 页目录逐页注册，分组与顺序照源文件 ---- */
@@ -2051,6 +2082,24 @@ const PAGES = [
   {id:'elecOrders',   name:'我的充电订单', sub:'按两套状态展示全部、充电中、充电结束、待支付和已支付；失败启动不进入消费订单列表', side:'司机端-电', grp:'账单与订单'},
   {id:'elecWallet',   name:'能源额度',     sub:'电与油气余额独立，显示分组、冻结和待回收信息；充电冻结不扩大到油气', side:'司机端-电', grp:'账单与订单'},
   {id:'elecFailed',   name:'启动失败',     sub:'仅显示明确失败原因；是否可再次充电取决于平台解冻确认，不能只凭第三方失败码解冻', side:'司机端-电', grp:'异常与恢复'},
+  /* ---- 司机端-电 · 弹层（点开即弹出对应弹层，宿主页见 ELEC_LAYER_KEY） ---- */
+  {id:'elecLayerService', name:'联系场站与平台', sub:'各页右上客服入口', side:'司机端-电', grp:'弹层与提示'},
+  {id:'elecLayerAccess', name:'了解运单电额度', sub:'选择额度分组 · 无可用电运单时的说明', side:'司机端-电', grp:'弹层与提示'},
+  {id:'elecLayerFilters', name:'筛选电站', sub:'附近电站 · 筛选', side:'司机端-电', grp:'弹层与提示'},
+  {id:'elecLayerSort', name:'电站排序', sub:'附近电站 · 距离 / 价格排序', side:'司机端-电', grp:'弹层与提示'},
+  {id:'elecLayerCity', name:'选择城市', sub:'附近电站 · 城市切换', side:'司机端-电', grp:'弹层与提示'},
+  {id:'elecLayerTariffs', name:'全部时段价格', sub:'电站详情 · 分时资费', side:'司机端-电', grp:'弹层与提示'},
+  {id:'elecLayerOrderTariffs', name:'本单历史资费快照', sub:'已支付与账单 · 资费快照', side:'司机端-电', grp:'弹层与提示'},
+  {id:'elecLayerBills', name:'本组电运单', sub:'附近电站 · 额度卡 2 个运单', side:'司机端-电', grp:'弹层与提示'},
+  {id:'elecLayerFreezeRules', name:'本次额度使用规则', sub:'启动确认 · 冻结规则', side:'司机端-电', grp:'弹层与提示'},
+  {id:'elecLayerPlate', name:'核对充电车辆', sub:'启动确认 · 车牌核对', side:'司机端-电', grp:'弹层与提示'},
+  {id:'elecLayerPhoto', name:'车牌拍照核验', sub:'启动确认 · 拍照核验（源文件自带演示推进：打开约 1 秒后自动通过核验并关闭，可重复点开）', side:'司机端-电', grp:'弹层与提示'},
+  {id:'elecLayerLocation', name:'场站位置核验', sub:'启动确认 · 围栏核验', side:'司机端-电', grp:'弹层与提示'},
+  {id:'elecLayerPriceChanged', name:'充电价格有变化', sub:'启动确认 · 启动前变价（按演示流重放）', side:'司机端-电', grp:'弹层与提示'},
+  {id:'elecLayerStopConfirm', name:'确认结束本次充电', sub:'充电中 · 结束充电', side:'司机端-电', grp:'弹层与提示'},
+  {id:'elecLayerTimeline', name:'订单处理轨迹', sub:'已支付与账单 · 处理轨迹', side:'司机端-电', grp:'弹层与提示'},
+  {id:'elecLayerBill', name:'完整优惠账单', sub:'已支付与账单 · 优惠明细', side:'司机端-电', grp:'弹层与提示'},
+  {id:'elecLayerOrderDetails', name:'更多订单信息', sub:'已支付与账单 · 订单信息', side:'司机端-电', grp:'弹层与提示'},
 
   /* ---- 4PL 端 · 网货运营平台（用电业务，逐模块补全） ---- */
   {id:'chargeOrders', name:'充电订单管理', sub:'云快充充电子订单 · 全生命周期同步展示', side:'4PL端', grp:'充电订单'},
@@ -2961,6 +3010,29 @@ OIL_PAGES.forEach(id => {
     <div class="driver-frame-tip">司机端 H5 · 网货 App 内嵌「优惠加油」<span>演示数据；本期未与《货主锁站锁价》规则联动</span></div>
     <div class="driver-phone">
       <iframe class="driver-frame" src="driver-h5.html?screen=${OIL_PAGE_KEY[id]}&auto=1" title="司机端-油气 · ${p.name}"></iframe>
+    </div>
+  </div>`;
+});
+
+/* 司机端 · 弹层：同一套手机壳，直达宿主屏并指定要弹出的弹层（?sheet= 由 driver-h5.html 启动段在 auto=1 时打开） */
+OIL_LAYERS.forEach(id => {
+  const p = PAGES.find(x=>x.id===id), [page, sheet] = OIL_LAYER_KEY[id];
+  VIEWS[id] = () => `
+  <div class="driver-frame-wrap">
+    <div class="driver-frame-tip">司机端 H5 · 网货 App 内嵌「优惠加油」<span>演示数据；本期未与《货主锁站锁价》规则联动</span></div>
+    <div class="driver-phone">
+      <iframe class="driver-frame" src="driver-h5.html?screen=${page}&auto=1&sheet=${sheet}" title="司机端-油气 · ${p.name}"></iframe>
+    </div>
+  </div>`;
+});
+
+/* 司机端-电 · 弹层：同一套手机壳，直达宿主页并指定要弹出的弹层（?sheet= 由 driver-h5-elec.html 启动段打开） */
+ELEC_LAYERS.forEach(id => {
+  const p = PAGES.find(x=>x.id===id), [page, sheet] = ELEC_LAYER_KEY[id];
+  VIEWS[id] = () => `
+  <div class="driver-frame-wrap">
+    <div class="driver-phone no-notch">
+      <iframe class="driver-frame" src="driver-h5-elec.html?service=charge&page=${page}&sheet=${sheet}" title="司机端-电 · ${p.name}"></iframe>
     </div>
   </div>`;
 });
