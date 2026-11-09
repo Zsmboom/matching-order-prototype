@@ -1,0 +1,2989 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>万油通 · 功能后台原型</title>
+<style>
+/* ============ 0. Design tokens (extracted from omsdesign.html) ============ */
+:root{
+  --primary:#1f5dbc; --primary-hover:#174ea8; --primary-soft:#eef6ff;
+  --primary-subtle:#edf3fb; --primary-border:#c8dcf4; --primary-muted:#4c79bd;
+  --control-height:34px; --control-radius:14px; --section-radius:20px; --panel-radius:28px;
+  --control-border:#d6deea; --line:#e5ebf3; --hairline:#edf1f6;
+  --text:#1f2d3d; --label:#2c394c; --body:#3c495d; --muted:#728198; --faint:#8491a4; --placeholder:#9daabd;
+  --surface:#fff; --workspace:#f4f7fb;
+  --danger:#b75254; --warn:#a56b25; --ok:#38787a; --purple:#67558d;
+  --shadow:0 14px 40px rgba(30,58,104,.08); --shadow-sm:0 10px 28px rgba(30,58,104,.05);
+  --radius-btn:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  min-width:1280px; overflow:hidden; background:var(--workspace); color:var(--text);
+  font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased; font-synthesis:none;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3,p{margin:0}
+b,strong{font-weight:700}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#cbd5e2;border-radius:8px;border:2px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-track{background:transparent}
+.ico{flex:0 0 auto;display:block}
+
+/* ============ 1. Layout shell ============ */
+.side-nav{
+  position:fixed; inset:0 auto 0 0; width:212px; z-index:30;
+  display:flex; flex-direction:column; background:#fff; border-right:1px solid #edf1f6;
+}
+.side-logo{height:78px; flex:0 0 78px; display:flex; align-items:center; gap:10px; padding:0 20px}
+.logo-mark{
+  width:32px; height:32px; display:grid; place-items:center; color:#fff;
+  background:linear-gradient(145deg,#2b6ccb,#174ea8); border-radius:11px;
+  box-shadow:0 8px 18px rgba(31,93,188,.32);
+}
+.logo-text{display:flex; flex-direction:column; line-height:1.15}
+.logo-text b{font-size:17px; font-weight:800; letter-spacing:.02em; color:#1b2838}
+.logo-text small{font-size:9px; letter-spacing:.16em; color:#9aa6b6; font-weight:600; margin-top:2px}
+.full-menu{flex:1; min-height:0; padding:8px 12px 16px; overflow-y:auto; scrollbar-width:thin}
+.menu-group{width:100%}
+.menu-parent{
+  width:100%; height:38px; margin-top:4px; padding:0 12px; display:flex; align-items:center; gap:9px;
+  color:#6f7f95; background:transparent; border:0; border-radius:8px; font-size:12px; font-weight:600; text-align:left;
+}
+.menu-parent:hover,.menu-parent.is-open{color:var(--primary); font-weight:700}
+.menu-parent .chev{
+  width:7px; height:7px; margin-left:auto; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor;
+  transform:rotate(45deg) translateY(-2px); transition:transform .18s ease;
+}
+.menu-parent.is-open .chev{transform:rotate(225deg) translate(-1px,-1px)}
+.menu-children{padding:2px 0 6px}
+.menu-item{
+  width:100%; height:38px; margin:3px 0; padding:0 10px 0 37px; display:block;
+  color:#6f7f95; background:transparent; border:0; border-radius:8px; font-size:12px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:left;
+}
+.menu-item:hover{color:var(--primary); background:#f5f8fc}
+.menu-item.active{height:40px; line-height:40px; color:#fff; background:var(--primary); font-weight:700; box-shadow:0 8px 18px rgba(31,93,188,.22)}
+.side-foot{
+  flex:0 0 46px; display:flex; align-items:center; gap:7px; padding:0 20px;
+  border-top:1px solid #f2f5f9; color:#9aa5b4; font-size:10px;
+}
+.env-dot{width:6px; height:6px; border-radius:50%; background:#3fae86; box-shadow:0 0 0 3px rgba(63,174,134,.16)}
+
+.main-shell{margin-left:212px; min-height:100vh; display:flex; flex-direction:column; height:100vh}
+.top-header{
+  flex:0 0 66px; height:66px; padding:0 24px 0 28px; display:flex; align-items:center; justify-content:space-between;
+  background:rgba(255,255,255,.78); backdrop-filter:blur(12px); border-bottom:1px solid #eef2f8; z-index:10;
+}
+.page-title{display:flex; flex-direction:column; gap:3px}
+.crumb{color:#9aa6b7; font-size:10px; letter-spacing:.03em}
+.crumb b{color:#7d8b9f; font-weight:600}
+.title-row{display:flex; align-items:center; gap:12px}
+.title-row>b{font-size:22px; font-weight:800; color:#1b2838; letter-spacing:-.01em}
+.title-chip{
+  height:21px; padding:0 9px; display:inline-flex; align-items:center; gap:5px;
+  color:var(--primary); background:var(--primary-soft); border:1px solid #dbe9fb; border-radius:11px;
+  font-size:10px; font-weight:600;
+}
+.header-actions{display:flex; align-items:center; gap:10px}
+.icon-btn{
+  position:relative; width:36px; height:36px; display:grid; place-items:center; color:#66768d;
+  background:#fff; border:1px solid #e3e9f1; border-radius:50%; transition:all .15s ease;
+}
+.icon-btn:hover{color:var(--primary); border-color:#bfd3ec; background:#f8fbff}
+.icon-btn .dot{position:absolute; top:8px; right:9px; width:6px; height:6px; border-radius:50%; background:#e06b6b; border:1.5px solid #fff}
+.icon-btn.sm{width:32px; height:32px; border-radius:10px}
+.divider{width:1px; height:22px; background:#e9eef5; margin:0 2px}
+.user{display:flex; align-items:center; gap:9px; padding-left:4px}
+.avatar{
+  width:34px; height:34px; display:grid; place-items:center; color:#fff; font-size:12px; font-weight:700;
+  background:linear-gradient(145deg,#5b8ede,#255bb4); border-radius:50%;
+}
+.user div{display:flex; flex-direction:column; line-height:1.25}
+.user b{font-size:12px; color:#2c394c}
+.user small{font-size:10px; color:#94a0b1}
+
+.content{
+  flex:1; min-height:0; padding:20px 24px 40px; overflow-y:auto; overflow-x:hidden;
+}
+.content>*{animation:fadeUp .2s ease both}
+@keyframes fadeUp{from{opacity:0; transform:translateY(4px)}to{opacity:1; transform:none}}
+
+/* ============ 2. Buttons ============ */
+.btn{
+  height:34px; padding:0 16px; display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  color:#516176; background:#fff; border:1px solid var(--control-border); border-radius:var(--radius-btn);
+  font-size:12px; white-space:nowrap; transition:all .15s ease;
+}
+.btn:hover{color:var(--primary); border-color:#8aa5d8; background:#fbfdff}
+.btn.primary{color:#fff; background:var(--primary); border-color:var(--primary); box-shadow:0 8px 18px rgba(31,93,188,.18)}
+.btn.primary:hover{background:var(--primary-hover); border-color:var(--primary-hover)}
+.btn.primary-soft{color:var(--primary); background:var(--primary-soft); border-color:#b7d1f2}
+.btn.danger-soft{color:#b54b55; background:#fff2f3; border-color:#efc5c9}
+.btn.danger-soft:hover{color:#9c3b45; border-color:#e3aeb3; background:#ffecee}
+.btn.ghost{border-color:transparent; background:transparent; color:var(--primary); padding:0 10px}
+.btn.ghost:hover{background:var(--primary-subtle); border-color:transparent}
+.btn.sm{height:30px; padding:0 12px; font-size:11px}
+.btn[disabled],.btn:disabled{color:#abb4c1!important; background:#f3f5f8!important; border-color:#e3e7ed!important; box-shadow:none!important; cursor:not-allowed!important}
+.btn .chev{width:6px; height:6px; margin-left:1px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:rotate(45deg) translateY(-1px)}
+
+/* ============ 3. Form controls ============ */
+input,select,textarea{
+  width:100%; height:var(--control-height); padding:0 12px; color:#314052; background:#fff;
+  border:1px solid var(--control-border); border-radius:var(--control-radius); outline:none;
+  font-size:12px; transition:border-color .15s, box-shadow .15s, background-color .15s;
+}
+input::placeholder,textarea::placeholder{color:var(--placeholder)}
+input:hover:not(:disabled),select:hover:not(:disabled),textarea:hover:not(:disabled){border-color:#aebfd6}
+input:focus,select:focus,textarea:focus{border-color:#7da7df; box-shadow:0 0 0 3px rgba(31,93,188,.1)}
+input:disabled,select:disabled{color:#9da5b3; background:#f5f7fa; cursor:not-allowed}
+textarea{padding:10px 12px; min-height:84px; line-height:20px; resize:vertical}
+select{appearance:none; -webkit-appearance:none; padding-right:34px; cursor:pointer}
+.sel{position:relative; min-width:0}
+.sel>i{
+  position:absolute; top:50%; right:13px; width:7px; height:7px; border-right:1.5px solid #77859a; border-bottom:1.5px solid #77859a;
+  transform:translateY(-65%) rotate(45deg); pointer-events:none;
+}
+.switch{display:inline-flex; align-items:center; gap:9px; cursor:pointer; user-select:none}
+.switch input{position:absolute; opacity:0; width:0; height:0}
+.switch .track{width:38px; height:22px; padding:2px; background:#dfe6ef; border-radius:11px; transition:background .18s}
+.switch .track:after{content:""; display:block; width:18px; height:18px; background:#fff; border-radius:50%; box-shadow:0 2px 5px rgba(24,48,86,.18); transition:transform .18s}
+.switch input:checked+.track{background:var(--primary)}
+.switch input:checked+.track:after{transform:translateX(16px)}
+.switch span.txt{font-size:12px; color:#566377}
+input[type=checkbox]{width:15px; height:15px; accent-color:var(--primary); padding:0; cursor:pointer; border-radius:4px}
+.switch input[type=checkbox]{position:absolute; width:0; height:0; padding:0; border:0; opacity:0; pointer-events:none}
+input[type=date]{padding-right:8px}
+
+/* ============ 4. Cards / stats / filter ============ */
+.card{background:#fff; border-radius:var(--panel-radius); box-shadow:var(--shadow); padding:22px 24px}
+.card-head{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:18px}
+.card-head b{font-size:15px; color:#243248; font-weight:700}
+.card-head small{display:block; margin-top:3px; color:#94a0b1; font-size:10px; letter-spacing:.02em}
+.card-head .link{font-size:11px; color:var(--primary); background:transparent; border:0; display:inline-flex; align-items:center; gap:4px}
+.card-head .link:hover{text-decoration:underline}
+
+.stat-grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:18px}
+.stat-card{
+  position:relative; min-height:112px; padding:18px 22px; display:grid; align-content:center; gap:7px;
+  background:#fff; border:1px solid #e6edf6; border-radius:var(--section-radius); box-shadow:var(--shadow-sm);
+  text-align:left; transition:transform .16s ease, box-shadow .16s ease, border-color .16s;
+}
+button.stat-card{width:100%; font-family:inherit}
+button.stat-card:hover{transform:translateY(-2px); box-shadow:0 16px 34px rgba(30,58,104,.1); border-color:#d7e4f4}
+.stat-top{display:flex; align-items:center; justify-content:space-between; gap:8px}
+.stat-top>span{color:#8794a7; font-size:11px}
+.stat-card strong{color:#26364f; font-size:22px; font-weight:700; letter-spacing:-.01em}
+.stat-card strong em{font-style:normal; font-size:12px; font-weight:600; color:#8794a7; margin-left:3px}
+.stat-foot{display:flex; align-items:center; gap:7px; color:#9aa6b6; font-size:10px}
+.trend{display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:600; padding:0 6px; height:18px; border-radius:9px}
+.trend.up{color:#a8564f; background:#fbeeec}
+.trend.down{color:#3c7a72; background:#eaf5f2}
+.trend.flat{color:#728198; background:#f1f4f8}
+
+.filter-card{background:#fff; border-radius:var(--panel-radius); box-shadow:var(--shadow); padding:22px 28px 0; margin-bottom:18px}
+.filter-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px 30px}
+.f-item{min-width:0; display:grid; grid-template-columns:92px minmax(0,1fr); align-items:center; gap:12px}
+.f-item>span{color:var(--label); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.f-item.wide{grid-column:1 / -1}
+.filter-grid .more-field{display:none}
+.filter-grid.expanded .more-field{display:grid}
+.filter-footer{
+  min-height:58px; margin-top:18px; display:flex; align-items:center; justify-content:space-between; gap:16px;
+  border-top:1px solid #edf1f6;
+}
+.filter-note{display:flex; align-items:center; gap:6px; color:#8995a7; font-size:11px}
+.filter-note b{color:var(--primary); font-weight:700}
+.filter-btns{display:flex; align-items:center; gap:8px}
+.filter-footer.sb-bill-footer{flex-direction:column; align-items:stretch; justify-content:flex-start; gap:10px; min-height:0; padding-top:12px}
+.filter-footer.sb-bill-footer .filter-btns{justify-content:flex-end}
+
+/* ============ date range picker ============ */
+.range-wrap{position:relative; min-width:0}
+.range-trigger{
+  position:relative; width:100%; height:34px; padding:0 30px 0 12px; display:flex; align-items:center; gap:8px;
+  background:#fff; border:1px solid var(--control-border); border-radius:var(--control-radius);
+  font-size:12px; color:#3d4c63; cursor:pointer; font-family:inherit; text-align:left;
+  transition:border-color .15s, box-shadow .15s; white-space:nowrap; overflow:hidden;
+}
+.range-trigger svg{flex:none; color:#8b98aa}
+.range-trigger b{font-weight:600; overflow:hidden; text-overflow:ellipsis}
+.range-trigger i{font-style:normal; color:#9aa6b6; flex:none}
+.range-trigger:after{
+  content:""; position:absolute; top:50%; right:13px; width:7px; height:7px;
+  border-right:1.5px solid #77859a; border-bottom:1.5px solid #77859a;
+  transform:translateY(-65%) rotate(45deg); pointer-events:none;
+}
+.range-trigger:hover{border-color:#aebfd6}
+.range-wrap.open .range-trigger{border-color:#7da7df; box-shadow:0 0 0 3px rgba(31,93,188,.1)}
+.range-panel{
+  position:absolute; top:calc(100% + 8px); left:0; z-index:60; width:294px;
+  background:#fff; border:1px solid #e3eaf4; border-radius:16px; box-shadow:0 18px 44px rgba(24,48,86,.16);
+  padding:14px 16px 12px;
+}
+.rp-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px}
+.rp-head b{font-size:13px; color:#243248}
+.rp-nav{display:flex; align-items:center; gap:2px}
+.rp-nav button{width:24px; height:24px; border:0; background:transparent; border-radius:7px; color:#5c6b81; cursor:pointer; font-size:14px; line-height:1; display:flex; align-items:center; justify-content:center; font-family:inherit}
+.rp-nav button:hover{background:#eef3fa; color:var(--primary)}
+.rp-week{display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:2px}
+.rp-week span{height:24px; display:flex; align-items:center; justify-content:center; font-size:10px; color:#94a0b1}
+.rp-days{display:grid; grid-template-columns:repeat(7,1fr)}
+.rp-day{height:30px; border:0; background:transparent; border-radius:8px; font-size:11px; color:#3d4c63; cursor:pointer; font-family:inherit; position:relative}
+.rp-day:hover{background:#eef3fa}
+.rp-day.dim{color:#c2cbd8}
+.rp-day.today:after{content:""; position:absolute; bottom:3px; left:50%; transform:translateX(-50%); width:3px; height:3px; border-radius:50%; background:#8b98aa}
+.rp-day.inrange{background:#e8f0fc; border-radius:0; color:var(--primary)}
+.rp-day.start,.rp-day.end{background:var(--primary); color:#fff; font-weight:700}
+.rp-day.start{border-radius:8px 0 0 8px}
+.rp-day.end{border-radius:0 8px 8px 0}
+.rp-day.start.end{border-radius:8px}
+.rp-quick{display:flex; gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid #edf1f6}
+.rp-quick button{flex:1; height:26px; border:1px solid #dfe6ef; background:#fff; border-radius:8px; font-size:11px; color:#5c6b81; cursor:pointer; font-family:inherit}
+.rp-quick button:hover{border-color:var(--primary); color:var(--primary)}
+
+.panel-card{background:#fff; border-radius:var(--panel-radius); box-shadow:var(--shadow); padding:18px 22px 20px}
+.panel-head{display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:38px; margin-bottom:14px}
+.tools{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.tools-right{display:flex; align-items:center; gap:12px}
+.sel-count{color:#8995a7; font-size:11px}
+.sel-count b{color:var(--primary)}
+
+/* ============ 5. Table ============ */
+.table-scroll{
+  position:relative; width:100%; overflow:auto; border:1px solid #edf1f6; border-radius:16px;
+  scrollbar-width:thin;
+}
+.dt{width:1424px; min-width:100%; border-collapse:separate; border-spacing:0; table-layout:fixed; font-size:12px}
+.dt th,.dt td{
+  height:50px; padding:0 14px; overflow:hidden; border-bottom:1px solid #edf1f6; background:#fff;
+  color:#3c495d; text-align:left; text-overflow:ellipsis; white-space:nowrap;
+}
+.dt th{height:42px; color:#8491a4; background:#f8fafd; font-weight:600; font-size:11px; letter-spacing:.02em}
+.dt tbody tr:last-child td{border-bottom:0}
+.dt tbody tr:hover td{background:#fbfdff}
+.dt .num{text-align:right; font-variant-numeric:tabular-nums}
+.dt .primary-cell{color:#2c394d; font-weight:650}
+.dt .cell-sub{display:block; margin-top:2px; color:#9aa6b6; font-size:10px; font-weight:400}
+.stick-l{position:sticky; left:0; z-index:3}
+.stick-l2{position:sticky; left:46px; z-index:3; border-right:1px solid #e9eef5; box-shadow:8px 0 14px rgba(42,61,90,.035)}
+.stick-r{position:sticky; right:0; z-index:4; border-left:1px solid #e9eef5; box-shadow:-8px 0 14px rgba(42,61,90,.035)}
+.dt thead .stick-l,.dt thead .stick-l2,.dt thead .stick-r{z-index:6; background:#f8fafd}
+.dt tbody tr:hover .stick-l,.dt tbody tr:hover .stick-l2,.dt tbody tr:hover .stick-r{background:#fbfdff}
+.dt tbody tr.is-selected td{background:#f4f9ff}
+.dt tbody tr.is-selected:hover td{background:#eff7ff}
+/* 充电订单父子行（按运单拆分子订单） */
+.sub-toggle{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-right:6px;padding:0;border:1px solid #d6deea;border-radius:5px;background:#fff;color:#7c8a9d;cursor:pointer;vertical-align:-4px}
+.sub-toggle .chev{width:5px;height:5px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);transition:transform .15s}
+.sub-toggle:hover{color:var(--primary);border-color:var(--primary)}
+.sub-toggle.open{color:var(--primary);border-color:var(--primary);background:var(--primary-subtle)}
+.sub-toggle.open .chev{transform:rotate(45deg) translate(-1px,-1px)}
+.sub-toggle-ph{display:inline-block;width:24px}
+tr.ev-sub>td{background:#f7fafd;color:#66738a;font-size:11px;height:42px}
+tr.ev-sub:hover>td{background:#f1f6fc}
+tr.ev-sub>td.stick-first,tr.ev-sub>td.stick-r{background:#f7fafd}
+tr.ev-sub:hover>td.stick-first,tr.ev-sub:hover>td.stick-r{background:#f1f6fc}
+tr.ev-sub .cell-sub{margin-top:3px;color:#8b98aa}
+.row-actions{position:relative; display:flex; align-items:center; gap:12px; overflow:visible}
+.row-actions>button{padding:0; color:var(--primary); background:transparent; border:0; font-size:12px; white-space:nowrap}
+.row-actions>button:hover{text-decoration:underline}
+.row-actions>button.muted{color:#8b98aa}
+.row-menu{
+  position:absolute; top:26px; right:0; z-index:12; width:132px; padding:6px;
+  background:#fff; border:1px solid #e7edf5; border-radius:12px; box-shadow:0 16px 34px rgba(30,58,104,.14);
+}
+.row-menu button{display:block; width:100%; padding:7px 10px; text-align:left; color:#4d5c70; background:transparent; border:0; border-radius:8px; font-size:11px}
+.row-menu button:hover{background:#f4f8fd; color:var(--primary)}
+.float-menu{
+  position:fixed; z-index:200; width:148px; padding:6px; background:#fff; border:1px solid #e7edf5;
+  border-radius:12px; box-shadow:0 18px 38px rgba(30,58,104,.16); animation:fadeIn .12s ease;
+}
+.float-menu button{display:block; width:100%; padding:8px 10px; text-align:left; color:#4d5c70; background:transparent; border:0; border-radius:8px; font-size:11px}
+.float-menu button:hover{background:#f4f8fd; color:var(--primary)}
+
+.pager{display:flex; align-items:center; justify-content:space-between; gap:16px; padding-top:16px}
+.pager-info{color:#8995a7; font-size:11px}
+.pager-info b{color:#42526b}
+.pager-ctl{display:flex; align-items:center; gap:6px}
+.pg{
+  min-width:30px; height:30px; padding:0 8px; display:grid; place-items:center; color:#5b6b80;
+  background:#fff; border:1px solid #e3e9f1; border-radius:10px; font-size:11px;
+}
+.pg:hover:not(:disabled){color:var(--primary); border-color:#b9cfe9}
+.pg.active{color:#fff; background:var(--primary); border-color:var(--primary); font-weight:700}
+.pg:disabled{color:#b8c2cf; background:#f7f9fc; cursor:not-allowed}
+.pg-size{display:flex; align-items:center; gap:7px; color:#8995a7; font-size:11px}
+.pg-size select{width:auto; height:30px; padding:0 28px 0 10px; border-radius:10px; font-size:11px}
+
+/* ============ 6. Tags & status ============ */
+.tag{
+  display:inline-flex; align-items:center; gap:0; min-height:22px; padding:0 9px; border-radius:12px;
+  color:#56657a; background:#f1f4f8; font-size:11px; font-weight:500; white-space:nowrap; line-height:22px;
+}
+.tag.tag-blue{color:#45688f; background:#eaf1f8}
+.tag.tag-orange{color:#a56b25; background:#fbf3e6}
+.tag.tag-red{color:#ae4e50; background:#faeeee}
+.tag.tag-purple{color:#67558d; background:#f0ecf8}
+.tag.tag-gray{color:#697386; background:#f0f2f5}
+.tag.tag-cyan{color:#38787a; background:#eaf5f5}
+.tag.tag-green{color:#38785c; background:#eaf5ef}
+.tag-dot:before{content:""; width:5px; height:5px; margin-right:6px; background:currentColor; border-radius:50%; opacity:.85}
+.status{display:inline-flex; align-items:center; gap:7px; color:var(--primary); font-size:12px; font-weight:600}
+.status:before{content:""; width:6px; height:6px; background:currentColor; border-radius:50%; box-shadow:0 0 0 3px rgba(31,93,188,.1)}
+.status.danger{color:var(--danger)}
+.status.warn{color:var(--warn)}
+.status.ok{color:var(--ok)}
+.status.mute{color:#8b98aa}
+
+/* ============ 7. Dashboard ============ */
+.dash-grid{display:grid; grid-template-columns:1.6fr 1fr; gap:18px; margin-bottom:18px}
+.dash-grid-2{grid-template-columns:1fr 1fr}
+.seg{display:flex; padding:3px; background:#f1f5fa; border-radius:11px}
+.seg button{height:26px; padding:0 11px; color:#7c8a9d; background:transparent; border:0; border-radius:8px; font-size:11px}
+.seg button.active{color:var(--primary); background:#fff; font-weight:600; box-shadow:0 2px 6px rgba(30,58,104,.08)}
+.chart{display:grid; grid-template-columns:42px minmax(0,1fr); gap:10px; padding-top:4px}
+.chart-y{height:176px; display:flex; flex-direction:column; justify-content:space-between; align-items:flex-end; color:#a6b1c0; font-size:10px; padding-bottom:1px}
+.chart-plot{position:relative; height:176px; border-bottom:1px solid #eef2f8}
+.grid-line{position:absolute; left:0; right:0; border-top:1px dashed #eef2f8}
+.bars{position:absolute; inset:0; display:flex; align-items:flex-end; gap:10px; padding:0 6px}
+.bar-col{flex:1; height:100%; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:8px; position:relative}
+.bar{
+  width:min(38px,60%); border-radius:9px 9px 4px 4px; background:linear-gradient(180deg,#4a83d3,#1f5dbc);
+  transition:filter .15s ease, transform .15s ease; transform-origin:bottom;
+}
+.bar:hover{filter:brightness(1.08); transform:scaleY(1.02)}
+.bar-v{color:#5b6b80; font-size:10px; font-weight:600}
+.chart-x{display:flex; gap:10px; padding:9px 6px 0; margin-left:52px}
+.chart-x span{flex:1; text-align:center; color:#9aa6b6; font-size:10px}
+.chart-x span.today{color:var(--primary); font-weight:600}
+.todo-list{display:flex; flex-direction:column; gap:2px}
+.todo-item{
+  display:flex; align-items:center; gap:12px; padding:11px 10px; border-radius:14px; background:transparent; border:0; text-align:left; width:100%;
+}
+.todo-item:hover{background:#f7fafd}
+.todo-dot{width:34px; height:34px; flex:0 0 34px; display:grid; place-items:center; border-radius:11px; background:var(--primary-subtle); color:var(--primary)}
+.todo-item.warn .todo-dot{background:#fdf5e9; color:#a56b25}
+.todo-item.danger .todo-dot{background:#fdeeee; color:#b75254}
+.todo-main{min-width:0; flex:1; display:flex; flex-direction:column; gap:2px}
+.todo-main b{font-size:12px; color:#2c394c; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.todo-main small{color:#94a0b1; font-size:10px}
+.todo-amt{color:#2c394c; font-size:12px; font-weight:650; font-variant-numeric:tabular-nums}
+.todo-go{color:#b3bfcd}
+.quick-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+.quick{
+  display:flex; flex-direction:column; align-items:flex-start; gap:10px; padding:16px; border-radius:16px;
+  background:#f8fafd; border:1px solid #eef2f8; text-align:left;
+}
+.quick:hover{background:#f3f8ff; border-color:#d9e7f7}
+.quick i{width:34px; height:34px; display:grid; place-items:center; border-radius:11px; background:#fff; color:var(--primary); box-shadow:0 4px 10px rgba(30,58,104,.06)}
+.quick b{font-size:12px; color:#2c394c; font-weight:600}
+.quick small{font-size:10px; color:#9aa6b6}
+.notice-list{display:flex; flex-direction:column}
+.notice{display:flex; gap:12px; padding:12px 4px; border-bottom:1px dashed #eef2f8}
+.notice:last-child{border-bottom:0}
+.notice time{color:#a6b1c0; font-size:10px; white-space:nowrap; padding-top:1px}
+.notice p{color:#4d5c70; font-size:12px; line-height:1.6}
+
+/* ============ 8. Overlay / drawer / modal / toast ============ */
+.layer{position:fixed; inset:0; z-index:100}
+.overlay{position:absolute; inset:0; background:rgba(28,38,54,.36); animation:fadeIn .16s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.drawer{
+  position:absolute; top:0; right:0; bottom:0; width:min(820px,calc(100vw - 238px)); display:flex; flex-direction:column;
+  background:#f5f7fb; box-shadow:-18px 0 50px rgba(27,44,70,.18); animation:drawerIn .2s cubic-bezier(.2,.8,.3,1);
+}
+@keyframes drawerIn{from{transform:translateX(28px); opacity:.6}to{transform:none; opacity:1}}
+.drawer>header{
+  flex:0 0 72px; padding:0 22px; display:flex; align-items:center; justify-content:space-between;
+  background:#fff; border-bottom:1px solid #e7ecf3;
+}
+.drawer>header .hd-left{display:flex; align-items:center; gap:13px}
+.drawer-mark{
+  width:36px; height:36px; display:grid; place-items:center; color:#fff; border-radius:12px;
+  background:linear-gradient(145deg,#2b6ccb,#174ea8); box-shadow:0 8px 18px rgba(31,93,188,.28);
+}
+.drawer h2{font-size:17px; color:#27364c; font-weight:700; line-height:1.2}
+.drawer header small{display:block; margin-top:3px; color:#98a3b2; font-size:9px; letter-spacing:.14em}
+.drawer>header .icon-btn{border-radius:50%}
+.drawer-body{flex:1; min-height:0; padding:20px 22px 28px; overflow-y:auto}
+.drawer>footer{
+  flex:0 0 64px; padding:0 22px; display:flex; align-items:center; justify-content:flex-end; gap:10px;
+  background:#fff; border-top:1px solid #e4eaf1;
+}
+.dcard{background:#fff; border-radius:var(--section-radius); box-shadow:var(--shadow-sm); padding:18px 20px; margin-bottom:14px}
+.dcard:last-child{margin-bottom:0}
+.dcard-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px}
+.dcard-head b{font-size:13px; color:#243248; font-weight:700}
+.dcard-head small{color:#9aa6b6; font-size:10px}
+.dgrid{display:grid; grid-template-columns:1fr 1fr; gap:14px 26px}
+.dfield{display:flex; flex-direction:column; gap:4px; min-width:0}
+.dfield>span{color:#94a0b1; font-size:10px}
+.dfield>b{color:#2c394c; font-size:12px; font-weight:600; word-break:break-all}
+.dfield.wide{grid-column:1 / -1}
+.amount-hero{
+  display:flex; align-items:flex-end; justify-content:space-between; gap:20px; padding:4px 2px 16px;
+  border-bottom:1px dashed #eef2f8; margin-bottom:16px;
+}
+.amount-hero small{display:block; color:#94a0b1; font-size:10px; margin-bottom:6px}
+.amount-hero strong{font-size:28px; font-weight:800; color:#1b4f9c; letter-spacing:-.02em}
+.dtab{display:flex; gap:26px; border-bottom:1px solid #e7ecf3; margin:-4px 0 18px}
+.dtab button{position:relative; padding:0 0 12px; color:#7c8a9d; background:transparent; border:0; font-size:12px; font-weight:600}
+.dtab button.active{color:var(--primary)}
+.dtab button.active:after{content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--primary); border-radius:2px}
+.timeline{position:relative; padding-left:22px}
+.timeline:before{content:""; position:absolute; left:5px; top:6px; bottom:6px; width:1px; background:#e4ebf4}
+.tl-item{position:relative; padding:0 0 18px}
+.tl-item:last-child{padding-bottom:0}
+.tl-item:before{
+  content:""; position:absolute; left:-21px; top:4px; width:9px; height:9px; border-radius:50%;
+  background:#fff; border:2px solid #c7d4e4;
+}
+.tl-item.done:before{border-color:var(--primary); background:var(--primary); box-shadow:0 0 0 3px rgba(31,93,188,.12)}
+.tl-item b{display:block; font-size:12px; color:#2c394c; font-weight:600}
+.tl-item span{color:#94a0b1; font-size:10px; display:block; margin-top:3px}
+.tl-item p{margin-top:6px; color:#5b6b80; font-size:11px; line-height:1.6; background:#f7fafd; border-radius:10px; padding:8px 10px}
+
+.modal{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:560px; max-height:calc(100vh - 80px);
+  display:flex; flex-direction:column; background:#fff; border-radius:22px; box-shadow:0 30px 70px rgba(20,36,60,.24);
+  animation:modalIn .18s cubic-bezier(.2,.8,.3,1); overflow:hidden;
+}
+@keyframes modalIn{from{opacity:0; transform:translate(-50%,-48%) scale(.98)}to{opacity:1; transform:translate(-50%,-50%) scale(1)}}
+.modal>header{flex:0 0 68px; padding:0 22px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #eef2f8}
+.modal>header h2{font-size:15px; font-weight:700; color:#243248}
+.modal>header small{display:block; margin-top:2px; color:#9aa6b6; font-size:9px; letter-spacing:.14em}
+.modal-body{flex:1; min-height:0; padding:20px 22px; overflow-y:auto}
+.modal-body.narrow{width:440px; max-width:100%; margin:0 auto}
+.form-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px 18px}
+.form-grid .wide{grid-column:1 / -1}
+.field{display:flex; flex-direction:column; gap:7px; min-width:0}
+.field>label{color:#566377; font-size:11px}
+.field>label i{color:#c65456; font-style:normal; margin-left:2px}
+.field.err input,.field.err select,.field.err textarea{border-color:#d98b8f; background:#fffafa}
+.field .msg{color:#b75254; font-size:10px; min-height:0}
+.modal>footer{flex:0 0 64px; padding:0 22px; display:flex; align-items:center; justify-content:flex-end; gap:10px; border-top:1px solid #eef2f8; background:#fcfdff}
+.confirm-body{padding:26px 22px 22px; text-align:center}
+.confirm-icon{width:46px; height:46px; margin:0 auto 14px; display:grid; place-items:center; border-radius:16px; background:var(--primary-soft); color:var(--primary)}
+.confirm-icon.warn{background:#fdf5e9; color:#a56b25}
+.confirm-icon.danger{background:#fdeeee; color:#b75254}
+.confirm-body b{display:block; font-size:15px; color:#243248; margin-bottom:7px}
+.confirm-body p{color:#7c8a9d; font-size:12px; line-height:1.7}
+
+.toast-host{position:fixed; top:18px; right:20px; z-index:300; display:flex; flex-direction:column; gap:10px; pointer-events:none}
+.toast{
+  min-width:240px; max-width:360px; padding:12px 16px; display:flex; align-items:center; gap:10px;
+  color:#2c394c; background:#fff; border:1px solid #e7edf5; border-left:3px solid var(--primary);
+  border-radius:14px; box-shadow:0 16px 36px rgba(30,58,104,.14); font-size:12px;
+  animation:toastIn .2s ease;
+}
+.toast .ico{color:var(--primary)}
+.toast.ok{border-left-color:#3f9e78}
+.toast.ok .ico{color:#3f9e78}
+.toast.warn{border-left-color:#c98a35}
+.toast.warn .ico{color:#c98a35}
+.toast.err{border-left-color:#c05c60}
+.toast.err .ico{color:#c05c60}
+@keyframes toastIn{from{opacity:0; transform:translateY(-6px)}to{opacity:1; transform:none}}
+
+/* ============ 9. Empty state / placeholder ============ */
+.empty-state{
+  min-height:520px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; text-align:center;
+}
+.empty-icon{width:64px; height:64px; display:grid; place-items:center; border-radius:22px; background:#f2f7fd; color:#9fb8d6; margin-bottom:4px}
+.empty-state b{font-size:15px; color:#3a4a60}
+.empty-state p{color:#93a0b1; font-size:12px; line-height:1.8; max-width:420px}
+.empty-actions{display:flex; gap:10px; margin-top:10px}
+.empty-row{padding:46px 0; text-align:center; color:#95a2b4; font-size:12px}
+.empty-row .ico{margin:0 auto 10px; color:#c3cfdd}
+
+/* ============ 10. Design system page ============ */
+.ds-section{margin-bottom:18px}
+.ds-title{display:flex; align-items:baseline; gap:10px; margin-bottom:14px}
+.ds-title b{font-size:15px; color:#243248}
+.ds-title span{color:#9aa6b6; font-size:10px; letter-spacing:.06em}
+.ds-sub{color:#8b98aa; font-size:11px; margin:-8px 0 14px}
+.swatches{display:grid; grid-template-columns:repeat(6,1fr); gap:12px}
+.swatch{border:1px solid #eef2f8; border-radius:14px; overflow:hidden; background:#fff}
+.swatch .chip{height:56px}
+.swatch .meta{padding:9px 11px; display:flex; flex-direction:column; gap:2px}
+.swatch b{font-size:11px; color:#3a4a60; font-weight:600}
+.swatch code{font-size:10px; color:#94a0b1}
+.type-row{display:flex; align-items:baseline; gap:16px; padding:10px 0; border-bottom:1px dashed #eef2f8}
+.type-row:last-child{border-bottom:0}
+.type-row .t{flex:1; color:#1f2d3d}
+.type-row .m{width:130px; color:#9aa6b6; font-size:10px; text-align:right}
+.ds-grid-2{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+.demo-row{display:flex; align-items:center; flex-wrap:wrap; gap:10px}
+.demo-block{display:flex; flex-direction:column; gap:10px; padding:14px 0; border-bottom:1px dashed #eef2f8}
+.demo-block:last-child{border-bottom:0; padding-bottom:0}
+.demo-block>label{color:#94a0b1; font-size:10px; letter-spacing:.04em}
+.mini-table{width:100%; border-collapse:separate; border-spacing:0; font-size:12px}
+.mini-table th,.mini-table td{height:44px; padding:0 12px; text-align:left; border-bottom:1px solid #edf1f6; white-space:nowrap}
+.mini-table th{height:38px; background:#f8fafd; color:#8491a4; font-size:11px; font-weight:600}
+.mini-table tr:last-child td{border-bottom:0}
+.mini-table .r{text-align:right; font-variant-numeric:tabular-nums}
+
+/* ============ 10.5 EV charging module ============ */
+.dt.dt-ev{width:3450px}
+.stick-first{position:sticky; left:0; z-index:3; border-right:1px solid #e9eef5; box-shadow:8px 0 14px rgba(42,61,90,.035)}
+.dt thead .stick-first{z-index:6; background:#f8fafd}
+.dt tbody tr:hover .stick-first{background:#fbfdff}
+.tag.pulse:before{animation:tagPulse 1.5s ease-in-out infinite}
+@keyframes tagPulse{0%,100%{opacity:1}50%{opacity:.3}}
+.tariff-head{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:2px 2px 14px; color:#566377; font-size:12px}
+.tariff-card{border:1px solid #edf1f6; border-radius:16px; padding:14px 16px; margin-bottom:12px}
+.tariff-card.current{border-color:var(--primary-border); background:var(--primary-subtle); box-shadow:inset 0 0 0 1px #c8dcf4}
+.tariff-range{display:flex; align-items:center; gap:8px; font-size:12px; font-weight:650; color:#2c394c; margin-bottom:10px}
+.tariff-row{display:flex; align-items:center; gap:10px; padding:3px 0; font-size:12px; color:#5b6b80}
+.tariff-row .tt{width:52px; height:20px; display:grid; place-items:center; border-radius:10px; font-size:10px; font-weight:600; flex:0 0 52px}
+.tariff-row.wl .tt{color:var(--primary); background:var(--primary-soft)}
+.tariff-row.st .tt{color:#8b98aa; background:#f1f4f8}
+.tariff-row b{font-size:15px; color:#1f2d3d; font-variant-numeric:tabular-nums; min-width:56px}
+.tariff-row .seg{color:#9aa6b6; font-size:11px; font-variant-numeric:tabular-nums}
+.tariff-note{margin-top:8px; padding-top:8px; border-top:1px dashed #e9eef5; color:#a56b25; font-size:10px; display:flex; align-items:center; justify-content:space-between; gap:10px}
+.tariff-note .ico{color:#c98a35}
+/* ---------- 嵌入模式：由运营平台宿主原型以 charge-ev.html?embed=1&page=<路由> 承载 ----------
+   隐藏本原型自带的左侧菜单与顶栏，内容区铺满 iframe；不带该参数单独打开时行为完全不变 */
+html.embed-mode,html.embed-mode body{min-width:0;overflow:hidden}
+html.embed-mode .side-nav{display:none}
+html.embed-mode .top-header{display:none}
+html.embed-mode .main-shell{margin-left:0;height:100vh;min-height:0}
+html.embed-mode .content{height:100vh;padding:16px 18px 28px}
+/* 嵌入模式下内容区更窄（右侧还有「重置/查询」按钮），长口径说明按段落换行，
+   避免 flex 子项被压成逐字换行；单独打开时不受影响 */
+html.embed-mode .filter-note{display:block;line-height:1.75}
+html.embed-mode .filter-note .ico{display:inline-block;vertical-align:-2px;margin-right:5px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="layer"></div>
+<div id="float-menu"></div>
+<div id="toast-host" class="toast-host"></div>
+<script>
+(function(){
+'use strict';
+
+/* ================= helpers ================= */
+const $ = (s,r)=> (r||document).querySelector(s);
+const $$ = (s,r)=> Array.from((r||document).querySelectorAll(s));
+const esc = v => String(v==null?'':v).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const pad = n => String(n).padStart(2,'0');
+const dateStr = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const dtStr = d => dateStr(d)+' '+pad(d.getHours())+':'+pad(d.getMinutes());
+const money = n => '¥'+Number(n).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const moneyShort = n => n>=10000 ? (n/10000).toFixed(1)+'万' : String(Math.round(n));
+const clamp = (n,a,b)=> Math.min(b,Math.max(a,n));
+
+const ICONS = {
+  drop:'<path d="M12 3.2c3.2 3.6 5.6 6.5 5.6 9.3A5.6 5.6 0 0 1 12 18a5.6 5.6 0 0 1-5.6-5.5c0-2.8 2.4-5.7 5.6-9.3z"/><path d="M9.4 13.2a2.6 2.6 0 0 0 2.6 2.4"/>',
+  dashboard:'<rect x="3.2" y="3.2" width="7.2" height="7.2" rx="2.2"/><rect x="13.6" y="3.2" width="7.2" height="7.2" rx="2.2"/><rect x="3.2" y="13.6" width="7.2" height="7.2" rx="2.2"/><rect x="13.6" y="13.6" width="7.2" height="7.2" rx="2.2"/>',
+  order:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>',
+  site:'<path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/>',
+  goods:'<path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/>',
+  finance:'<rect x="3" y="6" width="18" height="13" rx="3.2"/><path d="M3 10.5h18"/><circle cx="16.6" cy="15" r="1.1"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2 2 2 0 1 1-4 0 1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 15a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.4-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 10 4a2 2 0 1 1 4 0 1.7 1.7 0 0 0 2.9 1.4l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 21 11a2 2 0 1 1 0 4z"/>',
+  layers:'<path d="M12 3.2l9 4.9-9 4.9-9-4.9 9-4.9z"/><path d="M3 13l9 4.9 9-4.9"/>',
+  bell:'<path d="M18 8.6a6 6 0 1 0-12 0c0 6-2 7.2-2 7.2h16s-2-1.2-2-7.2"/><path d="M10.3 20.2a2 2 0 0 0 3.4 0"/>',
+  search:'<circle cx="11" cy="11" r="6.8"/><path d="M20 20l-3.7-3.7"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  download:'<path d="M12 3.5v11.5"/><path d="M7.2 10.6L12 15.4l4.8-4.8"/><path d="M4.5 20h15"/>',
+  close:'<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+  check:'<path d="M4.5 12.6l4.8 4.8L19.5 7"/>',
+  alert:'<path d="M12 4.2l8.8 15.6H3.2L12 4.2z"/><path d="M12 10v4M12 17.2h.01"/>',
+  calendar:'<rect x="3.2" y="5" width="17.6" height="16" rx="3.2"/><path d="M8 3v4M16 3v4M3.2 10h17.6"/>',
+  more:'<circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/>',
+  refresh:'<path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4.2v5h-5"/>',
+  filter:'<path d="M4 5h16l-6.2 7.2v5.6l-3.6 2v-7.6L4 5z"/>',
+  arrow:'<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>',
+  copy:'<rect x="9" y="9" width="11" height="11" rx="2.4"/><path d="M5 15.5V6.2A2.2 2.2 0 0 1 7.2 4H16"/>',
+  clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.4V12l3.2 2"/>',
+  trend:'<path d="M3.5 16.8l5.8-5.8 3.8 3.8 7-7"/><path d="M14.2 7.8h6v6"/>',
+  shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/>',
+  user:'<circle cx="12" cy="8" r="3.6"/><path d="M4.6 20a7.4 7.4 0 0 1 14.8 0"/>',
+  truck:'<path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3.2V16h-7z"/><circle cx="7" cy="18.2" r="1.8"/><circle cx="17.4" cy="18.2" r="1.8"/>',
+  upload:'<path d="M12 20V8.5"/><path d="M7.2 13.3L12 8.5l4.8 4.8"/><path d="M4.5 4h15"/>',
+  ev:'<rect x="5" y="3" width="13" height="18" rx="3"/><path d="M13.6 6.5L9.8 12h4.4l-3.8 5.5"/><path d="M18 9h2.2v4.6H18"/>',
+  doc:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 14h6M9 17h4"/>'
+};
+function icon(name,size){
+  size = size||16;
+  return '<svg class="ico" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[name]||'')+'</svg>';
+}
+
+/* ================= mock data ================= */
+const CUSTOMERS = ['江苏远洋物流','冀东运输集团','宏达车队','鲁通物流','长江能源','安泰运输','恒信物流','天成供应链','中远海运物流','德邦运输','京博能源','顺捷货运','新奥能源','中石化江苏分公司'];
+const GOODS = ['0# 柴油','-10# 柴油','92# 汽油','95# 汽油','LNG 液化天然气','车用尿素','润滑油'];
+const SITES = ['南京栖霞加油站','苏州工业园站','无锡锡山站','常州新北站','徐州云龙站','南通港闸站','杭州萧山站','合肥蜀山站'];
+const PAYS = ['账户余额','授信支付','银行转账','微信支付'];
+const OWNERS = ['张伟','李静','王涛','陈晨','刘洋','赵敏'];
+const LEVELS = ['战略客户','A 类客户','B 类客户'];
+
+let seed = 20261102;
+function rnd(){ seed = (seed*9301+49297)%233280; return seed/233280; }
+const pick = a => a[Math.floor(rnd()*a.length)];
+const int = (a,b) => a + Math.floor(rnd()*(b-a+1));
+
+const STATUS = {
+  pending:{text:'待确认',tag:'tag-orange',dot:'warn'},
+  confirmed:{text:'待结算',tag:'tag-blue',dot:''},
+  settled:{text:'已结算',tag:'tag-cyan',dot:'ok'},
+  cancelled:{text:'已取消',tag:'tag-gray',dot:'mute'},
+  exception:{text:'异常',tag:'tag-red',dot:'danger'}
+};
+
+let ORDERS = (function(){
+  const rows = [];
+  for(let i=0;i<48;i++){
+    const d = new Date();
+    d.setDate(d.getDate() - Math.floor(i/7));
+    d.setHours(int(8,20), int(0,59), 0, 0);
+    const qty = int(8,40);
+    const price = int(6900,8600);
+    const r = rnd();
+    const status = r<0.28?'pending' : r<0.54?'confirmed' : r<0.85?'settled' : r<0.93?'cancelled' : 'exception';
+    rows.push({
+      id:'o'+(i+1),
+      no:'HD'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+String(1048-i).padStart(4,'0'),
+      customer:pick(CUSTOMERS),
+      level:pick(LEVELS),
+      goods:pick(GOODS),
+      site:pick(SITES),
+      qty:qty, unit:'吨', price:price, amount:+(qty*price).toFixed(2),
+      pay:pick(PAYS),
+      status:status,
+      createdAt:d,
+      owner:pick(OWNERS),
+      remark:i%5===0?'客户要求 24 小时内送达，需提前与网点确认库存。':''
+    });
+  }
+  return rows.sort((a,b)=>b.createdAt-a.createdAt);
+})();
+
+function computeStats(){
+  const today = dateStr(new Date());
+  const todayRows = ORDERS.filter(o=>dateStr(o.createdAt)===today);
+  const valid = ORDERS.filter(o=>o.status!=='cancelled');
+  return {
+    todayCount: todayRows.length,
+    todayAmount: todayRows.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+o.amount,0),
+    pending: ORDERS.filter(o=>o.status==='pending').length,
+    exception: ORDERS.filter(o=>o.status==='exception').length,
+    total: ORDERS.length,
+    totalAmount: valid.reduce((s,o)=>s+o.amount,0),
+    todayCountDelta: 12.4,
+    todayAmountDelta: 6.8
+  };
+}
+
+function dailySeries(mode){
+  const days = [];
+  for(let i=6;i>=0;i--){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const key = dateStr(d);
+    const rows = ORDERS.filter(o=>dateStr(o.createdAt)===key && o.status!=='cancelled');
+    days.push({
+      key:key,
+      label:(d.getMonth()+1)+'-'+pad(d.getDate()),
+      today:i===0,
+      value: mode==='count' ? rows.length : +(rows.reduce((s,o)=>s+o.amount,0)/10000).toFixed(1)
+    });
+  }
+  return days;
+}
+
+/* ================= state ================= */
+const DEFAULT_FILTERS = {kw:'',status:'',date:'',goods:'',site:'',owner:'',pay:''};
+/* 对账单默认筛选：生成时间范围最近 1 个月 */
+const DEFAULT_RANGE = (function(){
+  const a = new Date(); a.setMonth(a.getMonth()-1);
+  return {from:dateStr(a), to:dateStr(new Date())};
+})();
+const state = {
+  route: location.hash.replace(/^#/,'') || '/dashboard',
+  openGroups: new Set(['workbench','trade']),
+  filters: Object.assign({},DEFAULT_FILTERS),
+  showMoreFilters:false,
+  page:1, pageSize:10,
+  sort:{key:'createdAt',dir:'desc'},
+  selected:new Set(),
+  openMenu:null,
+  drawer:null, drawerTab:'info',
+  modal:null,
+  chartMode:'amount',
+  evFilters:null, evPage:1, evPageSize:10,
+  evRange:{open:false, pick:null, hover:null, y:0, m:0, target:'ev'},
+  evSort:{key:'createdAt',dir:'desc'},
+  evQuerying:null,
+  billFilters:{no:'', company:'云快充', from:DEFAULT_RANGE.from, to:DEFAULT_RANGE.to},
+  billPage:1, billPageSize:10, billTab:'orders',
+  toasts:[]
+};
+
+const EV_DEFAULT_FILTERS = (function(){
+  const a = new Date(); a.setMonth(a.getMonth()-1);
+  return {no:'', biz:'', pay:'', station:'', company:'', subject:'', driver:'', from:dateStr(a), to:dateStr(new Date())};
+})();
+state.evFilters = Object.assign({}, EV_DEFAULT_FILTERS);
+
+/* ================= nav config ================= */
+const MENU = [
+  {key:'workbench',title:'工作台',icon:'dashboard',children:[{title:'首页概览',route:'/dashboard'}]},
+  {key:'trade',title:'撮合业务',icon:'order',children:[
+    {title:'撮合订单',route:'/order/list'},
+    {title:'订单结算',route:'/order/settle'},
+    {title:'退款管理',route:'/order/refund'}
+  ]},
+  {key:'evOrder',title:'订单管理(电)',icon:'ev',children:[
+    {title:'充电订单管理',route:'/evOrder/list'},
+    {title:'充电对账单',route:'/evOrder/bill'}
+  ]},
+  {key:'site',title:'网点中心',icon:'site',children:[
+    {title:'网点管理',route:'/site/list'},
+    {title:'网点地图',route:'/site/map'}
+  ]},
+  {key:'goods',title:'商品中心',icon:'goods',children:[
+    {title:'基础商品',route:'/goods/base'},
+    {title:'网点价格',route:'/goods/price'}
+  ]},
+  {key:'finance',title:'财务中心',icon:'finance',children:[
+    {title:'客户账户',route:'/finance/account'},
+    {title:'资金流水',route:'/finance/flow'}
+  ]},
+  {key:'system',title:'系统设置',icon:'settings',children:[
+    {title:'用户与角色',route:'/system/user'},
+    {title:'组件规范',route:'/design'}
+  ]}
+];
+
+const PAGES = {
+  '/dashboard':{group:'workbench',title:'工作台',sub:'今日经营概览',render:pageDashboard},
+  '/order/list':{group:'trade',title:'撮合订单',sub:'订单全链路管理',render:pageOrders},
+  '/evOrder/list':{group:'evOrder',title:'充电订单管理',sub:'充电订单全流程',render:pageEvOrders},
+  '/evOrder/bill':{group:'evOrder',title:'充电对账单',sub:'运营商对账 · 同步生成网货主体对账明细',render:pageEvBills},
+  '/design':{group:'system',title:'组件规范',sub:'设计系统 · Design Tokens',render:pageDesign}
+};
+function metaOf(route){
+  if(PAGES[route]) return PAGES[route];
+  for(const g of MENU) for(const c of g.children) if(c.route===route) return {group:g.key,title:c.title,sub:'功能建设中',render:null};
+  return {group:'workbench',title:'页面不存在',sub:'路由未注册',render:null};
+}
+function groupActive(g){
+  return g.children.some(c=>c.route===state.route) || g.key===metaOf(state.route).group;
+}
+
+/* ================= shell ================= */
+const app = $('#app');
+const layer = $('#layer');
+const toastHost = $('#toast-host');
+
+function menuHtml(){
+  return MENU.map(function(g){
+    const open = state.openGroups.has(g.key) || groupActive(g);
+    const items = g.children.map(function(c){
+      return '<button class="menu-item '+(state.route===c.route?'active':'')+'" data-act="nav" data-route="'+c.route+'">'+esc(c.title)+'</button>';
+    }).join('');
+    return '<div class="menu-group">'
+      + '<button class="menu-parent '+(open?'is-open':'')+'" data-act="toggle-group" data-key="'+g.key+'">'
+      + icon(g.icon,18) + '<span>'+esc(g.title)+'</span><i class="chev"></i></button>'
+      + '<div class="menu-children" '+(open?'':'style="display:none"')+'>'+items+'</div>'
+      + '</div>';
+  }).join('');
+}
+
+function shell(){
+  const meta = metaOf(state.route);
+  const body = meta.render ? meta.render() : pagePlaceholder(meta);
+  const crumbGroup = (MENU.find(g=>g.key===meta.group)||{title:'工作台'}).title;
+  return ''
+  + '<aside class="side-nav">'
+  +   '<div class="side-logo">'
+  +     '<span class="logo-mark">'+icon('drop',19)+'</span>'
+  +     '<div class="logo-text"><b>万油通</b><small>OMS CONSOLE</small></div>'
+  +   '</div>'
+  +   '<nav class="full-menu">'+menuHtml()+'</nav>'
+  +   '<div class="side-foot"><span class="env-dot"></span>生产环境 · v1.2.0</div>'
+  + '</aside>'
+  + '<div class="main-shell">'
+  +   '<header class="top-header">'
+  +     '<div class="page-title">'
+  +       '<div class="crumb"><b>万油通</b> / '+esc(crumbGroup)+' / '+esc(meta.title)+'</div>'
+  +       '<div class="title-row"><b>'+esc(meta.title)+'</b><span class="title-chip">'+esc(meta.sub)+'</span></div>'
+  +     '</div>'
+  +     '<div class="header-actions">'
+  +       '<button class="icon-btn" data-act="toast" data-msg="暂无新的系统通知" aria-label="消息">'+icon('bell',18)+'<i class="dot"></i></button>'
+  +       '<button class="btn" data-act="toast" data-msg="数据已刷新至最新" data-kind="ok">'+icon('refresh',14)+'刷新</button>'
+  +       '<span class="divider"></span>'
+  +       '<div class="user"><span class="avatar">顾</span><div><b>顾佳超</b><small>平台管理员</small></div></div>'
+  +     '</div>'
+  +   '</header>'
+  +   '<main class="content">'+body+'</main>'
+  + '</div>';
+}
+
+function render(){
+  state.openMenu = null;
+  const contentEl = $('.content');
+  const scrollTop = contentEl ? contentEl.scrollTop : 0;
+  const menuEl = $('.full-menu');
+  const menuScroll = menuEl ? menuEl.scrollTop : 0;
+
+  app.innerHTML = shell();
+
+  const c = $('.content'); if(c) c.scrollTop = scrollTop;
+  const m = $('.full-menu'); if(m) m.scrollTop = menuScroll;
+
+  renderLayer();
+  renderFloatMenu();
+  renderToasts();
+}
+
+/* ================= floating row menu ================= */
+const floatHost = $('#float-menu');
+function renderFloatMenu(){
+  const m = state.openMenu;
+  if(!m){ floatHost.innerHTML=''; return; }
+  floatHost.innerHTML = '<div class="float-menu" style="top:'+m.top+'px;left:'+m.left+'px">'
+    + '<button data-act="copy" data-no="'+esc(m.no)+'">复制订单号</button>'
+    + '<button data-act="toast" data-msg="已生成导出任务" data-kind="ok">导出订单</button>'
+    + '<button data-act="detail" data-id="'+m.id+'">查看流转记录</button>'
+    + '</div>';
+}
+
+/* ================= page: dashboard ================= */
+function pageDashboard(){
+  const s = computeStats();
+  const series = dailySeries(state.chartMode);
+  const max = Math.max.apply(null, series.map(d=>d.value).concat([1]));
+  const unit = state.chartMode==='count' ? '单' : '万元';
+  const pendingRows = ORDERS.filter(o=>o.status==='pending').slice(0,5);
+
+  const bars = series.map(function(d){
+    const h = Math.max(6, Math.round(d.value/max*132));
+    return '<div class="bar-col">'
+      + '<span class="bar-v">'+(state.chartMode==='count'?d.value:d.value.toFixed(1))+'</span>'
+      + '<div class="bar" style="height:'+h+'px" title="'+d.key+' · '+d.value+unit+'"></div>'
+      + '</div>';
+  }).join('');
+
+  const xLabels = series.map(d=>'<span class="'+(d.today?'today':'')+'">'+(d.today?'今日':d.label)+'</span>').join('');
+
+  const todos = pendingRows.map(function(o){
+    return '<button class="todo-item" data-act="detail" data-id="'+o.id+'">'
+      + '<span class="todo-dot">'+icon('order',16)+'</span>'
+      + '<span class="todo-main"><b>'+esc(o.customer)+'</b><small>'+esc(o.no)+' · '+esc(o.goods)+'</small></span>'
+      + '<span class="todo-amt">'+moneyShort(o.amount)+'</span>'
+      + '<span class="todo-go">'+icon('arrow',14)+'</span>'
+      + '</button>';
+  }).join('');
+
+  return ''
+  + '<section class="stat-grid">'
+  +   '<button class="stat-card" data-act="nav" data-route="/order/list">'
+  +     '<div class="stat-top"><span>今日订单量</span><em class="tag tag-blue tag-dot">实时</em></div>'
+  +     '<strong>'+s.todayCount+'<em>单</em></strong>'
+  +     '<div class="stat-foot"><span class="trend up">↑ '+s.todayCountDelta+'%</span><span>较昨日</span></div>'
+  +   '</button>'
+  +   '<button class="stat-card" data-act="nav" data-route="/order/list">'
+  +     '<div class="stat-top"><span>今日成交额</span><em class="tag tag-cyan">含税</em></div>'
+  +     '<strong>'+moneyShort(s.todayAmount)+'<em>元</em></strong>'
+  +     '<div class="stat-foot"><span class="trend up">↑ '+s.todayAmountDelta+'%</span><span>较昨日</span></div>'
+  +   '</button>'
+  +   '<button class="stat-card" data-act="nav" data-route="/order/list">'
+  +     '<div class="stat-top"><span>待确认订单</span><em class="tag tag-orange tag-dot">待办</em></div>'
+  +     '<strong>'+s.pending+'<em>单</em></strong>'
+  +     '<div class="stat-foot"><span class="trend flat">需 2h 内处理</span><span>超时将升级</span></div>'
+  +   '</button>'
+  +   '<button class="stat-card" data-act="nav" data-route="/order/list">'
+  +     '<div class="stat-top"><span>异常订单</span><em class="tag tag-red tag-dot">关注</em></div>'
+  +     '<strong>'+s.exception+'<em>单</em></strong>'
+  +     '<div class="stat-foot"><span class="trend down">↓ 2 单</span><span>近 7 日</span></div>'
+  +   '</button>'
+  + '</section>'
+
+  + '<div class="dash-grid">'
+  +   '<article class="card">'
+  +     '<div class="card-head">'
+  +       '<div><b>近 7 日成交趋势</b><small>单位：'+unit+' · 不含已取消订单</small></div>'
+  +       '<div class="seg">'
+  +         '<button class="'+(state.chartMode==='amount'?'active':'')+'" data-act="seg" data-mode="amount">成交额</button>'
+  +         '<button class="'+(state.chartMode==='count'?'active':'')+'" data-act="seg" data-mode="count">订单量</button>'
+  +       '</div>'
+  +     '</div>'
+  +     '<div class="chart">'
+  +       '<div class="chart-y"><span>'+max.toFixed(0)+'</span><span>'+(max*0.66).toFixed(0)+'</span><span>'+(max*0.33).toFixed(0)+'</span><span>0</span></div>'
+  +       '<div class="chart-plot">'
+  +         '<div class="grid-line" style="top:0"></div><div class="grid-line" style="top:33%"></div>'
+  +         '<div class="grid-line" style="top:66%"></div>'
+  +         '<div class="bars">'+bars+'</div>'
+  +       '</div>'
+  +     '</div>'
+  +     '<div class="chart-x">'+xLabels+'</div>'
+  +   '</article>'
+  +   '<article class="card">'
+  +     '<div class="card-head">'
+  +       '<div><b>待我处理</b><small>按创建时间倒序，共 '+s.pending+' 单待确认</small></div>'
+  +       '<button class="link" data-act="nav" data-route="/order/list">全部'+icon('arrow',12)+'</button>'
+  +     '</div>'
+  +     '<div class="todo-list">'+(todos||'<div class="empty-row">暂无待处理订单</div>')+'</div>'
+  +   '</article>'
+  + '</div>'
+
+  + '<div class="dash-grid dash-grid-2">'
+  +   '<article class="card">'
+  +     '<div class="card-head"><div><b>快捷入口</b><small>常用操作，一键直达</small></div></div>'
+  +     '<div class="quick-grid">'
+  +       '<button class="quick" data-act="open-create"><i>'+icon('plus',17)+'</i><b>新建订单</b><small>撮合下单</small></button>'
+  +       '<button class="quick" data-act="nav" data-route="/order/list"><i>'+icon('download',17)+'</i><b>订单导出</b><small>对账使用</small></button>'
+  +       '<button class="quick" data-act="nav" data-route="/finance/account"><i>'+icon('finance',17)+'</i><b>客户对账</b><small>账户余额</small></button>'
+  +       '<button class="quick" data-act="nav" data-route="/goods/price"><i>'+icon('goods',17)+'</i><b>价格调整</b><small>网点商品</small></button>'
+  +     '</div>'
+  +   '</article>'
+  +   '<article class="card">'
+  +     '<div class="card-head"><div><b>系统公告</b><small>平台规则与版本动态</small></div></div>'
+  +     '<div class="notice-list">'
+  +       '<div class="notice"><time>11-02</time><p>撮合订单新增「异常拦截」规则，超授信额度将自动挂起，需人工复核后放行。</p></div>'
+  +       '<div class="notice"><time>10-29</time><p>0# 柴油网点价格批量调整功能已上线，支持按区域一键改价。</p></div>'
+  +       '<div class="notice"><time>10-26</time><p>结算单导出字段升级：新增客户等级、业务员与毛利列。</p></div>'
+  +     '</div>'
+  +   '</article>'
+  + '</div>';
+}
+
+/* ================= page: orders ================= */
+function applyFilters(rows){
+  const f = state.filters;
+  return rows.filter(function(o){
+    if(f.kw && o.no.indexOf(f.kw)<0 && o.customer.indexOf(f.kw)<0) return false;
+    if(f.status && o.status!==f.status) return false;
+    if(f.goods && o.goods!==f.goods) return false;
+    if(f.site && o.site!==f.site) return false;
+    if(f.owner && o.owner!==f.owner) return false;
+    if(f.pay && o.pay!==f.pay) return false;
+    if(f.date && dateStr(o.createdAt)!==f.date) return false;
+    return true;
+  });
+}
+function applySort(rows){
+  const k = state.sort.key, dir = state.sort.dir==='asc'?1:-1;
+  return rows.slice().sort(function(a,b){
+    if(k==='createdAt') return (a.createdAt-b.createdAt)*dir;
+    return (a[k]-b[k])*dir;
+  });
+}
+function sortIcon(key){
+  if(state.sort.key!==key) return '<span style="color:#c3cedd;margin-left:4px">↕</span>';
+  return '<span style="color:var(--primary);margin-left:4px">'+(state.sort.dir==='asc'?'↑':'↓')+'</span>';
+}
+function selectOptions(list, current, placeholder){
+  return '<option value="">'+esc(placeholder||'全部')+'</option>'+list.map(function(item){
+    const v = Array.isArray(item) ? item[0] : item;
+    const t = Array.isArray(item) ? item[1] : item;
+    return '<option value="'+esc(v)+'" '+(current===v?'selected':'')+'>'+esc(t)+'</option>';
+  }).join('');
+}
+function fText(label,name,ph,wide){
+  return '<label class="f-item '+(wide?'wide':'')+'"><span>'+label+'</span>'
+    + '<input type="text" data-filter="'+name+'" value="'+esc(state.filters[name])+'" placeholder="'+esc(ph)+'" /></label>';
+}
+function fSelect(label,name,list,ph,more){
+  return '<label class="f-item '+(more?'more-field':'')+'"><span>'+label+'</span>'
+    + '<span class="sel"><select data-filter="'+name+'">'+selectOptions(list,state.filters[name],ph)+'</select><i></i></span></label>';
+}
+function fDate(label,name,more){
+  return '<label class="f-item '+(more?'more-field':'')+'"><span>'+label+'</span>'
+    + '<input type="date" data-filter="'+name+'" value="'+esc(state.filters[name])+'" /></label>';
+}
+
+function pageOrders(){
+  const s = computeStats();
+  let rows = applySort(applyFilters(ORDERS));
+  const total = rows.length;
+  const pages = Math.max(1, Math.ceil(total/state.pageSize));
+  state.page = clamp(state.page,1,pages);
+  const start = (state.page-1)*state.pageSize;
+  const pageRows = rows.slice(start, start+state.pageSize);
+  const selectedVisible = pageRows.filter(o=>state.selected.has(o.id)).length;
+  const allSelected = pageRows.length>0 && selectedVisible===pageRows.length;
+
+  const body = pageRows.map(function(o){
+    const st = STATUS[o.status];
+    const isSel = state.selected.has(o.id);
+    return '<tr class="'+(isSel?'is-selected':'')+'">'
+      + '<td class="stick-l" style="padding:0 0 0 14px"><input type="checkbox" data-act="select-row" data-id="'+o.id+'" '+(isSel?'checked':'')+' aria-label="选择订单" /></td>'
+      + '<td class="stick-l2 primary-cell">'+esc(o.no)+'<span class="cell-sub">'+esc(o.pay)+'</span></td>'
+      + '<td>'+esc(o.customer)+'<span class="cell-sub">'+esc(o.level)+'</span></td>'
+      + '<td>'+esc(o.goods)+'</td>'
+      + '<td>'+esc(o.site)+'</td>'
+      + '<td class="num">'+o.qty+' <span style="color:#9aa6b6">'+o.unit+'</span></td>'
+      + '<td class="num primary-cell">'+money(o.amount)+'</td>'
+      + '<td><span class="tag '+st.tag+'">'+st.text+'</span></td>'
+      + '<td>'+dtStr(o.createdAt)+'<span class="cell-sub">'+esc(o.owner)+'</span></td>'
+      + '<td class="stick-r">'
+      +   '<div class="row-actions">'
+      +     '<button data-act="detail" data-id="'+o.id+'">详情</button>'
+      +     (o.status==='pending'?'<button data-act="confirm-one" data-id="'+o.id+'">确认</button>':'')
+      +     ((o.status==='pending'||o.status==='confirmed')?'<button class="muted" data-act="ask-cancel" data-id="'+o.id+'">取消</button>':'')
+      +     '<button class="muted" data-act="more" data-id="'+o.id+'" data-no="'+esc(o.no)+'">更多</button>'
+      +   '</div>'
+      + '</td>'
+      + '</tr>';
+  }).join('');
+
+  const empty = '<tr><td colspan="10"><div class="empty-row">'+icon('search',26)+'没有符合条件的订单，试试调整筛选条件</div></td></tr>';
+
+  return ''
+  + '<section class="stat-grid">'
+  +   '<div class="stat-card"><div class="stat-top"><span>订单总数</span><em class="tag tag-gray">全部</em></div><strong>'+s.total+'<em>单</em></strong><div class="stat-foot"><span>含历史与已取消</span></div></div>'
+  +   '<div class="stat-card"><div class="stat-top"><span>成交金额</span><em class="tag tag-cyan">有效</em></div><strong>'+moneyShort(s.totalAmount)+'<em>元</em></strong><div class="stat-foot"><span>剔除已取消订单</span></div></div>'
+  +   '<div class="stat-card"><div class="stat-top"><span>待确认</span><em class="tag tag-orange tag-dot">待办</em></div><strong>'+s.pending+'<em>单</em></strong><div class="stat-foot"><span class="trend up">↑ 4 单</span><span>较昨日</span></div></div>'
+  +   '<div class="stat-card"><div class="stat-top"><span>异常订单</span><em class="tag tag-red tag-dot">关注</em></div><strong>'+s.exception+'<em>单</em></strong><div class="stat-foot"><span>需风控复核</span></div></div>'
+  + '</section>'
+
+  + '<section class="filter-card">'
+  +   '<div class="filter-grid '+(state.showMoreFilters?'expanded':'')+'">'
+  +     fText('订单号 / 客户','kw','请输入订单号或客户名称')
+  +     fSelect('订单状态','status',Object.keys(STATUS).map(function(k){ return [k,STATUS[k].text]; }),'全部状态')
+  +     fDate('下单日期','date')
+  +     fSelect('商品','goods',GOODS,'全部商品',true)
+  +     fSelect('下单网点','site',SITES,'全部网点',true)
+  +     fSelect('业务员','owner',OWNERS,'全部业务员',true)
+  +   '</div>'
+  +   '<div class="filter-footer">'
+  +     '<div class="filter-note">'+icon('filter',13)+'共 <b>'+ORDERS.length+'</b> 条订单，当前筛选命中 <b>'+total+'</b> 条</div>'
+  +     '<div class="filter-btns">'
+  +       '<button class="btn" data-act="reset-filter">重置</button>'
+  +       '<button class="btn primary" data-act="query">'+icon('search',14)+'查询</button>'
+  +       '<button class="btn ghost" data-act="toggle-more">'+(state.showMoreFilters?'收起':'展开更多')+'<i class="chev"></i></button>'
+  +     '</div>'
+  +   '</div>'
+  + '</section>'
+
+  + '<section class="panel-card">'
+  +   '<div class="panel-head">'
+  +     '<div class="tools">'
+  +       '<button class="btn primary" data-act="open-create">'+icon('plus',14)+'新建订单</button>'
+  +       '<button class="btn" data-act="batch-confirm">批量确认</button>'
+  +       '<button class="btn" data-act="export">'+icon('download',14)+'导出</button>'
+  +       '<button class="btn ghost" data-act="clear-selection">取消选择</button>'
+  +     '</div>'
+  +     '<div class="tools-right">'
+  +       '<span class="sel-count">已选 <b>'+state.selected.size+'</b> 项</span>'
+  +       '<button class="icon-btn sm" data-act="toast" data-msg="列设置能力将在二期开放" aria-label="列设置">'+icon('settings',16)+'</button>'
+  +     '</div>'
+  +   '</div>'
+  +   '<div class="table-scroll">'
+  +     '<table class="dt">'
+  +       '<colgroup>'
+  +         '<col style="width:46px" /><col style="width:200px" /><col style="width:190px" /><col style="width:150px" />'
+  +         '<col style="width:170px" /><col style="width:100px" /><col style="width:140px" /><col style="width:110px" />'
+  +         '<col style="width:160px" /><col style="width:158px" />'
+  +       '</colgroup>'
+  +       '<thead><tr>'
+  +         '<th class="stick-l" style="padding:0 0 0 14px"><input type="checkbox" data-act="select-page" '+(allSelected?'checked':'')+' aria-label="全选本页" /></th>'
+  +         '<th class="stick-l2">订单号</th>'
+  +         '<th>客户名称</th><th>商品</th><th>下单网点</th>'
+  +         '<th class="num">数量</th>'
+  +         '<th class="num" data-act="sort" data-key="amount" style="cursor:pointer">订单金额'+sortIcon('amount')+'</th>'
+  +         '<th>状态</th>'
+  +         '<th data-act="sort" data-key="createdAt" style="cursor:pointer">创建时间'+sortIcon('createdAt')+'</th>'
+  +         '<th class="stick-r">操作</th>'
+  +       '</tr></thead>'
+  +       '<tbody>'+(body||empty)+'</tbody>'
+  +     '</table>'
+  +   '</div>'
+  +   '<div class="pager">'
+  +     '<div class="pager-info">共 <b>'+total+'</b> 条 · 第 <b>'+state.page+'</b> / '+pages+' 页</div>'
+  +     '<div class="pager-ctl">'
+  +       '<div class="pg-size"><span>每页</span><span class="sel"><select id="pageSize">'
+  +         [10,20,50].map(function(n){ return '<option value="'+n+'" '+(state.pageSize===n?'selected':'')+'>'+n+' 条</option>'; }).join('')
+  +       + '</select><i></i></span></div>'
+  +       '<button class="pg" data-act="page" data-page="'+(state.page-1)+'" '+(state.page===1?'disabled':'')+'>上一页</button>'
+  +       pageButtons(state.page,pages)
+  +       '<button class="pg" data-act="page" data-page="'+(state.page+1)+'" '+(state.page===pages?'disabled':'')+'>下一页</button>'
+  +     '</div>'
+  +   '</div>'
+  + '</section>';
+}
+
+function pageButtons(cur,total){
+  const out = [];
+  let from = Math.max(1, cur-2), to = Math.min(total, from+4);
+  from = Math.max(1, to-4);
+  for(let i=from;i<=to;i++){
+    out.push('<button class="pg '+(i===cur?'active':'')+'" data-act="page" data-page="'+i+'">'+i+'</button>');
+  }
+  return out.join('');
+}
+
+/* ================= page: EV charging orders ================= */
+const EV_STATUS = {
+  pending:{text:'待启动',tag:'tag-purple'},
+  starting:{text:'启动中',tag:'tag-blue'},
+  startFail:{text:'启动失败',tag:'tag-red'},
+  charging:{text:'充电中',tag:'tag-blue',pulse:true},
+  stopping:{text:'停止中',tag:'tag-orange'},
+  endFail:{text:'结束失败',tag:'tag-red'},
+  ended:{text:'已结束',tag:'tag-cyan'},
+  finished:{text:'已完成',tag:'tag-green'},
+  unknown:{text:'未知',tag:'tag-gray'}
+};
+const EV_PAY = {
+  unpaid:{text:'待支付',tag:'tag-orange'},
+  partial:{text:'部分支付',tag:'tag-purple'},
+  paid:{text:'已支付',tag:'tag-green'},
+  payFail:{text:'支付失败',tag:'tag-red'},
+  refunded:{text:'已退款',tag:'tag-cyan'},
+  /* 无需支付＝充电未发生、永远不会进入易宝打款链路（启动失败：云快充启动被拒 / 冻结失败整单关单），
+     不打款、不进对账、无支付时间、实付金额 0，也不计入「待支付」统计 */
+  nopay:{text:'无需支付',tag:'tag-gray'}
+};
+/* 业务状态 → 支付状态 / 运单扣减状态（状态映射表）
+   ① 已完成＝订单结束（收到云快充最终订单），与易宝打款解耦——已完成也可能是待支付 / 部分支付 / 支付失败 / 已退款；
+   ② 待启动 / 启动中 / 充电中 / 停止中 / 启动失败 / 结束失败 / 未知 → 打款尚未发生，恒为待支付；
+   ③ 已结束 / 已完成 才可能出现打款动作；部分支付＝多网货主体分别打款、部分主体成功部分失败（补款成功后转已支付）。
+   冻结与解冻不进支付状态：冻结是子订单维度（网货侧）状态，通过「冻结 x/y」与冻结额度金额体现。 */
+/* 打款与运单扣减只发生在收到云快充最终订单（已完成）之后：
+   已结束＝已推结束、最终订单未到，资金侧只能还是待支付；因此只有「已完成」才出现打款结果 */
+const EV_PAY_BY_BIZ = {
+  finished:['paid','paid','partial','paid','unpaid','payFail','refunded']
+};
+function evPayForBiz(biz, k){
+  /* 启动失败＝充电从未发生（云快充启动被拒或冻结失败整单关单），支付状态为无需支付，不进任何打款/对账链路 */
+  if(biz==='startFail') return {pay:'nopay', deduct:'未扣减'};
+  const seq = EV_PAY_BY_BIZ[biz];
+  if(!seq) return {pay:'unpaid', deduct:'未扣减'};
+  const pay = seq[Math.abs(k|0)%seq.length];
+  /* 运单扣减只发生在收到最终订单（已完成）之后，且随打款结果：已支付→扣减成功、支付失败→扣减失败 */
+  let deduct = '未扣减';
+  if(biz==='finished') deduct = pay==='paid' ? '扣减成功' : pay==='payFail' ? '扣减失败' : '未扣减';
+  return {pay:pay, deduct:deduct};
+}
+/* 子订单冻结进度（网货侧回报）：待启动单在列表上以「冻结 x/y」呈现，冻结失败即整单关单 */
+function evFreezeInfo(o){
+  const ws = o.waybills || [];
+  const done = ws.filter(function(w){ return w.freeze==='冻结成功'; }).length;
+  return {done:done, total:ws.length, fail:ws.some(function(w){ return w.freeze==='冻结失败'; })};
+}
+const EV_PAY_ACTED = {paid:1, partial:1, payFail:1, refunded:1};   /* 有打款（易宝）动作，产生支付时间 */
+const EV_COMPANIES = ['云快充'];
+const EV_STATIONS = [
+  {id:'ST1023001',name:'南京栖霞充电站',short:'栖霞'},
+  {id:'ST1023002',name:'苏州工业园充电站',short:'园区'},
+  {id:'ST1023003',name:'无锡锡山充电站',short:'锡山'},
+  {id:'ST1023004',name:'常州新北充电站',short:'新北'},
+  {id:'ST1023005',name:'徐州云龙充电站',short:'云龙'}
+];
+const EV_DRIVERS = ['王建国','刘志强','陈永刚','赵国庆','孙德海','周立军','吴长林','郑国栋'];
+const EV_PLATES = ['苏A·D3K52','苏B·F8L23','皖N·S7Q61','鲁Q·5H8D9','豫P·K2M47','苏A·9T6R3','冀A·E4P88','沪C·X9F12'];
+const EV_SUBJECTS = [
+  '万联易达网络货运有限公司',
+  '万联智慧能源科技有限公司',
+  '江苏网货通供应链管理有限公司',
+  '华东运力网络科技有限公司'
+];
+const num2 = n => Number(n).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const num4 = n => Number(n).toFixed(4);
+function fmtDur(min){
+  if(min==null) return '—';
+  if(min<60) return min+'分钟';
+  return Math.floor(min/60)+'小时'+(min%60? (min%60)+'分':'');
+}
+
+const EV_TARIFFS = EV_STATIONS.map(function(st){
+  const svcOri = 0.15, svcWl = 0.1425;
+  const eles = [ +(0.55+rnd()*0.12).toFixed(4), +(0.95+rnd()*0.18).toFixed(4), +(0.62+rnd()*0.12).toFixed(4) ];
+  const cap = new Date(); cap.setMinutes(0,0,0);
+  return {
+    stationId:st.id, stationName:st.name, capturedAt:dtStr(cap), svcOri:svcOri, svcWl:svcWl,
+    note:'会员价优惠：服务费一单最高优惠 5 元',
+    periods:[
+      {range:'00:00~07:00', elec:eles[0]},
+      {range:'07:00~22:00', elec:eles[1]},
+      {range:'22:00~24:00', elec:eles[2]}
+    ].map(function(p){
+      return {range:p.range, elec:p.elec, wl:+(p.elec+svcWl).toFixed(4), st:+(p.elec+svcOri).toFixed(4)};
+    })
+  };
+});
+function currentTariffIdx(){
+  const h = new Date().getHours();
+  return h<7 ? 0 : (h<22 ? 1 : 2);
+}
+
+const EV_ORDERS = (function(){
+  const rows = [];
+  const doneBiz = {ended:1, finished:1};
+  /* 已完成 / 已结束各自的支付状态轮转序号：保证 待支付、部分支付、已支付、支付失败、已退款 都有演示数据 */
+  let finSeq = 0, endSeq = 0;
+  /* 业务状态按固定条数铺满 48 条（每个枚举都有演示数据），再打散避免同状态集中在相邻日期 */
+  const bizSeq = [];
+  [['pending',3],['starting',3],['startFail',3],['stopping',3],['charging',12],
+   ['endFail',3],['ended',9],['finished',10],['unknown',2]].forEach(function(item){
+    for(let n=0;n<item[1];n++) bizSeq.push(item[0]);
+  });
+  for(let i=bizSeq.length-1;i>0;i--){
+    const j = Math.floor(rnd()*(i+1));
+    const t = bizSeq[i]; bizSeq[i]=bizSeq[j]; bizSeq[j]=t;
+  }
+  for(let i=0;i<48;i++){
+    const d = new Date();
+    d.setDate(d.getDate() - Math.floor(i*30/48));
+    d.setHours(int(0,23), int(0,59), 0, 0);
+    /* 业务状态取自打散后的固定序列：待启动3 启动中3 启动失败3 停止中3 充电中12 结束失败3 已结束9 已完成10 未知2 */
+    const biz = bizSeq[i];
+    /* 支付状态 / 运单扣减状态按「业务状态 → 支付状态」映射（见 EV_PAY_BY_BIZ）：
+       在途、启动失败、结束失败与未知一律待支付；已结束 / 已完成才可能出现打款动作，
+       已完成＝订单结束，与是否已支付解耦（已完成也可能是待支付 / 部分支付 / 支付失败 / 已退款） */
+    const st = evPayForBiz(biz, biz==='finished' ? finSeq++ : (biz==='ended' ? endSeq++ : i));
+    const pay = st.pay, deduct = st.deduct;
+    /* 子订单冻结结果（网货侧回报）：启动失败里一半是冻结失败导致的整单关单（freezeFail），一半是云快充启动被拒 */
+    const freezeFail = biz==='startFail' && i%2===1;
+    /* 支付时间：只有发生过易宝打款动作的才产生 */
+    let payTime = null;
+    if(EV_PAY_ACTED[pay]) payTime = new Date(d.getTime()+int(3,180)*60000);
+
+    const station = pick(EV_STATIONS);
+    const pileNo = int(1,12);
+    const gunNo = int(1,2);
+    const hasStart = ['charging','stopping','endFail','ended','finished'].indexOf(biz)>=0;
+    const done = !!doneBiz[biz];
+    const power = int(120,240);
+
+    // 时段明细先行生成，订单金额由明细勾稽汇总
+    const tariff = EV_TARIFFS.find(t=>t.stationId===station.id);
+    let segs = [];
+    let qty = 0, elec = 0, svc = 0;
+    if(hasStart){
+      const n = int(2,3);
+      const target = +(int(120,320)+rnd()).toFixed(2);
+      const wsum = int(4,9);
+      let ws = []; let acc=0;
+      for(let k=0;k<n;k++){ const w = k===n-1? wsum-acc : int(1,wsum-acc-(n-1-k)); ws.push(w); acc+=w; }
+      let tCursor = new Date(d.getTime()+int(2,30)*60000);
+      for(let k=0;k<n;k++){
+        const q = +(target*ws[k]/wsum).toFixed(2);
+        const p = tariff.periods[(k+int(0,2))%3];
+        const e = +(q*p.elec).toFixed(2);
+        const s = +(q*tariff.svcWl).toFixed(2);
+        // 折扣价口径：折扣价 > 万联价（电价按 1.06 倍、服务费按原价 0.15 元/度），与订单级折扣价费用勾稽一致
+        const dE = +(q*p.elec*1.06).toFixed(2);
+        const dS = +(q*tariff.svcOri).toFixed(2);
+        const mins = Math.max(5, Math.round(q/power*60));
+        const segEnd = new Date(tCursor.getTime()+mins*60000);
+        segs.push({
+          start:new Date(tCursor), end:done||k<n-1 ? segEnd : null,
+          elecPrice:p.elec, svcPrice:tariff.svcWl, power:q, elecMoney:e, svcMoney:s,
+          dElecPrice:+(p.elec*1.06), dSvcPrice:tariff.svcOri, dElecMoney:dE, dSvcMoney:dS
+        });
+        tCursor = segEnd;
+        qty = +(qty+q).toFixed(2); elec = +(elec+e).toFixed(2); svc = +(svc+s).toFixed(2);
+      }
+    }
+    const total = +(elec+svc).toFixed(2);
+    const oriElec = +(elec*1.06).toFixed(2), oriSvc = +(qty*0.15).toFixed(2);
+    const oriTotal = +(oriElec+oriSvc).toFixed(2);
+    // 折扣价费用勾稽：时段合计与订单级折扣价费用保持一致（尾差调整到最后一个时段）
+    if(segs.length){
+      const dEsum = +segs.reduce(function(a,x){ return a+x.dElecMoney; },0).toFixed(2);
+      const dSsum = +segs.reduce(function(a,x){ return a+x.dSvcMoney; },0).toFixed(2);
+      const last = segs[segs.length-1];
+      last.dElecMoney = +(last.dElecMoney+(oriElec-dEsum)).toFixed(2);
+      last.dSvcMoney = +(last.dSvcMoney+(oriSvc-dSsum)).toFixed(2);
+    }
+    /* 实付金额＝易宝已打款金额：已支付＝全额；部分支付＝60%（部分网货主体打款失败待补款）；其余 0 */
+    const discount = EV_PAY_ACTED[pay] ? +Math.min(5, svc*0.08).toFixed(2) : 0;
+    const paid = pay==='paid' ? +(total-discount).toFixed(2)
+      : pay==='partial' ? +((total-discount)*0.6).toFixed(2) : 0;
+    const start = hasStart? segs.length? segs[0].start : d : null;
+    const end = done && segs.length? segs[segs.length-1].end : null;
+    const minutes = (start&&end)? Math.round((end-start)/60000) : (start? Math.round((Date.now()-start)/60000) : null);
+    const socS = hasStart? int(15,40) : null;
+    const socE = done? int(75,100) : null;
+    const reason = biz==='finished'?'充电完成' : biz==='ended'? pick(['用户手动停止','充电完成','平台远程停止']) :
+      biz==='endFail'? pick(['桩端通信中断','停止指令超时']) : biz==='startFail'? pick(['桩端离线','枪口未插稳','账户校验失败']) : '';
+
+    /* 子订单在建单时就按「参与组合支付的运单」产生，各自带网货侧的冻结结果；
+       应扣 / 实扣 / 补贴金额在收到云快充最终订单后才派生（refreshEvSubs） */
+    const waybills = [];
+    /* 部分支付＝多网货主体分别打款的结果，因此这类订单至少 2 笔运单（≥2 个网货主体） */
+    const wbCount = deduct==='扣减失败' ? 1 : (pay==='partial' ? int(2,3) : int(1,3));
+    let left = total;
+    for(let k=0;k<wbCount;k++){
+      const share = k===wbCount-1 ? left : +(left*rnd()*0.6).toFixed(2);
+      left = +(left-share).toFixed(2);
+      let actual = 0, subsidy = 0;
+      if(deduct==='扣减成功'){
+        const ratio = 0.55+rnd()*0.4;
+        actual = +(share*ratio).toFixed(2);
+        subsidy = +(share-actual).toFixed(2);
+      }
+      waybills.push({
+        no:'YD'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+String(3100+i*7+k),
+        quota:share,   // 运单可用抵扣额度（按运单顺序抵扣各时段充电费用）
+        should:share,
+        actual:actual,
+        subsidy:subsidy,
+        subject:EV_SUBJECTS[(i+k)%EV_SUBJECTS.length],
+        deduct:deduct,
+        /* 冻结结果：待启动单＝首条已冻结、其余待冻结；启动失败分两种——冻结失败关单＝冻结失败、
+           云快充启动被拒＝已释放（额度已释放）；其余恒冻结成功 */
+        freeze: biz==='pending' ? (k===0?'冻结成功':'待冻结')
+          : biz==='startFail' ? (freezeFail ? '冻结失败' : '已释放')
+          : '冻结成功'
+      });
+    }
+
+    rows.push({
+      id:'ev'+(i+1),
+      no:'CD'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+String(2100-i).padStart(4,'0'),
+      createdAt:d, biz:biz, pay:pay, payTime:payTime, deduct:deduct, freezeFail:freezeFail,
+      company:pick(EV_COMPANIES),
+      station:station, pile:{id:'CP'+int(100000,999999), name:station.short+'站'+pileNo+'号桩'},
+      gun:{id:'G'+gunNo, name:gunNo+'号枪'},
+      start:start, end:end, minutes:minutes,
+      qty:qty, socS:socS, socE:socE,
+      elec:elec, svc:svc, total:total,
+      oriElec:oriElec, oriSvc:oriSvc, oriTotal:oriTotal,
+      reason:reason, paid:paid, discount:discount,
+      driver:pick(EV_DRIVERS), plate:pick(EV_PLATES),
+      phone:'1'+pick(['38','58','77','59','86'])+'****'+String(int(1000,9999)),
+      segs:segs, waybills:waybills
+    });
+  }
+  return rows.sort(function(a,b){ return b.createdAt-a.createdAt; });
+})();
+
+/* 让部分运单对应多笔充电订单：同一运单号在同主体下复用，司机 / 车牌 / 手机号保持一致，
+   用于网货主体对账单中「运单号重复展示」的场景 */
+(function(){
+  const bySubj = {};
+  EV_ORDERS.filter(function(o){ return o.biz==='finished' && o.pay==='paid' && o.waybills.length; })
+    .forEach(function(o){
+      const w = o.waybills[0];
+      (bySubj[w.subject] = bySubj[w.subject] || []).push({o:o, w:w});
+    });
+  Object.keys(bySubj).forEach(function(k){
+    const arr = bySubj[k];
+    for(let i=1;i<arr.length;i+=4){
+      const cur = arr[i], prev = arr[i-1];
+      cur.w.no = prev.w.no;
+      cur.o.driver = prev.o.driver;
+      cur.o.plate = prev.o.plate;
+      cur.o.phone = prev.o.phone;
+    }
+  });
+})();
+
+/* ================= 充电订单按运单拆分子订单 =================
+   1) 按运单先后顺序依次抵扣各时段充电费用（万联价口径：万联电费+万联服务费），
+      运单可用抵扣额度耗尽后再用下一笔运单；
+   2) 拆分充电量、实付/预付电费、实付/预付服务费；
+   3) 子订单充电量 = 时段充电量 × 运单时段抵扣金额 ÷ 时段充电费用（两位小数），
+      时段内剩余充电量归到时段内最后可抵扣的一笔运单；
+   4) 子订单电费 = 时段万联电价 × 子订单充电量（时段内尾差归最后一笔运单），
+      子订单服务费 = 运单时段内抵扣充电费用 − 子订单电费；
+   5) 折扣价口径暂不参与子订单拆分；
+   6) 运单应扣额度 = 实扣额度 × 订单折扣价总费用/万联价累计总金额比例（订单内最后一笔运单兜底尾差），
+      运单实扣额度 = Σ 子订单万联价累计总金额，运单补贴金额 = 应扣额度 − 实扣额度。 */
+function splitEvSubOrders(o){
+  const subs=[];
+  if(!o.segs.length || !o.waybills.length) return subs;
+  const rem = o.waybills.map(function(w){ return w.quota||0; });
+  o.segs.forEach(function(seg, si){
+    const cost = +(seg.elecMoney+seg.svcMoney).toFixed(2);
+    if(!(cost>0)) return;
+    // 时段内按运单顺序依次抵扣
+    const alloc=[]; let left=cost;
+    o.waybills.forEach(function(w,i){
+      if(left<=0.004) return;
+      const m=+Math.min(rem[i],left).toFixed(2);
+      if(m>0){ rem[i]=+(rem[i]-m).toFixed(2); left=+(left-m).toFixed(2); alloc.push({i:i,m:m}); }
+    });
+    if(!alloc.length) return;
+    if(left>0.004){ // 兜底：额度不足时差额归最后一笔运单（演示数据理论上不会触发）
+      alloc[alloc.length-1].m=+(alloc[alloc.length-1].m+left).toFixed(2); left=0;
+    }
+    // 充电量按抵扣额度比例拆分，剩余充电量归时段内最后一笔运单
+    const qts = alloc.map(function(a){ return +(seg.power*a.m/cost).toFixed(2); });
+    qts[qts.length-1] = +(seg.power - qts.slice(0,-1).reduce(function(a,b){ return a+b; },0)).toFixed(2);
+    // 电费 = 时段万联电价 × 子订单充电量，时段内尾差归最后一笔运单
+    const eles = qts.map(function(q){ return +(seg.elecPrice*q).toFixed(2); });
+    eles[eles.length-1] = +(seg.elecMoney - eles.slice(0,-1).reduce(function(a,b){ return a+b; },0)).toFixed(2);
+    alloc.forEach(function(a,k){
+      const w=o.waybills[a.i], e=eles[k], s=+(a.m-e).toFixed(2);
+      subs.push({ no:o.no+'-'+(subs.length+1), wNo:w.no, subject:w.subject, segIdx:si,
+        start:seg.start, end:seg.end, qty:qts[k], elec:e, svc:s, total:+(e+s).toFixed(2) });
+    });
+  });
+  return subs;
+}
+/* 重算子订单并派生运单应扣/实扣/补贴（折扣价暂不参与子订单拆分，应扣额度按订单内折扣价/万联价比例折算） */
+function refreshEvSubs(o){
+  o.subs = splitEvSubOrders(o);
+  if(!o.subs.length){
+    o.waybills.forEach(function(w){ w.should=0; w.actual=0; w.subsidy=0; });
+    return;
+  }
+  const byW={};
+  o.subs.forEach(function(s){ byW[s.wNo]=+((byW[s.wNo]||0)+s.total).toFixed(2); });
+  const ratio = o.total>0 ? o.oriTotal/o.total : 1;
+  let acc=0;
+  o.waybills.forEach(function(w,i){
+    w.actual=+(byW[w.no]||0).toFixed(2);
+    if(i===o.waybills.length-1){
+      w.should=+Math.max(0, o.oriTotal-acc).toFixed(2);
+    } else {
+      w.should=+(w.actual*ratio).toFixed(2);
+      acc=+(acc+w.should).toFixed(2);
+    }
+    w.subsidy=+Math.max(0, w.should-w.actual).toFixed(2);
+  });
+}
+EV_ORDERS.forEach(refreshEvSubs);
+
+function computeEvStats(){
+  const today = dateStr(new Date());
+  const todayRows = EV_ORDERS.filter(o=>dateStr(o.createdAt)===today);
+  const abnormal = EV_ORDERS.filter(o=>['startFail','endFail','unknown'].indexOf(o.biz)>=0 || ['payFail','partial'].indexOf(o.pay)>=0);
+  return {
+    todayCount: todayRows.length,
+    todayPower: todayRows.reduce((s,o)=>s+o.qty,0),
+    todayAmount: todayRows.reduce((s,o)=>s+o.paid,0),
+    abnormal: abnormal.length
+  };
+}
+function applyEvFilters(rows){
+  const f = state.evFilters;
+  return rows.filter(function(o){
+    if(f.no && o.no.indexOf(f.no)<0) return false;
+    if(f.biz && o.biz!==f.biz) return false;
+    if(f.pay && o.pay!==f.pay) return false;
+    if(f.station && o.station.name.indexOf(f.station)<0) return false;
+    if(f.company && o.company!==f.company) return false;
+    if(f.subject && !o.waybills.some(function(w){ return w.subject===f.subject; })) return false;
+    if(f.driver && o.driver.indexOf(f.driver)<0 && o.phone.indexOf(f.driver)<0) return false;
+    const ds = dateStr(o.createdAt);
+    if(f.from && ds<f.from) return false;
+    if(f.to && ds>f.to) return false;
+    return true;
+  });
+}
+function applyEvSort(rows){
+  const k = state.evSort.key, dir = state.evSort.dir==='asc'?1:-1;
+  return rows.slice().sort(function(a,b){
+    if(k==='createdAt') return (a.createdAt-b.createdAt)*dir;
+    return (a[k]-b[k])*dir;
+  });
+}
+function evSortIcon(key){
+  if(state.evSort.key!==key) return '<span style="color:#c3cedd;margin-left:4px">↕</span>';
+  return '<span style="color:var(--primary);margin-left:4px">'+(state.evSort.dir==='asc'?'↑':'↓')+'</span>';
+}
+function readEvFilters(){
+  $$('[data-efilter]').forEach(function(el){ state.evFilters[el.dataset.efilter] = el.value.trim(); });
+}
+function fmtRangeEdge(v,label){
+  if(!v) return label;
+  return v.replace(/-/g,'/');
+}
+/* 日期范围控件可复用于多页：target = ev | bill */
+function rangeStore(target){
+  const t = target || state.evRange.target || 'ev';
+  if(t==='bill') return state.billFilters;
+  return state.evFilters;
+}
+function rangeFilterItem(label, target){
+  const r = rangeStore(target);
+  const open = state.evRange.open && state.evRange.target===target;
+  return '<div class="f-item"><span>'+esc(label)+'</span>'
+    + '<div class="range-wrap'+(open?' open':'')+'">'
+    +   '<button type="button" class="range-trigger" data-act="ev-range-toggle" data-target="'+target+'">'+icon('calendar',14)
+    +     '<b>'+esc(fmtRangeEdge(r.from,'开始日期'))+'</b><i>至</i><b>'+esc(fmtRangeEdge(r.to,'结束日期'))+'</b>'
+    +   '</button>'
+    +   (open ? evRangePanel() : '')
+    + '</div>'
+    + '</div>';
+}
+function rangeSetPage(target){
+  if(target==='bill') state.billPage=1;
+  else state.evPage=1;
+}
+function evRangePanel(){
+  const y=state.evRange.y, m=state.evRange.m;
+  const startDow=new Date(y,m,1).getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const daysPrev=new Date(y,m,0).getDate();
+  const cells=[];
+  for(let i=0;i<42;i++){
+    if(i<startDow) cells.push({d:new Date(y,m-1,daysPrev-startDow+1+i), in:false});
+    else if(i<startDow+daysInMonth) cells.push({d:new Date(y,m,i-startDow+1), in:true});
+    else cells.push({d:new Date(y,m+1,i-startDow-daysInMonth+1), in:false});
+  }
+  const range=rangeStore();
+  const from=range.from, to=range.to;
+  const pick=state.evRange.pick, hover=state.evRange.hover;
+  let lo=pick || from, hi=pick ? (hover && hover>=pick ? hover : pick) : to;
+  if(lo && hi && lo>hi){ const t=lo; lo=hi; hi=t; }
+  const todayStr=dateStr(new Date());
+  const dayBtns=cells.map(function(c){
+    const ds=dateStr(c.d);
+    let cls='rp-day';
+    if(!c.in) cls+=' dim';
+    if(ds===todayStr) cls+=' today';
+    if(lo && hi && ds>=lo && ds<=hi) cls+=' inrange';
+    if(lo && ds===lo) cls+=' start';
+    if(hi && ds===hi && lo!==hi) cls+=' end';
+    return '<button type="button" class="'+cls+'" data-act="ev-range-day" data-d="'+ds+'">'+c.d.getDate()+'</button>';
+  }).join('');
+  return '<div class="range-panel">'
+    + '<div class="rp-head">'
+    +   '<b>'+y+' 年 '+(m+1)+' 月</b>'
+    +   '<div class="rp-nav">'
+    +     '<button type="button" data-act="ev-range-prev" title="上一月">‹</button>'
+    +     '<button type="button" data-act="ev-range-next" title="下一月">›</button>'
+    +   '</div>'
+    + '</div>'
+    + '<div class="rp-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>'
+    + '<div class="rp-days">'+dayBtns+'</div>'
+    + '<div class="rp-quick">'
+    +   '<button type="button" data-act="ev-range-quick" data-k="7d">近 7 天</button>'
+    +   '<button type="button" data-act="ev-range-quick" data-k="30d">近 30 天</button>'
+    +   '<button type="button" data-act="ev-range-quick" data-k="month">本月</button>'
+    +   '<button type="button" data-act="ev-range-quick" data-k="clear">清空</button>'
+    + '</div>'
+    + '</div>';
+}
+function paintRangePanel(){
+  const range=rangeStore();
+  const from=range.from, to=range.to;
+  const pick=state.evRange.pick, hover=state.evRange.hover;
+  let lo=pick || from, hi=pick ? (hover && hover>=pick ? hover : pick) : to;
+  if(lo && hi && lo>hi){ const t=lo; lo=hi; hi=t; }
+  $$('.rp-day').forEach(function(btn){
+    const ds=btn.dataset.d;
+    btn.classList.toggle('inrange', !!(lo && hi && ds>=lo && ds<=hi));
+    btn.classList.toggle('start', !!(lo && ds===lo));
+    btn.classList.toggle('end', !!(hi && ds===hi && lo!==hi));
+  });
+}
+function evSelect(name,list,ph){
+  const cur = state.evFilters[name];
+  return '<span class="sel"><select data-efilter="'+name+'"><option value="">'+esc(ph)+'</option>'
+    + list.map(function(item){
+        return '<option value="'+item.v+'" '+(cur===item.v?'selected':'')+'>'+esc(item.t)+'</option>';
+      }).join('')
+    + '</select><i></i></span>';
+}
+
+/* 充电订单行中间单元格（订单列表页与对账单明细共用）
+   opts.payTime=true 时在实付金额前插入「支付时间」列
+   opts.recon=true   时在支付状态后插入「对账状态」列（仅充电订单管理使用） */
+function evOrderCells(o, opts){
+  const biz = EV_STATUS[o.biz], pay = EV_PAY[o.pay];
+  return ''
+    + '<td>'+dtStr(o.createdAt)+'</td>'
+    + '<td><span class="tag '+biz.tag+(biz.pulse?' pulse':'')+'">'+biz.text+'</span></td>'
+    + '<td><span class="tag '+pay.tag+'">'+pay.text+'</span></td>'
+    + (opts&&opts.recon
+        ? '<td>'+(o.reconciled
+            ? '<span class="tag tag-green">已完成对账</span>'
+            : '<span class="tag tag-gray">未对账</span>')+'</td>'
+        : '')
+    + '<td>'+esc(o.company)+'</td>'
+    + '<td style="color:#7d8b9f">'+esc(o.station.id)+'</td>'
+    + '<td>'+esc(o.station.name)+'</td>'
+    + '<td style="color:#7d8b9f">'+esc(o.pile.id)+'</td>'
+    + '<td>'+esc(o.pile.name)+'</td>'
+    + '<td style="color:#7d8b9f">'+esc(o.gun.id)+'</td>'
+    + '<td>'+esc(o.gun.name)+'</td>'
+    + '<td>'+(o.start?dtStr(o.start):'—')+'</td>'
+    + '<td>'+(o.end?dtStr(o.end):'—')+'</td>'
+    + '<td class="num">'+num2(o.qty)+'</td>'
+    + '<td>'+(o.socS!=null?o.socS+'%':'—')+'</td>'
+    + '<td>'+(o.socE!=null?o.socE+'%':'—')+'</td>'
+    + '<td class="num">'+num2(o.elec)+'</td>'
+    + '<td class="num">'+num2(o.svc)+'</td>'
+    + '<td class="num primary-cell">'+num2(o.total)+'</td>'
+    + '<td class="num" style="color:#8b98aa">'+num2(o.oriElec)+'</td>'
+    + '<td class="num" style="color:#8b98aa">'+num2(o.oriSvc)+'</td>'
+    + '<td class="num" style="color:#8b98aa">'+num2(o.oriTotal)+'</td>'
+    + '<td>'+esc(o.reason||'—')+'</td>'
+    + (opts&&opts.payTime ? '<td>'+(o.payTime?dtStr(o.payTime):'—')+'</td>' : '')
+    + '<td class="num primary-cell">'+num2(o.paid)+'</td>'
+    + '<td>'+esc(o.driver)+'</td>'
+    + '<td>'+esc(o.plate)+'</td>'
+    + '<td>'+esc(o.phone)+'</td>';
+}
+
+/* 充电子订单行（按运单拆分）：仅展示拆分维度，其余列留空 */
+function evSubRow(s, o){
+  return '<tr class="ev-sub">'
+    + '<td class="stick-first"><span style="font-weight:650;color:#2c394d">'+esc(s.no)+'</span>'
+    +   '<span class="tag tag-blue" style="margin-left:6px">分</span>'
+    +   '<span class="cell-sub">运单 '+esc(s.wNo)+' · '+esc(s.subject)+'</span></td>'
+    + '<td>'+dtStr(o.createdAt)+'</td>'
+    + '<td></td><td></td><td></td><td></td>'
+    + '<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>'
+    + '<td class="num">'+num2(s.qty)+'</td>'
+    + '<td></td><td></td>'
+    + '<td class="num">'+num2(s.elec)+'</td>'
+    + '<td class="num">'+num2(s.svc)+'</td>'
+    + '<td class="num primary-cell">'+num2(s.total)+'</td>'
+    + '<td></td><td></td><td></td>'
+    + '<td></td><td></td><td></td>'
+    + '<td></td><td></td><td></td>'
+    + '<td class="stick-r"></td>'
+    + '</tr>';
+}
+
+function pageEvOrders(){
+  const s = computeEvStats();
+  let rows = applyEvSort(applyEvFilters(EV_ORDERS));
+  const total = rows.length;
+  const pages = Math.max(1, Math.ceil(total/state.evPageSize));
+  state.evPage = clamp(state.evPage,1,pages);
+  const start = (state.evPage-1)*state.evPageSize;
+  const pageRows = rows.slice(start, start+state.evPageSize);
+  state.evExpand = state.evExpand||{};
+
+  const body = pageRows.map(function(o){
+    const subs = o.subs||[];
+    const open = subs.length>0 && !!state.evExpand[o.id];
+    /* 冻结标签：待启动＝冻结进度（全部子订单冻结成功后才调云快充发起）；冻结失败＝整单关单（业务状态=启动失败） */
+    const fi = evFreezeInfo(o);
+    const freezeTag = o.biz==='pending'
+      ? '<span class="tag '+(fi.fail?'tag-red':'tag-purple')+'" style="margin-left:6px">冻结 '+fi.done+'/'+fi.total+'</span>'
+      : o.biz==='startFail'
+        ? (o.freezeFail ? '<span class="tag tag-red" style="margin-left:6px">冻结失败</span>'
+                        : '<span class="tag tag-gray" style="margin-left:6px">已释放</span>')
+        : '';
+    let html = '<tr>'
+      + '<td class="stick-first primary-cell">'
+      +   (subs.length
+            ? '<button type="button" class="sub-toggle'+(open?' open':'')+'" data-act="ev-expand" data-id="'+o.id+'" aria-label="'+(open?'收起':'展开')+'子订单"><i class="chev"></i></button>'
+            : '<span class="sub-toggle-ph"></span>')
+      +   esc(o.no)
+      +   (subs.length?'<span class="tag tag-blue" style="margin-left:6px">总 '+subs.length+'</span>':'')
+      +   freezeTag
+      + '</td>'
+      + evOrderCells(o, {payTime:true, recon:true})
+      + '<td class="stick-r"><div class="row-actions">'
+      +   (['finished','startFail','endFail'].indexOf(o.biz)<0 ? (state.evQuerying===o.id
+            ? '<button disabled style="color:#9aa6b6">查询中…</button>'
+            : '<button data-act="ev-check-status" data-id="'+o.id+'">查询状态</button>') : '')
+      +   '<button data-act="ev-detail" data-id="'+o.id+'">充电明细</button>'
+      +   '<button data-act="ev-tariff" data-id="'+o.id+'">资费快照</button>'
+      + '</div></td>'
+      + '</tr>';
+    if(open) subs.forEach(function(sub){ html += evSubRow(sub, o); });
+    return html;
+  }).join('');
+
+  const empty = '<tr><td colspan="30"><div class="empty-row">'+icon('search',26)+'没有符合条件的充电订单，试试调整筛选条件</div></td></tr>';
+
+  return ''
+  + '<section class="filter-card">'
+  +   '<div class="filter-grid">'
+  +     '<label class="f-item"><span>充电订单号</span><input type="text" data-efilter="no" value="'+esc(state.evFilters.no)+'" placeholder="请输入充电订单号" /></label>'
+  +     '<label class="f-item"><span>业务状态</span>'+evSelect('biz',Object.keys(EV_STATUS).map(function(k){return {v:k,t:EV_STATUS[k].text};}),'全部')+'</label>'
+  +     '<label class="f-item"><span>支付状态</span>'+evSelect('pay',Object.keys(EV_PAY).map(function(k){return {v:k,t:EV_PAY[k].text};}),'全部')+'</label>'
+  +     rangeFilterItem('创建时间', 'ev')
+  +     '<label class="f-item"><span>充电站名称</span><input type="text" data-efilter="station" value="'+esc(state.evFilters.station||'')+'" placeholder="请输入充电站名称" /></label>'
+  +     '<label class="f-item"><span>运营商</span>'+evSelect('company',EV_COMPANIES.map(function(x){return {v:x,t:x};}),'全部')+'</label>'
+  +     '<label class="f-item"><span>网货主体</span>'+evSelect('subject',EV_SUBJECTS.map(function(x){return {v:x,t:x};}),'全部')+'</label>'
+  +     '<label class="f-item"><span>司机</span><input type="text" data-efilter="driver" value="'+esc(state.evFilters.driver||'')+'" placeholder="请输入司机姓名 / 手机号" /></label>'
+  +     '<div class="f-item" style="align-items:center"><span></span><span style="color:#9aa6b6;font-size:11px">时间范围默认最近 1 个月</span></div>'
+  +   '</div>'
+  +   '<div class="filter-footer" style="justify-content:flex-end; border-top:none; min-height:0; margin-top:14px">'
+  +     '<div class="filter-btns">'
+  +       '<button class="btn" data-act="ev-reset">重置</button>'
+  +       '<button class="btn primary" data-act="ev-query">'+icon('search',14)+'查询</button>'
+  +     '</div>'
+  +   '</div>'
+  + '</section>'
+
+  + '<section class="panel-card">'
+  +   '<div class="panel-head">'
+  +     '<div class="tools"></div>'
+  +     '<div class="tools-right"><span class="sel-count">充电订单已按运单拆分为子订单，点击「总」展开 · 表格支持横向滚动，首末列已固定</span></div>'
+  +   '</div>'
+  +   '<div class="table-scroll">'
+  +     '<table class="dt dt-ev">'
+  +       '<colgroup>'
+  +         '<col style="width:270px" /><col style="width:150px" /><col style="width:100px" /><col style="width:100px" />'
+  +         '<col style="width:110px" />'
+  +         '<col style="width:170px" /><col style="width:110px" /><col style="width:160px" /><col style="width:110px" />'
+  +         '<col style="width:130px" /><col style="width:90px" /><col style="width:90px" /><col style="width:150px" />'
+  +         '<col style="width:150px" /><col style="width:100px" /><col style="width:80px" />'
+  +         '<col style="width:80px" /><col style="width:100px" /><col style="width:100px" /><col style="width:120px" />'
+  +         '<col style="width:100px" /><col style="width:110px" /><col style="width:110px" /><col style="width:140px" />'
+  +         '<col style="width:150px" /><col style="width:110px" /><col style="width:90px" /><col style="width:110px" /><col style="width:120px" />'
+  +         '<col style="width:210px" />'
+  +       '</colgroup>'
+  +       '<thead><tr>'
+  +         '<th class="stick-first">充电订单号</th>'
+  +         '<th data-act="ev-sort" data-key="createdAt" style="cursor:pointer">创建时间'+evSortIcon('createdAt')+'</th>'
+  +         '<th>业务状态</th><th>支付状态</th><th>对账状态</th><th>运营商名称</th><th>场站ID</th><th>场站名称</th>'
+  +         '<th>充电桩ID</th><th>充电桩名称</th><th>枪口ID</th><th>枪口名称</th>'
+  +         '<th>开始充电时间</th><th>结束充电时间</th>'
+  +         '<th class="num" data-act="ev-sort" data-key="qty" style="cursor:pointer">充电量(度)'+evSortIcon('qty')+'</th>'
+  +         '<th>起始SOC</th><th>结束SOC</th>'
+  +         '<th class="num">万联价电费(元)</th><th class="num">万联价服务费(元)</th>'
+  +         '<th class="num" data-act="ev-sort" data-key="total" style="cursor:pointer">万联价累计总金额'+evSortIcon('total')+'</th>'
+  +         '<th class="num">折扣价电费</th><th class="num">折扣价服务费</th><th class="num">折扣价总费用</th>'
+  +         '<th>结束充电原因</th>'
+  +         '<th>支付时间</th>'
+  +         '<th class="num" data-act="ev-sort" data-key="paid" style="cursor:pointer">实付金额'+evSortIcon('paid')+'</th>'
+  +         '<th>司机</th><th>车牌号</th><th>手机号</th>'
+  +         '<th class="stick-r">操作</th>'
+  +       '</tr></thead>'
+  +       '<tbody>'+(body||empty)+'</tbody>'
+  +     '</table>'
+  +   '</div>'
+  +   '<div class="pager">'
+  +     '<div class="pager-info">共 <b>'+total+'</b> 条 · 第 <b>'+state.evPage+'</b> / '+pages+' 页</div>'
+  +     '<div class="pager-ctl">'
+  +       '<div class="pg-size"><span>每页</span><span class="sel"><select data-act="ev-pagesize">'
+  +         [10,20,50].map(function(n){ return '<option value="'+n+'" '+(state.evPageSize===n?'selected':'')+'>'+n+' 条</option>'; }).join('')
+  +       + '</select><i></i></span></div>'
+  +       '<button class="pg" data-act="ev-page" data-page="'+(state.evPage-1)+'" '+(state.evPage===1?'disabled':'')+'>上一页</button>'
+  +       pageButtons(state.evPage,pages)
+  +       '<button class="pg" data-act="ev-page" data-page="'+(state.evPage+1)+'" '+(state.evPage===pages?'disabled':'')+'>下一页</button>'
+  +     '</div>'
+  +   '</div>'
+  + '</section>';
+}
+
+/* ================= EV bills: 运营商对账单 =================
+   对账口径：业务状态=已完成 且 支付状态=已支付 的充电订单；
+   本期应付金额 = Σ 折扣价总费用（折扣价总费用 = 折扣价电费 + 折扣价服务费），
+   即与运营商（云快充）对账的应付金额；万联价口径仅作内部成本参考 */
+const EV_BILLS = [];
+let EV_BILL_SEQ = 100;
+/* 已完成对账的充电订单不再参与后续对账 */
+function evEligibleOrders(company, from, to){
+  return EV_ORDERS.filter(function(o){
+    const d = dateStr(o.createdAt);
+    return (!company || o.company===company) && (!from || d>=from) && (!to || d<=to)
+      && o.biz==='finished' && o.pay==='paid' && !o.reconciled;
+  });
+}
+function buildEvBill(company, from, to, genAt){
+  const list = evEligibleOrders(company, from, to);
+  return {
+    id:'EB'+(++EV_BILL_SEQ),
+    no:'DZ'+from.replace(/-/g,'')+to.replace(/-/g,'')+'0'+EV_BILL_SEQ,
+    company:company, from:from, to:to,
+    count:list.length,
+    amount:+list.reduce(function(a,o){ return a+o.oriTotal; },0).toFixed(2), // 折扣价总费用 = 折扣价电费 + 折扣价服务费
+    createdAt:genAt || new Date(), creator:'运营·王敏',
+    status:'pending',       // pending 待对账 / done 已完成对账
+    reconciledAt:null, reconciler:null,
+    orders:list
+  };
+}
+/* 标记对账单已完成对账：账单不可再删除，涉及订单同步打标并退出后续对账 */
+function billIsDone(b){ return b && b.status==='done'; }
+function markBillReconciled(b){
+  const at = new Date();
+  b.status = 'done';
+  b.reconciledAt = at;
+  b.reconciler = '运营·王敏';
+  b.orders.forEach(function(o){
+    o.reconciled = true;
+    o.reconciledAt = at;
+    o.reconcileBillNo = b.no;
+  });
+}
+(function(){
+  // 预置三张账单：每 10 天一期（仅当周期内存在可对账订单时生成）
+  [[29,20],[19,10],[9,2]].forEach(function(off){
+    const s=new Date(); s.setDate(s.getDate()-off[0]);
+    const e=new Date(); e.setDate(e.getDate()-off[1]); e.setHours(18,0,0,0);
+    const b=buildEvBill('云快充', dateStr(s), dateStr(e), e);
+    if(b.count>0) EV_BILLS.push(b);
+  });
+  EV_BILLS.sort(function(a,b){ return b.createdAt-a.createdAt; });
+  // 最早一期预置为「已完成对账」，便于演示已对账账单与订单打标
+  if(EV_BILLS.length>1) markBillReconciled(EV_BILLS[EV_BILLS.length-1]);
+})();
+
+/* ================= page: EV bills 运营商对账单 ================= */
+function readBillFilters(){
+  $$('[data-bfilter]').forEach(function(el){ state.billFilters[el.dataset.bfilter] = el.value.trim(); });
+}
+function pageEvBills(){
+  const f = state.billFilters;
+  let rows = EV_BILLS.filter(function(b){
+    const gd = dateStr(b.createdAt);
+    return (!f.company || b.company===f.company) && (!f.no || b.no.indexOf(f.no)>=0)
+      && (!f.subject || billSubjectGroups(b).some(function(g){ return g.subject===f.subject; }))
+      && (!f.from || gd>=f.from) && (!f.to || gd<=f.to);
+  });
+  const total = rows.length;
+  const pages = Math.max(1, Math.ceil(total/state.billPageSize));
+  state.billPage = clamp(state.billPage,1,pages);
+  const start = (state.billPage-1)*state.billPageSize;
+  const pageRows = rows.slice(start, start+state.billPageSize);
+
+  const body = pageRows.map(function(b){
+    const done = billIsDone(b);
+    const subjects = billSubjectGroups(b).map(function(g){ return g.subject; });
+    return '<tr>'
+      + '<td class="stick-first primary-cell">'+esc(b.no)+'</td>'
+      + '<td>'+esc(b.from.replace(/-/g,'/'))+' 至 '+esc(b.to.replace(/-/g,'/'))+'</td>'
+      + '<td>'+esc(b.company)+'</td>'
+      + '<td class="num">'+b.count+'</td>'
+      + '<td class="num">'+subjects.length+'</td>'
+      + '<td style="white-space:normal;line-height:1.6;font-size:11px;color:#5c6b81">'+subjects.map(function(s){ return '<div>'+esc(s)+'</div>'; }).join('')+'</td>'
+      + '<td class="num primary-cell" style="font-weight:700">'+num2(b.amount)+'</td>'
+      + '<td>'+(done
+          ? '<span class="tag tag-green">已完成对账</span>'
+          : '<span class="tag tag-gray">待对账</span>')+'</td>'
+      + '<td>'+dtStr(b.createdAt)+'</td>'
+      + '<td>'+esc(b.creator)+'</td>'
+      + '<td class="stick-r"><div class="row-actions">'
+      +   '<button data-act="bill-view" data-id="'+b.id+'">查看明细</button>'
+      +   (done ? '' : '<button data-act="bill-recon" data-id="'+b.id+'">已完成对账</button>')
+      +   '<button data-act="bill-export-excel" data-no="'+esc(b.no)+'">导出Excel</button>'
+      +   '<button data-act="bill-export-pdf" data-no="'+esc(b.no)+'">导出PDF</button>'
+      +   (done
+          ? '<button class="muted" disabled title="已完成对账的对账单不可删除">删除</button>'
+          : '<button data-act="bill-del" data-id="'+b.id+'" style="color:#b54b55">删除</button>')
+      + '</div></td>'
+      + '</tr>';
+  }).join('');
+  const empty = '<tr><td colspan="11"><div class="empty-row">'+icon('doc',26)
+    +'暂无对账单，点击右上角「生成对账单」按周期创建</div></td></tr>';
+
+  return ''
+  + '<section class="filter-card">'
+  +   '<div class="filter-grid">'
+  +     '<label class="f-item"><span>对账单号</span><input type="text" data-bfilter="no" value="'+esc(f.no)+'" placeholder="请输入对账单号" /></label>'
+  +     '<label class="f-item"><span>运营商</span><span class="sel"><select data-bfilter="company">'
+  +       '<option value="">全部运营商</option>'
+  +       '<option value="云快充" '+(f.company==='云快充'?'selected':'')+'>云快充</option>'
+  +     '</select><i></i></span></label>'
+  +     '<label class="f-item"><span>网货主体名称</span><span class="sel"><select data-bfilter="subject">'
+  +       '<option value="">全部网货主体</option>'
+  +       EV_SUBJECTS.map(function(x){ return '<option value="'+esc(x)+'" '+(f.subject===x?'selected':'')+'>'+esc(x)+'</option>'; }).join('')
+  +     '</select><i></i></span></label>'
+  +     rangeFilterItem('生成时间', 'bill')
+  +   '</div>'
+  +   '<div class="filter-footer">'
+  +     '<div class="filter-note">'+icon('filter',13)+'对账口径：业务状态 = <b>已完成</b> 且 支付状态 = <b>已支付</b> 的充电订单 · 本期应付金额 = Σ 折扣价总费用（折扣价总费用 = 折扣价电费 + 折扣价服务费，为与运营商对账的应付金额）· 生成后按运单所属网货主体自动生成主体对账明细 · 已标记<b>已完成对账</b>的订单不再参与对账</div>'
+  +     '<div class="filter-btns">'
+  +       '<button class="btn" data-act="bill-reset">重置</button>'
+  +       '<button class="btn primary" data-act="bill-query">'+icon('search',14)+'查询</button>'
+  +     '</div>'
+  +   '</div>'
+  + '</section>'
+
+  + '<section class="panel-card">'
+  +   '<div class="panel-head">'
+  +     '<div class="tools"><button class="btn primary" data-act="bill-generate">'+icon('plus',14)+'生成对账单</button></div>'
+  +     '<div class="tools-right"><span class="sel-count">按运营商 + 订单创建时间范围周期生成，同步生成网货主体对账明细</span></div>'
+  +   '</div>'
+  +   '<div class="table-scroll">'
+  +     '<table class="dt" style="width:1905px">'
+  +       '<colgroup>'
+  +         '<col style="width:220px" /><col style="width:225px" /><col style="width:150px" /><col style="width:110px" />'
+  +         '<col style="width:105px" /><col style="width:210px" /><col style="width:165px" /><col style="width:120px" /><col style="width:160px" /><col style="width:110px" /><col style="width:330px" />'
+  +       '</colgroup>'
+  +       '<thead><tr>'
+  +         '<th class="stick-first">对账单号</th><th>账单周期</th><th>运营商名称</th><th class="num">充电订单数</th>'
+  +         '<th class="num">网货主体数</th><th>网货主体名称</th><th class="num">本期应付金额(元)</th><th>对账状态</th><th>生成时间</th><th>生成人</th><th class="stick-r">操作</th>'
+  +       '</tr></thead>'
+  +       '<tbody>'+(body||empty)+'</tbody>'
+  +     '</table>'
+  +   '</div>'
+  +   '<div class="pager">'
+  +     '<div class="pager-info">共 <b>'+total+'</b> 条 · 第 <b>'+state.billPage+'</b> / '+pages+' 页</div>'
+  +     '<div class="pager-ctl">'
+  +       '<div class="pg-size"><span>每页</span><span class="sel"><select data-act="bill-pagesize">'
+  +         [10,20,50].map(function(n){ return '<option value="'+n+'" '+(state.billPageSize===n?'selected':'')+'>'+n+' 条</option>'; }).join('')
+  +       + '</select><i></i></span></div>'
+  +       '<button class="pg" data-act="bill-page" data-page="'+(state.billPage-1)+'" '+(state.billPage===1?'disabled':'')+'>上一页</button>'
+  +       pageButtons(state.billPage,pages)
+  +       '<button class="pg" data-act="bill-page" data-page="'+(state.billPage+1)+'" '+(state.billPage===pages?'disabled':'')+'>下一页</button>'
+  +     '</div>'
+  +   '</div>'
+  + '</section>';
+}
+
+/* ================= 对账单：网货主体维度明细（合并功能） =================
+   生成运营商对账单后，按账单明细中充电订单的运单所属网货主体归集，
+   形成各网货主体的对账明细；本期应付(主体口径) = Σ 运单应扣额度。
+   折扣价暂不参与子订单拆分，运单额度按比例派生：
+   运单实扣额度 = Σ 子订单万联价累计总金额；运单应扣额度 = 实扣 × 订单折扣价/万联价比例；
+   运单补贴金额 = 应扣额度 − 实扣额度。同一运单对应多笔充电订单时，运单号在明细中重复展示。 */
+function billSubjectGroups(b){
+  const groups = {};
+  b.orders.forEach(function(o){
+    o.waybills.forEach(function(w){
+      if(!(w.should>0)) return;
+      const g = groups[w.subject] || (groups[w.subject] = {subject:w.subject, rows:[], orders:{}});
+      g.rows.push({
+        no:w.no, should:w.should, actual:w.actual, subsidy:w.subsidy,
+        driver:o.driver, plate:o.plate, phone:o.phone,
+        orderNo:o.no, company:o.company,
+        stationId:o.station.id, stationName:o.station.name,
+        pileId:o.pile.id, pileName:o.pile.name,
+        gunId:o.gun.id, gunName:o.gun.name
+      });
+      g.orders[o.no]=1;
+    });
+  });
+  return Object.keys(groups).sort().map(function(k){
+    const g = groups[k];
+    g.orderCount = Object.keys(g.orders).length;
+    g.waybillCount = Array.from(new Set(g.rows.map(function(r){ return r.no; }))).length;
+    g.amount = +g.rows.reduce(function(a,r){ return a+r.should; },0).toFixed(2);
+    g.actual = +g.rows.reduce(function(a,r){ return a+r.actual; },0).toFixed(2);
+    g.subsidy = +g.rows.reduce(function(a,r){ return a+r.subsidy; },0).toFixed(2);
+    return g;
+  });
+}
+/* ---- EV modals ---- */
+function evModalShell(title,en,width,body,extraFooter){
+  return '<div class="modal" style="width:'+width+'px" role="dialog" aria-modal="true">'
+    + '<header><div><h2>'+title+'</h2><small>'+en+'</small></div>'
+    + '<button class="icon-btn" data-act="close-layer" aria-label="关闭">'+icon('close',18)+'</button></header>'
+    + '<div class="modal-body">'+body+'</div>'
+    + '<footer>'+(extraFooter||'')+'<button class="btn" data-act="close-layer">关闭</button></footer>'
+    + '</div>';
+}
+function evDetailModal(o){
+  let body = ''
+  + '<div class="dcard" style="padding:14px 16px;margin-bottom:12px"><div class="dgrid">'
+  +   '<div class="dfield"><span>充电订单号</span><b>'+esc(o.no)+'</b></div>'
+  +   '<div class="dfield"><span>场站 / 桩 / 枪</span><b>'+esc(o.station.name)+' · '+esc(o.pile.name)+' · '+esc(o.gun.name)+'</b></div>'
+  + '</div></div>';
+  if(!o.segs.length){
+    body += '<div class="empty-row">'+icon('ev',24)+'该订单未产生充电明细（未进入充电阶段）</div>';
+  } else {
+    const sumP = o.segs.reduce(function(a,x){ return {p:a.p+x.power, e:a.e+x.elecMoney, s:a.s+x.svcMoney, de:a.de+x.dElecMoney, ds:a.ds+x.dSvcMoney}; }, {p:0,e:0,s:0,de:0,ds:0});
+    body += '<div style="overflow-x:auto;border:1px solid var(--line);border-radius:12px">'
+    + '<table class="mini-table" style="min-width:1060px"><thead><tr>'
+      + '<th>时段</th><th>开始时间</th><th>结束时间</th><th class="r">时段万联电价(元/度)</th><th class="r">时段万联服务费价(元/度)</th><th class="r">充电量(度)</th><th class="r">万联价电费(元)</th><th class="r">万联价服务费(元)</th>'
+      + '<th class="r">时段折扣价电价(元/度)</th><th class="r">时段折扣价服务费价(元/度)</th><th class="r">折扣价电费(元)</th><th class="r">折扣价服务费(元)</th>'
+      + '</tr></thead><tbody>'
+      + o.segs.map(function(x,i){
+          return '<tr><td>'+(i+1)+'</td><td>'+dtStr(x.start)+'</td><td>'+(x.end?dtStr(x.end):'充电中')+'</td>'
+            + '<td class="r">'+num4(x.elecPrice)+'</td><td class="r">'+num4(x.svcPrice)+'</td>'
+            + '<td class="r">'+num2(x.power)+'</td><td class="r">'+num2(x.elecMoney)+'</td><td class="r">'+num2(x.svcMoney)+'</td>'
+            + '<td class="r">'+num4(x.dElecPrice)+'</td><td class="r">'+num4(x.dSvcPrice)+'</td>'
+            + '<td class="r">'+num2(x.dElecMoney)+'</td><td class="r">'+num2(x.dSvcMoney)+'</td></tr>';
+        }).join('')
+      + '<tr style="background:#f8fafd;font-weight:650"><td colspan="5">合计</td>'
+      + '<td class="r">'+num2(sumP.p)+'</td><td class="r">'+num2(sumP.e)+'</td><td class="r">'+num2(sumP.s)+'</td>'
+      + '<td colspan="2"></td>'
+      + '<td class="r">'+num2(sumP.de)+'</td><td class="r">'+num2(sumP.ds)+'</td></tr>'
+      + '</tbody></table></div>';
+  }
+  return evModalShell('充电明细','CHARGE DETAILS',1340,body);
+}
+function evTariffModal(o){
+  const t = EV_TARIFFS.find(x=>x.stationId===o.station.id);
+  const cur = currentTariffIdx();
+  const body = ''
+  + '<div class="tariff-head"><span>'+esc(t.stationName)+'</span><span style="color:#9aa6b6">快照时间 '+esc(o.start?dtStr(o.start):dtStr(o.createdAt))+'（启动充电时）</span></div>'
+  + t.periods.map(function(p,i){
+      const isCur = i===cur;
+      return '<div class="tariff-card'+(isCur?' current':'')+'">'
+        + '<div class="tariff-range">'+p.range+(isCur?'<span class="tag tag-blue">当前时段</span>':'')+'</div>'
+        + '<div class="tariff-row wl"><span class="tt">折扣价</span><b>'+num4(p.wl)+'</b>'
+        +   '<span class="seg">= 电费 '+num4(p.elec)+' + 服务费 '+num4(t.svcWl)+'</span></div>'
+        + '</div>';
+    }).join('');
+  return evModalShell('场站资费快照','TARIFF SNAPSHOT',480,body);
+}
+
+/* ================= page: design system ================= */
+function pageDesign(){
+  const colors = [
+    ['主色','#1f5dbc'],['主色悬停','#174ea8'],['主色浅底','#eef6ff'],['工作区','#f4f7fb'],
+    ['主文字','#1f2d3d'],['次要文字','#728198'],['分割线','#edf1f6'],['危险','#b75254'],
+    ['警示','#a56b25'],['成功','#38787a'],['特殊','#67558d'],['描边','#d6deea']
+  ];
+  const swatches = colors.map(function(c){
+    return '<div class="swatch"><div class="chip" style="background:'+c[1]+'"></div>'
+      + '<div class="meta"><b>'+c[0]+'</b><code>'+c[1]+'</code></div></div>';
+  }).join('');
+
+  const types = [
+    ['页面标题 22 / 800','#1b2838',22,800],
+    ['卡片标题 15 / 700','#243248',15,700],
+    ['正文 13 / 400','#3c495d',13,400],
+    ['表格正文 12 / 400','#3c495d',12,400],
+    ['辅助说明 11 / 500','#8491a4',11,500],
+    ['极小标注 10 / 600','#9aa6b6',10,600]
+  ].map(function(t){
+    return '<div class="type-row"><div class="t" style="font-size:'+t[2]+'px;font-weight:'+t[3]+';color:'+t[1]+'">万油通撮合订单管理</div>'
+      + '<div class="m">'+t[0]+'</div></div>';
+  }).join('');
+
+  return ''
+  + '<section class="card ds-section">'
+  +   '<div class="ds-title"><b>色彩</b><span>COLOR</span></div>'
+  +   '<div class="ds-sub">主色为「能源蓝」，用于主操作、选中态、链接与数据强调；工作区保持低饱和浅灰蓝，避免长时间盯盘疲劳。</div>'
+  +   '<div class="swatches">'+swatches+'</div>'
+  + '</section>'
+
+  + '<div class="ds-grid-2">'
+  +   '<section class="card ds-section">'
+  +     '<div class="ds-title"><b>字体与层级</b><span>TYPOGRAPHY</span></div>'
+  +     '<div class="ds-sub">系统字体栈，基准 13px；数字统一使用 tabular-nums，保证金额列对齐。</div>'
+  +     types
+  +   '</section>'
+  +   '<section class="card ds-section">'
+  +     '<div class="ds-title"><b>项目符号</b><span>RADIUS / SHADOW</span></div>'
+  +     '<div class="ds-sub">控件 14px、区块 20px、面板 28px 三级圆角；阴影只用于浮层与卡片，保持轻薄。</div>'
+  +     '<div class="demo-block"><label>按钮</label><div class="demo-row">'
+  +       '<button class="btn">默认按钮</button>'
+  +       '<button class="btn primary">'+icon('plus',14)+'主操作</button>'
+  +       '<button class="btn primary-soft">次级操作</button>'
+  +       '<button class="btn danger-soft">危险操作</button>'
+  +       '<button class="btn ghost">文字按钮</button>'
+  +       '<button class="btn" disabled>禁用</button>'
+  +     '</div></div>'
+  +     '<div class="demo-block"><label>标签与状态</label><div class="demo-row">'
+  +       '<span class="tag tag-blue">待结算</span><span class="tag tag-orange">待确认</span>'
+  +       '<span class="tag tag-red">异常</span><span class="tag tag-cyan">已结算</span>'
+  +       '<span class="tag tag-purple">战略客户</span><span class="tag tag-gray">已取消</span>'
+  +       '<span class="status">进行中</span><span class="status warn">待处理</span><span class="status danger">风控拦截</span>'
+  +     '</div></div>'
+  +     '<div class="demo-block"><label>空态</label><div class="empty-row" style="padding:22px 0">'+icon('search',22)+'暂无符合条件的数据</div></div>'
+  +   '</section>'
+  + '</div>'
+
+  + '<section class="card ds-section">'
+  +   '<div class="ds-title"><b>表单控件</b><span>FORM</span></div>'
+  +   '<div class="ds-sub">控件高 34px，聚焦时主色描边 + 3px 柔光；错误态使用低饱和红，不打断阅读节奏。</div>'
+  +   '<div class="form-grid">'
+  +     '<div class="field"><label>客户名称<i>*</i></label><input type="text" placeholder="请输入客户名称" value="江苏远洋物流" /></div>'
+  +     '<div class="field"><label>订单状态</label><span class="sel"><select><option>全部状态</option><option selected>待确认</option><option>待结算</option></select><i></i></span></div>'
+  +     '<div class="field"><label>下单日期</label><input type="date" value="2026-11-02" /></div>'
+  +     '<div class="field err"><label>数量（吨）<i>*</i></label><input type="text" value="0" /><span class="msg">数量必须大于 0</span></div>'
+  +     '<div class="field wide"><label>备注</label><textarea placeholder="补充说明，最多 200 字"></textarea></div>'
+  +     '<div class="field wide"><div style="display:flex;align-items:center;gap:10px;padding-top:4px">'
+  +       '<label class="switch"><input type="checkbox" checked /><span class="track"></span><span class="txt">自动发送短信通知客户</span></label>'
+  +     '</div></div>'
+  +   '</div>'
+  + '</section>'
+
+  + '<div class="ds-grid-2">'
+  +   '<section class="card ds-section">'
+  +     '<div class="ds-title"><b>表格</b><span>TABLE</span></div>'
+  +     '<div class="ds-sub">表头 42px、行高 50px，首列加粗、末列固定操作区，横向滚动时首末列吸附。</div>'
+  +     '<table class="mini-table"><thead><tr><th>订单号</th><th>客户名称</th><th style="text-align:right">金额</th><th>状态</th></tr></thead><tbody>'
+  +       '<tr><td style="font-weight:650">HD2026110201052</td><td>江苏远洋物流</td><td style="text-align:right">¥ 186,420.00</td><td><span class="tag tag-orange">待确认</span></td></tr>'
+  +       '<tr><td style="font-weight:650">HD2026110201051</td><td>冀东运输集团</td><td style="text-align:right">¥ 92,160.00</td><td><span class="tag tag-blue">待结算</span></td></tr>'
+  +       '<tr><td style="font-weight:650">HD2026110101048</td><td>宏达车队</td><td style="text-align:right">¥ 244,800.00</td><td><span class="tag tag-cyan">已结算</span></td></tr>'
+  +     '</tbody></table>'
+  +   '</section>'
+  +   '<section class="card ds-section">'
+  +     '<div class="ds-title"><b>浮层与反馈</b><span>OVERLAY</span></div>'
+  +     '<div class="ds-sub">抽屉 820px 用于详情与编辑，弹窗用于确认与短表单，Toast 右上角 2.4s 自动消失。</div>'
+  +     '<div class="demo-block"><label>打开示例</label><div class="demo-row">'
+  +       '<button class="btn primary" data-act="detail" data-id="o1">打开详情抽屉</button>'
+  +       '<button class="btn" data-act="open-create">打开新建弹窗</button>'
+  +       '<button class="btn" data-act="toast" data-msg="这是一条操作成功提示" data-kind="ok">触发 Toast</button>'
+  +     '</div></div>'
+  +     '<div class="demo-block"><label>规范</label>'
+  +       '<div style="color:#7c8a9d;font-size:11px;line-height:2">'
+  +       '· 抽屉头部 72px，底部按钮 64px，主体独立滚动<br/>'
+  +       '· 遮罩 rgba(28,38,54,.36)，ESC 或点击遮罩关闭<br/>'
+  +       '· 主操作在右，危险操作使用浅红底 + 红字<br/>'
+  +       '· 二次确认必须说明影响范围与不可逆性<br/>'
+  +       '</div>'
+  +     '</div>'
+  +   '</section>'
+  + '</div>';
+}
+
+function pagePlaceholder(meta){
+  return '<section class="panel-card"><div class="empty-state">'
+    + '<div class="empty-icon">'+icon('layers',28)+'</div>'
+    + '<b>'+esc(meta.title)+' · 功能建设中</b>'
+    + '<p>该模块已列入规划，等你确认功能清单后，会按同一套组件规范与交互规则补齐，不会出现风格不一致的页面。</p>'
+    + '<div class="empty-actions">'
+    +   '<button class="btn primary" data-act="nav" data-route="/order/list">查看撮合订单样板间</button>'
+    +   '<button class="btn" data-act="nav" data-route="/design">浏览组件规范</button>'
+    + '</div></div></section>';
+}
+
+/* ================= drawer / modal ================= */
+function renderLayer(){
+  if(!state.drawer && !state.modal){ layer.className=''; layer.innerHTML=''; return; }
+  layer.className='layer';
+  let html = '<div class="overlay" data-act="close-layer"></div>';
+  if(state.drawer){
+    const o = ORDERS.find(x=>x.id===state.drawer);
+    if(o) html += drawerOrder(o);
+  }
+  if(state.modal) html += modalHtml(state.modal);
+  layer.innerHTML = html;
+}
+
+function drawerOrder(o){
+  const st = STATUS[o.status];
+  const tab = state.drawerTab;
+  const tabs = [['info','订单信息'],['amount','金额与结算'],['flow','流转记录']];
+  const tabHtml = tabs.map(function(t){
+    return '<button class="'+(tab===t[0]?'active':'')+'" data-act="drawer-tab" data-tab="'+t[0]+'">'+t[1]+'</button>';
+  }).join('');
+
+  let bodyHtml = '';
+  if(tab==='info'){
+    bodyHtml = ''
+    + '<div class="dcard">'
+    +   '<div class="dcard-head"><b>订单概要</b><span class="tag '+st.tag+'">'+st.text+'</span></div>'
+    +   '<div class="dgrid">'
+    +     '<div class="dfield"><span>订单号</span><b>'+esc(o.no)+'</b></div>'
+    +     '<div class="dfield"><span>业务员</span><b>'+esc(o.owner)+'</b></div>'
+    +     '<div class="dfield"><span>商品</span><b>'+esc(o.goods)+'</b></div>'
+    +     '<div class="dfield"><span>下单网点</span><b>'+esc(o.site)+'</b></div>'
+    +     '<div class="dfield"><span>数量</span><b>'+o.qty+' '+o.unit+'</b></div>'
+    +     '<div class="dfield"><span>支付方式</span><b>'+esc(o.pay)+'</b></div>'
+    +     '<div class="dfield"><span>创建时间</span><b>'+dtStr(o.createdAt)+'</b></div>'
+    +     '<div class="dfield"><span>客户等级</span><b>'+esc(o.level)+'</b></div>'
+    +   '</div>'
+    + '</div>'
+    + '<div class="dcard">'
+    +   '<div class="dcard-head"><b>客户与收货</b></div>'
+    +   '<div class="dgrid">'
+    +     '<div class="dfield"><span>客户名称</span><b>'+esc(o.customer)+'</b></div>'
+    +     '<div class="dfield"><span>联系人</span><b>'+esc(o.owner)+' · 138****6621</b></div>'
+    +     '<div class="dfield wide"><span>收货地址</span><b>'+esc(o.site)+' 卸油区 2 号鹤位</b></div>'
+    +     '<div class="dfield wide"><span>备注</span><b>'+(o.remark?esc(o.remark):'—')+'</b></div>'
+    +   '</div>'
+    + '</div>';
+  } else if(tab==='amount'){
+    bodyHtml = ''
+    + '<div class="dcard">'
+    +   '<div class="amount-hero"><div><small>订单金额（含税）</small><strong>'+money(o.amount)+'</strong></div>'
+    +     '<span class="tag '+st.tag+'">'+st.text+'</span></div>'
+    +   '<div class="dgrid">'
+    +     '<div class="dfield"><span>单价</span><b>'+money(o.price)+' / 吨</b></div>'
+    +     '<div class="dfield"><span>数量</span><b>'+o.qty+' 吨</b></div>'
+    +     '<div class="dfield"><span>优惠金额</span><b>¥ 0.00</b></div>'
+    +     '<div class="dfield"><span>应付金额</span><b>'+money(o.amount)+'</b></div>'
+    +     '<div class="dfield"><span>支付方式</span><b>'+esc(o.pay)+'</b></div>'
+    +     '<div class="dfield"><span>结算状态</span><b>'+(o.status==='settled'?'已出结算单':'未结算')+'</b></div>'
+    +   '</div>'
+    + '</div>'
+    + '<div class="dcard">'
+    +   '<div class="dcard-head"><b>结算信息</b><small>财务中心同步</small></div>'
+    +   '<div class="dgrid">'
+    +     '<div class="dfield"><span>结算单号</span><b>'+(o.status==='settled'?'JS2026110'+String(100+ORDERS.indexOf(o)).slice(-3):'—')+'</b></div>'
+    +     '<div class="dfield"><span>结算周期</span><b>T+1 工作日</b></div>'
+    +     '<div class="dfield wide"><span>开票状态</span><b>'+(o.status==='settled'?'已开票 · 增值税专用发票':'待开票')+'</b></div>'
+    +   '</div>'
+    + '</div>';
+  } else {
+    const steps = [
+      {t:'订单创建',d:dtStr(o.createdAt),p:esc(o.owner)+' 创建订单，来源：后台代客下单',done:true},
+      {t:'订单确认',d:o.status==='pending'?'待处理':dtStr(new Date(o.createdAt.getTime()+36e5)),p:o.status==='pending'?'等待运营确认库存与价格':'系统校验库存与授信通过',done:o.status!=='pending'},
+      {t:'支付/结算',d:o.status==='settled'?'已完成':'—',p:o.status==='settled'?'客户账户扣款成功，已生成结算单':'待客户支付或走授信账期',done:o.status==='settled'},
+      {t:'订单完成',d:o.status==='settled'?'已完成':'—',p:o.status==='cancelled'?'订单已取消，释放库存':'客户签收后自动完成',done:o.status==='settled'}
+    ];
+    bodyHtml = '<div class="dcard"><div class="dcard-head"><b>流转记录</b><small>共 4 个节点</small></div><div class="timeline">'
+      + steps.map(function(s){
+          return '<div class="tl-item '+(s.done?'done':'')+'"><b>'+s.t+'</b><span>'+s.d+'</span><p>'+s.p+'</p></div>';
+        }).join('')
+      + '</div></div>';
+  }
+
+  return ''
+  + '<aside class="drawer" role="dialog" aria-modal="true" aria-label="订单详情">'
+  +   '<header><div class="hd-left"><span class="drawer-mark">'+icon('order',19)+'</span>'
+  +     '<div><h2>'+esc(o.no)+'</h2><small>ORDER DETAIL · '+STATUS[o.status].text+'</small></div></div>'
+  +     '<button class="icon-btn" data-act="close-layer" aria-label="关闭">'+icon('close',18)+'</button></header>'
+  +   '<div class="drawer-body"><div class="dtab">'+tabHtml+'</div>'+bodyHtml+'</div>'
+  +   '<footer>'
+  +     '<button class="btn" data-act="close-layer">关闭</button>'
+  +     (o.status==='pending'?'<button class="btn danger-soft" data-act="ask-cancel" data-id="'+o.id+'">取消订单</button>':'')
+  +     (o.status==='pending'?'<button class="btn primary" data-act="confirm-one" data-id="'+o.id+'">确认订单</button>':'')
+  +     (o.status==='confirmed'?'<button class="btn primary" data-act="settle-one" data-id="'+o.id+'">确认结算</button>':'')
+  +   '</footer>'
+  + '</aside>';
+}
+
+function modalHtml(m){
+  if(m.type==='create'){
+    const v = m.values || {};
+    const e = m.errors || {};
+    const field = function(name,label,ph,required,wide){
+      return '<div class="field '+(e[name]?'err':'')+' '+(wide?'wide':'')+'">'
+        + '<label>'+label+(required?'<i>*</i>':'')+'</label>'
+        + '<input type="text" data-field="'+name+'" value="'+esc(v[name]||'')+'" placeholder="'+esc(ph)+'" />'
+        + (e[name]?'<span class="msg">'+esc(e[name])+'</span>':'')+'</div>';
+    };
+    const selField = function(name,label,options,required,wide){
+      return '<div class="field '+(e[name]?'err':'')+' '+(wide?'wide':'')+'">'
+        + '<label>'+label+(required?'<i>*</i>':'')+'</label>'
+        + '<span class="sel"><select data-field="'+name+'"><option value="">请选择</option>'
+        + options.map(function(op){ return '<option '+(v[name]===op?'selected':'')+'>'+esc(op)+'</option>'; }).join('')
+        + '</select><i></i></span>'
+        + (e[name]?'<span class="msg">'+esc(e[name])+'</span>':'')+'</div>';
+    };
+    return ''
+    + '<div class="modal" role="dialog" aria-modal="true" aria-label="新建订单">'
+    +   '<header><div><h2>新建撮合订单</h2><small>CREATE ORDER</small></div>'
+    +     '<button class="icon-btn" data-act="close-layer" aria-label="关闭">'+icon('close',18)+'</button></header>'
+    +   '<div class="modal-body">'
+    +     '<div class="form-grid">'
+    +       field('customer','客户名称','请输入客户全称',true)
+    +       selField('goods','商品',GOODS,true)
+    +       field('qty','数量（吨）','请输入数量',true)
+    +       field('price','单价（元/吨）','请输入单价',true)
+    +       selField('site','下单网点',SITES,false)
+    +       selField('pay','支付方式',PAYS,false)
+    +       field('remark','备注','补充说明，最多 200 字',false,true)
+    +     '</div>'
+    +   '</div>'
+    +   '<footer><button class="btn" data-act="close-layer">取消</button>'
+    +     '<button class="btn primary" data-act="submit-create">确认创建</button></footer>'
+    + '</div>';
+  }
+  if(m.type==='confirm'){
+    return ''
+    + '<div class="modal" style="width:440px" role="dialog" aria-modal="true">'
+    +   '<div class="confirm-body">'
+    +     '<div class="confirm-icon '+(m.tone||'')+'">'+icon(m.tone==='danger'?'alert':'check',22)+'</div>'
+    +     '<b>'+esc(m.title)+'</b>'
+    +     '<p>'+esc(m.desc)+'</p>'
+    +   '</div>'
+    +   '<footer><button class="btn" data-act="close-layer">取消</button>'
+    +     '<button class="btn '+(m.tone==='danger'?'danger-soft':'primary')+'" data-act="confirm-ok">'+esc(m.okText||'确认')+'</button></footer>'
+    + '</div>';
+  }
+  if(m.type==='billRecon'){
+    const b = EV_BILLS.find(x=>x.id===m.id);
+    if(!b) return '';
+    return ''
+    + '<div class="modal" style="width:500px" role="dialog" aria-modal="true" aria-label="确认已完成对账">'
+    +   '<div class="confirm-body">'
+    +     '<div class="confirm-icon">'+icon('check',22)+'</div>'
+    +     '<b>确认已完成对账？</b>'
+    +     '<p>对账单 '+esc(b.no)+'<br/>'
+    +       '账单周期 '+esc(b.from.replace(/-/g,'/'))+' 至 '+esc(b.to.replace(/-/g,'/'))+'<br/>'
+    +       '运营商 '+esc(b.company)+' · '+b.count+' 笔充电订单 · '+billSubjectGroups(b).length+' 个网货主体 · 本期应付 ¥'+num2(b.amount)+'<br/><br/>'
+    +       '请确认你已在线下完成与运营商、网货主体双方的对账，并且完成线下开票。<br/>'
+    +       '标记后本对账单将不可删除，对账单涉及的 '+b.count+' 笔充电订单会在「充电订单管理」中同步标记为已完成对账，且不再纳入后续新生成的对账单。该操作不可逆，无法撤销。</p>'
+    +   '</div>'
+    +   '<footer><button class="btn" data-act="close-layer">取消</button>'
+    +     '<button class="btn primary" data-act="bill-recon-ok" data-id="'+b.id+'">确认已完成对账</button></footer>'
+    + '</div>';
+  }
+  if(m.type==='billRecon2'){
+    const b = EV_BILLS.find(x=>x.id===m.id);
+    if(!b) return '';
+    return ''
+    + '<div class="modal" style="width:420px" role="dialog" aria-modal="true" aria-label="二次确认已完成对账">'
+    +   '<div class="confirm-body">'
+    +     '<div class="confirm-icon" style="background:#fdecec;color:#d4494b">'+icon('alert',22)+'</div>'
+    +     '<b>再次确认，本操作不可逆</b>'
+    +     '<p>标记「已完成对账」后本对账单将不可删除，'
+    +       b.count+' 笔充电订单将被同步标记且不再纳入后续对账，该操作无法撤销。'
+    +       '请再次确认是否继续？</p>'
+    +   '</div>'
+    +   '<footer><button class="btn" data-act="close-layer">取消</button>'
+    +     '<button class="btn danger-soft" data-act="bill-recon-final" data-id="'+b.id+'">我已知晓，确认标记</button></footer>'
+    + '</div>';
+  }
+  if(m.type==='billDel'){
+    const b = EV_BILLS.find(x=>x.id===m.id);
+    if(!b) return '';
+    return ''
+    + '<div class="modal" style="width:480px" role="dialog" aria-modal="true" aria-label="删除对账单">'
+    +   '<div class="confirm-body">'
+    +     '<div class="confirm-icon danger">'+icon('alert',22)+'</div>'
+    +     '<b>删除对账单 '+esc(b.no)+'</b>'
+    +     '<p>账单周期 '+esc(b.from.replace(/-/g,'/'))+' 至 '+esc(b.to.replace(/-/g,'/'))+'<br/>'
+    +       '运营商 '+esc(b.company)+' · '+b.count+' 笔充电订单 · '+billSubjectGroups(b).length+' 个网货主体 · 本期应付 ¥'+num2(b.amount)+'<br/><br/>'
+    +       '删除后该对账单及其运营商对账明细、网货主体对账明细将不可恢复，对应充电订单不受影响。</p>'
+    +   '</div>'
+    +   '<footer><button class="btn" data-act="close-layer">取消</button>'
+    +     '<button class="btn danger-soft" data-act="bill-del-ok" data-id="'+b.id+'">确认删除</button></footer>'
+    + '</div>';
+  }
+  if(m.type==='ev-detail'){ const o=EV_ORDERS.find(x=>x.id===m.id); if(o) return evDetailModal(o); }
+  if(m.type==='ev-tariff'){ const o=EV_ORDERS.find(x=>x.id===m.id); if(o) return evTariffModal(o); }
+  if(m.type==='billGen'){
+    const d = state.billDraft || {};
+    const e = d.errors || {};
+    const now = new Date();
+    const maxD = dateStr(new Date(now.getFullYear(), now.getMonth(), 0)); // 上月末：当月不可选
+    return ''
+    + '<div class="modal" style="width:520px" role="dialog" aria-modal="true" aria-label="生成对账单">'
+    +   '<header><div><h2>生成对账单</h2><small>GENERATE RECONCILIATION BILL</small></div>'
+    +     '<button class="icon-btn" data-act="close-layer" aria-label="关闭">'+icon('close',18)+'</button></header>'
+    +   '<div class="modal-body">'
+    +     '<div class="form-grid">'
+    +       '<div class="field '+(e.company?'err':'')+'">'
+    +         '<label>运营商<i>*</i></label>'
+    +         '<span class="sel"><select data-binput="company"><option value="云快充" selected>云快充</option></select><i></i></span>'
+    +         (e.company?'<span class="msg">'+esc(e.company)+'</span>':'')+'</div>'
+    +       '<div></div>'
+    +       '<div class="field '+(e.from?'err':'')+'">'
+    +         '<label>充电订单创建开始日期<i>*</i></label>'
+    +         '<input type="date" data-binput="from" value="'+esc(d.from||'')+'" max="'+maxD+'" />'
+    +         (e.from?'<span class="msg">'+esc(e.from)+'</span>':'')+'</div>'
+    +       '<div class="field '+(e.to?'err':'')+'">'
+    +         '<label>充电订单创建结束日期<i>*</i></label>'
+    +         '<input type="date" data-binput="to" value="'+esc(d.to||'')+'" max="'+maxD+'" />'
+    +         (e.to?'<span class="msg">'+esc(e.to)+'</span>':'')+'</div>'
+    +       '<div class="field wide" style="flex-direction:row;align-items:center;gap:8px">'
+    +         '<label style="margin:0">快捷周期</label>'
+    +         '<button type="button" class="btn" style="height:30px;padding:0 14px;font-size:12px" data-act="bill-quick" data-k="lastMonth">上个整月</button>'
+    +       '</div>'
+    +     '</div>'
+    +     '<div class="dcard" style="margin-top:14px;padding:12px 14px">'
+    +       '<div style="font-size:12px;color:#566377;line-height:1.9">'
+    +         icon('doc',13)+' 生成规则：只纳入业务状态为「已完成」且支付状态为「已支付」的充电订单；<br/>'
+    +         icon('doc',13)+' 仅支持生成往月账单，当月账单暂不支持生成（日期范围为上月末之前）；<br/>'
+    +         icon('doc',13)+' 本期应付金额 = 运营商对账明细中每个充电订单的折扣价总费用汇总（折扣价总费用 = 折扣价电费 + 折扣价服务费），为与运营商对账的应付金额；<br/>'
+    +         icon('doc',13)+' 运营商对账明细生成后，按运营商对账明细中充电订单的运单分订单所属网货主体自动生成各主体的对账明细（本期应付金额 = Σ折扣价总费用 = Σ 网货主体运单应扣额度）；<br/>'
+    +         icon('doc',13)+' 已标记「已完成对账」的充电订单不再纳入新的对账单。</div>'
+    +     '</div>'
+    +   '</div>'
+    +   '<footer><button class="btn" data-act="close-layer">取消</button>'
+    +     '<button class="btn primary" data-act="submit-bill-gen">'+icon('plus',14)+'生成对账单</button></footer>'
+    + '</div>';
+  }
+  if(m.type==='billView'){
+    const b = EV_BILLS.find(x=>x.id===m.id);
+    if(!b) return '';
+    const tab = state.billTab || 'orders';
+    const groups = billSubjectGroups(b);
+    const tabHtml = '<div class="dtab" style="margin-top:-2px">'
+      +   '<button class="'+(tab==='orders'?'active':'')+'" data-act="bill-tab" data-k="orders">运营商对账明细（'+b.count+'）</button>'
+      +   '<button class="'+(tab==='subject'?'active':'')+'" data-act="bill-tab" data-k="subject">网货主体对账明细（'+groups.length+'）</button>'
+      + '</div>';
+    let body;
+    if(tab==='subject'){
+      const subjectCols = ''
+        + '<colgroup>'
+        +   '<col style="width:190px" /><col style="width:120px" /><col style="width:120px" /><col style="width:120px" />'
+        +   '<col style="width:100px" /><col style="width:110px" /><col style="width:120px" /><col style="width:190px" />'
+        +   '<col style="width:130px" /><col style="width:110px" /><col style="width:160px" /><col style="width:110px" />'
+        +   '<col style="width:150px" /><col style="width:90px" /><col style="width:100px" />'
+        + '</colgroup>'
+        + '<thead><tr>'
+        +   '<th class="stick-first">运单号</th>'
+        +   '<th class="num">运单应扣额度(元)</th><th class="num">运单实扣额度(元)</th><th class="num">运单补贴金额(元)</th>'
+        +   '<th>司机</th><th>车牌号</th><th>手机号</th>'
+        +   '<th>充电订单号</th><th>运营商名称</th>'
+        +   '<th>场站ID</th><th>场站名称</th><th>充电桩ID</th><th>充电桩名称</th><th>枪口ID</th><th>枪口名称</th>'
+        + '</tr></thead>';
+      body = (groups.length ? groups.map(function(g){
+            const grow = g.rows.map(function(r){
+              return '<tr>'
+                + '<td class="stick-first" style="font-weight:650">'+esc(r.no)+'</td>'
+                + '<td class="num primary-cell">'+num2(r.should)+'</td>'
+                + '<td class="num">'+num2(r.actual)+'</td>'
+                + '<td class="num" style="color:#38785c">'+num2(r.subsidy)+'</td>'
+                + '<td>'+esc(r.driver)+'</td><td>'+esc(r.plate)+'</td><td>'+esc(r.phone)+'</td>'
+                + '<td>'+esc(r.orderNo)+'</td><td>'+esc(r.company)+'</td>'
+                + '<td style="color:#7d8b9f">'+esc(r.stationId)+'</td><td>'+esc(r.stationName)+'</td>'
+                + '<td style="color:#7d8b9f">'+esc(r.pileId)+'</td><td>'+esc(r.pileName)+'</td>'
+                + '<td style="color:#7d8b9f">'+esc(r.gunId)+'</td><td>'+esc(r.gunName)+'</td>'
+                + '</tr>';
+            }).join('');
+            return '<div class="dcard" style="padding:14px 16px;margin-bottom:14px">'
+              + '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap">'
+              +   '<div style="display:flex;align-items:center;gap:8px"><b style="font-size:13px;color:#26364f">'+esc(g.subject)+'</b>'
+              +     '<span class="tag tag-blue">'+g.waybillCount+' 笔运单</span></div>'
+              +   '<div style="display:flex;align-items:center;gap:16px;font-size:12px;color:#566377">'
+              +     '<span>充电订单数 <b style="color:#26364f">'+g.orderCount+'</b></span>'
+              +     '<span>实扣合计 <b style="color:#26364f">¥'+num2(g.actual)+'</b></span>'
+              +     '<span>补贴合计 <b style="color:#38785c">¥'+num2(g.subsidy)+'</b></span>'
+              +     '<span>本期应付 <b style="color:var(--primary);font-size:14px">¥'+num2(g.amount)+'</b></span>'
+              +   '</div>'
+              + '</div>'
+              + '<div class="table-scroll" style="max-height:300px;border:1px solid var(--line);border-radius:12px">'
+              +   '<table class="dt dt-ev" style="min-width:1920px">'+subjectCols
+              +     '<tbody>'+(grow
+              +       '<tr style="background:#f8fafd;font-weight:700">'
+              +         '<td class="stick-first">小计</td>'
+              +         '<td class="num" style="color:var(--primary)">'+num2(g.amount)+'</td>'
+              +         '<td class="num">'+num2(g.actual)+'</td>'
+              +         '<td class="num">'+num2(g.subsidy)+'</td>'
+              +         '<td colspan="11"></td>'
+              +       '</tr>')
+              +     '</tbody>'
+              +   '</table>'
+              + '</div>'
+              + '</div>';
+          }).join('')
+        : '<div class="empty-row">'+icon('doc',24)+'该账单周期内暂无可对账运单</div>');
+    } else {
+      const sum = b.orders.reduce(function(a,o){ return {qty:a.qty+o.qty, elec:a.elec+o.elec, svc:a.svc+o.svc, total:a.total+o.total, oriElec:a.oriElec+o.oriElec, oriSvc:a.oriSvc+o.oriSvc, oriTotal:a.oriTotal+o.oriTotal, paid:a.paid+o.paid}; }, {qty:0,elec:0,svc:0,total:0,oriElec:0,oriSvc:0,oriTotal:0,paid:0});
+      const rows = b.orders.map(function(o){
+        return '<tr><td class="stick-first" style="font-weight:650">'+esc(o.no)+'</td>' + evOrderCells(o, {payTime:true}) + '</tr>';
+      }).join('');
+      const emptyRow = '<tr><td colspan="28"><div class="empty-row">'+icon('search',24)+'该账单周期内暂无可对账订单</div></td></tr>';
+      body = '<div class="table-scroll" style="max-height:460px;border:1px solid var(--line);border-radius:14px">'
+        +   '<table class="dt dt-ev" style="min-width:3270px">'
+        +     '<colgroup>'
+        +       '<col style="width:190px" /><col style="width:150px" /><col style="width:100px" /><col style="width:100px" />'
+        +       '<col style="width:170px" /><col style="width:110px" /><col style="width:160px" /><col style="width:110px" />'
+        +       '<col style="width:130px" /><col style="width:90px" /><col style="width:90px" /><col style="width:150px" />'
+        +       '<col style="width:150px" /><col style="width:100px" /><col style="width:80px" />'
+        +       '<col style="width:80px" /><col style="width:100px" /><col style="width:100px" /><col style="width:120px" />'
+        +       '<col style="width:100px" /><col style="width:110px" /><col style="width:110px" /><col style="width:140px" />'
+        +       '<col style="width:130px" /><col style="width:110px" /><col style="width:90px" /><col style="width:110px" /><col style="width:120px" />'
+        +     '</colgroup>'
+        +     '<thead><tr>'
+        +       '<th class="stick-first">充电订单号</th>'
+        +       '<th>创建时间</th><th>业务状态</th><th>支付状态</th><th>运营商名称</th><th>场站ID</th><th>场站名称</th>'
+        +       '<th>充电桩ID</th><th>充电桩名称</th><th>枪口ID</th><th>枪口名称</th>'
+        +       '<th>开始充电时间</th><th>结束充电时间</th>'
+        +       '<th class="num">充电量(度)</th><th>起始SOC</th><th>结束SOC</th>'
+        +       '<th class="num">万联价电费(元)</th><th class="num">万联价服务费(元)</th><th class="num">万联价累计总金额</th>'
+        +       '<th class="num">折扣价电费</th><th class="num">折扣价服务费</th><th class="num">折扣价总费用</th>'
+        +       '<th>结束充电原因</th><th>支付时间</th><th class="num">实付金额</th><th>司机</th><th>车牌号</th><th>手机号</th>'
+        +     '</tr></thead>'
+        +     '<tbody>'+(rows||emptyRow)
+        +       (rows ? '<tr style="background:#f8fafd;font-weight:700">'
+            + '<td class="stick-first">合计</td>'
+            + '<td colspan="12"></td>'
+            + '<td class="num">'+num2(sum.qty)+'</td>'
+            + '<td colspan="2"></td>'
+            + '<td class="num">'+num2(sum.elec)+'</td><td class="num">'+num2(sum.svc)+'</td>'
+            + '<td class="num" style="color:var(--primary)">'+num2(sum.total)+'</td>'
+            + '<td class="num">'+num2(sum.oriElec)+'</td><td class="num">'+num2(sum.oriSvc)+'</td>'
+            + '<td class="num" style="color:var(--primary)">'+num2(sum.oriTotal)+'</td>'
+            + '<td></td><td></td>'
+            + '<td class="num">'+num2(sum.paid)+'</td><td colspan="3"></td>'
+            + '</tr>' : '')
+        +     '</tbody>'
+        +   '</table>'
+        + '</div>';
+    }
+    return ''
+    + '<div class="modal" style="width:1080px" role="dialog" aria-modal="true" aria-label="对账明细">'
+    +   '<header><div><h2>对账明细</h2><small>BILL DETAILS · '+esc(b.no)+'</small></div>'
+    +     '<button class="icon-btn" data-act="close-layer" aria-label="关闭">'+icon('close',18)+'</button></header>'
+    +   '<div class="modal-body">'
+    +     '<div class="dcard" style="padding:14px 16px;margin-bottom:12px"><div class="dgrid">'
+    +       '<div class="dfield"><span>对账单号</span><b>'+esc(b.no)+'</b></div>'
+    +       '<div class="dfield"><span>账单周期</span><b>'+esc(b.from.replace(/-/g,'/'))+' 至 '+esc(b.to.replace(/-/g,'/'))+'</b></div>'
+    +       '<div class="dfield"><span>运营商名称</span><b>'+esc(b.company)+'</b></div>'
+    +       '<div class="dfield"><span>充电订单数</span><b>'+b.count+' 单</b></div>'
+    +       '<div class="dfield"><span>网货主体数</span><b>'+groups.length+' 个</b></div>'
+    +       '<div class="dfield"><span>本期应付金额</span><b style="color:var(--primary);font-size:16px">¥ '+num2(b.amount)+'</b></div>'
+    +       '<div class="dfield"><span>对账状态</span><b>'+(billIsDone(b)
+              ? '<span class="tag tag-green">已完成对账</span>'
+              : '<span class="tag tag-gray">待对账</span>')+'</b></div>'
+    +       '<div class="dfield"><span>生成信息</span><b style="font-weight:500;color:#566377">'+esc(b.creator)+' · '+dtStr(b.createdAt)+'</b></div>'
+    +       (billIsDone(b)
+          ? '<div class="dfield"><span>对账信息</span><b style="font-weight:500;color:#566377">'+esc(b.reconciler)+' · '+dtStr(b.reconciledAt)+'</b></div>'
+          : '')
+    +     '</div></div>'
+    +     tabHtml
+    +     body
+    +   '</div>'
+    +   '<footer>'
+    +     '<button class="btn" data-act="bill-export-excel" data-no="'+esc(b.no)+'">'+icon('download',14)+'导出 Excel</button>'
+    +     '<button class="btn" data-act="bill-export-pdf" data-no="'+esc(b.no)+'">'+icon('download',14)+'导出 PDF</button>'
+    +     '<button class="btn primary" data-act="close-layer">关闭</button>'
+    +   '</footer>'
+    + '</div>';
+  }
+  return '';
+}
+
+/* ================= toast ================= */
+let toastSeq = 0;
+function toast(msg,kind){
+  const id = ++toastSeq;
+  state.toasts.push({id:id,msg:msg,kind:kind||'ok'});
+  renderToasts();
+  setTimeout(function(){
+    state.toasts = state.toasts.filter(t=>t.id!==id);
+    renderToasts();
+  },2400);
+}
+function renderToasts(){
+  toastHost.innerHTML = state.toasts.map(function(t){
+    const ic = t.kind==='err'?'alert':(t.kind==='warn'?'alert':'check');
+    return '<div class="toast '+t.kind+'">'+icon(ic,16)+'<span>'+esc(t.msg)+'</span></div>';
+  }).join('');
+}
+
+/* ================= actions ================= */
+function openOrder(id){ state.drawer=id; state.drawerTab='info'; state.openMenu=null; renderLayer(); renderFloatMenu(); }
+function closeLayer(){ state.drawer=null; state.modal=null; renderLayer(); }
+
+function readFilters(){
+  $$('[data-filter]').forEach(function(el){
+    state.filters[el.dataset.filter] = el.value.trim();
+  });
+}
+
+function createOrder(){
+  const m = state.modal;
+  const vals = {};
+  $$('[data-field]').forEach(function(el){ vals[el.dataset.field] = el.value.trim(); });
+  const errors = {};
+  if(!vals.customer) errors.customer='请输入客户名称';
+  if(!vals.goods) errors.goods='请选择商品';
+  if(!vals.qty || isNaN(Number(vals.qty)) || Number(vals.qty)<=0) errors.qty='数量必须为大于 0 的数字';
+  if(!vals.price || isNaN(Number(vals.price)) || Number(vals.price)<=0) errors.price='单价必须为大于 0 的数字';
+  if(Object.keys(errors).length){ m.values=vals; m.errors=errors; renderLayer(); return; }
+
+  const now = new Date();
+  const qty = Number(vals.qty), price = Number(vals.price);
+  const row = {
+    id:'o'+(ORDERS.length+1),
+    no:'HD'+now.getFullYear()+pad(now.getMonth()+1)+pad(now.getDate())+String(1050+ORDERS.length).slice(-4),
+    customer:vals.customer,
+    level:'B 类客户',
+    goods:vals.goods,
+    site:vals.site||SITES[0],
+    qty:qty, unit:'吨', price:price, amount:+(qty*price).toFixed(2),
+    pay:vals.pay||PAYS[0],
+    status:'pending',
+    createdAt:now,
+    owner:'顾佳超',
+    remark:vals.remark||''
+  };
+  ORDERS.unshift(row);
+  state.modal=null; state.page=1;
+  renderLayer(); render();
+  toast('订单 '+row.no+' 创建成功','ok');
+}
+
+function confirmOne(id){
+  const o = ORDERS.find(x=>x.id===id); if(!o) return;
+  state.modal = {
+    type:'confirm', tone:'',
+    title:'确认订单 '+o.no,
+    desc:'确认后订单将进入待结算流程，客户账户或授信额度会被占用，库存同步锁定。',
+    okText:'确认订单',
+    payload:{action:'confirm',id:id}
+  };
+  state.openMenu=null;
+  renderLayer();
+}
+
+function askCancel(id){
+  const o = ORDERS.find(x=>x.id===id); if(!o) return;
+  state.modal = {
+    type:'confirm', tone:'danger',
+    title:'取消订单 '+o.no,
+    desc:'取消后该订单不可恢复，占用的库存与授信额度将立即释放，客户会收到短信通知。',
+    okText:'确认取消',
+    payload:{action:'cancel',id:id}
+  };
+  state.openMenu=null;
+  renderLayer();
+}
+
+function handleConfirmOk(){
+  const p = state.modal && state.modal.payload;
+  if(!p) return closeLayer();
+  const keepDrawer = !!(p.id && state.drawer === p.id);
+  if(p.action==='confirm'){
+    const o = ORDERS.find(x=>x.id===p.id);
+    if(o) o.status='confirmed';
+    if(keepDrawer){ state.modal=null; renderLayer(); render(); } else { closeLayer(); render(); }
+    toast('订单已确认，进入待结算','ok');
+  } else if(p.action==='cancel'){
+    const o = ORDERS.find(x=>x.id===p.id);
+    if(o) o.status='cancelled';
+    if(keepDrawer){ state.modal=null; renderLayer(); render(); } else { closeLayer(); render(); }
+    toast('订单已取消','warn');
+  } else if(p.action==='batch'){
+    let n=0;
+    ORDERS.forEach(function(o){
+      if(state.selected.has(o.id) && o.status==='pending'){ o.status='confirmed'; n++; }
+    });
+    state.selected.clear();
+    closeLayer(); render();
+    toast(n>0?('已批量确认 '+n+' 笔订单'):'所选订单中没有待确认订单', n>0?'ok':'warn');
+  } else if(p.action==='settle'){
+    const o = ORDERS.find(x=>x.id===p.id);
+    if(o) o.status='settled';
+    if(keepDrawer){ state.modal=null; renderLayer(); render(); } else { closeLayer(); render(); }
+    toast('已确认结算并生成结算单','ok');
+  }
+}
+
+/* ================= events ================= */
+document.addEventListener('click', function(e){
+  if(state.openMenu && !e.target.closest('.float-menu') && !e.target.closest('[data-act="more"]')){
+    state.openMenu = null;
+    renderFloatMenu();
+  }
+  const el = e.target.closest('[data-act]');
+  if(!el) return;
+  const act = el.dataset.act;
+  const id = el.dataset.id;
+
+  if(act==='toast'){ e.stopPropagation(); toast(el.dataset.msg||'操作成功', el.dataset.kind||'ok'); return; }
+  if(act==='nav'){ e.stopPropagation(); const r=el.dataset.route; if(r){ location.hash='#'+r; } return; }
+  if(act==='toggle-group'){
+    const k = el.dataset.key;
+    state.openGroups.has(k) ? state.openGroups.delete(k) : state.openGroups.add(k);
+    render(); return;
+  }
+  if(act==='query'){ readFilters(); state.page=1; state.selected.clear(); render(); return; }
+  if(act==='reset-filter'){ state.filters = Object.assign({},DEFAULT_FILTERS); state.page=1; state.selected.clear(); render(); return; }
+  if(act==='toggle-more'){ state.showMoreFilters=!state.showMoreFilters; render(); return; }
+  if(act==='seg'){ state.chartMode=el.dataset.mode; render(); return; }
+  if(act==='sort'){
+    const k=el.dataset.key;
+    if(state.sort.key===k) state.sort.dir = state.sort.dir==='asc'?'desc':'asc';
+    else state.sort={key:k,dir:'desc'};
+    render(); return;
+  }
+  if(act==='page'){ const p=Number(el.dataset.page); if(p>=1){ state.page=p; state.openMenu=null; render(); } return; }
+  if(act==='detail'){ openOrder(id); return; }
+  if(act==='confirm-one'){ confirmOne(id); return; }
+  if(act==='settle-one'){
+    const o=ORDERS.find(x=>x.id===id);
+    state.modal={type:'confirm',tone:'',title:'确认结算',desc:'将为订单 '+(o?o.no:'')+' 生成结算单，金额 '+(o?money(o.amount):'')+'，生成后进入财务对账流程。',okText:'确认结算',payload:{action:'settle',id:id}};
+    renderLayer(); return;
+  }
+  if(act==='ask-cancel'){ askCancel(id); return; }
+  if(act==='more'){
+    if(state.openMenu && state.openMenu.id===id){ state.openMenu=null; }
+    else {
+      const r = el.getBoundingClientRect();
+      state.openMenu = {
+        id:id,
+        no:el.dataset.no||'',
+        top:Math.min(window.innerHeight-160, r.bottom+6),
+        left:Math.max(12, r.right-148)
+      };
+    }
+    renderFloatMenu(); return;
+  }
+  if(act==='copy'){
+    const txt=el.dataset.no||'';
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).catch(function(){}); }
+    toast('已复制订单号 '+txt,'ok'); state.openMenu=null; render(); return;
+  }
+  if(act==='open-create'){
+    state.modal={type:'create',values:{},errors:{}}; state.drawer=null; renderLayer(); return;
+  }
+  if(act==='close-layer'){ closeLayer(); return; }
+  if(act==='drawer-tab'){ state.drawerTab=el.dataset.tab; renderLayer(); return; }
+  if(act==='submit-create'){ createOrder(); return; }
+  if(act==='confirm-ok'){ handleConfirmOk(); return; }
+  if(act==='batch-confirm'){
+    if(state.selected.size===0){ toast('请先勾选需要确认的订单','warn'); return; }
+    state.modal={type:'confirm',tone:'',title:'批量确认订单',desc:'将对已勾选的 '+state.selected.size+' 笔订单执行确认，仅「待确认」状态生效，其余自动跳过。',okText:'批量确认',payload:{action:'batch'}};
+    renderLayer(); return;
+  }
+  if(act==='export'){ toast('导出任务已创建，稍后可在下载中心查看','ok'); return; }
+  if(act==='clear-selection'){ state.selected.clear(); render(); toast('已取消全部选择','ok'); return; }
+  if(act==='bill-generate'){
+    const now=new Date();
+    const s=new Date(now.getFullYear(), now.getMonth()-1, 1);
+    const e2=new Date(now.getFullYear(), now.getMonth(), 0);
+    state.billDraft={company:'云快充', from:dateStr(s), to:dateStr(e2)};
+    state.modal={type:'billGen'}; renderLayer(); return;
+  }
+  if(act==='bill-quick'){
+    const k=el.dataset.k, now=new Date();
+    const d = state.billDraft = state.billDraft || {company:'云快充'};
+    $$('[data-binput]').forEach(function(inp){ d[inp.dataset.binput]=inp.value.trim(); d.errors={}; });
+    if(k==='lastMonth'){
+      d.from=dateStr(new Date(now.getFullYear(), now.getMonth()-1, 1));
+      d.to=dateStr(new Date(now.getFullYear(), now.getMonth(), 0));
+    } else if(k==='7d'){ const s=new Date(now); s.setDate(s.getDate()-6); d.from=dateStr(s); d.to=dateStr(now); }
+    else if(k==='30d'){ const s=new Date(now); s.setDate(s.getDate()-29); d.from=dateStr(s); d.to=dateStr(now); }
+    renderLayer(); return;
+  }
+  if(act==='submit-bill-gen'){
+    const d = state.billDraft = state.billDraft || {company:'云快充'};
+    $$('[data-binput]').forEach(function(inp){ d[inp.dataset.binput]=inp.value.trim(); });
+    d.errors={};
+    if(!d.company) d.errors.company='请选择运营商';
+    if(!d.from) d.errors.from='请选择开始日期';
+    if(!d.to) d.errors.to='请选择结束日期';
+    if(d.from && d.to && d.from>d.to) d.errors.to='结束日期不能早于开始日期';
+    // 当月账单不支持生成：起止日期均需在上月末（含）之前
+    const curMonthFirst = dateStr(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+    if(d.from && d.from>=curMonthFirst) d.errors.from='当月账单不支持生成，开始日期需早于本月';
+    if(d.to && d.to>=curMonthFirst) d.errors.to='当月账单不支持生成，结束日期需早于本月';
+    if(Object.keys(d.errors).length){ renderLayer(); return; }
+    const dup = EV_BILLS.find(function(b){ return b.company===d.company && b.from===d.from && b.to===d.to; });
+    if(dup){ d.errors.from='该周期已存在对账单 '+dup.no; renderLayer(); return; }
+    const b = buildEvBill(d.company, d.from, d.to);
+    if(!b.count){ d.errors.from='该周期内无可对账订单（需业务状态已完成、支付状态已支付，且未标记已完成对账）'; renderLayer(); return; }
+    EV_BILLS.unshift(b);
+    EV_BILLS.sort(function(x,y){ return y.createdAt-x.createdAt; });
+    state.modal=null; state.billDraft=null;
+    state.billFilters={no:'', company:'云快充', subject:'', from:DEFAULT_RANGE.from, to:DEFAULT_RANGE.to}; state.billPage=1;
+    renderLayer(); render();
+    toast('对账单 '+b.no+' 已生成：'+b.count+' 笔订单 / '+billSubjectGroups(b).length+' 个网货主体，本期应付 ¥'+num2(b.amount),'ok');
+    return;
+  }
+  if(act==='bill-view'){ state.modal={type:'billView', id:el.dataset.id}; renderLayer(); return; }
+  if(act==='bill-recon'){
+    const b = EV_BILLS.find(x=>x.id===el.dataset.id);
+    if(!b) return;
+    if(billIsDone(b)){ toast('对账单 '+b.no+' 已完成对账，无需重复操作','warn'); return; }
+    state.modal={type:'billRecon', id:b.id}; renderLayer(); return;
+  }
+  if(act==='bill-recon-ok'){
+    const b = EV_BILLS.find(x=>x.id===el.dataset.id);
+    if(!b){ closeLayer(); return; }
+    if(billIsDone(b)){ closeLayer(); render(); toast('对账单 '+b.no+' 已完成对账，无需重复操作','warn'); return; }
+    // 二次确认：让运营人员再次谨慎确认
+    state.modal={type:'billRecon2', id:b.id}; renderLayer(); return;
+  }
+  if(act==='bill-recon-final'){
+    const b = EV_BILLS.find(x=>x.id===el.dataset.id);
+    if(!b){ closeLayer(); return; }
+    if(billIsDone(b)){ closeLayer(); render(); toast('对账单 '+b.no+' 已完成对账，无需重复操作','warn'); return; }
+    markBillReconciled(b);
+    // 从明细弹窗触发时保留弹窗并刷新
+    if(state.modal && state.modal.type==='billView'){ renderLayer(); }
+    else { state.modal=null; renderLayer(); }
+    render();
+    toast('对账单 '+b.no+' 已完成对账，涉及 '+b.count+' 笔充电订单已同步标记','ok');
+    return;
+  }
+  if(act==='bill-del'){
+    const b = EV_BILLS.find(x=>x.id===el.dataset.id);
+    if(b && billIsDone(b)){ toast('对账单 '+b.no+' 已完成对账，不允许删除','warn'); return; }
+    state.modal={type:'billDel', id:el.dataset.id}; renderLayer(); return;
+  }
+  if(act==='bill-del-ok'){
+    const id = el.dataset.id;
+    const b = EV_BILLS.find(x=>x.id===id);
+    if(!b){ closeLayer(); return; }
+    if(billIsDone(b)){ state.modal=null; renderLayer(); render(); toast('对账单 '+b.no+' 已完成对账，不允许删除','warn'); return; }
+    EV_BILLS.splice(EV_BILLS.indexOf(b),1);
+    state.modal=null;
+    renderLayer(); render();
+    toast('对账单 '+b.no+' 已删除','ok');
+    return;
+  }
+  if(act==='bill-export-excel'){ toast('对账单 '+el.dataset.no+' 已创建 Excel 导出任务，稍后可在下载中心查看','ok'); return; }
+  if(act==='bill-export-pdf'){ toast('对账单 '+el.dataset.no+' 已创建 PDF 导出任务，稍后可在下载中心查看','ok'); return; }
+  if(act==='bill-query'){ readBillFilters(); state.billPage=1; state.evRange.open=false; render(); return; }
+  if(act==='bill-reset'){
+    state.billFilters={no:'', company:'云快充', subject:'', from:DEFAULT_RANGE.from, to:DEFAULT_RANGE.to};
+    state.billPage=1; state.evRange.open=false; state.evRange.pick=null; state.evRange.hover=null; render(); return;
+  }
+  if(act==='bill-page'){ state.billPage=Number(el.dataset.page); render(); return; }
+  if(act==='bill-tab'){ state.billTab=el.dataset.k; renderLayer(); return; }
+  if(act==='ev-query'){ readEvFilters(); state.evPage=1; render(); return; }
+  if(act==='ev-reset'){ state.evFilters=Object.assign({},EV_DEFAULT_FILTERS); state.evRange.pick=null; state.evRange.hover=null; state.evRange.open=false; state.evPage=1; render(); return; }
+  if(act==='ev-range-toggle'){
+    const target = el.dataset.target || 'ev';
+    if(state.evRange.open && state.evRange.target===target){
+      state.evRange.open=false; render(); return;
+    }
+    const store = rangeStore(target);
+    const base = store.to || dateStr(new Date());
+    const d = new Date(base+'T00:00:00');
+    state.evRange.y=d.getFullYear(); state.evRange.m=d.getMonth();
+    state.evRange.target=target;
+    state.evRange.pick=null; state.evRange.hover=null;
+    state.evRange.open=true; render(); return;
+  }
+  if(act==='ev-range-prev'){ state.evRange.m--; if(state.evRange.m<0){ state.evRange.m=11; state.evRange.y--; } render(); return; }
+  if(act==='ev-range-next'){ state.evRange.m++; if(state.evRange.m>11){ state.evRange.m=0; state.evRange.y++; } render(); return; }
+  if(act==='ev-range-day'){
+    const ds=el.dataset.d;
+    const target=state.evRange.target;
+    if(!state.evRange.pick || (state.evRange.pick && state.evRange.hover)){
+      state.evRange.pick=ds; state.evRange.hover=null;
+    } else if(ds < state.evRange.pick){
+      state.evRange.pick=ds; state.evRange.hover=null;
+    } else {
+      const store=rangeStore(target);
+      store.from=state.evRange.pick;
+      store.to=ds;
+      rangeSetPage(target);
+      state.evRange.pick=null; state.evRange.hover=null; state.evRange.open=false;
+    }
+    render(); return;
+  }
+  if(act==='ev-range-quick'){
+    const now=new Date(), nowStr=dateStr(now);
+    const k=el.dataset.k;
+    const target=state.evRange.target;
+    const store=rangeStore(target);
+    if(k==='7d'){ const s=new Date(now); s.setDate(s.getDate()-6); store.from=dateStr(s); store.to=nowStr; }
+    else if(k==='30d'){ const s=new Date(now); s.setDate(s.getDate()-29); store.from=dateStr(s); store.to=nowStr; }
+    else if(k==='month'){ store.from=dateStr(new Date(now.getFullYear(),now.getMonth(),1)); store.to=nowStr; }
+    else { store.from=''; store.to=''; }
+    state.evRange.pick=null; state.evRange.hover=null; state.evRange.open=false;
+    rangeSetPage(target); render(); toast(k==='clear'?'已清空时间范围':'已设置时间范围','ok'); return;
+  }
+  if(act==='ev-sort'){
+    const k=el.dataset.key;
+    if(state.evSort.key===k) state.evSort.dir = state.evSort.dir==='asc'?'desc':'asc';
+    else state.evSort={key:k,dir:'desc'};
+    render(); return;
+  }
+  if(act==='ev-page'){ const p=Number(el.dataset.page); if(p>=1){ state.evPage=p; render(); } return; }
+  if(act==='ev-export'){ toast('充电订单导出任务已创建','ok'); return; }
+  if(act==='ev-expand'){
+    state.evExpand = state.evExpand||{};
+    state.evExpand[id] = !state.evExpand[id];
+    render(); return;
+  }
+  if(act==='ev-detail'||act==='ev-tariff'){
+    state.modal={type:act, id:id}; state.openMenu=null; renderLayer(); return;
+  }
+  if(act==='ev-check-status'){
+    state.evQuerying=id; render();
+    setTimeout(function(){
+      state.evQuerying=null;
+      const o=EV_ORDERS.find(x=>x.id===id);
+      if(o){
+        /* 推进映射（原型演示）：待启动＝等全部子订单冻结成功，冻结成功→启动中、冻结失败→启动失败（整单关单） */
+        const ADV={pending:['starting','starting','startFail'], starting:['charging','charging','startFail'],
+          stopping:['ended','ended','endFail'], charging:['ended','charging'], ended:['finished'], unknown:['charging','unknown']};
+        const opts=ADV[o.biz];
+        if(opts){
+          const next=opts[Math.floor(Math.random()*opts.length)];
+          if(next!==o.biz){
+            o.biz=next;
+            // 业务状态推进后按「业务状态 → 支付状态」映射重算（已完成＝订单结束，与是否已支付解耦）
+            const pm = evPayForBiz(o.biz, Math.floor(Math.random()*8));
+            o.pay = pm.pay; o.deduct = pm.deduct;
+            o.payTime = EV_PAY_ACTED[o.pay] ? new Date() : null;
+            // 子订单冻结结果随业务状态同步：进入启动中即全部冻结成功；冻结失败关单的整单标记失败
+            (o.waybills||[]).forEach(function(w){ w.freeze='冻结成功'; });
+            o.freezeFail = o.biz==='startFail' && Math.random()<0.5;
+            if(o.biz==='startFail'){
+              o.waybills.forEach(function(w){ w.freeze = o.freezeFail ? '冻结失败' : '已释放'; });
+            }
+            if(o.biz==='finished' && o.total>0){
+              // 运单抵扣额度兜底：额度合计需覆盖订单充电费用，再重算子订单与运单应扣/实扣/补贴
+              if(!o.waybills.length){
+                o.waybills.push({no:'YD'+dateStr(o.createdAt).replace(/-/g,'')+String(3900+int(1,99)),
+                  quota:o.total, subject:pick(EV_SUBJECTS), deduct:'扣减成功'});
+              } else {
+                const qsum=+o.waybills.reduce(function(a,w){ return a+(w.quota||0); },0).toFixed(2);
+                if(qsum<o.total){
+                  const lw=o.waybills[o.waybills.length-1];
+                  lw.quota=+((lw.quota||0)+(o.total-qsum)).toFixed(2);
+                }
+                o.waybills.forEach(function(w){ w.deduct = o.deduct; });
+              }
+              refreshEvSubs(o);
+            }
+            if((next==='ended'||next==='finished')&&!o.end&&o.start){ o.end=new Date(); o.minutes=Math.round((o.end-o.start)/60000); if(next==='finished'&&!o.reason) o.reason='充电完成'; }
+            toast('充电状态已更新：'+EV_STATUS[next].text,'ok');
+          } else {
+            toast('查询完成：当前状态仍为「'+EV_STATUS[o.biz].text+'」');
+          }
+        }
+      }
+      render();
+    },900);
+    return;
+  }
+});
+
+document.addEventListener('change', function(e){
+  const t = e.target;
+  if(t.matches('[data-act="select-row"]')){
+    const id=t.dataset.id;
+    t.checked ? state.selected.add(id) : state.selected.delete(id);
+    render(); return;
+  }
+  if(t.matches('[data-act="select-page"]')){
+    const rows = applySort(applyFilters(ORDERS)).slice((state.page-1)*state.pageSize, state.page*state.pageSize);
+    rows.forEach(function(o){ t.checked ? state.selected.add(o.id) : state.selected.delete(o.id); });
+    render(); return;
+  }
+  if(t.id==='pageSize'){
+    state.pageSize=Number(t.value); state.page=1; render(); return;
+  }
+  if(t.matches('[data-act="ev-pagesize"]')){
+    state.evPageSize=Number(t.value); state.evPage=1; render(); return;
+  }
+  if(t.matches('[data-act="bill-pagesize"]')){
+    state.billPageSize=Number(t.value); state.billPage=1; render(); return;
+  }
+  if(t.matches('[data-bfilter]')){
+    state.billFilters[t.dataset.bfilter]=t.value;
+    return;
+  }
+  if(t.matches('[data-efilter]')){
+    state.evFilters[t.dataset.efilter]=t.value;
+    return;
+  }
+  if(t.matches('[data-filter]')){
+    state.filters[t.dataset.filter]=t.value;
+    return;
+  }
+});
+
+document.addEventListener('mouseover', function(e){
+  const day=e.target.closest('.rp-day');
+  if(!day || !state.evRange || !state.evRange.pick) return;
+  if(state.evRange.hover===day.dataset.d) return;
+  state.evRange.hover=day.dataset.d;
+  paintRangePanel();
+});
+document.addEventListener('click', function(e){
+  if(state.evRange && state.evRange.open && !e.target.closest('.range-wrap')){
+    state.evRange.pick=null; state.evRange.hover=null; state.evRange.open=false; render();
+  }
+}, true);
+
+document.addEventListener('keydown', function(e){
+  if(e.key==='Escape'){
+    if(state.evRange && state.evRange.open){ state.evRange.pick=null; state.evRange.hover=null; state.evRange.open=false; render(); return; }
+    if(state.openMenu){ state.openMenu=null; renderFloatMenu(); return; }
+    if(state.drawer||state.modal) closeLayer();
+  }
+});
+window.addEventListener('resize', function(){
+  if(state.openMenu){ state.openMenu=null; renderFloatMenu(); }
+});
+document.addEventListener('scroll', function(){
+  if(state.openMenu){ state.openMenu=null; renderFloatMenu(); }
+}, true);
+
+window.addEventListener('hashchange', function(){
+  state.route = location.hash.replace(/^#/,'') || '/dashboard';
+  state.openMenu=null;
+  state.selected.clear();
+  const meta = metaOf(state.route);
+  state.openGroups.add(meta.group);
+  render();
+});
+
+/* ================= boot ================= */
+if(!location.hash) location.hash = '#/dashboard';
+render();
+
+/* ================= 嵌入模式引导 =================
+   宿主原型 index.html 以 charge-ev.html?embed=1&page=<路由>（如 /evOrder/list）承载时：
+   1) 根节点加 embed-mode，隐藏本原型自带的左侧菜单与顶栏、内容区铺满；
+   2) 按 page 直达源文件已注册的路由（PAGES 内）。
+   不带 embed 参数单独打开时，行为与源文件完全一致（仍是完整的「万油通 · 功能后台」）。 */
+(function(){
+  var q = new URLSearchParams(location.search);
+  if(q.get('embed') !== '1') return;
+  document.documentElement.classList.add('embed-mode');
+  var p = q.get('page');
+  if(p && PAGES[p]){
+    if(location.hash === '#'+p){ state.route = p; state.openGroups.add(PAGES[p].group); render(); }
+    else { location.hash = '#'+p; }
+  }
+})();
+})();
+</script>
+</body>
+</html>

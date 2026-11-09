@@ -2128,6 +2128,9 @@ const PAGES = [
   {id:'chgPile', name:'充电桩管理', sub:'数据源：云快充 · 桩枪级联', side:'运营平台', grp:'充电业务'},
   {id:'chgGun', name:'充电枪管理', sub:'最小粒度 · 单枪独立上下线', side:'运营平台', grp:'充电业务'},
   {id:'chgTrade', name:'账户交易', sub:'电账户流水 · 易宝结算', side:'运营平台', grp:'充电业务'},
+  /* 订单管理(电)：来自另一份独立原型 charge-ev.html（万油通功能后台 V1.3），排在充电业务末位 */
+  {id:'chgEvOrder', name:'充电订单管理', sub:'充电订单全流程', side:'运营平台', grp:'充电业务'},
+  {id:'chgEvBill', name:'充电对账单', sub:'运营商对账 · 同步生成网货主体对账明细', side:'运营平台', grp:'充电业务'},
 ];
 
 
@@ -2139,6 +2142,15 @@ const CHG_PAGE_KEY = {
   chgSite:'site', chgPile:'pile', chgGun:'gun', chgTrade:'trade'
 };
 const CHG_PAGES = Object.keys(CHG_PAGE_KEY);   /* 顺序即「充电业务」菜单与顶部页签顺序 */
+
+/* 充电业务 · 订单管理(电)：充电订单管理 / 充电对账单来自另一份独立原型 charge-ev.html
+   （万油通 · 功能后台 V1.3，自带 hash 路由）；EVO_PAGE_KEY = 本原型页面 id → 该文件内部路由。
+   CHG_ALL_PAGES 是本域菜单与页签的完整顺序（charging.html 的 12 页 + charge-ev.html 的 2 页）。 */
+const EVO_PAGE_KEY = {
+  chgEvOrder:'/evOrder/list', chgEvBill:'/evOrder/bill'
+};
+const EVO_PAGES = Object.keys(EVO_PAGE_KEY);
+const CHG_ALL_PAGES = [...CHG_PAGES, ...EVO_PAGES];
 
 const LIVE_PAGES = ['orders','fee','refund','energyInvApply','feeInvApply','serviceFee','withdrawRecord'];
 /* 客户中心（网货货主，路由 oilWangHuoCustomerInfo）与商品中心（货主锁站锁价）均为 OMS 现网既有模块；
@@ -2153,7 +2165,7 @@ const LIVE_NAV = [
   ['开票中心','▣',['energyInvApply','feeInvApply','orderInvoices']],
   ['财务中心','◩',['serviceFee','withdrawRecord']],
   ['商品中心','◇',['freightLock']],
-  ['充电业务','⚡',CHG_PAGES],
+  ['充电业务','⚡',CHG_ALL_PAGES],
 ];
 /* 走 OMS 菜单外壳的页面（= 7 个已对齐运营页 + 货主锁站锁价）；
    live-surface 皮肤仍然只有 LIVE_PAGES，两者不再共用同一个常量 */
@@ -2207,7 +2219,7 @@ function renderNav(){
       `<div class="oms-group ${navOpen.has(label)||label===grp?.[0]?'expanded':''}"><div class="oms-group-title" data-nav-toggle="${label}"><span class="oms-entry-icon" aria-hidden="true">${icon}</span>${label}<span class="oms-chevron">⌄</span></div><div class="oms-children">${ids.map(entry).join('')}</div></div>`).join('');
     return;
   }
-  if((OMS_NAV_PAGES.includes(current) || CHG_PAGES.includes(current)) && side==='运营平台'){
+  if((OMS_NAV_PAGES.includes(current) || CHG_ALL_PAGES.includes(current)) && side==='运营平台'){
     const entry=id=>`<a href="#${id}" class="oms-entry oms-child ${id===current?'on':''}" data-go="${id}"><span class="oms-entry-icon" aria-hidden="true">▫</span>${PAGES.find(p=>p.id===id).name}</a>`;
     const grp = LIVE_NAV.find(g=>g[2].includes(current));
     document.getElementById('nav').innerHTML = LIVE_NAV.map(([label,icon,ids])=>
@@ -2232,9 +2244,9 @@ function renderTabs(){
     document.getElementById('tabstrip').innerHTML='<span class="oms-tab-arrow">‹</span><button class="oms-home-tab" data-go="'+PLAT_META['4PL端'].home+'">首页</button>'+PLAT4_TAB_PAGES.map(id=>`<button class="${id===(PLAT4_EDIT_TO_LIST[current]||current)?'on':''}" data-go="${id}">${PAGES.find(p=>p.id===id).name}<span class="oms-tab-close" aria-hidden="true">×</span></button>`).join('')+'<span class="oms-tab-arrow oms-tab-last">›</span>';
     return;
   }
-  if(CHG_PAGES.includes(current)){
-    /* 充电业务只列本域 12 页签（与其他 OMS 页面共用页签条，但不把两套业务混在一条里）；「首页」指向本域第一页 */
-    document.getElementById('tabstrip').innerHTML='<span class="oms-tab-arrow">‹</span><button class="oms-home-tab" data-go="'+CHG_PAGES[0]+'">首页</button>'+CHG_PAGES.map(id=>`<button class="${id===current?'on':''}" data-go="${id}">${PAGES.find(p=>p.id===id).name}<span class="oms-tab-close" aria-hidden="true">×</span></button>`).join('')+'<span class="oms-tab-arrow oms-tab-last">›</span>';
+  if(CHG_ALL_PAGES.includes(current)){
+    /* 充电业务只列本域 14 页签（与其他 OMS 页面共用页签条，但不把两套业务混在一条里）；「首页」指向本域第一页 */
+    document.getElementById('tabstrip').innerHTML='<span class="oms-tab-arrow">‹</span><button class="oms-home-tab" data-go="'+CHG_ALL_PAGES[0]+'">首页</button>'+CHG_ALL_PAGES.map(id=>`<button class="${id===current?'on':''}" data-go="${id}">${PAGES.find(p=>p.id===id).name}<span class="oms-tab-close" aria-hidden="true">×</span></button>`).join('')+'<span class="oms-tab-arrow oms-tab-last">›</span>';
     return;
   }
   if(OMS_NAV_PAGES.includes(current)){
@@ -2257,7 +2269,7 @@ function go(id){
   currentPlatform = PLAT4_PAGES.includes(id) ? '4PL端' : '万油通';
   /* 皮肤覆盖全部 OMS 菜单外壳页面（7 个已对齐运营页 + 货主锁站锁价）与 4PL 端页面；
      油站端、企业端仍走原型基础皮肤 */
-  const live = OMS_NAV_PAGES.includes(id) || PLAT4_PAGES.includes(id) || CHG_PAGES.includes(id);
+  const live = OMS_NAV_PAGES.includes(id) || PLAT4_PAGES.includes(id) || CHG_ALL_PAGES.includes(id);
   if(document.body.classList.contains('live-surface') !== live){
     /* 两套外壳的抽屉停靠方向不同，切换时不播放滑动动画 */
     const drawer = document.getElementById('drawer');
@@ -2268,7 +2280,7 @@ function go(id){
   }
   document.body.dataset.livePage = id;
   /* 充电业务页面主体由 iframe 铺满（内容区不再加内边距与页间距），离开即移除 */
-  document.body.classList.toggle('chg-surface', CHG_PAGES.includes(id));
+  document.body.classList.toggle('chg-surface', CHG_ALL_PAGES.includes(id));
   const p = PAGES.find(x=>x.id===id);
   siteLast[p.side] = id;
   if(location.hash !== '#'+id) history.replaceState(null, '', '#'+id);

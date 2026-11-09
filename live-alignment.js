@@ -1796,5 +1796,13 @@ CHG_PAGES.forEach(id=>{
   VIEWS[id] = () => `<div class="chg-wrap"><iframe class="chg-frame" src="charging.html?embed=1&page=${CHG_PAGE_KEY[id]}" title="${chgName}" loading="eager"></iframe></div>`;
 });
 
+/* 充电业务 · 订单管理(电)：充电订单管理 / 充电对账单来自另一份独立原型 charge-ev.html
+   （万油通 · 功能后台 V1.3，自带 hash 路由）；同一套 chg-wrap / chg-frame 皮肤，
+   iframe 以 ?embed=1&page=<路由> 承载，筛选/抽屉/弹层/对账流程全部在该文件内完成，接入层不改业务逻辑。 */
+EVO_PAGES.forEach(id=>{
+  const evoName = PAGES.find(p=>p.id===id).name;
+  VIEWS[id] = () => `<div class="chg-wrap"><iframe class="chg-frame" src="charge-ev.html?embed=1&page=${encodeURIComponent(EVO_PAGE_KEY[id])}" title="${evoName}" loading="eager"></iframe></div>`;
+});
+
 /* 用覆盖后的页面重新渲染当前页。旧版企业端日/月账单继续使用原有实现。 */
 go(current);
