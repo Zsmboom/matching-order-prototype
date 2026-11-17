@@ -1120,16 +1120,20 @@ function pageButtons(cur,total){
 }
 
 /* ================= page: EV charging orders ================= */
+/* 业务状态（订单状态）＝万油通订单通知的状态，码值 10–90，4PL 侧直接沿用同一套码值：
+   10 启动中 → 20 充电中 → 30 停止中 → 40 已结束 → 50 待支付 → 60 已完成（终态）
+   70 启动失败 / 80 结束失败（异常终态或转人工）/ 90 未知（待人工核查）
+   注：60 已完成＝网货运单额度扣减完成，与易宝打款（支付状态）无关。 */
 const EV_STATUS = {
-  pending:{text:'待启动',tag:'tag-purple'},
-  starting:{text:'启动中',tag:'tag-blue'},
-  startFail:{text:'启动失败',tag:'tag-red'},
-  charging:{text:'充电中',tag:'tag-blue',pulse:true},
-  stopping:{text:'停止中',tag:'tag-orange'},
-  endFail:{text:'结束失败',tag:'tag-red'},
-  ended:{text:'已结束',tag:'tag-cyan'},
-  finished:{text:'已完成',tag:'tag-green'},
-  unknown:{text:'未知',tag:'tag-gray'}
+  starting:{code:10,text:'启动中',tag:'tag-blue'},
+  charging:{code:20,text:'充电中',tag:'tag-blue',pulse:true},
+  stopping:{code:30,text:'停止中',tag:'tag-orange'},
+  ended:{code:40,text:'已结束',tag:'tag-cyan'},
+  awaiting:{code:50,text:'待支付',tag:'tag-orange'},
+  finished:{code:60,text:'已完成',tag:'tag-green'},
+  startFail:{code:70,text:'启动失败',tag:'tag-red'},
+  endFail:{code:80,text:'结束失败',tag:'tag-red'},
+  unknown:{code:90,text:'未知',tag:'tag-gray'}
 };
 const EV_PAY = {
   unpaid:{text:'待支付',tag:'tag-orange'},
@@ -1146,8 +1150,8 @@ const EV_PAY = {
    ② 待启动 / 启动中 / 充电中 / 停止中 / 启动失败 / 结束失败 / 未知 → 打款尚未发生，恒为待支付；
    ③ 已结束 / 已完成 才可能出现打款动作；部分支付＝多网货主体分别打款、部分主体成功部分失败（补款成功后转已支付）。
    冻结与解冻不进支付状态：冻结是子订单维度（网货侧）状态，通过「冻结 x/y」与冻结额度金额体现。 */
-/* 打款与运单扣减只发生在收到云快充最终订单（已完成）之后：
-   已结束＝已推结束、最终订单未到，资金侧只能还是待支付；因此只有「已完成」才出现打款结果 */
+/* 打款与运单扣减只发生在「已完成」（网货额度扣减完成）之后：
+   已结束 / 待支付（订单状态 50）都还没扣减，资金侧只能是待支付；因此只有「已完成」才出现打款结果 */
 const EV_PAY_BY_BIZ = {
   finished:['paid','paid','partial','paid','unpaid','payFail','refunded']
 };
@@ -1157,10 +1161,8 @@ function evPayForBiz(biz, k){
   const seq = EV_PAY_BY_BIZ[biz];
   if(!seq) return {pay:'unpaid', deduct:'未扣减'};
   const pay = seq[Math.abs(k|0)%seq.length];
-  /* 运单扣减只发生在收到最终订单（已完成）之后，且随打款结果：已支付→扣减成功、支付失败→扣减失败 */
-  let deduct = '未扣减';
-  if(biz==='finished') deduct = pay==='paid' ? '扣减成功' : pay==='payFail' ? '扣减失败' : '未扣减';
-  return {pay:pay, deduct:deduct};
+  /* 已完成＝网货运单额度扣减完成（扣减成功是达到「已完成」的前提，与打款成功无关） */
+  return {pay:pay, deduct: biz==='finished' ? '扣减成功' : '未扣减'};
 }
 /* 子订单冻结进度（网货侧回报）：待启动单在列表上以「冻结 x/y」呈现，冻结失败即整单关单 */
 function evFreezeInfo(o){
@@ -1221,8 +1223,8 @@ const EV_ORDERS = (function(){
   let finSeq = 0, endSeq = 0;
   /* 业务状态按固定条数铺满 48 条（每个枚举都有演示数据），再打散避免同状态集中在相邻日期 */
   const bizSeq = [];
-  [['pending',3],['starting',3],['startFail',3],['stopping',3],['charging',12],
-   ['endFail',3],['ended',9],['finished',10],['unknown',2]].forEach(function(item){
+  [['starting',4],['charging',11],['stopping',3],['ended',8],['awaiting',8],
+   ['finished',8],['startFail',3],['endFail',2],['unknown',1]].forEach(function(item){
     for(let n=0;n<item[1];n++) bizSeq.push(item[0]);
   });
   for(let i=bizSeq.length-1;i>0;i--){
@@ -1331,7 +1333,7 @@ const EV_ORDERS = (function(){
         deduct:deduct,
         /* 冻结结果：待启动单＝首条已冻结、其余待冻结；启动失败分两种——冻结失败关单＝冻结失败、
            云快充启动被拒＝已释放（额度已释放）；其余恒冻结成功 */
-        freeze: biz==='pending' ? (k===0?'冻结成功':'待冻结')
+        freeze: biz==='starting' ? (i%2===0 ? (k===0?'冻结成功':'待冻结') : '冻结成功')
           : biz==='startFail' ? (freezeFail ? '冻结失败' : '已释放')
           : '冻结成功'
       });
@@ -1653,10 +1655,11 @@ function pageEvOrders(){
   const body = pageRows.map(function(o){
     const subs = o.subs||[];
     const open = subs.length>0 && !!state.evExpand[o.id];
-    /* 冻结标签：待启动＝冻结进度（全部子订单冻结成功后才调云快充发起）；冻结失败＝整单关单（业务状态=启动失败） */
+    /* 冻结标签（子订单维度、网货侧逻辑）：启动中且尚有子订单未回冻结成功时显示「冻结 x/y」，
+       全部冻结成功后才调云快充发起启动；启动失败区分冻结失败关单（冻结失败）与云快充启动被拒（已释放） */
     const fi = evFreezeInfo(o);
-    const freezeTag = o.biz==='pending'
-      ? '<span class="tag '+(fi.fail?'tag-red':'tag-purple')+'" style="margin-left:6px">冻结 '+fi.done+'/'+fi.total+'</span>'
+    const freezeTag = (o.biz==='starting' && fi.total && fi.done<fi.total)
+      ? '<span class="tag tag-purple" style="margin-left:6px">冻结 '+fi.done+'/'+fi.total+'</span>'
       : o.biz==='startFail'
         ? (o.freezeFail ? '<span class="tag tag-red" style="margin-left:6px">冻结失败</span>'
                         : '<span class="tag tag-gray" style="margin-left:6px">已释放</span>')
@@ -1689,8 +1692,8 @@ function pageEvOrders(){
   + '<section class="filter-card">'
   +   '<div class="filter-grid">'
   +     '<label class="f-item"><span>充电订单号</span><input type="text" data-efilter="no" value="'+esc(state.evFilters.no)+'" placeholder="请输入充电订单号" /></label>'
-  +     '<label class="f-item"><span>业务状态</span>'+evSelect('biz',Object.keys(EV_STATUS).map(function(k){return {v:k,t:EV_STATUS[k].text};}),'全部')+'</label>'
-  +     '<label class="f-item"><span>支付状态</span>'+evSelect('pay',Object.keys(EV_PAY).map(function(k){return {v:k,t:EV_PAY[k].text};}),'全部')+'</label>'
+  +     '<label class="f-item"><span>订单状态</span>'+evSelect('biz',Object.keys(EV_STATUS).map(function(k){return {v:k,t:EV_STATUS[k].text+'（'+EV_STATUS[k].code+'）'};}),'全部')+'</label>'
+  +     '<label class="f-item"><span>支付状态（易宝打款）</span>'+evSelect('pay',Object.keys(EV_PAY).map(function(k){return {v:k,t:EV_PAY[k].text};}),'全部')+'</label>'
   +     rangeFilterItem('创建时间', 'ev')
   +     '<label class="f-item"><span>充电站名称</span><input type="text" data-efilter="station" value="'+esc(state.evFilters.station||'')+'" placeholder="请输入充电站名称" /></label>'
   +     '<label class="f-item"><span>运营商</span>'+evSelect('company',EV_COMPANIES.map(function(x){return {v:x,t:x};}),'全部')+'</label>'
@@ -1727,7 +1730,7 @@ function pageEvOrders(){
   +       '<thead><tr>'
   +         '<th class="stick-first">充电订单号</th>'
   +         '<th data-act="ev-sort" data-key="createdAt" style="cursor:pointer">创建时间'+evSortIcon('createdAt')+'</th>'
-  +         '<th>业务状态</th><th>支付状态</th><th>对账状态</th><th>运营商名称</th><th>场站ID</th><th>场站名称</th>'
+  +         '<th>订单状态</th><th>支付状态（易宝打款）</th><th>对账状态</th><th>运营商名称</th><th>场站ID</th><th>场站名称</th>'
   +         '<th>充电桩ID</th><th>充电桩名称</th><th>枪口ID</th><th>枪口名称</th>'
   +         '<th>开始充电时间</th><th>结束充电时间</th>'
   +         '<th class="num" data-act="ev-sort" data-key="qty" style="cursor:pointer">充电量(度)'+evSortIcon('qty')+'</th>'
@@ -2442,7 +2445,7 @@ function modalHtml(m){
         +     '</colgroup>'
         +     '<thead><tr>'
         +       '<th class="stick-first">充电订单号</th>'
-        +       '<th>创建时间</th><th>业务状态</th><th>支付状态</th><th>运营商名称</th><th>场站ID</th><th>场站名称</th>'
+        +       '<th>创建时间</th><th>订单状态</th><th>支付状态（易宝打款）</th><th>运营商名称</th><th>场站ID</th><th>场站名称</th>'
         +       '<th>充电桩ID</th><th>充电桩名称</th><th>枪口ID</th><th>枪口名称</th>'
         +       '<th>开始充电时间</th><th>结束充电时间</th>'
         +       '<th class="num">充电量(度)</th><th>起始SOC</th><th>结束SOC</th>'
@@ -2848,8 +2851,8 @@ document.addEventListener('click', function(e){
       const o=EV_ORDERS.find(x=>x.id===id);
       if(o){
         /* 推进映射（原型演示）：待启动＝等全部子订单冻结成功，冻结成功→启动中、冻结失败→启动失败（整单关单） */
-        const ADV={pending:['starting','starting','startFail'], starting:['charging','charging','startFail'],
-          stopping:['ended','ended','endFail'], charging:['ended','charging'], ended:['finished'], unknown:['charging','unknown']};
+        const ADV={starting:['charging','charging','startFail'], charging:['stopping','ended','ended'],
+          stopping:['ended','ended','endFail'], ended:['awaiting'], awaiting:['finished'], unknown:['charging','unknown']};
         const opts=ADV[o.biz];
         if(opts){
           const next=opts[Math.floor(Math.random()*opts.length)];

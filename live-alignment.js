@@ -79,7 +79,7 @@ const LIVE_FILTERS = {
   serviceFee:[['交易类型','type','select',['客户费入账','油站费入账','客户费退款','油站费退款','提现']],['来源公司','company','text','输入公司名称关键词'],['易宝流水号','no','text','输入易宝流水号'],['订单号','order','text','输入订单号'],['发生时间','time','range','']],
   withdrawRecord:[['提现单号','no','text','输入提现单号'],['网点公司','company','select',['示例能源有限公司']],['账户名称','accountName','text','输入账户名称'],['账号','account','text','输入账号'],['能源类型','energy','select',['柴油','天然气','尿素']],['提现状态','status','select',['提现成功','提现失败','处理中']],['提现时间','time','range','']],
   /* 4PL 端 · 充电订单管理 */
-  chargeOrders:[['订单状态','status','select',['充电中','充电结束','待支付','已支付','已退款']],['司机姓名','driver','text','输入司机姓名'],['手机号','phone','text','输入手机号'],['车牌号','plate','text','输入车牌号'],['关联运单号','waybill','text','输入运单号'],['能源订单号','no','text','输入能源订单号'],['云快充订单号','ckcNo','text','输入云快充订单号'],['是否追回','recover','select',['未追回','已追回','恢复正常支付']],['创建时间','createTime','range','']],
+  chargeOrders:[['订单状态','status','select',['启动中','充电中','停止中','已结束','待支付','已完成','启动失败','结束失败','未知']],['支付状态','payStatus','select',['待支付','部分支付','已支付','支付失败','已退款','无需支付']],['司机姓名','driver','text','输入司机姓名'],['手机号','phone','text','输入手机号'],['车牌号','plate','text','输入车牌号'],['关联运单号','waybill','text','输入运单号'],['能源订单号','no','text','输入能源订单号'],['云快充订单号','ckcNo','text','输入云快充订单号'],['是否追回','recover','select',['未追回','已追回','恢复正常支付']],['创建时间','createTime','range','']],
   /* 4PL 端 · 司机能源管理 / 能源账户管理 / 变更日志 */
   driverOil:[['司机姓名','name','text','输入司机姓名'],['司机手机号','phone','text','输入手机号']],
   oilAccount:[['网货主体名称','subj','text','输入主体名称'],['能源类型','etype','select',['油气','电']]],
@@ -112,6 +112,68 @@ LIVE.chargeOrders = [
  {no:'CD20261019000019', ckcNo:'CKC202610191022019', waybill:'W20261019000021', driver:'宋晓峰', phone:'136****2245', plate:'辽A·Y98D5', status:'已支付', operator:'小桔充电', station:'小桔充电·铁西工业路站', pile:'C01-02枪', startSoc:44, endSoc:87, startTime:'2026-10-19 10:22:00', endTime:'2026-10-19 11:28:00', kwh:38.6, orderAmt:64.86, wlj:1.18, payAmt:45.55, subsidy:19.31, deduct:'已扣减', frozen:0, whSubj:'万联易达物流科技有限公司', settleSubj:'万联易达物流科技有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '已支付', waybillAbn: '无异常', abnTime: '2026-10-19 10:16:05', ocr: '通过', recover:'恢复正常支付', fake:'否', createTime:'2026-10-19 10:16:05', syncTime:'2026-10-19 11:30:22', stationAddr:'辽宁省沈阳市铁西区开发大路 22 号 工业路停车场', locAddr:'辽宁省沈阳市铁西区开发大路 22 号 工业路停车场 6 号桩区', locType:'GPS', locTime:'2026-10-19 10:22:00', distKm:'0.11', shipper:'本溪北台钢材物流园', goods:'钢材制品', weight:'29.40', fromAddr:'本溪市平山区北台路 17 号', toAddr:'沈阳市浑南区全运路 109 号', loadTime:'2026-10-19 07:41:56', unloadTime:'', freightAmt:'4,020.00'},
  {no:'CD20261018000020', ckcNo:'CKC202610180913020', waybill:'W20261018000024', driver:'崔明亮', phone:'138****6630', plate:'辽A·Z15F7', status:'已支付', operator:'特来电', station:'特来电·浑南产业新城站', pile:'A09-01枪', startSoc:29, endSoc:76, startTime:'2026-10-18 09:13:00', endTime:'2026-10-18 10:20:00', kwh:41.2, orderAmt:68.80, wlj:1.20, payAmt:49.44, subsidy:19.36, deduct:'已扣减', frozen:0, whSubj:'鲁通冷链物流有限公司', settleSubj:'鲁通冷链物流有限公司', belongCo: '万联易达物流科技有限公司', waybillPay: '已支付', waybillAbn: '终止结算', abnTime: '2026-10-18 09:08:41', ocr: '通过', recover:'未追回', fake:'否', createTime:'2026-10-18 09:08:41', syncTime:'2026-10-18 10:22:35', stationAddr:'辽宁省沈阳市浑南区全运五路 35 号 产业新城配套楼', locAddr:'辽宁省沈阳市浑南区全运五路 35 号 产业新城配套楼南侧', locType:'GPS', locTime:'2026-10-18 09:13:00', distKm:'0.07', shipper:'沈阳长鑫冷链物流有限公司', goods:'冷链产品', weight:'25.60', fromAddr:'沈阳市于洪区沈大路 88 号', toAddr:'大连市金州区东北大街 66 号', loadTime:'2026-10-18 05:12:30', unloadTime:'', freightAmt:'3,860.00'}
 ];
+/* ===== 充电订单状态口径（2026-11-10 对齐万油通订单通知）=====
+   4PL 直接接万油通订单状态 9 值（码值 10 启动中 / 20 充电中 / 30 停止中 / 40 已结束 / 50 待支付 /
+   60 已完成 / 70 启动失败 / 80 结束失败 / 90 未知），不再使用旧的「充电结束 / 已支付 / 已退款」；
+   订单状态每次变更 4PL 都接收并落一条状态流转记录（中间状态也要记录），另接支付状态（易宝打款 6 值）。
+   以下对既有演示数据做一次性映射与补数：旧状态名映射 + 补 payStatus/statusLog + 补 4 个新状态的样本。 */
+(function(){
+  const stMap={'充电结束':'已结束','已支付':'已完成','已退款':'启动失败'};
+  const payCycle=['已支付','已支付','部分支付','已支付','待支付','支付失败','已退款'];
+  let finSeed=0;
+  const LOG_CHAIN={
+    '启动中':[['启动中','建单并已发起启动，等待云快充启动结果']],
+    '充电中':[['启动中','建单并已发起启动'],['充电中','云快充启动成功，回填云快充订单号']],
+    '停止中':[['启动中','建单并已发起启动'],['充电中','云快充启动成功'],['停止中','已下发停止充电（达冻结额度阈值 / 司机停止），等待云快充处理']],
+    '已结束':[['启动中','建单并已发起启动'],['充电中','云快充启动成功'],['停止中','已下发停止充电'],['已结束','云快充推送充电结束，等待最终账单']],
+    '待支付':[['启动中','建单并已发起启动'],['充电中','云快充启动成功'],['停止中','已下发停止充电'],['已结束','云快充推送充电结束'],['待支付','最终账单已落，等待运单额度扣减']],
+    '已完成':[['启动中','建单并已发起启动'],['充电中','云快充启动成功'],['停止中','已下发停止充电'],['已结束','云快充推送充电结束'],['待支付','最终账单已落'],['已完成','网货运单额度扣减完成']],
+    '启动失败':[['启动中','建单并已发起启动'],['启动失败','启动失败关单：冻结额度全额解冻退回']],
+    '结束失败':[['启动中','建单并已发起启动'],['充电中','云快充启动成功'],['停止中','已下发停止充电'],['结束失败','停止指令超时/失败，云快充侧可能仍在充电，转人工停充']],
+    '未知':[['启动中','建单并已发起启动'],['未知','启动结果状态不明，保留冻结并转人工核查']]
+  };
+  const logOf=function(o){
+    const chain=LOG_CHAIN[o.status]||[['启动中','建单并已发起启动']];
+    const t=[o.createTime, o.startTime||o.createTime, o.endTime||o.syncTime||o.createTime, o.syncTime||o.createTime];
+    return chain.map(function(x,i){
+      const idx=Math.min(i, t.length-1);
+      return {time:t[idx], status:x[0], source:'万油通通知', remark:x[1]};
+    });
+  };
+  const normalize=function(o){
+    o.status = stMap[o.status]||o.status;
+    if(o.status==='已完成') o.payStatus = payCycle[finSeed++ % payCycle.length];
+    else if(o.status==='启动失败') o.payStatus='无需支付';
+    else o.payStatus='待支付';
+    o.statusLog = logOf(o);
+    return o;
+  };
+  LIVE.chargeOrders.forEach(normalize);
+
+  /* 补齐 4 个新状态的演示数据（每条都带状态流转记录） */
+  const base={operator:'特来电', station:'特来电·万联物流园充电站', stationAddr:'辽宁省沈阳市苏家屯区丁香街 186 号 万联物流园 A 区',
+    locAddr:'辽宁省沈阳市苏家屯区丁香街 186 号 万联物流园 A 区 充电站入口东侧', locType:'GPS', distKm:'0.06',
+    whSubj:'万联易达物流科技有限公司', settleSubj:'万联易达物流科技有限公司', belongCo:'万联易达物流科技有限公司',
+    waybillPay:'未付款', waybillAbn:'无异常', abnTime:'—', ocr:'通过', recover:'未追回', fake:'否',
+    shipper:'沈阳长鑫冷链物流有限公司', goods:'冷链产品', weight:'28.50', loadTime:'', unloadTime:'', freightAmt:'4,180.00',
+    fromAddr:'沈阳市于洪区沈大路 88 号', toAddr:'长春市绿园区青冈路 45 号', startSoc:'', endSoc:'', endTime:'', payAmt:0, subsidy:0};
+  const extras=[
+    Object.assign({}, base, {no:'CD20261110000021', ckcNo:'—', waybill:'W20261110000031', driver:'王建国', phone:'138****4021', plate:'辽A·D81K2',
+      status:'启动中', pile:'A03-01枪', startTime:'', kwh:0, orderAmt:0, wlj:1.20, deduct:'未扣减', frozen:456.00,
+      createTime:'2026-11-10 09:05:12', syncTime:'2026-11-10 09:05:40', locTime:'2026-11-10 09:05:12'}),
+    Object.assign({}, base, {no:'CD20261110000022', ckcNo:'CKC202611100912022', waybill:'W20261110000032', driver:'刘志强', phone:'139****8834', plate:'辽A·F52R9',
+      status:'停止中', pile:'A05-02枪', startSoc:33, startTime:'2026-11-10 09:12:00', kwh:18.40, orderAmt:30.91, wlj:1.20, deduct:'未扣减', frozen:420.00,
+      createTime:'2026-11-10 09:06:20', syncTime:'2026-11-10 10:02:15', locTime:'2026-11-10 09:12:00'}),
+    Object.assign({}, base, {no:'CD20261109000023', ckcNo:'CKC202611092010023', waybill:'W20261109000029', driver:'赵德海', phone:'137****2260', plate:'辽A·G19P6',
+      status:'结束失败', pile:'A08-01枪', startSoc:27, startTime:'2026-11-09 20:10:00', kwh:32.70, orderAmt:55.20, wlj:1.20, deduct:'未扣减', frozen:512.00,
+      createTime:'2026-11-09 20:04:36', syncTime:'2026-11-09 21:05:48', locTime:'2026-11-09 20:10:00'}),
+    Object.assign({}, base, {no:'CD20261109000024', ckcNo:'—', waybill:'W20261109000030', driver:'孙国庆', phone:'136****7712', plate:'辽A·H73T4',
+      status:'未知', pile:'A11-02枪', startTime:'', kwh:0, orderAmt:0, wlj:1.15, deduct:'未扣减', frozen:380.00,
+      createTime:'2026-11-09 18:22:04', syncTime:'2026-11-09 18:25:31', locTime:'2026-11-09 18:22:04'})
+  ];
+  extras.forEach(function(o){ LIVE.chargeOrders.unshift(normalize(o)); });
+})();
+
 /* 4PL 端 · 追回记录（一行＝一次追回登记：追回凭证张数 + 备注 + 操作动作/操作人/操作时间，与油气口径一致） */
 LIVE.chargeRecovers = {
   CD20261021000017:{resume:false, opr:'新增', by:'张世民（运营中台）', time:'2026-10-21 15:42:10', remark:'已与云快充核对并线下追缴，款项已退回平台账户', files:2},
@@ -1046,7 +1108,10 @@ function liveRefundApprove(no){
 
 /* ================= 4PL 端 · 充电订单管理 ================= */
 /* 订单状态徽标色：充电中=进行蓝、充电结束/待支付=待办橙、已支付=成功绿、已退款=灰 */
-const cgStatusBadge = s=>({'充电中':'<span class="tag f">充电中</span>','充电结束':'<span class="tag warn">充电结束</span>','待支付':'<span class="tag warn">待支付</span>','已支付':'<span class="tag ok">已支付</span>','已退款':'<span class="tag">已退款</span>'}[s]||s);
+/* 订单状态（接万油通订单通知的 9 值，码值 10–90 见字段说明）：启动中10/充电中20/停止中30/已结束40/待支付50/已完成60/启动失败70/结束失败80/未知90 */
+const cgStatusBadge = s=>({'启动中':'<span class="tag b">启动中</span>','充电中':'<span class="tag f">充电中</span>','停止中':'<span class="tag warn">停止中</span>','已结束':'<span class="tag info">已结束</span>','待支付':'<span class="tag warn">待支付</span>','已完成':'<span class="tag ok">已完成</span>','启动失败':'<span class="tag danger">启动失败</span>','结束失败':'<span class="tag danger">结束失败</span>','未知':'<span class="tag">未知</span>'}[s]||s);
+/* 支付状态（易宝打款，与订单状态解耦）：已完成单上可能是待支付/部分支付/已支付/支付失败/已退款；启动失败＝无需支付 */
+const cgPayBadge = s=>({'待支付':'<span class="tag warn">待支付</span>','部分支付':'<span class="tag b">部分支付</span>','已支付':'<span class="tag ok">已支付</span>','支付失败':'<span class="tag danger">支付失败</span>','已退款':'<span class="tag info">已退款</span>','无需支付':'<span class="tag">无需支付</span>'}[s]||s);
 const cgMoney = n=>n===0?'¥0.00':'¥'+money(n);
 const cgDeductBadge = s=>s==='已扣减'?'<span class="tag ok">已扣减</span>':s==='部分扣减'?'<span class="tag warn">部分扣减</span>':'<span class="tag">未扣减</span>';
 /* 是否追回徽标：未追回=待处理橙、已追回=闭环绿、恢复正常支付=无需追回灰（与油气能源订单一致） */
@@ -1086,6 +1151,7 @@ VIEWS.chargeOrders=()=>{
     +'<td class="mono">'+o.phone+'</td>'
     +'<td class="mono">'+o.plate+'</td>'
     +'<td>'+cgStatusBadge(o.status)+leqiFieldHelp('cgStatus')+'</td>'
+    +'<td>'+cgPayBadge(o.payStatus)+leqiFieldHelp('cgPayStatus')+'</td>'
     +'<td>'+o.operator+'</td>'
     +'<td>'+o.station+'<div class="t2">'+o.pile+'</div></td>'
     +'<td class="mono">'+(o.startTime||'—')+'</td>'
@@ -1112,10 +1178,10 @@ VIEWS.chargeOrders=()=>{
     +'</tr>');
   return liveFilters('chargeOrders')
     +liveListCard('充电订单管理','<button class="btn sm" onclick="liveExport(\'chargeOrders\')">导出</button>',
-      ['能源订单号','云快充订单号','关联运单号','司机姓名','手机号'+leqiFieldHelp('cgPhone'),'车牌号','订单状态'+leqiFieldHelp('cgStatus'),'运营商名称','站点名称','启动时间','充电量(度)','订单金额','万联价(元/度)'+leqiFieldHelp('cgWlj'),'补贴金额'+leqiFieldHelp('cgSubsidy'),'实付金额'+leqiFieldHelp('cgPayAmt'),'货主企业','网货主体','业务归属公司','结算主体','发货地','卸货地','运单支付状态','运单异常','异常发生时间','是否追回'+leqiFieldHelp('cgRecover'),'OCR识别状态','操作'],
-      rows,'4200px')
+      ['能源订单号','云快充订单号','关联运单号','司机姓名','手机号'+leqiFieldHelp('cgPhone'),'车牌号','订单状态'+leqiFieldHelp('cgStatus'),'支付状态（易宝打款）'+leqiFieldHelp('cgPayStatus'),'运营商名称','站点名称','启动时间','充电量(度)','订单金额','万联价(元/度)'+leqiFieldHelp('cgWlj'),'补贴金额'+leqiFieldHelp('cgSubsidy'),'实付金额'+leqiFieldHelp('cgPayAmt'),'货主企业','网货主体','业务归属公司','结算主体','发货地','卸货地','运单支付状态','运单异常','异常发生时间','是否追回'+leqiFieldHelp('cgRecover'),'OCR识别状态','操作'],
+      rows,'4400px')
     +notes(
-      nb('子订单口径','<p>充电订单按<b>运单维度拆分子订单</b>同步 4PL（本列表一行＝一个运单的子订单）：司机启动充电即冻结组内全部匹配运单总额度，<b>建单时按冻结池运单逐单生成子订单</b>并同步（状态跟随总订单）；完成后按运单时间先进先出扣款，实际扣款子订单更新最终数据，<b>未扣款运单的子订单撤回</b>、解冻运单在实际扣款子订单详情附带展示。云快充 15 秒过程数据（电量/费用/SOC）只在万油通侧消费，不同步给 4PL——4PL 仅展示开始与结束的数据。</p>')+
+      nb('子订单口径','<p>充电订单按<b>运单维度拆分子订单</b>同步 4PL（本列表一行＝一个运单的子订单）：司机启动充电即冻结组内全部匹配运单总额度，<b>建单时按冻结池运单逐单生成子订单</b>并同步（子订单状态跟随总订单，<b>每次状态变更都通知并记录，中间状态同样留痕</b>）；完成后按运单时间先进先出扣款，实际扣款子订单更新最终数据，<b>未扣款运单的子订单撤回</b>。云快充 15 秒过程数据（电量/费用/SOC）只在万油通侧消费，不同步给 4PL——4PL 仅展示开始与结束的数据。</p>')+
       nb('金额口径','<p>子订单金额均为<b>本运单承担部分</b>：订单金额＝该运单承担的云快充金额（电费＋服务费）；万联价＝按司机补贴规则电补贴比例计算的电单价（订单创建时快照）；实付金额＝万联价×本单实际充电度数（司机扣款）；补贴金额＝订单金额−实付金额。充电中冻结组内所有匹配运单的总额度，完成按扣款解冻返还剩余。</p>'));
 };
 
@@ -1163,11 +1229,27 @@ function cgGrp(title, fields){
     + '</dl></div>';
 }
 
+/* 停止原因：按万油通订单状态 9 值给出页面文案（与 PRD 7.2.1 枚举表同源） */
+function cgStopReason(o){
+  const m={
+    '启动中':'已发起启动，等待云快充启动结果',
+    '充电中':'充电中',
+    '停止中':'已下发停止充电，等待云快充处理结果',
+    '已结束':'云快充已推送充电结束，等待最终账单',
+    '待支付':'最终账单已生成，等待运单额度扣减',
+    '已完成':o.endTime?'达到停止阈值 / 手动停止':'达到停止阈值 / 手动停止',
+    '启动失败':'启动失败关单（冻结额度全额解冻退回）',
+    '结束失败':'停止指令超时/失败，云快充侧可能仍在充电，转人工停充',
+    '未知':'订单状态不明，待人工查询充电状态核查'
+  };
+  return m[o.status]||'—';
+}
 /* 顶部条：能源订单号 + 状态标签（对齐 4PL 充电订单详情页顶部） */
 function cgHeadBar(o){
   return '<div class="card"><div class="card-b" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
     +'<span class="t2">能源订单号：</span><b class="mono" style="font-size:15px">'+o.no+'</b>'
-    +cgStatusBadge(o.status)
+    +cgStatusBadge(o.status)+leqiFieldHelp('cgStatus')
+    +cgPayBadge(o.payStatus)+leqiFieldHelp('cgPayStatus')
     +cgDeductBadge(o.deduct)
   +'</div></div>';
 }
@@ -1197,14 +1279,10 @@ function cgMapBlock(o){
 VIEWS.chargeOrderDetail=()=>{
   const o = LIVE.chargeOrders.find(x=>x.no===chargeOrderCurrent) || LIVE.chargeOrders[0];
   chargeOrderCurrent = o.no;
-  const periods=o.status==='充电中'||o.status==='已退款'
-    ? '<p class="t2">时段充电明细为订单完成后的结束数据，当前订单未完成，暂无时段明细。</p>'
+  const periods=['已结束','待支付','已完成'].indexOf(o.status)<0
+    ? '<p class="t2">时段充电明细为订单最终账单生成后的数据，当前订单未完成（'+o.status+'），暂无时段明细。</p>'
     : liveTable(['时段','电量(度)','电费(元)','服务费(元)','小计(元)'],
         chargePeriodsOf(o).map(p=>'<tr><td class="mono">'+p.range+'</td><td class="num">'+p.kwh.toFixed(2)+'</td><td class="num">'+cgMoney(p.efee)+'</td><td class="num">'+cgMoney(p.sfee)+'</td><td class="num"><b>'+cgMoney(p.efee+p.sfee)+'</b></td></tr>'),'760px');
-  const thaw = (o.thawList&&o.thawList.length)
-    ? liveTable(['序号','解冻运单号','处理结果','解冻金额(元)'],
-        o.thawList.map((t,i)=>'<tr><td>'+(i+1)+'</td><td class="mono">'+t.no+'</td><td>解冻返还（未参与本次扣款）</td><td class="num">'+cgMoney(parseFloat(t.amt))+'</td></tr>'),'760px')
-    : '<p class="t2">本单为单运单额度充电（冻结 1 个运单、全额扣款），无解冻运单。</p>';
   const waybillRow = '<tr><td>1</td><td class="mono">'+o.waybill+'</td><td>'+o.shipper+'</td><td>'+o.goods+'</td><td class="num">'+o.weight+'</td><td>'+o.fromAddr+'</td><td>'+o.toAddr+'</td><td>'+o.driver+'</td><td class="mono">'+o.phone+'</td><td class="mono">'+o.plate+'</td><td class="mono">'+(o.loadTime||'—')+'</td><td class="mono">'+(o.unloadTime||'—')+'</td><td>'+o.whSubj+'</td><td class="num">'+o.freightAmt+'</td><td>'+(o.waybillPay==='已支付'?'<span class="tag ok">已支付</span>':'<span class="tag warn">未付款</span>')+'</td><td>'+(o.waybillAbn==='无异常'?'<span class="t2">无异常</span>':'<span style="color:#c0483c">'+o.waybillAbn+'</span>')+'</td><td class="mono">'+(o.abnTime||'—')+'</td><td>'+cgRecoverBadge(o.recover)+'</td></tr>';
   return cgHeadBar(o)
     + '<div class="card"><div class="card-b"><div class="sec-title">充电信息</div>'
@@ -1214,7 +1292,7 @@ VIEWS.chargeOrderDetail=()=>{
       + cgGrp('充电过程',[
           ['充电量(度)','<b class="num">'+(o.kwh?o.kwh.toFixed(2):'—')+'</b>'],['桩枪编号','<span class="mono">'+o.pile+'</span>'],
           ['启动时间','<span class="mono">'+(o.startTime||'—')+'</span>'],['结束时间','<span class="mono">'+(o.endTime||'—')+'</span>'],
-          ['停止原因',o.status==='已退款'?'启动失败关单（冻结全额解冻退回）':(o.endTime?'达到停止阈值/手动停止':'充电中')]
+          ['停止原因',cgStopReason(o)]
         ])
       + cgGrp('金额信息',[
           ['订单金额','<b class="num">'+cgMoney(o.orderAmt)+'</b>'],
@@ -1238,11 +1316,9 @@ VIEWS.chargeOrderDetail=()=>{
       + liveTable(['序号','运单号','货主企业','货品名称','承运重量(吨)','发货地','卸货地','司机姓名','司机手机号','车牌号','装车时间','卸车时间','网货主体','运费总金额(元)','运单支付状态','运单异常','异常发生时间','是否追回'],[waybillRow],'2800px')
     + '</div></div>'
     + '<div class="card"><div class="card-b"><div class="sec-title">充电与时段明细<span class="t2" style="margin-left:10px;font-weight:400">充电时段按云快充最终订单拆分（尖/峰/平/谷）</span></div>' + periods + '</div></div>'
-    + '<div class="card"><div class="card-b"><div class="sec-title">额度冻结与解冻'+leqiFieldHelp('cgThaw')+'<span class="t2" style="margin-left:10px;font-weight:400">充电即冻结组内全部匹配运单总额度，完成后按运单时间先进先出扣款，未扣款运单解冻返还并撤回子订单</span></div>'
-      + '<dl class="cg-grp" style="margin:10px 0 12px"><div class="oms-live-field"><dt>本次冻结运单数</dt><dd><b class="num">'+((o.thawList&&o.thawList.length)?o.thawList.length+1:1)+'</b> 个</dd></div>'
-      + '<div class="oms-live-field"><dt>冻结总额度</dt><dd><b class="num">'+cgMoney(o.frozen)+'</b></dd></div>'
-      + '<div class="oms-live-field"><dt>本单扣款（本运单）</dt><dd><b class="num">'+cgMoney(o.payAmt)+'</b></dd></div></dl>'
-      + '<div class="cg-grp-t">解冻运单</div>' + thaw
+    + '<div class="card"><div class="card-b"><div class="sec-title">订单状态流转记录'+leqiFieldHelp('cgStatusLog')+'<span class="t2" style="margin-left:10px;font-weight:400">万油通每次订单状态变更都会通知 4PL，中间状态同样记录（按通知时间排序）</span></div>'
+      + liveTable(['序号','变更时间','订单状态','来源','说明'],
+          (o.statusLog||[]).map((l,i)=>'<tr><td>'+(i+1)+'</td><td class="mono">'+l.time+'</td><td>'+cgStatusBadge(l.status)+'</td><td>'+l.source+'</td><td>'+l.remark+'</td></tr>'),'1000px')
     + '</div></div>'
     + liveSection('异常标识',[
         ['OCR 识别状态',(o.ocr==='通过'?'<span class="tag ok">通过</span>':'<span class="tag warn">未通过</span>')],
@@ -1270,17 +1346,44 @@ leqiFieldHelp = function(kind){
     ])
     +'<p class="mut">与 PRD 7.2.6 同源。</p>');
   if(kind==='cgStatus') return fhCardHTML(
-    '<h5>充电订单状态（穷举 5 值 · 全生命周期同步）</h5>'
-    +tbl(['状态','页面展示','出现条件 → 后续流转'],[
-      ['充电中',dot('run')+'「充电中」——蓝色标签','云快充启动成功后出现 → 停止充电后转「充电结束」或「待支付」；异常时经关单转「已退款」'],
-      ['充电结束',dot('pend')+'「充电结束」——橙色标签','充电停止、订单账单生成中 → 支付完成后转「已支付」'],
-      ['待支付',dot('pend')+'「待支付」——橙色标签','充电结束待结算扣款 → 扣款完成转「已支付」'],
-      ['已支付',dot('ok')+'「已支付」——绿色标签','终态：扣款完成（万联价×实际度数已扣减、剩余额度解冻返还）'],
-      ['已退款',dot('fail')+'「已退款」——灰色标签','启动卡单关单（90 秒未收到启动成功→查询→关单）：冻结全额解冻退回，终态']
+    '<h5>订单状态（接万油通订单通知 · 穷举 9 值 · 码值 10–90）</h5>'
+    +tbl(['码值','状态','页面展示','出现条件 → 后续流转'],[
+      ['10','启动中','<span class="tag b">启动中</span>','建单并已向云快充发起启动、未收到结果 → 启动成功转「充电中」；失败转「启动失败」；超时不明转「未知」'],
+      ['20','充电中','<span class="tag f">充电中</span>','云快充启动成功、回填云快充订单号 → 停止充电转「停止中」，推送结束转「已结束」'],
+      ['30','停止中','<span class="tag warn">停止中</span>','平台/司机已下发停止、云快充处理中 → 成功转「已结束」；失败/超时转「结束失败」'],
+      ['40','已结束','<span class="tag info">已结束</span>','云快充已推送充电结束、最终账单未落 → 账单落定转「待支付」'],
+      ['50','待支付','<span class="tag warn">待支付</span>','最终账单已落、等待运单额度扣减 → 扣减完成转「已完成」'],
+      ['60','已完成','<span class="tag ok">已完成</span>','<b>网货运单额度扣减完成</b>（与易宝打款无关，打款看「支付状态」）→ 终态'],
+      ['70','启动失败','<span class="tag danger">启动失败</span>','启动被拒，或建单冻结失败关单（冻结额度全额解冻退回）→ 终态，司机需重新扫码'],
+      ['80','结束失败','<span class="tag danger">结束失败</span>','停止指令超时/失败，云快充侧可能仍在充电 → 人工停充后归入「已结束」'],
+      ['90','未知','<span class="tag">未知</span>','启动结果或状态查询仍不明确，保留冻结 → 人工核查后归入实际状态']
     ])
-    +'<p><b>子订单状态＝总订单状态：</b>订单按运单维度拆分子订单同步 4PL（建单即按冻结池全部运单生成），子订单无独立状态机，状态跟随总订单同步更新；完成后未扣款运单的子订单撤回（详见「额度冻结与解冻」）。</p>'
-    +'<p><b>同步口径：</b>建单即同步（开始数据）→ 状态流转同步更新 → 完成后更新最终子订单；15 秒过程数据不同步给 4PL。</p>'
-    +'<p class="mut">与 PRD 7.2 / 流程二同源。</p>');
+    +'<p><b>子订单状态＝总订单状态：</b>订单按运单维度拆分子订单同步 4PL（建单即按冻结池全部运单生成），子订单无独立状态机，状态跟随总订单同步更新；完成后未扣减运单的子订单撤回。</p>'
+    +'<p><b>同步口径：</b>订单状态<b>每一次变更</b>（含启动中/停止中/结束失败/未知等中间状态）都会通知 4PL 并落一条状态流转记录（见「订单状态流转记录」）；15 秒过程数据不同步给 4PL。</p>'
+    +'<p class="mut">与 PRD 7.2.1 枚举表 / 流程二同源。</p>');
+  if(kind==='cgPayStatus') return fhCardHTML(
+    '<h5>支付状态（易宝打款 · 穷举 6 值 · 与订单状态解耦）</h5>'
+    +tbl(['码值','状态','页面展示','出现条件 → 后续流转'],[
+      ['1','待支付','<span class="tag warn">待支付</span>','尚未打款（含未到打款节点的订单）→ 开始打款后转「部分支付/已支付」，全失败转「支付失败」'],
+      ['2','部分支付','<span class="tag b">部分支付</span>','多网货主体分别打款，部分主体成功、部分主体失败 → 补款成功后转「已支付」'],
+      ['3','已支付','<span class="tag ok">已支付</span>','全部网货主体打款成功 → 终态'],
+      ['4','支付失败','<span class="tag danger">支付失败</span>','全部主体打款失败 → 补款成功转「已支付」，否则线下处理'],
+      ['5','已退款','<span class="tag info">已退款</span>','易宝发生真实资金退回（线下登记触发）→ 终态'],
+      ['6','无需支付','<span class="tag">无需支付</span>','启动失败＝充电未发生，永不打款；不计入待支付统计、不进对账']
+    ])
+    +'<p><b>与订单状态解耦：</b>「已完成」只表示运单额度扣减完成，其支付状态可能是待支付 / 部分支付 / 已支付 / 支付失败 / 已退款。</p>'
+    +'<p class="mut">与 PRD 7.2.1 枚举表同源。</p>');
+  if(kind==='cgStatusLog') return fhCardHTML(
+    '<h5>订单状态流转记录（变更留痕）</h5>'
+    +'<p>万油通每次订单状态变更都通知 4PL，4PL 落一条记录：<b>不只记录开始与结束，中间状态同样记录</b>。</p>'
+    +tbl(['字段','口径'],[
+      ['变更时间','万油通通知时间（精确到秒）'],
+      ['订单状态','变更后的状态（9 值，含码值）'],
+      ['来源','万油通通知 / 人工'],
+      ['说明','变更原因与场景（如"启动失败关单：冻结额度全额解冻退回"）'],
+      ['排序','按通知时间正序；乱序到达时以通知时间为准，旧状态不回退当前状态']
+    ])
+    +'<p class="mut">与 PRD 7.2.1（订单状态流转记录）/ 7.3（energy_charge_order_status_log）同源。</p>');
   if(kind==='cgWlj') return fhCardHTML(
     '<h5>万联价（元/度）</h5>'
     +'<p>按司机补贴规则的<b>电补贴比例</b>计算的电单价，订单创建时记录快照。</p>'
@@ -1389,27 +1492,16 @@ leqiFieldHelp = function(kind){
     '<h5>电-冻结额度</h5>'
     +tbl(['场景','展示'],[
       ['充电预冻结','充电即冻结组内<b>全部匹配运单</b>的总额度（跨主体合并、全额冻结）；可充度数＝冻结额度 ÷ 万联价，到达阈值下发停止充电'],
-      ['完成','按万联价×实际度数扣减，剩余冻结解冻返还（运单维度明细见充电订单详情「额度冻结与解冻」）'],
+      ['完成','按万联价×实际度数扣减，剩余冻结解冻返还'],
       ['启动失败关单','冻结全额解冻退回（已退款）']
     ])
     +'<p><b>输入金额冻结：</b>当前为全额冻结（无输入金额方式）；后续支持按输入金额冻结时按输入金额冻结。</p>'
     +'<p class="mut">与 PRD 流程一/数据定义同源。</p>');
-  if(kind==='cgThaw') return fhCardHTML(
-    '<h5>额度冻结与解冻（子订单口径）</h5>'
-    +tbl(['节点','口径'],[
-      ['建单（充电启动成功）','冻结组内<b>全部匹配运单</b>的总额度（跨主体合并、全额冻结）；同时按冻结池运单<b>逐单生成子订单</b>同步 4PL，状态跟随总订单（充电中）'],
-      ['充电中','子订单展示开始数据；4PL 可见全部子订单（每个运单一条）'],
-      ['完成（已支付）','按<b>运单时间先进先出</b>扣款：实际扣款运单的子订单更新最终数据（本页）；<b>未扣款运单的子订单撤回</b>（4PL 列表不再展示），解冻运单在本块附带展示'],
-      ['启动失败关单','冻结全额解冻退回（已退款），子订单全量撤回']
-    ])
-    +'<p><b>本单扣款＝本运单承担金额</b>（订单金额/实付金额均为本运单维度）；解冻金额＝该运单冻结额度（未参与扣款，全额返还）。</p>'
-    +'<p><b>输入金额冻结：</b>当前为全额冻结（无输入金额方式）；后续支持按输入金额冻结时按输入金额冻结。</p>'
-    +'<p class="mut">与 PRD 6.2 流程一/7.2 充电订单管理同源。</p>');
   if(kind==='cgSync') return fhCardHTML(
     '<h5>最近同步时间（同步口径）</h5>'
     +tbl(['同步节点','同步内容'],[
       ['建单即同步','开始数据：启动时间、站点、桩枪'],
-      ['状态流转同步','订单状态每次变化（充电中→充电结束→待支付→已支付/已退款）即更新'],
+      ['状态流转同步','订单状态每次变化即更新（启动中→充电中→停止中→已结束→待支付→已完成，异常分支启动失败/结束失败/未知同样同步并记录）'],
       ['完成更新','订单完成后更新最终子订单（结束数据：充电量、金额、SOC、时段明细）']
     ])
     +'<p><b>15 秒过程数据不同步：</b>云快充充电过程中约 15 秒推送一次的过程数据（电量/费用/SOC）只在万油通侧消费，不同步给 4PL——4PL 仅展示开始与结束的数据。</p>'
