@@ -1762,9 +1762,17 @@ let energyWaybillCurrent = '';
 function openEnergyWaybill(no){ energyWaybillCurrent = no; go('energyWaybillDetail'); }
 /* 详情演示补数：支付状态/运单作废状态/异常发生时间/回收节点与回收时间/货主补贴（列表不展示、详情展示） */
 LIVE.energyWaybillOrders = {
-  'UD2026103100000019':[{site:'中国石化·沈阳丁香街加油站', qty:68.67, amt:481.87},{site:'中国石油·沈北新区加油站', qty:12.66, amt:88.62}],
-  'UD2026110200000034':[{site:'特来电·万联物流园充电站', qty:52.30, amt:87.61}],
-  'UD2026110200000014':[{site:'中国石化·沈阳丁香街加油站', qty:96.00, amt:676.80},{site:'中国石化·铁西工业路站', qty:24.10, amt:169.10}]
+  'UD2026103100000019':[
+    {orderNo:'YY202610310019001', energy:'油气', site:'中国石化·沈阳丁香街加油站', goods:'0#柴油', qty:68.67, wlj:'7.02', amt:481.87, payAmt:481.87, subsidy:0.00, status:'已完成', time:'2026-10-31 19:02:11'},
+    {orderNo:'YY202610310019002', energy:'油气', site:'中国石油·沈北新区加油站', goods:'0#柴油', qty:12.66, wlj:'7.00', amt:88.62, payAmt:88.62, subsidy:0.00, status:'已完成', time:'2026-10-31 19:40:35'}
+  ],
+  'UD2026110200000034':[
+    {orderNo:'CD202611020034001', energy:'电', site:'特来电·万联物流园充电站', goods:'电（快充）', qty:52.30, wlj:'1.20', amt:87.61, payAmt:62.76, subsidy:24.85, status:'已完成', time:'2026-11-02 15:06:02'}
+  ],
+  'UD2026110200000014':[
+    {orderNo:'YY202611020014001', energy:'油气', site:'中国石化·沈阳丁香街加油站', goods:'0#柴油', qty:96.00, wlj:'7.05', amt:676.80, payAmt:676.80, subsidy:0.00, status:'已完成', time:'2026-11-02 11:20:44'},
+    {orderNo:'YY202611020014002', energy:'油气', site:'中国石化·铁西工业路站', goods:'0#柴油', qty:24.10, wlj:'7.02', amt:169.10, payAmt:169.10, subsidy:0.00, status:'已完成', time:'2026-11-02 13:02:18'}
+  ]
 };
 LIVE.driverWaybills.forEach(function(d,i){
   d.payStatus = d.wb==='UD2026103100000019' ? '已支付' : '待支付';
@@ -1788,9 +1796,21 @@ VIEWS.energyWaybillDetail=()=>{
   const frozenVal = d.energy==='电' ? (d.frozen ? money(d.frozen) : money(0)) : '<span class="t2">—</span>';
   const ewCard = (l,v,hl)=>'<div style="border:1px solid #e5ebf3;border-radius:10px;padding:10px 14px;background:#fff">'
     +'<div class="t2" style="font-size:11px">'+l+'</div><div class="num" style="font-size:17px;font-weight:700;margin-top:4px'+(hl?';color:#d46b08':'')+'">'+v+'</div></div>';
-  const orderRows = orders.map(function(o,i){ return '<tr><td class="num">'+(i+1)+'</td><td>'+o.site+'</td><td class="num">'+o.qty.toFixed(2)+'</td><td class="num">'+money(o.amt)+'</td></tr>'; });
+  const orderRows = orders.map(function(o,i){ return '<tr>'
+    +'<td class="num">'+(i+1)+'</td>'
+    +'<td class="mono">'+o.orderNo+'</td>'
+    +'<td>'+energyTag(o.energy)+'</td>'
+    +'<td>'+o.site+'</td>'
+    +'<td>'+o.goods+'</td>'
+    +'<td class="num">'+o.qty.toFixed(2)+'</td>'
+    +'<td class="num">'+o.wlj+'</td>'
+    +'<td class="num">'+money(o.amt)+'</td>'
+    +'<td class="num">'+money(o.payAmt)+'</td>'
+    +'<td class="num">'+money(o.subsidy)+'</td>'
+    +'<td>'+o.status+'</td>'
+    +'<td class="mono">'+o.time+'</td></tr>'; });
   const orderTable = orders.length
-    ? liveTable(['序号','站点名称','数量('+unit+')','订单金额(元)'], orderRows, '620px')
+    ? liveTable(['序号','订单号','能源类型','油站名称','商品名称','数量('+unit+')','万联价(元)','订单金额(元)','司机实付金额(元)','平台补贴金额(元)','订单状态','下单时间'], orderRows, '1560px')
     : '<p class="t2" style="padding:10px 0">暂无数据</p>';
   return '<div class="card"><div class="card-b"><div class="sec-title">能源额度'+leqiFieldHelp('wbFrozenTip')+'<span class="tag b" style="margin-left:10px">'+d.splitStatus+'</span></div>'
       +'<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:6px">'
@@ -1842,7 +1862,7 @@ VIEWS.energyWaybillDetail=()=>{
     + notes(
       nb('页面定位','<p>能源运单详情（列表<b>点行进入</b>）：展示运单维度的能源额度、派发/回收规则与补贴配置、关联能源订单与结算信息。油气与电共用同一详情结构，字段按运单能源类型取对应账本金额。</p>')+
       nb('额度口径','<p>额度等式：<b>分配额度 ＝ 已使用额度 ＋ 冻结额度 ＋ 可用额度 ＋ 已回收额度</b>。<b>冻结额度仅电运单有值</b>（司机发起充电按冻结池全额冻结，油气运单显示「—」——加注冻结在司机维度，不落运单）；额度使用率＝已使用额度÷分配额度。</p>')+
-      nb('关联能源订单口径','<p>汇总＝该运单关联能源订单的合计（订单总数 / 合计使用(L/kg/度) / 合计金额(元)），数量单位按运单能源类型：柴油 L、天然气 kg、电 度；订单列表列＝序号 / 站点名称 / 数量(L/kg/度) / 订单金额(元)。无关联订单时显示「暂无数据」。</p>'));
+      nb('关联能源订单口径','<p>汇总＝该运单关联能源订单的合计（订单总数 / 合计使用(L/kg/度) / 合计金额(元)），数量单位按运单能源类型：柴油 L、天然气 kg、电 度。</p><p>订单列表列对齐现网详情（去掉支付状态、对账状态、开票状态三列）：序号 / 订单号 / 能源类型 / 油站名称 / 商品名称 / 数量(L/kg/度) / 万联价(元) / 订单金额(元) / 司机实付金额(元) / 平台补贴金额(元) / 订单状态 / 下单时间；无关联订单时显示「暂无数据」。</p>'));
 };
 
 /* —— 能源规则配置（现网字段 + 本期新增能源类型/分电上限比例配置；三维唯一） —— */
