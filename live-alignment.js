@@ -1794,8 +1794,8 @@ VIEWS.energyWaybillDetail=()=>{
   const totalAmt = orders.reduce(function(s,o){return s+o.amt;},0);
   const usage = d.grant ? Math.round(d.used/d.grant*100) : 0;
   const frozenVal = d.energy==='电' ? (d.frozen ? money(d.frozen) : money(0)) : '<span class="t2">—</span>';
-  const ewCard = (l,v,hl)=>'<div style="border:1px solid #e5ebf3;border-radius:10px;padding:10px 14px;background:#fff">'
-    +'<div class="t2" style="font-size:11px">'+l+'</div><div class="num" style="font-size:17px;font-weight:700;margin-top:4px'+(hl?';color:#d46b08':'')+'">'+v+'</div></div>';
+  const ewCard = (l,v,hl)=>'<div style="border:1px solid #e5ebf3;border-radius:10px;padding:10px 14px;background:#fff;min-width:0">'
+    +'<div style="font-size:11px;color:#8491a4;line-height:1.5;white-space:normal;overflow-wrap:anywhere">'+l+'</div><div class="num" style="font-size:17px;font-weight:700;margin-top:4px;white-space:normal;overflow-wrap:anywhere'+(hl?';color:#d46b08':'')+'">'+v+'</div></div>';
   const orderRows = orders.map(function(o,i){ return '<tr>'
     +'<td class="num">'+(i+1)+'</td>'
     +'<td class="mono">'+o.orderNo+'</td>'
@@ -1810,10 +1810,10 @@ VIEWS.energyWaybillDetail=()=>{
     +'<td>'+o.status+'</td>'
     +'<td class="mono">'+o.time+'</td></tr>'; });
   const orderTable = orders.length
-    ? liveTable(['序号','订单号','能源类型','油站名称','商品名称','数量('+unit+')','万联价(元)','订单金额(元)','司机实付金额(元)','平台补贴金额(元)','订单状态','下单时间'], orderRows, '1560px')
+    ? liveTable(['序号','订单号','能源类型','油站名称','商品名称','数量('+unit+')','万联价(元)','订单金额(元)','司机实付金额(元)','平台补贴金额(元)','订单状态','下单时间'], orderRows, '1760px')
     : '<p class="t2" style="padding:10px 0">暂无数据</p>';
   return '<div class="card"><div class="card-b"><div class="sec-title">能源额度'+leqiFieldHelp('wbFrozenTip')+'<span class="tag b" style="margin-left:10px">'+d.splitStatus+'</span></div>'
-      +'<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:6px">'
+      +'<div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:6px">'
       + ewCard('分配额度(元)', money(d.grant))
       + ewCard('已使用额度(元)', money(d.used))
       + ewCard('冻结额度(元)', frozenVal, d.energy==='电'&&d.frozen)
@@ -1845,7 +1845,7 @@ VIEWS.energyWaybillDetail=()=>{
         ])
     + '</div></div>'
     + '<div class="card"><div class="card-b"><div class="sec-title">关联能源订单列表</div>'
-      + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 12px">'
+      + '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:6px 0 12px">'
       + ewCard('订单总数', orders.length)
       + ewCard('合计使用('+unit+')', totalQty===null?'—':totalQty.toFixed(2))
       + ewCard('合计金额(元)', money(totalAmt))
