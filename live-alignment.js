@@ -86,7 +86,7 @@ const LIVE_FILTERS = {
   driverOilLog:[['操作时间','time','range',''],['能源类型','energy','select',['油气','电']],['变更类型','type','select',['分配','加注','圈回','订单取消','恢复','分电','冻结','解冻','实扣','回收','手动分配']],['运单号','wb','text','输入运单号'],['能源订单号','order','text','输入能源订单号']],
   /* 4PL 端 · 能源运单管理 / 能源规则配置 / 司机补贴规则配置 / 货主能源返利配置 */
   driverWaybills:[['运单号','wb','text','输入运单号'],['车牌号','plate','text','输入车牌号'],['司机姓名','driver','text','输入司机姓名'],['司机手机号','phone','text','输入手机号'],['网络货运主体','whSubj','text','输入主体名称'],['客户名称','customer','text','输入客户名称'],['运单状态','status','select',['装货/在途','已卸货','已取消','取消装货/在途','取消-待支付','取消-已卸货']],['派发状态','splitStatus','select',['未派发','已派发','已回收']],['运单预审状态','audit','select',['未申请','待审核','审核不通过','审核通过','待处理','已保存','转结算','待预审','预审不通过']],['车辆能源类型','etype','select',['柴油','天然气','电','油']],['能源类型','energy','select',['油气','电']],['派发时间','splitTime','range',''],['运单创建时间','createTime','range','']],
-  oilRules:[['规则名称','name','text','输入规则名称'],['适用网货主体','subj','text','输入主体名称'],['货主企业','owner','text','输入货主企业'],['能源类型','etype','select',['油气','电']],['状态','status','select',['启用','停用']],['派发节点','grantNode','select',['装车','货主结算后（一笔付）']],['回收节点','recycleNode','select',['卸货后','卸货后结算前','货主结算后N天']],['规则时间范围','range','range','']],
+  oilRules:[['规则名称','name','text','输入规则名称'],['适用网货主体','subj','text','输入主体名称'],['货主企业','owner','text','输入货主企业'],['能源类型','etype','select',['油气','电']],['状态','status','select',['启用','停用']],['派发节点','gnode','select',['装车','卸货','货主结算后（一笔付）']],['回收节点','rnode','select',['卸货后','卸货后结算前','货主结算后']],['规则时间范围','range','range','']],
   wljRules:[['网货主体','subj','text','输入主体名称'],['货主企业','owner','text','输入货主企业'],['状态','status','select',['正常','停用']]],
   ownerRebates:[['货主企业','owner','text','输入货主企业'],['网货主体','subj','text','输入主体名称'],['返利规则','rule','select',['按能源额度','按费率']],['状态','status','select',['启用','停用']],['规则时间范围','range','range','']]
 };
@@ -265,6 +265,10 @@ const ruleLimitFi=(g,label,inner,hint,show,help)=>liveFi(label,inner,hint,undefi
 function liveRuleEtype(v){
   document.querySelectorAll('[data-limit]').forEach(el=>{ el.style.display=(el.getAttribute('data-limit')===v)?'':'none'; });
 }
+/* 306.5 V1.1：回收节点=货主结算后N天 的 N 支持配置 0 天——选中该节点时显示「回收天数」输入框（整数天 0–365，必填默认 0） */
+const rnodeDays=v=>{const m=String(v||'').match(/货主结算后\((\d+)天\)/);return m?m[1]:'0';};
+const liveRnodeDay=show=>{document.querySelectorAll('[data-rday]').forEach(el=>{el.style.display=show?'':'none';});};
+const rdayFi=(label,inner,hint,show)=>liveFi(label,inner,hint).replace('<div class="fi">','<div class="fi" data-rday="1"'+(show?'':' style="display:none"')+'>');
 const liveEditBtns=(page,save)=>'<div class="editbtns"><button type="button" class="btn" onclick="go(\''+page+'\')">取消</button><button type="button" class="btn primary" onclick="showToast(\'已'+(save?'保存':'提交')+'（演示）\');go(\''+page+'\')">'+(save?'保存':'确认')+'</button></div>';
 
 /* 能源规则编辑页（现网 addOliRule 全字段 + 能源类型 + 电比率上限 25%） */
@@ -282,8 +286,9 @@ VIEWS.oilRuleEdit=()=>{
        liveFi('✱能源派发方式','<select class="sel"><option>按运费比例</option></select>')
       +liveFi('派发比例','<input class="inp" value="'+d.rate+'" style="max-width:120px">','能源类型=电 时不得超过「分电上限比例配置」上限（当前 '+liveCapElec.toFixed(2)+'%）；油气规则沿用「分油上限比例配置」（当前 '+liveCapOil.toFixed(2)+'%）；超出保存拦截',null,'eRateCap')
       +liveFi('是否有补贴','<label class="rb"><input type="checkbox" '+(String(d.sub).includes('货主')?'checked':'')+'> 货主补贴</label><label class="rb"><input type="checkbox" '+(String(d.sub).includes('司机')?'checked':'')+'> 司机补贴</label>')
-      +liveFi('能源派发节点','<label class="rb"><input type="radio" name="fr-gn" '+(d.gnode==='装车'?'checked':'')+'> 装车</label><label class="rb"><input type="radio" name="fr-gn" '+(d.gnode!=='装车'?'checked':'')+'> 货主结算后（一笔付）</label>','电规则派发节点=装车：装车即按分电规则派发电额度','full')
-      +liveFi('能源回收节点','<label class="rb"><input type="radio" name="fr-rn" '+(d.rnode==='卸货后'?'checked':'')+'> 卸货后</label><label class="rb"><input type="radio" name="fr-rn" '+(String(d.rnode).startsWith('卸货后结算前')?'checked':'')+'> 卸货后结算前</label><label class="rb"><input type="radio" name="fr-rn" '+(String(d.rnode).startsWith('货主结算后')?'checked':'')+'> 货主结算后N天</label>','电额度回收同口径','full'))
+      +liveFi('能源派发节点','<label class="rb"><input type="radio" name="fr-gn" '+(d.gnode==='装车'?'checked':'')+'> 装车</label><label class="rb"><input type="radio" name="fr-gn" '+(d.gnode==='卸货'?'checked':'')+'> 卸货</label><label class="rb"><input type="radio" name="fr-gn" '+(d.gnode!=='装车'&&d.gnode!=='卸货'?'checked':'')+'> 货主结算后（一笔付）</label>','装车＝装车完成即派发；卸货＝卸货完成后按卸货时运费计算派发（油气与电同口径）；货主结算后（一笔付）＝货主一笔付支付成功后派发','full')
+      +liveFi('能源回收节点','<label class="rb"><input type="radio" name="fr-rn" '+(d.rnode==='卸货后'?'checked':'')+' onchange="liveRnodeDay(false)"> 卸货后</label><label class="rb"><input type="radio" name="fr-rn" '+(String(d.rnode).startsWith('卸货后结算前')?'checked':'')+' onchange="liveRnodeDay(false)"> 卸货后结算前</label><label class="rb"><input type="radio" name="fr-rn" '+(String(d.rnode).startsWith('货主结算后')?'checked':'')+' onchange="liveRnodeDay(true)"> 货主结算后N天</label>','货主结算后N天：N 支持配置 0 天——0 天＝货主结算通知油气服务后立即回收未用额度（先回收、后打款）；N>0＝货主结算后 N 天回收（油气与电同口径）','full')
+      +rdayFi('回收天数','<input class="inp" value="'+rnodeDays(d.rnode)+'" placeholder="0–365 整数天" style="max-width:130px">','整数天，0–365，必填，默认 0；0 天＝结算通知油气服务后立即回收',String(d.rnode||'').startsWith('货主结算后')))
     +liveEditCard('合规配置','',null,
        liveFi('电子围栏',liveUnit('<input class="inp" value="'+d.fence+'" style="max-width:140px">','米'))
       +liveFi('车辆定位校验要求','<label class="rb"><input type="radio" name="fr-loc" checked> 校验北斗定位</label><label class="rb"><input type="radio" name="fr-loc"> 不校验北斗定位</label>','','full')
@@ -1541,22 +1546,23 @@ leqiFieldHelp = function(kind){
 /* ==================== 4PL 司机能源管理模块 ==================== */
 
 /* 演示数据：司机油气/电账户（15 司机，穷举：双账户/仅油气/仅电/有冻结/零额度） */
+/* 油气/电可用额度均按账户拆分：sub=有补贴账户（运单标识带司机补贴或货主补贴任一，加油按万联价扣款）、normal=无补贴账户（无补贴运单额度入账，按企业价扣款）；两账户互不占用，之和=该能源可用总额；累计使用/总派发仍为两账户合计，冻结仅电（汇总口径不变） */
 LIVE.driverOil=[
-  {name:'王建国', phone:'138****4021', oilAvail:76278.00, oilUsed:324098.00, oilTotal:400376.00, oilFrozen:0, eAvail:428.60, eUsed:2871.40, eTotal:3820.00, eFrozen:520.00},
-  {name:'刘志强', phone:'139****8834', oilAvail:0, oilUsed:90947.59, oilTotal:90947.59, oilFrozen:0, eAvail:0, eUsed:0, eTotal:356.00, eFrozen:356.00},
-  {name:'赵德海', phone:'137****2260', oilAvail:55178.00, oilUsed:8735.77, oilTotal:63913.77, oilFrozen:0, eAvail:0, eUsed:87.61, eTotal:87.61, eFrozen:0},
-  {name:'马春林', phone:'134****5527', oilAvail:16892.00, oilUsed:13026.77, oilTotal:29918.77, oilFrozen:0, eAvail:402.75, eUsed:46.68, eTotal:449.43, eFrozen:0},
-  {name:'孙晓峰', phone:'136****9917', oilAvail:11632.61, oilUsed:16353.77, oilTotal:27986.38, oilFrozen:186.40, eAvail:0, eUsed:0, eTotal:0, eFrozen:0},
-  {name:'周永康', phone:'133****9903', oilAvail:8445.80, oilUsed:58316.80, oilTotal:66762.60, oilFrozen:0, eAvail:96.40, eUsed:103.24, eTotal:199.64, eFrozen:0},
-  {name:'吴天佑', phone:'135****7742', oilAvail:0, oilUsed:0, oilTotal:0, oilFrozen:0, eAvail:318.20, eUsed:37.80, eTotal:356.00, eFrozen:0},
-  {name:'郑立群', phone:'150****3358', oilAvail:7439.00, oilUsed:0, oilTotal:7439.00, oilFrozen:0, eAvail:186.00, eUsed:52.40, eTotal:238.40, eFrozen:0},
-  {name:'冯长海', phone:'188****6602', oilAvail:7058.93, oilUsed:8068.47, oilTotal:15127.40, oilFrozen:0, eAvail:0, eUsed:128.46, eTotal:128.46, eFrozen:0},
-  {name:'许志远', phone:'159****8821', oilAvail:6731.84, oilUsed:174.16, oilTotal:6906.00, oilFrozen:0, eAvail:64.10, eUsed:0, eTotal:64.10, eFrozen:0},
-  {name:'陈国栋', phone:'131****4409', oilAvail:0, oilUsed:20420.12, oilTotal:20420.12, oilFrozen:0, eAvail:0, eUsed:0, eTotal:0, eFrozen:0},
-  {name:'林万成', phone:'186****2251', oilAvail:23186.50, oilUsed:44310.22, oilTotal:67496.72, oilFrozen:0, eAvail:228.90, eUsed:214.55, eTotal:443.45, eFrozen:0},
-  {name:'李长顺', phone:'135****3391', oilAvail:0, oilUsed:0, oilTotal:0, oilFrozen:0, eAvail:0, eUsed:0, eTotal:486.00, eFrozen:486.00},
-  {name:'郑卫东', phone:'131****6642', oilAvail:0, oilUsed:0, oilTotal:0, oilFrozen:0, eAvail:0, eUsed:0, eTotal:398.00, eFrozen:398.00},
-  {name:'冯玉梅', phone:'130****2285', oilAvail:0, oilUsed:0, oilTotal:0, oilFrozen:0, eAvail:0, eUsed:0, eTotal:287.00, eFrozen:287.00}
+  {name:'王建国', phone:'138****4021', oilSub:50000.00, oilNormal:26278.00, oilUsed:324098.00, oilTotal:400376.00, eSub:300.00, eNormal:128.60, eUsed:2871.40, eTotal:3820.00, eFrozen:520.00},
+  {name:'刘志强', phone:'139****8834', oilSub:0, oilNormal:0, oilUsed:90947.59, oilTotal:90947.59, eSub:0, eNormal:0, eUsed:0, eTotal:356.00, eFrozen:356.00},
+  {name:'赵德海', phone:'137****2260', oilSub:55178.00, oilNormal:0, oilUsed:8735.77, oilTotal:63913.77, eSub:0, eNormal:0, eUsed:87.61, eTotal:87.61, eFrozen:0},
+  {name:'马春林', phone:'134****5527', oilSub:9000.00, oilNormal:7892.00, oilUsed:13026.77, oilTotal:29918.77, eSub:402.75, eNormal:0, eUsed:46.68, eTotal:449.43, eFrozen:0},
+  {name:'孙晓峰', phone:'136****9917', oilSub:0, oilNormal:11632.61, oilUsed:16353.77, oilTotal:27986.38, oilFrozen:186.40, eSub:0, eNormal:0, eUsed:0, eTotal:0, eFrozen:0},
+  {name:'周永康', phone:'133****9903', oilSub:5000.00, oilNormal:3445.80, oilUsed:58316.80, oilTotal:66762.60, eSub:30.00, eNormal:66.40, eUsed:103.24, eTotal:199.64, eFrozen:0},
+  {name:'吴天佑', phone:'135****7742', oilSub:0, oilNormal:0, oilUsed:0, oilTotal:0, eSub:318.20, eNormal:0, eUsed:37.80, eTotal:356.00, eFrozen:0},
+  {name:'郑立群', phone:'150****3358', oilSub:0, oilNormal:7439.00, oilUsed:0, oilTotal:7439.00, eSub:0, eNormal:186.00, eUsed:52.40, eTotal:238.40, eFrozen:0},
+  {name:'冯长海', phone:'188****6602', oilSub:7058.93, oilNormal:0, oilUsed:8068.47, oilTotal:15127.40, eSub:0, eNormal:0, eUsed:128.46, eTotal:128.46, eFrozen:0},
+  {name:'许志远', phone:'159****8821', oilSub:3000.00, oilNormal:3731.84, oilUsed:174.16, oilTotal:6906.00, eSub:0, eNormal:64.10, eUsed:0, eTotal:64.10, eFrozen:0},
+  {name:'陈国栋', phone:'131****4409', oilSub:0, oilNormal:0, oilUsed:20420.12, oilTotal:20420.12, eSub:0, eNormal:0, eUsed:0, eTotal:0, eFrozen:0},
+  {name:'林万成', phone:'186****2251', oilSub:20000.00, oilNormal:3186.50, oilUsed:44310.22, oilTotal:67496.72, eSub:150.00, eNormal:78.90, eUsed:214.55, eTotal:443.45, eFrozen:0},
+  {name:'李长顺', phone:'135****3391', oilSub:0, oilNormal:0, oilUsed:0, oilTotal:0, eSub:0, eNormal:0, eUsed:0, eTotal:486.00, eFrozen:486.00},
+  {name:'郑卫东', phone:'131****6642', oilSub:0, oilNormal:0, oilUsed:0, oilTotal:0, eSub:0, eNormal:0, eUsed:0, eTotal:398.00, eFrozen:398.00},
+  {name:'冯玉梅', phone:'130****2285', oilSub:0, oilNormal:0, oilUsed:0, oilTotal:0, eSub:0, eNormal:0, eUsed:0, eTotal:287.00, eFrozen:287.00}
 ];
 
 /* 能源变更日志演示（类型 5 值穷举） */
@@ -1612,10 +1618,12 @@ VIEWS.driverOil=()=>{
     +'<td class="num">'+(i+1)+'</td>'
     +'<td>'+d.name+'</td>'
     +'<td class="mono">'+d.phone+'</td>'
-    +'<td class="num">'+money(d.oilAvail)+'</td>'
+    +'<td class="num">'+money(d.oilSub)+'</td>'
+    +'<td class="num">'+money(d.oilNormal)+'</td>'
     +'<td class="num">'+money(d.oilUsed)+'</td>'
     +'<td class="num">'+money(d.oilTotal)+'</td>'
-    +'<td class="num">'+money(d.eAvail)+'</td>'
+    +'<td class="num">'+money(d.eSub)+'</td>'
+    +'<td class="num">'+money(d.eNormal)+'</td>'
     +'<td class="num">'+money(d.eUsed)+'</td>'
     +'<td class="num">'+money(d.eTotal)+'</td>'
     +'<td class="num">'+(d.eFrozen?'<b style="color:#d46b08">'+money(d.eFrozen)+'</b>':money(d.eFrozen))+leqiFieldHelp('eFrozenTip')+'</td>'
@@ -1626,11 +1634,11 @@ VIEWS.driverOil=()=>{
     +'</td></tr>');
   return liveFilters('driverOil')
     +liveListCard('司机能源管理','<button class="btn sm" onclick="liveExport(\'driverOil\')">导出</button>',
-      ['序号','司机姓名','司机手机号','油气-当前可使用额度(元)','油气-累计使用额度(元)','油气-总派发额度(元)','电-当前可使用额度(元)','电-累计使用额度(元)','电-总派发额度(元)','电-冻结额度(元)','操作'],
-      rows,'1320px')
+      ['序号','司机姓名','司机手机号','油气-有补贴账户额度(元)','油气-无补贴账户额度(元)','油气-累计使用额度(元)','油气-总派发额度(元)','电-有补贴账户额度(元)','电-无补贴账户额度(元)','电-累计使用额度(元)','电-总派发额度(元)','电-冻结额度(元)','操作'],
+      rows,'1520px')
     +notes(
-      nb('记录粒度与额度字段','<p><b>一个司机一条记录</b>：油气额度与电额度以<b>并排字段</b>展示（两块独立账本、额度互不占用）。油气额度三列：当前可使用额度、累计使用额度、总派发额度；电额度四列：当前可使用额度、累计使用额度、总派发额度、<b>冻结额度</b>。</p><p><b>冻结额度仅电有</b>（充电中订单冻结的金额，充电即冻结组内全部匹配运单的总额度、跨主体合并）；油气不存在冻结状态，因此不设冻结列。</p>')+
-      nb('回收与日志','<p>回收<b>按能源类型分别操作</b>：<b>回收油气额度</b>圈回该司机全部油气可用额度转成运费；<b>回收电额度</b>圈回该司机全部电可用额度转成运费——司机名下有充电中订单时不拦截，冻结部分不受影响、只圈回可用额度。</p><p>【变更日志】进入<b>能源变更日志</b>单页，按能源类型（油气/电）列展示与筛选该司机的全部额度变动记录。</p>'));
+      nb('记录粒度与额度字段','<p><b>一个司机一条记录</b>：油气额度与电额度以<b>并排字段</b>展示（两块独立账本、额度互不占用）。油气与电的当前可使用额度均按账户拆为两列：<b>有补贴账户额度</b>＝运单补贴标识带司机补贴或货主补贴任一的运单额度入账（加油按万联价扣款）、<b>无补贴账户额度</b>＝无补贴运单的额度入账（加油按企业价扣款），两账户互不占用，两列之和＝该司机该能源类型的可用总额；累计使用额度、总派发额度仍为两账户合计的汇总口径。电额度另有<b>冻结额度</b>列（汇总口径不变）。</p><p><b>冻结额度仅电有</b>（充电中订单冻结的金额，充电即冻结组内全部匹配运单的总额度、跨主体合并）；油气不存在冻结状态，因此不设冻结列。</p>')+
+      nb('回收与日志','<p>回收<b>按能源类型分别操作</b>：<b>回收油气额度</b>圈回该司机全部油气可用额度（含有补贴与无补贴两账户）转成运费；<b>回收电额度</b>圈回该司机全部电可用额度（含电有补贴与无补贴两账户）转成运费——司机名下有充电中订单时不拦截，冻结部分不受影响、只圈回可用额度。</p><p>【变更日志】进入<b>能源变更日志</b>单页，按能源类型（油气/电）列展示与筛选该司机的全部额度变动记录。</p>'));
 };
 
 /* —— 能源变更日志（油气 / 电合并单页；能源类型列 + 筛选；司机信息固定头跳转页） —— */
@@ -1700,6 +1708,9 @@ VIEWS.oilAccount=()=>{
 LIVE.driverWaybills=[
   {wb:'UD2026110200000027', status:'取消-待支付', audit:'已保存', abn:'取消运单', plate:'粤HRE371', etype:'柴油', energy:'油气', driver:'付迪', phone:'18310804245', cust:'西安市临潼区梦甜电子商务商行（个体工商户）', subj:'万联易达物流科技有限公司', freight:111.00, sb:'未启用', oilRate:'5%', gasRate:'5%', eRate:'—', splitRate:'30%', node:'装货', splitTime:'2026-11-02 13:43:45', grant:31.00, used:0.00, avail:0.00, back:31.00, splitStatus:'已回收', ctime:'2026-11-02 13:33:06', op:false},
   {wb:'UD2026110200000014', status:'已卸货', audit:'待处理', abn:'无异常', plate:'粤HRE371', etype:'柴油', energy:'油气', driver:'付迪', phone:'18310804245', cust:'宁波智赋科技', subj:'万联易达物流科技有限公司', freight:400.00, sb:'启用', oilRate:'5%', gasRate:'5%', eRate:'—', splitRate:'30%', node:'装货', splitTime:'2026-11-02 10:56:04', grant:120.00, used:0.00, avail:120.00, back:0.00, splitStatus:'已派发', ctime:'2026-11-02 10:55:03', op:true},
+  /* 306.5：派发节点=卸货——卸货完成后按卸货时运费计算派发额度（派发时间=卸货完成时间），油气与电各 1 条 */
+  {wb:'UD2026110200000033', status:'已卸货', audit:'待处理', abn:'无异常', plate:'冀A8D32L', etype:'柴油', energy:'油气', driver:'高伟', phone:'13905318872', cust:'宁波智赋科技', subj:'芜湖万联易达物流发展有限公司', freight:520.00, sb:'未启用', oilRate:'5%', gasRate:'5%', eRate:'—', splitRate:'25%', node:'卸货', splitTime:'2026-11-02 16:40:22', grant:130.00, used:0.00, avail:130.00, back:0.00, splitStatus:'已派发', ctime:'2026-11-01 09:12:40', op:true},
+  {wb:'UD2026110200000034', status:'已卸货', audit:'待处理', abn:'无异常', plate:'辽A·K84V3', etype:'电', energy:'电', driver:'马春林', phone:'134****5527', cust:'山东鲁冰花物流有限公司', subj:'万联易达物流科技有限公司', freight:486.00, sb:'启用', oilRate:'—', gasRate:'—', eRate:'12%', splitRate:'15%', node:'卸货', splitTime:'2026-11-02 15:05:18', grant:72.90, used:0.00, avail:72.90, back:0.00, splitStatus:'已派发', ctime:'2026-11-01 14:30:55', op:true},
   {wb:'UD2026110200000010', status:'已卸货', audit:'待处理', abn:'无异常', plate:'黑TV15BG', etype:'柴油', energy:'油气', driver:'孙飞朋', phone:'18061914733', cust:'西安市临潼区梦甜电子商务商行（个体工商户）', subj:'万联易达物流科技有限公司', freight:2.00, sb:'未启用', oilRate:'5%', gasRate:'5%', eRate:'—', splitRate:'30%', node:'装货', splitTime:'2026-11-02 10:45:34', grant:0.00, used:0.00, avail:0.00, back:0.00, splitStatus:'已回收', ctime:'2026-11-02 10:45:02', op:false},
   {wb:'UD2026103100000019', status:'已卸货', audit:'待处理', abn:'无异常', plate:'甘G20Y4G', etype:'柴油', energy:'油气', driver:'石广川', phone:'18037252735', cust:'宁波智赋科技', subj:'万联易达物流科技有限公司', freight:500.00, sb:'启用', oilRate:'5%', gasRate:'5%', eRate:'—', splitRate:'30%', node:'装货', splitTime:'2026-10-31 18:17:13', grant:150.00, used:81.33, avail:68.67, back:0.00, splitStatus:'已回收', ctime:'2026-10-31 18:16:50', op:false},
   {wb:'UD2026103100000020', status:'装货/在途', audit:'待处理', abn:'无异常', plate:'甘G20Y4G', etype:'柴油', energy:'油气', driver:'石广川', phone:'18037252735', cust:'宁波智赋科技', subj:'万联易达物流科技有限公司', freight:400.00, sb:'启用', oilRate:'5%', gasRate:'5%', eRate:'—', splitRate:'30%', node:'装货', splitTime:'2026-10-31 18:20:44', grant:120.00, used:0.00, avail:120.00, back:0.00, splitStatus:'已派发', ctime:'2026-10-31 18:20:15', op:true},
@@ -1728,6 +1739,9 @@ LIVE.oilRules=[
   {name:'小桔-太原电规则(超限停用)', subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', owner:'北京小桔科技集团有限公司', etype:'电', rate:'30%', gnode:'装车', rnode:'卸货后', way:'按运费比例', sub:'司机补贴', fence:'99999999', st:'停用', range:'2026-09-01 00:00:00——2026-09-30 23:59:59', ut:'2026-09-30 18:40:12', by:'李文静'},
   {name:'太原-无企业', subj:'太原万联易达供应链管理有限公司- ', owner:'（其他全部货主）', etype:'油气', rate:'30%', gnode:'装车', rnode:'货主结算后(7天)', way:'按运费比例', sub:'司机补贴', fence:'999999999', st:'启用', range:'2026-09-01 00:00:00——2027-10-07 23:59:59', ut:'2026-10-15 17:52:00', by:'平台超级管理员'},
   {name:'滴滴-芜湖', subj:'芜湖万联易达物流发展有限公司', owner:'北京小桔科技集团有限公司', etype:'油气', rate:'25%', gnode:'货主结算后（一笔付）', rnode:'货主结算后(7天)', way:'按运费比例', sub:'司机补贴', fence:'99999999', st:'启用', range:'2026-08-26 00:00:00——2027-10-31 23:59:59', ut:'2026-10-29 13:55:01', by:'平台超级管理员'},
+  /* 306.5：派发节点=卸货（卸货完成后按卸货时运费派发）× 回收节点=货主结算后0天（货主结算通知油气服务后立即回收未用额度、先回收后打款），油气与电各 1 条 */
+  {name:'芜湖卸货派发', subj:'芜湖万联易达物流发展有限公司', owner:'宁波智赋科技', etype:'油气', rate:'25%', gnode:'卸货', rnode:'货主结算后(0天)', way:'按运费比例', sub:'司机补贴', fence:'99999999', st:'启用', range:'2026-11-01 00:00:00——2027-11-30 23:59:59', ut:'2026-11-02 09:40:15', by:'平台超级管理员'},
+  {name:'鲁冰花-电卸货派发', subj:'万联易达物流科技有限公司', owner:'山东鲁冰花物流有限公司', etype:'电', rate:'15%', gnode:'卸货', rnode:'货主结算后(0天)', way:'按运费比例', sub:'司机补贴', fence:'99999999', st:'启用', range:'2026-11-01 00:00:00——2027-11-30 23:59:59', ut:'2026-11-02 10:12:36', by:'张世民'},
   {name:'西安-太原', subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', owner:'西安市临潼区梦甜电子商务商行（个体工商户）', etype:'油气', rate:'20%', gnode:'装车', rnode:'卸货后', way:'按运费比例', sub:'司机补贴，货主补贴', fence:'999999', st:'停用', range:'2026-08-01 00:00:00——2028-09-29 23:59:59', ut:'2026-10-21 20:07:34', by:'平台超级管理员'},
   {name:'宁波+太原', subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', owner:'宁波智赋科技', etype:'油气', rate:'30%', gnode:'装车', rnode:'卸货后结算前(2天)', way:'按运费比例', sub:'司机补贴，货主补贴', fence:'99999999', st:'启用', range:'2026-08-01 00:00:00——2026-09-30 23:59:59', ut:'2026-08-13 09:55:04', by:'平台超级管理员'},
   {name:'鲁通冷链-电规则', subj:'鲁通冷链物流有限公司', owner:'山东鲁冰花物流有限公司', etype:'电', rate:'15%', gnode:'装车', rnode:'卸货后', way:'按运费比例', sub:'司机补贴', fence:'500', st:'启用', range:'2026-10-20 00:00:00——2027-10-20 23:59:59', ut:'2026-10-20 11:05:47', by:'张世民'},
