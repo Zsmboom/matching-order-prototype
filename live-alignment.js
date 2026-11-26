@@ -83,7 +83,7 @@ const LIVE_FILTERS = {
   /* 4PL 端 · 司机能源管理 / 能源账户管理 / 变更日志 */
   driverOil:[['司机姓名','name','text','输入司机姓名'],['司机手机号','phone','text','输入手机号']],
   oilAccount:[['网货主体名称','subj','text','输入主体名称'],['能源类型','etype','select',['油气','电']]],
-  driverOilLog:[['操作时间','time','range',''],['能源类型','energy','select',['油气','电']],['变更类型','type','select',['分配','加注','圈回','订单取消','恢复','分电','冻结','解冻','实扣','回收','手动分配']],['运单号','wb','text','输入运单号'],['能源订单号','order','text','输入能源订单号']],
+  driverOilLog:[['操作时间','time','range',''],['能源类型','energy','select',['油气','电']],['变更类型','type','select',['分配','实扣','回收','订单取消','恢复','分电','冻结','解冻','手动分配']],['运单号','wb','text','输入运单号'],['能源订单号','order','text','输入能源订单号']],
   /* 4PL 端 · 能源运单管理 / 能源规则配置 / 司机补贴规则配置 / 货主能源返利配置 */
   driverWaybills:[['运单号','wb','text','输入运单号'],['车牌号','plate','text','输入车牌号'],['司机姓名','driver','text','输入司机姓名'],['司机手机号','phone','text','输入手机号'],['网络货运主体','whSubj','text','输入主体名称'],['客户名称','customer','text','输入客户名称'],['运单状态','status','select',['装货/在途','已卸货','已取消','取消装货/在途','取消-待支付','取消-已卸货']],['派发状态','splitStatus','select',['未派发','已派发','已回收']],['运单预审状态','audit','select',['未申请','待审核','审核不通过','审核通过','待处理','已保存','转结算','待预审','预审不通过']],['车辆能源类型','etype','select',['柴油','天然气','电','油']],['能源类型','energy','select',['油气','电']],['派发时间','splitTime','range',''],['运单创建时间','createTime','range','']],
   oilRules:[['规则名称','name','text','输入规则名称'],['适用网货主体','subj','text','输入主体名称'],['货主企业','owner','text','输入货主企业'],['能源类型','etype','select',['油气','电']],['状态','status','select',['启用','停用']],['派发节点','gnode','select',['装车','卸货','货主结算后（一笔付）']],['回收节点','rnode','select',['卸货后','卸货后结算前','货主结算后']],['规则时间范围','range','range','']],
@@ -836,17 +836,17 @@ function liveModal(kind,key){
       reason('请输入操作原因');
     primary='确认提交';requireField=true;
   }else if(kind==='wbBack'||kind==='wbBackBatch'){
-    heading=kind==='wbBack'?'能源圈回':'批量能源圈回';
+    heading=kind==='wbBack'?'能源回收':'批量能源回收';
     content=kind==='wbBack'
-      ?'<p>确认圈回运单 <b class="mono">'+key+'</b> 的可用额度吗？圈回金额按该运单的<b>能源类型</b>计入对应账户（油气 / 电）。</p><p class="note">圈回后额度记「已圈回额度」，司机可用额度相应减少；能源类型=电写入电变更日志，油气写入能源变更日志。</p>'
-      :'<p>请先在列表勾选需要圈回的运单，圈回金额按各运单的<b>能源类型</b>分别计入油气 / 电账户。</p><p class="note">圈回的额度记「已圈回额度」并写入对应变更日志（油气 / 电）。</p>';
-    primary='确认圈回';
+      ?'<p>确认回收运单 <b class="mono">'+key+'</b> 的可用额度吗？回收金额按该运单的<b>能源类型</b>计入对应账户（油气 / 电）。</p><p class="note">回收后额度记「已回收额度」，司机可用额度相应减少；能源类型=电写入电变更日志，油气写入能源变更日志。</p>'
+      :'<p>请先在列表勾选需要回收的运单，回收金额按各运单的<b>能源类型</b>分别计入油气 / 电账户。</p><p class="note">回收的额度记「已回收额度」并写入对应变更日志（油气 / 电）。</p>';
+    primary='确认回收';
   }else if(kind==='oilRecover'||kind==='elecRecover'){
     const elec=kind==='elecRecover';
     heading=elec?'回收电额度':'回收油气额度';
     content='<p>该操作会将该司机的当前所有'+(elec?'<b>电</b>':'<b>油气</b>')+'额度转成运费，确认回收吗？</p>'
-      +(elec?'<p class="note">只圈回当前可使用的电额度；司机名下有充电中订单时不拦截，冻结部分不受影响。回收金额记「圈回」，写入能源变更日志（能源类型=电）。</p>'
-            :'<p class="note">回收金额记「圈回」，写入能源变更日志（能源类型=油气）。</p>');
+      +(elec?'<p class="note">只回收当前可使用的电额度；司机名下有充电中订单时不拦截，冻结部分不受影响。回收金额记「回收」，写入能源变更日志（能源类型=电）。</p>'
+            :'<p class="note">回收金额记「回收」，写入能源变更日志（能源类型=油气）。</p>');
     primary='确认回收';
   }else if(kind==='refundReject'||kind==='refundApprove'){
     const r=LIVE.refunds.find(x=>x.no===key);
@@ -1392,7 +1392,7 @@ leqiFieldHelp = function(kind){
     +tbl(['场景','展示'],[
       ['能源运单管理','装车时按车辆档案写入；枚举：柴油 / 天然气 / 电 / 油，标签样式：柴油·天然气灰、电绿、油橙'],
       ['能源规则配置','规则的能源类型：油气 / 电——电规则即分电规则，与油气规则三维唯一分开校验'],
-      ['能源类型与额度','能源类型=油气/电 决定额度归属：「分配/已使用/可用/已圈回额度」为同一套字段，按能源类型取油气或电账本的金额']
+      ['能源类型与额度','能源类型=油气/电 决定额度归属：「分配/已使用/可用/已回收额度」为同一套字段，按能源类型取油气或电账本的金额']
     ])
     +'<p class="mut">展示口径：电=绿标、油=橙标、柴油/天然气=灰标；同列名按能源类型区分含义。</p>');
   if(kind==='eRateTip') return fhCardHTML(
@@ -1464,9 +1464,9 @@ leqiFieldHelp = function(kind){
       ['待支付（未扣减）','被冻结金额（橙色加粗）','账单已出、尚未扣款，冻结继续占用'],
       ['充电结束 / 已支付（已扣减）','0.00','按万联价×实际度数扣减，剩余解冻回可用额度'],
       ['已退款（启动失败关单）','0.00','冻结全额解冻退回'],
-      ['已回收','0.00','可用额度已圈回，记入「已圈回额度」']
+      ['已回收','0.00','可用额度已回收，记入「已回收额度」']
     ])
-    +'<p><b>与另外三个额度列的关系：</b>分配额度 ＝ 已使用额度 ＋ 冻结额度 ＋ 可用额度 ＋ 已圈回额度；冻结期间可用额度相应为 0.00，不会与冻结重复计数。</p>'
+    +'<p><b>与另外三个额度列的关系：</b>分配额度 ＝ 已使用额度 ＋ 冻结额度 ＋ 可用额度 ＋ 已回收额度；冻结期间可用额度相应为 0.00，不会与冻结重复计数。</p>'
     +'<p><b>油气运单显示「—」：</b>油气加注的预冻结发生在司机维度（扫码加油按预计金额冻结），不落运单，因此本列对油气不适用。</p>'
     +'<p class="mut">三处同源：本列、司机能源管理「电-冻结额度」（该司机名下进行中订单冻结合计）、充电订单详情「冻结总额度」（冻结池内各运单冻结之和）。与 PRD 7.2.5 同源。</p>');
   if(kind==='cgPhone') return fhCardHTML(
@@ -1504,7 +1504,7 @@ LIVE.oilLogs=[
   {type:'分配', amt:'+8,000.00', wb:'W20261028000011', order:'—', avail:'84,278.00', used:'324,098.00', op:'系统（规则派发）', time:'2026-10-28 07:35:12'},
   {type:'加注', amt:'-81.33', wb:'W2026103100000019', order:'WYB20261031181748540778', avail:'76,278.00', used:'324,098.00', op:'系统（订单扣款）', time:'2026-10-31 18:17:52'},
   {type:'加注', amt:'-45.87', wb:'W2026103000000011', order:'WYB20261030160138549619', avail:'76,359.33', used:'324,016.67', op:'系统（订单扣款）', time:'2026-10-30 16:02:10'},
-  {type:'圈回', amt:'-5,000.00', wb:'W2026102000000036', order:'—', avail:'71,278.00', used:'324,016.67', op:'张世民', time:'2026-10-26 14:20:33'},
+  {type:'回收', amt:'-5,000.00', wb:'W2026102000000036', order:'—', avail:'71,278.00', used:'324,016.67', op:'张世民', time:'2026-10-26 14:20:33'},
   {type:'订单取消', amt:'+81.33', wb:'W2026103100000019', order:'WYB20261031181748540778', avail:'81,359.33', used:'323,935.34', op:'系统（退款返还）', time:'2026-11-01 09:12:04'},
   {type:'恢复', amt:'+3,000.00', wb:'W2026101500000008', order:'—', avail:'84,359.33', used:'323,935.34', op:'李文静', time:'2026-10-24 10:05:47'},
   {type:'分配', amt:'+12,000.00', wb:'W20261027000008', order:'—', avail:'96,359.33', used:'323,935.34', op:'系统（规则派发）', time:'2026-10-27 09:20:33'},
@@ -1520,7 +1520,7 @@ LIVE.elecLogs=[
   {type:'解冻', amt:'+110.32', wb:'W20261026000016', order:'CKC202610262001006', avail:'1,130.32', used:'2,871.40', op:'系统（完成解冻返还）', time:'2026-10-26 21:19:07'},
   {type:'实扣', amt:'-28.08', wb:'W20261026000005', order:'CD20261026000006', avail:'1,102.24', used:'2,899.48', op:'系统（万联价扣款）', time:'2026-10-26 21:19:08'},
   {type:'实扣', amt:'-18.60', wb:'W20261026000014', order:'CD20261026000013', avail:'1,083.64', used:'2,918.08', op:'系统（万联价扣款）', time:'2026-10-26 21:19:08'},
-  {type:'圈回', amt:'-200.00', wb:'W2026102000000036', order:'—', avail:'883.64', used:'2,918.08', op:'张世民', time:'2026-10-25 15:44:21'},
+  {type:'回收', amt:'-200.00', wb:'W2026102000000036', order:'—', avail:'883.64', used:'2,918.08', op:'张世民', time:'2026-10-25 15:44:21'},
   {type:'回收', amt:'-64.10', wb:'W2026101500000009', order:'—', avail:'819.54', used:'2,918.08', op:'系统（回收节点）', time:'2026-10-22 00:30:00'},
   {type:'恢复', amt:'+64.10', wb:'W2026101500000009', order:'—', avail:'883.64', used:'2,918.08', op:'李文静', time:'2026-10-23 11:08:15'},
   {type:'解冻', amt:'+356.00', wb:'W2026102500000002', order:'CKC202610250830010', avail:'1,239.64', used:'2,918.08', op:'系统（启动失败全额退回）', time:'2026-10-25 08:32:40'},
@@ -1572,7 +1572,7 @@ VIEWS.driverOil=()=>{
       rows,'1520px')
     +notes(
       nb('记录粒度与额度字段','<p><b>一个司机一条记录</b>：油气额度与电额度以<b>并排字段</b>展示（两块独立账本、额度互不占用）。油气与电的当前可使用额度均按账户拆为两列：<b>有补贴账户额度</b>＝运单补贴标识带司机补贴或货主补贴任一的运单额度入账（加油按万联价扣款）、<b>无补贴账户额度</b>＝无补贴运单的额度入账（加油按企业价扣款），两账户互不占用，两列之和＝该司机该能源类型的可用总额；累计使用额度、总派发额度仍为两账户合计的汇总口径。电额度另有<b>冻结额度</b>列（汇总口径不变）。</p><p><b>冻结额度仅电有</b>（充电中订单冻结的金额，充电即冻结组内全部匹配运单的总额度、跨主体合并）；油气不存在冻结状态，因此不设冻结列。</p>')+
-      nb('回收与日志','<p>回收<b>按能源类型分别操作</b>：<b>回收油气额度</b>圈回该司机全部油气可用额度（含有补贴与无补贴两账户）转成运费；<b>回收电额度</b>圈回该司机全部电可用额度（含电有补贴与无补贴两账户）转成运费——司机名下有充电中订单时不拦截，冻结部分不受影响、只圈回可用额度。</p><p>【变更日志】进入<b>能源变更日志</b>单页，按能源类型（油气/电）列展示与筛选该司机的全部额度变动记录。</p>'));
+      nb('回收与日志','<p>回收<b>按能源类型分别操作</b>：<b>回收油气额度</b>回收该司机全部油气可用额度（含有补贴与无补贴两账户）转成运费；<b>回收电额度</b>回收该司机全部电可用额度（含电有补贴与无补贴两账户）转成运费——司机名下有充电中订单时不拦截，冻结部分不受影响、只回收可用额度。</p><p>【变更日志】进入<b>能源变更日志</b>单页，按能源类型（油气/电）列展示与筛选该司机的全部额度变动记录。</p>'));
 };
 
 /* —— 能源变更日志（油气 / 电合并单页；能源类型列 + 筛选；司机信息固定头跳转页） —— */
@@ -1615,7 +1615,7 @@ function driverLogPage(pageId, preset){
     + liveListCard('能源变更日志','<button class="btn sm" onclick="liveExport(\'driverOilLog\')">导出</button>',
       ['变更类型','能源类型','金额(元)','运单号','关联能源订单号','可用额度(元)','已使用额度(元)','操作人','操作时间'],
       rows,'1600px')
-    +notes(nb('变更类型口径','<p><b>能源类型=油气</b> 5 值：<b>分配</b>（规则/充值派发，+）、<b>加注</b>（加油订单扣款，−）、<b>圈回</b>（额度回收/回收节点自动回收，−）、<b>订单取消</b>（退款返还，+）、<b>恢复</b>（人工恢复额度，+）。</p><p><b>能源类型=电</b> 8 值：<b>分电</b>（分电规则派发，+）、<b>冻结</b>（充电预冻结，占用）、<b>解冻</b>（完成解冻返还/启动失败全额退回，+）、<b>实扣</b>（万联价扣款，−）、<b>圈回</b>（电额度回收，−）、<b>恢复</b>（人工恢复额度，+）、<b>回收</b>（回收节点自动回收，−）、<b>手动分配</b>（人工补分，+；功能后续开放，枚举预留）。</p>')+
+    +notes(nb('变更类型口径','<p><b>能源类型=油气</b> 5 值：<b>分配</b>（规则/充值派发，+）、<b>实扣</b>（油气站消费扣减，−）、<b>回收</b>（额度回收/回收节点自动回收，−）、<b>订单取消</b>（退款返还，+）、<b>恢复</b>（人工恢复额度，+）。</p><p><b>能源类型=电</b> 7 值：<b>分电</b>（分电规则派发，+）、<b>冻结</b>（充电预冻结，占用）、<b>解冻</b>（完成解冻返还/启动失败全额退回，+）、<b>实扣</b>（万联价扣款，−）、<b>回收</b>（手动回收/回收节点自动回收，−）、<b>恢复</b>（人工恢复额度，+）、<b>手动分配</b>（人工补分，+；功能后续开放，枚举预留）。</p>')+
       nb('记账口径','<p>全部额度变动记账至额度流水并汇总到账户；每行展示变动后余额（可用额度/已使用额度）与操作人；本页仅查看，不发起操作。能源类型筛选：油气 / 电，默认全部。</p>'));
 }
 VIEWS.driverOilLog=()=>driverLogPage('driverOilLog','');
@@ -1638,7 +1638,7 @@ VIEWS.oilAccount=()=>{
 
 /* —— 4PL 能源运单管理 / 三个配置页 演示数据 —— */
 
-/* 能源运单：19 条（车辆能源类型 4 值 × 派发状态 × 异常；能源类型=油气/电 决定额度归属；额度＝分配/已使用/冻结/可用/已圈回，冻结仅电） */
+/* 能源运单：19 条（车辆能源类型 4 值 × 派发状态 × 异常；能源类型=油气/电 决定额度归属；额度＝分配/已使用/冻结/可用/已回收，冻结仅电） */
 LIVE.driverWaybills=[
   {wb:'UD2026110200000027', status:'取消-待支付', audit:'已保存', abn:'取消运单', plate:'粤HRE371', etype:'柴油', energy:'油气', driver:'付迪', phone:'18310804245', cust:'西安市临潼区梦甜电子商务商行（个体工商户）', subj:'万联易达物流科技有限公司', freight:111.00, sb:'未启用', oilRate:'5%', gasRate:'5%', eRate:'—', splitRate:'30%', node:'装货', splitTime:'2026-11-02 13:43:45', grant:31.00, used:0.00, avail:0.00, back:31.00, splitStatus:'已回收', ctime:'2026-11-02 13:33:06', op:false},
   {wb:'UD2026110200000014', status:'已卸货', audit:'待处理', abn:'无异常', plate:'粤HRE371', etype:'柴油', energy:'油气', driver:'付迪', phone:'18310804245', cust:'宁波智赋科技', subj:'万联易达物流科技有限公司', freight:400.00, sb:'启用', oilRate:'5%', gasRate:'5%', eRate:'—', splitRate:'30%', node:'装货', splitTime:'2026-11-02 10:56:04', grant:120.00, used:0.00, avail:120.00, back:0.00, splitStatus:'已派发', ctime:'2026-11-02 10:55:03', op:true},
@@ -1657,7 +1657,7 @@ LIVE.driverWaybills=[
   {wb:'UD2026102500000002', status:'已取消', audit:'—', abn:'取消运单', plate:'晋A·7D2R9', etype:'电', energy:'电', driver:'刘志强', phone:'139****8834', cust:'宁波智赋科技', subj:'万联易达物流科技有限公司', freight:356.00, sb:'启用', oilRate:'—', gasRate:'—', eRate:'12%', splitRate:'25%', node:'装货', splitTime:'2026-10-25 08:30:02', grant:89.00, used:0.00, avail:0.00, back:89.00, splitStatus:'已回收', ctime:'2026-10-25 08:22:18', op:false},
   {wb:'UD2026102400000009', status:'已卸货', audit:'审核通过', abn:'无异常', plate:'豫P·6F8K1', etype:'电', energy:'电', driver:'吴天佑', phone:'135****7742', cust:'北京小桔科技集团有限公司', subj:'太原万联易达供应链管理有限公司霍林郭勒分公司', freight:420.00, sb:'未启用', oilRate:'—', gasRate:'—', eRate:'—', splitRate:'—', node:'—', splitTime:'—', grant:0.00, used:0.00, avail:0.00, back:0.00, splitStatus:'未派发', ctime:'2026-10-24 19:40:51', op:false},
   {wb:'UD2026102300000018', status:'已卸货', audit:'审核通过', abn:'无异常', plate:'苏N·3M5T8', etype:'油', energy:'油气', driver:'陈国栋', phone:'131****4409', cust:'宁波市鄞州姜山物流有限公司', subj:'万联易达物流科技有限公司', freight:310.00, sb:'启用', oilRate:'4%', gasRate:'—', eRate:'—', splitRate:'20%', node:'装货', splitTime:'2026-10-23 11:32:40', grant:62.00, used:62.00, avail:0.00, back:0.00, splitStatus:'已派发', ctime:'2026-10-23 11:28:12', op:false},
-  /* 分电充电进行中的电运单：额度处于冻结占用（可用＝分配−已用−冻结−已圈回），与充电订单/司机能源管理同源 */
+  /* 分电充电进行中的电运单：额度处于冻结占用（可用＝分配−已用−冻结−已回收），与充电订单/司机能源管理同源 */
   {wb:'UD2026102800000021', status:'装货/在途', audit:'审核通过', abn:'无异常', plate:'辽A·D81K2', etype:'电', energy:'电', driver:'王建国', phone:'138****4021', cust:'沈阳长鑫冷链物流有限公司', subj:'万联易达物流科技有限公司', freight:4180.00, sb:'启用', oilRate:'—', gasRate:'—', eRate:'12%', splitRate:'25%', node:'装货', splitTime:'2026-10-28 07:32:10', grant:520.00, used:0.00, avail:0.00, back:0.00, frozen:520.00, splitStatus:'已派发', ctime:'2026-10-28 07:30:44', op:false},
   {wb:'UD2026102800000022', status:'装货/在途', audit:'审核通过', abn:'无异常', plate:'辽A·F52R9', etype:'电', energy:'电', driver:'刘志强', phone:'139****8834', cust:'沈阳鲜达供应链有限公司', subj:'万联易达物流科技有限公司', freight:356.00, sb:'启用', oilRate:'—', gasRate:'—', eRate:'12%', splitRate:'25%', node:'装货', splitTime:'2026-10-28 08:15:44', grant:356.00, used:0.00, avail:0.00, back:0.00, frozen:356.00, splitStatus:'已派发', ctime:'2026-10-28 08:12:20', op:false},
   {wb:'UD2026102700000023', status:'已卸货', audit:'审核通过', abn:'无异常', plate:'辽A·J26M8', etype:'电', energy:'电', driver:'李长顺', phone:'135****3391', cust:'沈阳鲜达供应链有限公司', subj:'万联易达物流科技有限公司', freight:486.00, sb:'启用', oilRate:'—', gasRate:'—', eRate:'12%', splitRate:'25%', node:'装货', splitTime:'2026-10-27 06:48:29', grant:486.00, used:0.00, avail:0.00, back:0.00, frozen:486.00, splitStatus:'已派发', ctime:'2026-10-27 06:45:11', op:false},
@@ -1718,9 +1718,9 @@ const energyTag=t=>t==='电'?'<span class="tag ok">电</span>':'<span class="tag
 /* —— 能源运单管理（列表：现网 31 列 + 电补贴比例） —— */
 VIEWS.driverWaybills=()=>{
   const list=liveRows('driverWaybills');
-  const rows=list.map((d,i)=>'<tr>'
+  const rows=list.map((d,i)=>'<tr style="cursor:pointer" onclick="openEnergyWaybill(\''+d.wb+'\')">'
     +'<td class="num">'+(i+1)+'</td>'
-    +'<td><b class="mono">'+d.wb+'</b></td>'
+    +'<td><b class="mono" style="color:#1f5dbc">'+d.wb+'</b></td>'
     +'<td>'+d.status+'</td>'
     +'<td>'+d.audit+'</td>'
     +'<td>'+(d.abn==='无异常'?'<span class="t2">无异常</span>':'<span style="color:#c0483c">'+d.abn+'</span>')+'</td>'
@@ -1746,15 +1746,103 @@ VIEWS.driverWaybills=()=>{
     +'<td class="num">'+money(d.back)+'</td>'
     +'<td>'+d.splitStatus+'</td>'
     +'<td class="mono">'+d.ctime+'</td>'
-    +'<td class="acts">'+(d.op?'<button type="button" onclick="liveModal(\'wbBack\',\''+d.wb+'\')">能源圈回</button>':'<span class="t2">—</span>')+'</td></tr>');
+    +'<td class="acts">'+(d.op?'<button type="button" onclick="event.stopPropagation();liveModal(\'wbBack\',\''+d.wb+'\')">能源回收</button>':'<span class="t2">—</span>')+'</td></tr>');
   return liveFilters('driverWaybills')
-    +liveListCard('能源运单管理','<button class="btn sm" onclick="liveModal(\'wbBackBatch\',\'\')">批量能源圈回</button><button class="btn sm" onclick="liveExport(\'driverWaybills\')">导出</button>',
-      ['序号','运单号','运单状态','运单预审状态','运单异常类型','车牌号','车辆能源类型'+leqiFieldHelp('etypeTip'),'能源类型','司机姓名','手机号','客户名称','网络货运主体','应付司机总运费(元)','司机补贴状态','柴油补贴比例','天然气补贴比例','电补贴比例'+leqiFieldHelp('eRateTip'),'派发比例','派发节点','派发时间','分配额度(元)','已使用额度(元)','可用额度(元)','冻结额度(元)'+leqiFieldHelp('wbFrozenTip'),'已圈回额度(元)','派发状态','运单创建时间','操作'],
+    +liveListCard('能源运单管理','<button class="btn sm" onclick="liveModal(\'wbBackBatch\',\'\')">批量能源回收</button><button class="btn sm" onclick="liveExport(\'driverWaybills\')">导出</button>',
+      ['序号','运单号','运单状态','运单预审状态','运单异常类型','车牌号','车辆能源类型'+leqiFieldHelp('etypeTip'),'能源类型','司机姓名','手机号','客户名称','网络货运主体','应付司机总运费(元)','司机补贴状态','柴油补贴比例','天然气补贴比例','电补贴比例'+leqiFieldHelp('eRateTip'),'派发比例','派发节点','派发时间','分配额度(元)','已使用额度(元)','可用额度(元)','冻结额度(元)'+leqiFieldHelp('wbFrozenTip'),'已回收额度(元)','派发状态','运单创建时间','操作'],
       rows,'3420px')
     +notes(
-      nb('能源类型与能源额度','<p><b>车辆能源类型</b>装车时按车辆档案写入（枚举：柴油/天然气/电/油）；<b>能源类型</b>是额度账本口径（枚举：油气/电）——柴油、天然气、油 → 油气；电 → 电。</p><p><b>额度字段不再区分油气/电</b>：「分配额度 / 已使用额度 / 可用额度 / 已圈回额度」为同一套字段，按运单能源类型取对应账本金额：能源类型=电取电账本，能源类型=油气取油气账本。</p>')+
-      nb('额度口径（含冻结）','<p>四个额度列满足等式：<b>分配额度 ＝ 已使用额度 ＋ 冻结额度 ＋ 可用额度 ＋ 已圈回额度</b>。<b>冻结额度仅电有</b>：司机发起充电时按冻结池<b>全额冻结</b>该运单额度（充电中/待支付期间一直占用），完成后按万联价×实际度数扣减、剩余解冻回可用，启动失败关单则全额解冻退回；油气运单该列显示「—」（加注冻结在司机维度，不落运单）。</p><p>三处同源：运单「冻结额度」、司机能源管理「电-冻结额度」（＝该司机名下进行中订单冻结合计）、充电订单详情「冻结总额度」（＝冻结池内各运单冻结之和）。</p>')+
+      nb('能源类型与能源额度','<p><b>车辆能源类型</b>装车时按车辆档案写入（枚举：柴油/天然气/电/油）；<b>能源类型</b>是额度账本口径（枚举：油气/电）——柴油、天然气、油 → 油气；电 → 电。</p><p><b>额度字段不再区分油气/电</b>：「分配额度 / 已使用额度 / 可用额度 / 已回收额度」为同一套字段，按运单能源类型取对应账本金额：能源类型=电取电账本，能源类型=油气取油气账本。</p>')+
+      nb('额度口径（含冻结）','<p>四个额度列满足等式：<b>分配额度 ＝ 已使用额度 ＋ 冻结额度 ＋ 可用额度 ＋ 已回收额度</b>。<b>冻结额度仅电有</b>：司机发起充电时按冻结池<b>全额冻结</b>该运单额度（充电中/待支付期间一直占用），完成后按万联价×实际度数扣减、剩余解冻回可用，启动失败关单则全额解冻退回；油气运单该列显示「—」（加注冻结在司机维度，不落运单）。</p><p>三处同源：运单「冻结额度」、司机能源管理「电-冻结额度」（＝该司机名下进行中订单冻结合计）、充电订单详情「冻结总额度」（＝冻结池内各运单冻结之和）。</p>')+
       nb('装车判断','<p>装车时按「<b>车辆能源类型＋网货主体＋货主企业</b>」匹配生效的派发规则：匹配到才生成运单额度数据，未匹配到不生成（额度列显示 0 或 —，派发状态=未派发）；能源类型=电走电规则（在能源规则配置页维护）。</p>'));
+};
+
+/* ===== 能源运单详情 · 独立页面（列表点行进入；结构对齐现网油气运单详情，字段按能源口径） ===== */
+let energyWaybillCurrent = '';
+function openEnergyWaybill(no){ energyWaybillCurrent = no; go('energyWaybillDetail'); }
+/* 详情演示补数：支付状态/运单作废状态/异常发生时间/回收节点与回收时间/货主补贴（列表不展示、详情展示） */
+LIVE.energyWaybillOrders = {
+  'UD2026103100000019':[{site:'中国石化·沈阳丁香街加油站', qty:68.67, amt:481.87},{site:'中国石油·沈北新区加油站', qty:12.66, amt:88.62}],
+  'UD2026110200000034':[{site:'特来电·万联物流园充电站', qty:52.30, amt:87.61}],
+  'UD2026110200000014':[{site:'中国石化·沈阳丁香街加油站', qty:96.00, amt:676.80},{site:'中国石化·铁西工业路站', qty:24.10, amt:169.10}]
+};
+LIVE.driverWaybills.forEach(function(d,i){
+  d.payStatus = d.wb==='UD2026103100000019' ? '已支付' : '待支付';
+  d.voidStatus = '未作废';
+  d.abnTime = d.abn==='无异常' ? '—' : '2026-11-02 09:12:40';
+  d.recycleNode = d.splitStatus==='已回收' ? (i%2 ? '货主结算后' : '卸货后结算前') : '卸货后结算前';
+  d.recycleTime = d.splitStatus==='已回收' ? ('2026-11-02 18:3'+(i%10)+':00') : '—';
+  d.ownerSb = i%3===0 ? '未启用' : '启用';
+  d.ownerRate = '—'; d.ownerAmt = '—';
+  d.driverSbRate = d.energy==='电' ? d.eRate : (d.etype==='天然气' ? d.gasRate : d.oilRate);
+  d.settle = {id:'bf'+(60486133+i)+'5d', account:'黄小航', bank:'建设银行', cardNo:'6217 0007 3003 6341 933', cashPayTime:d.payStatus==='已支付'?'2026-11-02 19:05:00':'—', auditPassTime:(d.audit==='审核通过'||d.audit==='转结算')?'2026-11-02 18:40:00':'—'};
+});
+VIEWS.energyWaybillDetail=()=>{
+  const d = LIVE.driverWaybills.find(x=>x.wb===energyWaybillCurrent) || LIVE.driverWaybills[0];
+  energyWaybillCurrent = d.wb;
+  const unit = d.energy==='电' ? '度' : (d.etype==='天然气' ? 'kg' : 'L');
+  const orders = LIVE.energyWaybillOrders[d.wb] || [];
+  const totalQty = orders.length ? orders.reduce(function(s,o){return s+o.qty;},0) : null;
+  const totalAmt = orders.reduce(function(s,o){return s+o.amt;},0);
+  const usage = d.grant ? Math.round(d.used/d.grant*100) : 0;
+  const frozenVal = d.energy==='电' ? (d.frozen ? money(d.frozen) : money(0)) : '<span class="t2">—</span>';
+  const ewCard = (l,v,hl)=>'<div style="border:1px solid #e5ebf3;border-radius:10px;padding:10px 14px;background:#fff">'
+    +'<div class="t2" style="font-size:11px">'+l+'</div><div class="num" style="font-size:17px;font-weight:700;margin-top:4px'+(hl?';color:#d46b08':'')+'">'+v+'</div></div>';
+  const orderRows = orders.map(function(o,i){ return '<tr><td class="num">'+(i+1)+'</td><td>'+o.site+'</td><td class="num">'+o.qty.toFixed(2)+'</td><td class="num">'+money(o.amt)+'</td></tr>'; });
+  const orderTable = orders.length
+    ? liveTable(['序号','站点名称','数量('+unit+')','订单金额(元)'], orderRows, '620px')
+    : '<p class="t2" style="padding:10px 0">暂无数据</p>';
+  return '<div class="card"><div class="card-b"><div class="sec-title">能源额度'+leqiFieldHelp('wbFrozenTip')+'<span class="tag b" style="margin-left:10px">'+d.splitStatus+'</span></div>'
+      +'<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:6px">'
+      + ewCard('分配额度(元)', money(d.grant))
+      + ewCard('已使用额度(元)', money(d.used))
+      + ewCard('冻结额度(元)', frozenVal, d.energy==='电'&&d.frozen)
+      + ewCard('可用额度(元)', money(d.avail))
+      + ewCard('已回收额度(元)', money(d.back))
+      + ewCard('额度使用率', usage+'%')
+      + '</div></div></div>'
+    + '<div class="card"><div class="card-b"><div class="sec-title">能源额度规则</div>'
+      + cgGrp('派发与回收',[
+          ['派发比例', d.splitRate],['派发状态', d.splitStatus],['派发节点', d.node],['派发时间', '<span class="mono">'+d.splitTime+'</span>'],
+          ['回收节点', d.recycleNode],['回收时间', '<span class="mono">'+d.recycleTime+'</span>']
+        ])
+      + cgGrp('补贴比例与状态',[
+          ['柴油补贴比例', d.oilRate],['天然气补贴比例', d.gasRate],['电补贴比例', (d.eRate==='—'?'<span class="t2">—</span>':d.eRate)+leqiFieldHelp('eRateTip')],
+          ['货主补贴状态', d.ownerSb],['司机补贴状态', d.sb]
+        ])
+    + '</div></div>'
+    + '<div class="card"><div class="card-b"><div class="sec-title">费用与补贴信息</div>'
+      + cgGrp('费用与补贴',[
+          ['应付司机总运费', '<b class="num">'+money(d.freight)+'</b>'],
+          ['货主补贴比例', d.ownerRate],['货主补贴金额(元)', d.ownerAmt],['司机补贴比例', d.driverSbRate]
+        ])
+    + '</div></div>'
+    + '<div class="card"><div class="card-b"><div class="sec-title">基本信息</div>'
+      + cgGrp('运单信息',[
+          ['运单号', '<b class="mono">'+d.wb+'</b>'],['运单状态', d.status],['派发状态', d.splitStatus],
+          ['运单创建时间', '<span class="mono">'+d.ctime+'</span>'],['运单异常类型', d.abn==='无异常'?'<span class="t2">无异常</span>':'<span style="color:#c0483c">'+d.abn+'</span>'],['异常发生时间', '<span class="mono">'+d.abnTime+'</span>'],
+          ['支付状态', d.payStatus],['运单作废状态', d.voidStatus],['能源类型', energyTag(d.energy)]
+        ])
+    + '</div></div>'
+    + '<div class="card"><div class="card-b"><div class="sec-title">关联能源订单列表</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 12px">'
+      + ewCard('订单总数', orders.length)
+      + ewCard('合计使用('+unit+')', totalQty===null?'—':totalQty.toFixed(2))
+      + ewCard('合计金额(元)', money(totalAmt))
+      + '</div>' + orderTable
+    + '</div></div>'
+    + '<div class="card"><div class="card-b"><div class="sec-title">结算信息</div>'
+      + cgGrp('结算信息',[
+          ['结算ID', '<span class="mono">'+d.settle.id+'</span>'],['收款账户名', d.settle.account],['开户行', d.settle.bank],
+          ['银行账号', '<span class="mono">'+d.settle.cardNo+'</span>'],['现金支付完成时间', '<span class="mono">'+d.settle.cashPayTime+'</span>'],
+          ['预审通过时间', '<span class="mono">'+d.settle.auditPassTime+'</span>'],['网络货运主体', d.subj]
+        ])
+    + '</div></div>'
+    + '<div style="padding:6px 2px 18px"><button type="button" class="btn" onclick="go(\'driverWaybills\')">返回列表</button></div>'
+    + notes(
+      nb('页面定位','<p>能源运单详情（列表<b>点行进入</b>）：展示运单维度的能源额度、派发/回收规则与补贴配置、关联能源订单与结算信息。油气与电共用同一详情结构，字段按运单能源类型取对应账本金额。</p>')+
+      nb('额度口径','<p>额度等式：<b>分配额度 ＝ 已使用额度 ＋ 冻结额度 ＋ 可用额度 ＋ 已回收额度</b>。<b>冻结额度仅电运单有值</b>（司机发起充电按冻结池全额冻结，油气运单显示「—」——加注冻结在司机维度，不落运单）；额度使用率＝已使用额度÷分配额度。</p>')+
+      nb('关联能源订单口径','<p>汇总＝该运单关联能源订单的合计（订单总数 / 合计使用(L/kg/度) / 合计金额(元)），数量单位按运单能源类型：柴油 L、天然气 kg、电 度；订单列表列＝序号 / 站点名称 / 数量(L/kg/度) / 订单金额(元)。无关联订单时显示「暂无数据」。</p>'));
 };
 
 /* —— 能源规则配置（现网字段 + 本期新增能源类型/分电上限比例配置；三维唯一） —— */

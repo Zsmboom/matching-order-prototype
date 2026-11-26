@@ -2109,6 +2109,7 @@ const PAGES = [
   {id:'oilAccount', name:'能源账户管理', sub:'网货主体账户 · 油气 / 电各一行', side:'4PL端', grp:'司机能源'},
   {id:'driverOilLog', name:'能源变更日志', sub:'司机能源额度变更明细跳转页 · 不进菜单', side:'4PL端', grp:'司机能源'},
   {id:'driverWaybills', name:'能源运单管理', sub:'能源额度（油气 / 电）· 装车判断', side:'4PL端', grp:'能源运单'},
+  {id:'energyWaybillDetail', name:'能源运单详情', sub:'列表点行跳转页 · 不进菜单', side:'4PL端', grp:'能源运单'},
   {id:'oilRules', name:'能源规则配置', sub:'油气 / 电派发规则 · 三维唯一 · 分电上限比例配置', side:'4PL端', grp:'能源配置'},
   {id:'wljRules', name:'万联价计算配置', sub:'司机补贴规则 · 柴油 / 天然气 / 电补贴比例', side:'4PL端', grp:'能源配置'},
   {id:'ownerRebates', name:'货主能源返利配置', sub:'按能源额度 / 按费率 · 电优惠费率', side:'4PL端', grp:'能源配置'},
@@ -2187,7 +2188,7 @@ const PLAT_META = {
   '4PL端' :{brand:'4PL 运营平台', home:'chargeOrders'},
 };
 /* 4PL 端页面集合与菜单分组（后续模块在 PLAT4_PAGES / PLAT4_NAV 中追加） */
-const PLAT4_PAGES = ['chargeOrders','chargeOrderDetail','driverOil','oilAccount','driverOilLog','driverWaybills','oilRules','wljRules','ownerRebates','oilRuleEdit','wljRuleEdit','ownerRebateEdit'];   /* 4PL 端页面集合（含详情跳转页） */
+const PLAT4_PAGES = ['chargeOrders','chargeOrderDetail','driverOil','oilAccount','driverOilLog','driverWaybills','energyWaybillDetail','oilRules','wljRules','ownerRebates','oilRuleEdit','wljRuleEdit','ownerRebateEdit'];   /* 4PL 端页面集合（含详情跳转页） */
 const PLAT4_EDIT_TO_LIST = {oilRuleEdit:'oilRules',wljRuleEdit:'wljRules',ownerRebateEdit:'ownerRebates'};   /* 编辑页归属的列表页（导航/页签高亮） */
 const PLAT4_TAB_PAGES = ['chargeOrders','driverOil','oilAccount','driverWaybills','oilRules','wljRules','ownerRebates'];   /* 顶部页签只列业务列表页，详情/日志跳转页不进页签 */
 const PLAT4_NAV = [
